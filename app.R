@@ -2,6 +2,7 @@
 
 library(dplyr)
 library(ggplot2)
+library(shinyjs)
 library(shiny)
 message("\n===> START <===\n")
 
@@ -11,9 +12,8 @@ message("\n===> START <===\n")
 ui <- fluidPage(
 
   HTML("<base target='_blank' rel='noopener noreferrer'>"),
-
   theme = "css/cosmo_bootstrap.css",
-
+  useShinyjs(),
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "css/custom.css")
   ),
@@ -85,11 +85,13 @@ ui <- fluidPage(
 
           br(),
 
-          actionButton(
-            inputId = "upload_tab_submit_button",
-            label = "Submit plate data for CTI calculations",
-            class = "btn btn-primary btn-tooltip",
-            title = "Upload your plate data, then click here to analyze"
+          disabled(
+            actionButton(
+              inputId = "upload_tab_submit_button",
+              label = "Submit plate data for CTI calculations",
+              class = "btn btn-primary btn-tooltip",
+              title = "Upload your plate data, then click here to analyze"
+            )
           )
         ),
 
@@ -123,7 +125,7 @@ ui <- fluidPage(
         ),
         mainPanel = mainPanel(
           id = "results_tab_mainpanel",
-          DT::dataTableOutput("results_table_output")
+          uiOutput("results_tab_table_ui")
         )
       )
     ),
@@ -168,6 +170,8 @@ server <- function(input, output) {
 
   upload_tab_data_display <- reactive({
     req(upload_tab_data_1())
+
+    enable("upload_tab_submit_button")
 
     upload_tab_data_1() %>% purrr::map(
       ~mutate(.x, across(where(is.numeric), ~signif(.x, digits = 4)))
@@ -244,6 +248,7 @@ server <- function(input, output) {
       mutate(across(where(is.numeric), ~signif(.x, digits = 4)))
   })
 
+
   output$results_table_output <- DT::renderDataTable(
     cti_results_display(),
     rownames = FALSE,
@@ -253,7 +258,14 @@ server <- function(input, output) {
     )
   )
 
+  output$results_tab_table_ui <- renderUI({
+    req(cti_results_display())
 
+    tagList(
+      h1("CTI results table"),
+      DT::dataTableOutput("results_table_output")
+    )
+  })
 }
 
 # Run the application
