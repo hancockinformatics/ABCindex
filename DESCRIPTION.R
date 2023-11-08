@@ -1,0 +1,15 @@
+Package: CTI
+Title: CTI
+Version: 0.99.01
+Authors@R:
+  person(given = "Travis",
+         family = "Blimkie",
+         role = c("aut", "cre"),
+         email = "travis@hancocklab.com")
+Description: Welcome to CTI, an interactive Shiny app providing access
+to a new method of assessing drug effectiveness when treating biofilms.
+License: GPL (>= 3) + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
