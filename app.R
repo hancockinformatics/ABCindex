@@ -58,23 +58,21 @@ ui <- fluidPage(
         sidebarPanel = sidebarPanel(
           id = "upload_tab_sidebarpanel",
           width = 4,
-          h4("Upload your plate data"),
+          h3("Upload your plate data"),
           p("Info about upload."),
 
-          br(),
           br(),
 
           actionButton(
             inputId = "upload_tab_example",
             label = "Load example data",
             class = "btn btn-info btn-tooltip",
-            title = "Click here to try our example data"
+            title = "Click here to try our example data",
+            width = "177px"
           ),
 
           br(),
           br(),
-
-          tags$label("Upload your data:"),
 
           fileInput(
             inputId = "upload_tab_user_data",
@@ -83,7 +81,7 @@ ui <- fluidPage(
             accept = c("xls", "xlsx")
           ),
 
-          br(),
+          hr(),
 
           disabled(
             actionButton(
@@ -113,8 +111,7 @@ ui <- fluidPage(
           id = "results_sidebarpanel",
           tags$label("Some stuff might go here"),
 
-          br(),
-          br(),
+          hr(),
 
           actionButton(
             inputId = "results_tab_download_button",
@@ -164,13 +161,29 @@ server <- function(input, output) {
 
   upload_tab_data_1 <- reactiveVal()
 
+
+  # User data -------------------------------------------------------------
+
   observeEvent(input$upload_tab_user_data, {
-    upload_tab_data_1(cti.reader(input$upload_tab_user_data$datapath))
+    cti.reader(input$upload_tab_user_data$datapath) %>%
+      upload_tab_data_1()
   })
+
+
+  # Example data ----------------------------------------------------------
+
+  observeEvent(input$upload_tab_example, {
+    if (file.exists("example_data/cti_example_data.xlsx")) {
+      cti.reader("example_data/cti_example_data.xlsx") %>%
+        upload_tab_data_1()
+    } else {
+      showNotification("Example data not found!", type = "error", duration = NULL)
+    }
+  })
+
 
   upload_tab_data_display <- reactive({
     req(upload_tab_data_1())
-
     enable("upload_tab_submit_button")
 
     upload_tab_data_1() %>% purrr::map(
@@ -262,7 +275,7 @@ server <- function(input, output) {
     req(cti_results_display())
 
     tagList(
-      h1("CTI results table"),
+      h1("Results table"),
       DT::dataTableOutput("results_table_output")
     )
   })
