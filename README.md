@@ -1,2 +1,2 @@
-# CTI
+# ShinyCTI
 Draft of the upcoming CTI Shiny app.
