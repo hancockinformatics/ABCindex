@@ -41,175 +41,192 @@ ui <- fluidPage(
     ),
 
 
-    # Home page -----------------------------------------------------------
+    navbarMenu(
+      title = "",
+      icon = icon("bars"),
 
-    tabPanel(
-      value = "home_tab",
-      title = "Home",
-      div(
-        class = "jumbotron",
-        HTML("<h1 style='margin-top: 15px;'>Welcome</h1>"),
-        p("Here is some welcome text."),
-        p("Blah blah blah CTI blah blah biofilm blah blah blah synergy.")
-      ),
+      # Home page -----------------------------------------------------------
 
-      div(
-        class = "panel-footer",
-        style = "text-align: center; position: fixed; width: 100%; bottom: 0;",
-        p("Some text will go here.")
-      )
-    ),
-
-
-    # Upload --------------------------------------------------------------
-
-    tabPanel(
-      value = "upload_tab",
-      title = "Upload data",
-
-      sidebarLayout(
-        sidebarPanel = sidebarPanel(
-          id = "upload_tab_sidebarpanel",
-          width = 4,
-          h3("Upload your plate data"),
-          p("Info about upload."),
+      tabPanel(
+        value = "home_tab",
+        title = "Home",
+        div(
+          class = "jumbotron",
+          HTML("<h1 style='margin-top: 15px;'>Welcome</h1>"),
+          p("Here is some welcome text."),
+          p("Blah blah blah CTI blah blah biofilm blah blah blah synergy."),
 
           br(),
 
           actionButton(
-            inputId = "upload_tab_example",
-            label = "Load example data",
-            class = "btn btn-info btn-tooltip",
-            title = "Click here to try our example data",
-            width = "177px"
-          ),
-
-          br(),
-          br(),
-
-          fileInput(
-            inputId = "upload_tab_user_data",
-            label = NULL,
-            buttonLabel = list(icon("upload"), "Upload plate data..."),
-            accept = c("xls", "xlsx")
-          ),
-
-          div(id = "upload_tab_input_names_ui"),
-
-          hr(),
-
-          disabled(
-            actionButton(
-              inputId = "upload_tab_submit_button",
-              label = "Submit plate data for CTI calculations",
-              class = "btn btn-primary btn-tooltip",
-              title = "Upload your plate data, then click here to analyze"
-            )
+            inputId = "get_started",
+            label = div(
+              icon("play"),
+              HTML("&nbsp;"), # Horizontal spacer
+              HTML("Get started")
+            ),
+            class = "btn btn-primary btn-lg"
           )
         ),
 
-        mainPanel = mainPanel(
-          div(id = "upload_tab_placeholder_div")
+        div(
+          class = "panel-footer",
+          style = "text-align: center; position: fixed; width: 100%; bottom: 0;",
+          p("Some text will go here.")
         )
       ),
-      div(
-        class = "panel-footer",
-        style = "text-align: center; position: fixed; width: 100%; bottom: 0;",
-        p("Some text will go here.")
-      )
-    ),
 
 
-    # Results ---------------------------------------------------------------
+      # Upload --------------------------------------------------------------
 
-    tabPanel(
-      value = "results_tab",
-      title = "Results",
+      tabPanel(
+        value = "upload_tab",
+        title = "Upload data",
 
-      sidebarLayout(
-        sidebarPanel = sidebarPanel(
-          id = "results_sidebarpanel",
-          h3("CTI results"),
-          p("Information about interpreting the results."),
-          uiOutput("cti_results_button")
-        ),
+        sidebarLayout(
+          sidebarPanel = sidebarPanel(
+            id = "upload_tab_sidebarpanel",
+            width = 4,
+            h3("Upload your plate data"),
+            p("Info about upload."),
 
-        mainPanel = mainPanel(
-          id = "results_tab_mainpanel",
-          uiOutput("results_tab_table_ui")
-        )
-      ),
-      div(
-        class = "panel-footer",
-        style = "text-align: center; position: fixed; width: 100%; bottom: 0;",
-        p("Some text will go here.")
-      )
-    ),
+            br(),
 
+            actionButton(
+              inputId = "upload_tab_example",
+              label = "Load example data",
+              class = "btn btn-info btn-tooltip",
+              title = "Click here to try our example data",
+              width = "177px"
+            ),
 
-    # Visualize -------------------------------------------------------------
+            br(),
+            br(),
 
-    tabPanel(
-      value = "vis_tab",
-      title = "Visualize",
+            fileInput(
+              inputId = "upload_tab_user_data",
+              label = NULL,
+              buttonLabel = list(icon("upload"), "Upload plate data..."),
+              accept = c("xls", ".xls", "xlsx", ".xlsx")
+            ),
 
-      sidebarLayout(
-        sidebarPanel = sidebarPanel(
-          id = "vis_sidebarpanel",
-          h3("Visualize CTI results"),
-          p("Information about the different visualization available."),
+            div(id = "upload_tab_input_names_ui"),
 
-          br(),
+            hr(),
 
-          radioButtons(
-            inputId = "vis_tab_radio_input",
-            label = "Graph type",
-            choices = c("Tile", "Line", "Dot")
+            disabled(
+              actionButton(
+                inputId = "upload_tab_submit_button",
+                label = "Submit plate data for CTI calculations",
+                class = "btn btn-primary btn-tooltip",
+                title = "Upload your plate data, then click here to analyze"
+              )
+            )
           ),
 
-          hr(),
+          mainPanel = mainPanel(
+            div(id = "upload_tab_placeholder_div")
+          )
+        ),
+        div(
+          class = "panel-footer",
+          style = "text-align: center; position: fixed; width: 100%; bottom: 0;",
+          p("Some text will go here.")
+        )
+      ),
 
-          disabled(
-            actionButton(
-              inputId = "vis_tab_submit_button",
-              label = "Create visualization",
-              class = "btn btn-primary btn-tooltip",
-              title = "Once you've analyzed your data you can plot the results"
+
+      # Results ---------------------------------------------------------------
+
+      tabPanel(
+        value = "results_tab",
+        title = "Results",
+
+        sidebarLayout(
+          sidebarPanel = sidebarPanel(
+            id = "results_sidebarpanel",
+            h3("CTI results"),
+            p("Information about interpreting the results."),
+            uiOutput("cti_results_button")
+          ),
+
+          mainPanel = mainPanel(
+            id = "results_tab_mainpanel",
+            uiOutput("results_tab_table_ui")
+          )
+        ),
+        div(
+          class = "panel-footer",
+          style = "text-align: center; position: fixed; width: 100%; bottom: 0;",
+          p("Some text will go here.")
+        )
+      ),
+
+
+      # Visualize -------------------------------------------------------------
+
+      tabPanel(
+        value = "vis_tab",
+        title = "Visualize",
+
+        sidebarLayout(
+          sidebarPanel = sidebarPanel(
+            id = "vis_sidebarpanel",
+            h3("Visualize CTI results"),
+            p("Information about the different visualization available."),
+
+            br(),
+
+            radioButtons(
+              inputId = "vis_tab_radio_input",
+              label = "Graph type",
+              choices = c("Tile", "Line", "Dot")
+            ),
+
+            hr(),
+
+            disabled(
+              actionButton(
+                inputId = "vis_tab_submit_button",
+                label = "Create visualization",
+                class = "btn btn-primary btn-tooltip",
+                title = "Once you've analyzed your data you can plot the results"
+              )
             )
+          ),
+
+          mainPanel = mainPanel(
+            id = "vis_tab_mainpanel",
+            uiOutput("vis_tab_plot_ui")
           )
         ),
 
-        mainPanel = mainPanel(
-          id = "vis_tab_mainpanel",
-          uiOutput("vis_tab_plot_ui")
+        div(
+          class = "panel-footer",
+          style = "text-align: center; position: fixed; width: 100%; bottom: 0;",
+          p("Some text will go here.")
         )
       ),
 
-      div(
-        class = "panel-footer",
-        style = "text-align: center; position: fixed; width: 100%; bottom: 0;",
-        p("Some text will go here.")
-      )
-    ),
 
+      # About ---------------------------------------------------------------
 
-    # About ---------------------------------------------------------------
+      tabPanel(
+        value = "about_tab",
+        title = "About",
 
-    tabPanel(
-      value = "about_tab",
-      title = "About",
+        div(
+          class = "jumbotron",
+          HTML("<h1 style='margin-top: 15px;'>About</h1>"),
+          p("Here is some About text."),
+          p("Blah blah blah R blah blah Shiny blah blah blah Hancock Lab.")
+        ),
 
-      div(
-        class = "jumbotron",
-        HTML("<h1 style='margin-top: 15px;'>About</h1>"),
-        p("Here is some About text."),
-        p("Blah blah blah R blah blah Shiny blah blah blah Hancock Lab.")
-      ),
-
-      div(
-        class = "panel-footer",
-        style = "text-align: center; position: fixed; width: 100%; bottom: 0;",
-        p("Some text will go here.")
+        div(
+          class = "panel-footer",
+          style = "text-align: center; position: fixed; width: 100%; bottom: 0;",
+          p("Some text will go here.")
+        )
       )
     )
   )
@@ -224,6 +241,13 @@ server <- function(input, output) {
   # Upload ----------------------------------------------------------------
 
   upload_tab_data_1 <- reactiveVal()
+
+  observeEvent(input$get_started, {
+    updateNavbarPage(
+      inputId  = "navbar",
+      selected = "upload_tab"
+    )
+  })
 
 
   # |- User data ----------------------------------------------------------
@@ -280,10 +304,8 @@ server <- function(input, output) {
   output$upload_tab_preview <- DT::renderDataTable(
     upload_tab_data_display()[[input$user_data_sheet_name]],
     rownames = FALSE,
-    options = list(
-      dom = "tip",
-      pageLength = 15
-    )
+    class = "table-striped",
+    options = list(dom = "tip", pageLength = 15)
   )
 
   observeEvent(upload_tab_data_1(), {
@@ -349,10 +371,8 @@ server <- function(input, output) {
   output$results_table_output <- DT::renderDataTable(
     cti_results_display(),
     rownames = FALSE,
-    options = list(
-      dom = "tip",
-      pageLength = 15
-    )
+    class = "table-striped",
+    options = list(dom = "tip", pageLength = 15)
   )
 
   output$results_tab_table_ui <- renderUI({
@@ -449,7 +469,6 @@ server <- function(input, output) {
   observeEvent(input$vis_tab_submit_button, {
     output$vis_tab_plot_ui <- renderUI(
       tagList(
-        h1("Here's your plot"),
         plotOutput(
           outputId = "cti_plot",
           inline = FALSE,
