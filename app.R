@@ -263,10 +263,10 @@ server <- function(input, output) {
   upload_tab_example_indicator <- reactiveVal(0)
 
   observeEvent(input$upload_tab_example, {
-    if (file.exists("example_data/cti_example_data.xlsx")) {
+    if (file.exists("example_data/cti_example_data_type2.xlsx")) {
       upload_tab_example_indicator(1)
 
-      cti.reader("example_data/cti_example_data.xlsx") %>%
+      cti.reader("example_data/cti_example_data_type2.xlsx") %>%
         upload_tab_data_1()
     } else {
       showNotification("Example data not found!", type = "error")
