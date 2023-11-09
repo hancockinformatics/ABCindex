@@ -113,14 +113,7 @@ ui <- fluidPage(
           id = "results_sidebarpanel",
           tags$label("Some stuff might go here"),
 
-          hr(),
-
-          actionButton(
-            inputId = "results_tab_download_button",
-            label = "Download your CTI results",
-            class = "btn btn-primary btn-tooltip",
-            title = "Click here to download the full CTI results"
-          )
+          uiOutput("cti_results_button")
         ),
         mainPanel = mainPanel(
           id = "results_tab_mainpanel",
@@ -128,8 +121,6 @@ ui <- fluidPage(
         )
       )
     ),
-
-
 
 
     # About ---------------------------------------------------------------
@@ -303,7 +294,45 @@ server <- function(input, output) {
       DT::dataTableOutput("results_table_output")
     )
   })
-}
+
+
+  # |- Download results ---------------------------------------------------
+
+  output$cti_results_handler <- downloadHandler(
+    filename = function() {
+      if (upload_tab_example_indicator() == 1) {
+        "shinyCTI_example_data_results.csv"
+      } else {
+        paste0(
+          "shinyCTI_",
+          tools::file_path_sans_ext(input$upload_tab_user_data$name),
+          "_results.csv"
+        )
+      }
+    },
+    content = function(filename) {
+      readr::write_csv(
+        x = cti_results(),
+        file = filename
+      )
+    }
+  )
+
+  observeEvent(input$upload_tab_submit_button, {
+    output$cti_results_button <- renderUI({
+      tagList(
+        hr(),
+        downloadButton(
+          outputId = "cti_results_handler",
+          label = "Download your results",
+          class = "btn btn-success",
+          style = "width: 100%;"
+        )
+      )
+    })
+  })
+
+} # Shiny sever close
 
 # Run the application
 shinyApp(ui = ui, server = server)
