@@ -19,34 +19,20 @@
 #'   with a suffix to denote the plate within each sheet.
 #'
 cti.reader <- function(file, sheet = "all") {
+
   if (sheet == "all") {
     all_sheets <- readxl::excel_sheets(file)
 
     all_data <- lapply(all_sheets, function(s) {
-      r1 <- cti.reader.single(file, s)
-
-      if (length(r1) > 1) {
-        bind_rows(r1, .id = "replicate")
-      } else {
-        r1
-      }
-    }) %>%
-      purrr::set_names(all_sheets)
+      cti.reader.single(file, s)
+    }) %>% purrr::set_names(all_sheets)
 
   } else {
     all_data <- lapply(sheet, function(s) {
-      r1 <- cti.reader.single(file, s)
-
-      if (length(r1) > 1) {
-        bind_rows(r1, .id = "replicate")
-      } else {
-        r1
-      }
-    }) %>%
-      purrr::set_names(sheet)
+      cti.reader.single(file, s)
+    }) %>% purrr::set_names(sheet)
   }
 
-  if (length(all_data) == 1) all_data <- all_data[[1]]
   return(all_data)
 }
 
@@ -146,7 +132,8 @@ cti.reader.single <- function(file, sheet) {
       ) %>%
       select(well, starts_with("cols"), starts_with("rows"), bio)
   }) %>%
-    purrr::set_names(~paste0(sheet, "_p", seq(length(.x))))
+    purrr::set_names(~paste0(sheet, "_p", seq(length(.x)))) %>%
+    bind_rows(.id = "replicate")
 
   return(d5)
 }

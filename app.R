@@ -280,7 +280,8 @@ server <- function(input, output) {
     req(upload_tab_data_1())
     enable("upload_tab_submit_button")
 
-    upload_tab_data_1() %>% purrr::map(
+    purrr::map(
+      upload_tab_data_1(),
       ~mutate(.x, across(where(is.numeric), ~signif(.x, digits = 4)))
     )
   })
@@ -330,6 +331,7 @@ server <- function(input, output) {
   upload_tab_data_2 <- reactiveVal()
 
   observeEvent(upload_tab_data_1(), {
+
     upload_tab_data_1() %>%
       bind_rows(.id = "assay") %>%
       mutate(across(c(cols_conc, rows_conc), forcats::fct_inseq)) %>%
@@ -359,8 +361,7 @@ server <- function(input, output) {
 
     cti_results() %>%
       select(
-        assay,
-        replicate,
+        any_of(c("assay", "replicate")),
         starts_with("cols"),
         starts_with("rows"),
         starts_with("cti")
