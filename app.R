@@ -24,8 +24,8 @@ ui <- fluidPage(
   navbarPage(
     id = "navbar",
     position = "static-top",
-    windowTitle = "CTI",
-    title = "CTI",
+    windowTitle = "ShinyCTI",
+    title = "ShinyCTI",
 
 
     # Home page -----------------------------------------------------------
@@ -80,6 +80,8 @@ ui <- fluidPage(
             buttonLabel = list(icon("upload"), "Upload plate data..."),
             accept = c("xls", "xlsx")
           ),
+
+          div(id = "upload_tab_input_names_ui"),
 
           hr(),
 
@@ -162,7 +164,7 @@ server <- function(input, output) {
   upload_tab_data_1 <- reactiveVal()
 
 
-  # User data -------------------------------------------------------------
+  # |- User data ----------------------------------------------------------
 
   observeEvent(input$upload_tab_user_data, {
     cti.reader(input$upload_tab_user_data$datapath) %>%
@@ -170,17 +172,23 @@ server <- function(input, output) {
   })
 
 
-  # Example data ----------------------------------------------------------
+  # |- Example data -------------------------------------------------------
+
+  upload_tab_example_indicator <- reactiveVal(0)
 
   observeEvent(input$upload_tab_example, {
     if (file.exists("example_data/cti_example_data.xlsx")) {
+      upload_tab_example_indicator(1)
+
       cti.reader("example_data/cti_example_data.xlsx") %>%
         upload_tab_data_1()
     } else {
-      showNotification("Example data not found!", type = "error", duration = NULL)
+      showNotification("Example data not found!", type = "error")
     }
   })
 
+
+  # |- Clean the data and preview -----------------------------------------
 
   upload_tab_data_display <- reactive({
     req(upload_tab_data_1())
@@ -191,8 +199,24 @@ server <- function(input, output) {
     )
   })
 
+  observeEvent(upload_tab_data_display(), {
+    req(upload_tab_data_display())
+
+    insertUI(
+      selector = "#upload_tab_input_names_ui",
+      where = "afterEnd",
+      ui = tagList(
+        selectInput(
+          inputId = "user_data_sheet_name",
+          label = "Select an uploaded sheet to preview",
+          choices = names(upload_tab_data_display())
+        )
+      )
+    )
+  })
+
   output$upload_tab_preview <- DT::renderDataTable(
-    upload_tab_data_display()[[1]],
+    upload_tab_data_display()[[input$user_data_sheet_name]],
     rownames = FALSE,
     options = list(
       dom = "tip",
@@ -208,7 +232,7 @@ server <- function(input, output) {
       where = "afterEnd",
       ui = tagList(div(
         id = "upload_tab_input_preview_div",
-        h3("Input data preview (FIRST SHEET ONLY)"),
+        h3("Input data preview"),
         br(),
         DT::dataTableOutput("upload_tab_preview")
       ))
