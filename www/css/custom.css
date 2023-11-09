@@ -36,9 +36,18 @@
 }
 .progress .progress-bar {
   font-size: 15px;
-  line-height: 16px;
+  line-height: 18px;
 }
 
 .shiny-notification {
   font-size: 20px;
+}
+
+/* Customizing the Github image inserted into the right side of the navbar */
+#github-img{
+  position: absolute;
+  right: 10px;
+  top: -4px;
+  bottom: 0;
+  height: 25px;
 }

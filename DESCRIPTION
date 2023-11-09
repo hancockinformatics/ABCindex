@@ -1,6 +1,6 @@
 Package: ShinyCTI
 Title: ShinyCTI
-Version: 0.99.06
+Version: 0.99.07
 Authors@R:
   person(given = "Travis",
          family = "Blimkie",

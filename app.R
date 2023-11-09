@@ -25,7 +25,20 @@ ui <- fluidPage(
     id = "navbar",
     position = "static-top",
     windowTitle = "ShinyCTI",
-    title = "ShinyCTI",
+    title = div(
+      id = "title_tab_bar",
+
+      HTML("<p title='Welcome to ShinyCTI!'>ShinyCTI</p>"),
+
+      div(
+        id = "github-img",
+        HTML(paste0(
+          "<a href='https://github.com/hancockinformatics/ShinyCTI'> ",
+          "<img src='github.svg' title='Visit ShinyCTI on Github to browse ",
+          "the code or submit an issue.' alt='Github'> </a>"
+        ))
+      )
+    ),
 
 
     # Home page -----------------------------------------------------------
@@ -43,7 +56,7 @@ ui <- fluidPage(
       div(
         class = "panel-footer",
         style = "text-align: center; position: fixed; width: 100%; bottom: 0;",
-        p("Some text will go here. It will be awesome.")
+        p("Some text will go here.")
       )
     ),
 
@@ -102,7 +115,7 @@ ui <- fluidPage(
       div(
         class = "panel-footer",
         style = "text-align: center; position: fixed; width: 100%; bottom: 0;",
-        p("Some text will go here. It will be revelatory.")
+        p("Some text will go here.")
       )
     ),
 
@@ -116,10 +129,11 @@ ui <- fluidPage(
       sidebarLayout(
         sidebarPanel = sidebarPanel(
           id = "results_sidebarpanel",
-          tags$label("Some stuff might go here"),
-
+          h3("CTI results"),
+          p("Information about interpreting the results."),
           uiOutput("cti_results_button")
         ),
+
         mainPanel = mainPanel(
           id = "results_tab_mainpanel",
           uiOutput("results_tab_table_ui")
@@ -128,7 +142,53 @@ ui <- fluidPage(
       div(
         class = "panel-footer",
         style = "text-align: center; position: fixed; width: 100%; bottom: 0;",
-        p("Some text will go here. It will knock your socks off.")
+        p("Some text will go here.")
+      )
+    ),
+
+
+    # Visualize -------------------------------------------------------------
+
+    tabPanel(
+      value = "vis_tab",
+      title = "Visualize",
+
+      sidebarLayout(
+        sidebarPanel = sidebarPanel(
+          id = "vis_sidebarpanel",
+          h3("Visualize CTI results"),
+          p("Information about the different visualization available."),
+
+          br(),
+
+          radioButtons(
+            inputId = "vis_tab_radio_input",
+            label = "Graph type",
+            choices = c("Tile", "Line", "Dot")
+          ),
+
+          hr(),
+
+          disabled(
+            actionButton(
+              inputId = "vis_tab_submit_button",
+              label = "Create visualization",
+              class = "btn btn-primary btn-tooltip",
+              title = "Once you've analyzed your data you can plot the results"
+            )
+          )
+        ),
+
+        mainPanel = mainPanel(
+          id = "vis_tab_mainpanel",
+          uiOutput("vis_tab_plot_ui")
+        )
+      ),
+
+      div(
+        class = "panel-footer",
+        style = "text-align: center; position: fixed; width: 100%; bottom: 0;",
+        p("Some text will go here.")
       )
     ),
 
@@ -149,7 +209,7 @@ ui <- fluidPage(
       div(
         class = "panel-footer",
         style = "text-align: center; position: fixed; width: 100%; bottom: 0;",
-        p("Some text will go here. It will be inspired.")
+        p("Some text will go here.")
       )
     )
   )
@@ -210,7 +270,7 @@ server <- function(input, output) {
       ui = tagList(
         selectInput(
           inputId = "user_data_sheet_name",
-          label = "Select an uploaded sheet to preview",
+          label = "Select an uploaded sheet to preview:",
           choices = names(upload_tab_data_display())
         )
       )
@@ -328,9 +388,18 @@ server <- function(input, output) {
   )
 
   observeEvent(input$upload_tab_submit_button, {
-    output$cti_results_button <- renderUI({
+    output$cti_results_button <- renderUI(
       tagList(
         hr(),
+
+        actionButton(
+          inputId = "results_tab_vis_button",
+          label = "Visualize your results",
+          class = "btn btn-primary btn-tooltip"
+        ),
+
+        hr(),
+
         downloadButton(
           outputId = "cti_results_handler",
           label = "Download your results",
@@ -338,7 +407,57 @@ server <- function(input, output) {
           style = "width: 100%;"
         )
       )
-    })
+    )
+  })
+
+
+  # Visualize -------------------------------------------------------------
+
+  observeEvent(input$results_tab_vis_button, {
+    updateNavbarPage(
+      inputId  = "navbar",
+      selected = "vis_tab"
+    )
+  })
+
+  observeEvent(cti_results(), {
+    enable(id = "vis_tab_submit_button")
+  })
+
+  output$cti_plot <- renderPlot(
+    if (input$vis_tab_radio_input == "Tile") {
+      cti.tile.plot(
+        data = cti_results(),
+        x.drug = "cols_conc",
+        y.drug = "rows_conc",
+        col.fill = "cti_avg",
+        col.analysis = "assay",
+        n.cols = 2,
+        scales = "free",
+        x.decimal = 2,
+        x.mic.line = TRUE,
+        y.mic.line = TRUE,
+        col.mic = "bio_normal",
+        colour.palette = "BOB",
+        add.axis.lines = TRUE
+      )
+    }
+  )
+
+  n_rows_plotted <- reactive(length(unique(cti_results()$assay)) / 2)
+
+  observeEvent(input$vis_tab_submit_button, {
+    output$vis_tab_plot_ui <- renderUI(
+      tagList(
+        h1("Tile plot of CTI results"),
+        plotOutput(
+          outputId = "cti_plot",
+          inline = FALSE,
+          height = 200 + (200 * n_rows_plotted()),
+          width = "98%"
+        ) %>% shinycssloaders::withSpinner()
+      )
+    )
   })
 
 } # Shiny sever close
