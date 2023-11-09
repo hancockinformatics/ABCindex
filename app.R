@@ -35,7 +35,7 @@ ui <- fluidPage(
       title = "Home",
       div(
         class = "jumbotron",
-        h1("Welcome"),
+        HTML("<h1 style='margin-top: 15px;'>Welcome</h1>"),
         p("Here is some welcome text."),
         p("Blah blah blah CTI blah blah biofilm blah blah blah synergy.")
       ),
@@ -98,6 +98,11 @@ ui <- fluidPage(
         mainPanel = mainPanel(
           div(id = "upload_tab_placeholder_div")
         )
+      ),
+      div(
+        class = "panel-footer",
+        style = "text-align: center; position: fixed; width: 100%; bottom: 0;",
+        p("Some text will go here. It will be revelatory.")
       )
     ),
 
@@ -119,6 +124,11 @@ ui <- fluidPage(
           id = "results_tab_mainpanel",
           uiOutput("results_tab_table_ui")
         )
+      ),
+      div(
+        class = "panel-footer",
+        style = "text-align: center; position: fixed; width: 100%; bottom: 0;",
+        p("Some text will go here. It will knock your socks off.")
       )
     ),
 
@@ -131,7 +141,7 @@ ui <- fluidPage(
 
       div(
         class = "jumbotron",
-        h1("About"),
+        HTML("<h1 style='margin-top: 15px;'>About</h1>"),
         p("Here is some About text."),
         p("Blah blah blah R blah blah Shiny blah blah blah Hancock Lab.")
       ),
@@ -149,6 +159,7 @@ ui <- fluidPage(
 # Shiny Server ------------------------------------------------------------
 
 server <- function(input, output) {
+
 
   # Upload ----------------------------------------------------------------
 
@@ -243,7 +254,6 @@ server <- function(input, output) {
       upload_tab_data_2()
   })
 
-
   observeEvent(input$upload_tab_submit_button, {
     req(upload_tab_data_2())
 
@@ -275,7 +285,6 @@ server <- function(input, output) {
       ) %>%
       mutate(across(where(is.numeric), ~signif(.x, digits = 4)))
   })
-
 
   output$results_table_output <- DT::renderDataTable(
     cti_results_display(),
