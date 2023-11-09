@@ -294,7 +294,7 @@ server <- function(input, output) {
       where = "afterEnd",
       ui = tagList(div(
         id = "upload_tab_input_preview_div",
-        h3("Input data preview"),
+        h1("Input data preview"),
         br(),
         DT::dataTableOutput("upload_tab_preview")
       ))
@@ -449,7 +449,7 @@ server <- function(input, output) {
   observeEvent(input$vis_tab_submit_button, {
     output$vis_tab_plot_ui <- renderUI(
       tagList(
-        h1("Tile plot of CTI results"),
+        h1("Here's your plot"),
         plotOutput(
           outputId = "cti_plot",
           inline = FALSE,

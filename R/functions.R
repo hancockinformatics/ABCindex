@@ -310,6 +310,8 @@ cti.calculations <- function(
     minflag.value = 0.5,
     minflag.char = "X"
 ) {
+  # Sys.sleep(time = 30)
+
   # Make sure drug concentrations are factors
   data_clean <- data %>%
     mutate(
