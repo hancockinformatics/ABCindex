@@ -19,20 +19,27 @@
 #'   with a suffix to denote the plate within each sheet.
 #'
 cti.reader <- function(file, sheet = "all") {
+  options("cli.progress_show_after" = 0)
 
   if (sheet == "all") {
+
     all_sheets <- readxl::excel_sheets(file)
 
-    all_data <- lapply(all_sheets, function(s) {
-      cti.reader.single(file, s)
-    }) %>% purrr::set_names(all_sheets)
+    all_data <- lapply(
+      cli::cli_progress_along(all_sheets, "Loading plate data:"),
+      function(i) {
+        cti.reader.single(file, all_sheets[i])
+      }
+    ) %>% purrr::set_names(all_sheets)
 
   } else {
-    all_data <- lapply(sheet, function(s) {
-      cti.reader.single(file, s)
-    }) %>% purrr::set_names(sheet)
+    all_data <- lapply(
+      cli::cli_progress_along(sheet, "Loading plate data:"),
+      function(i) {
+        cti.reader.single(file, sheet[i])
+      }
+    ) %>% purrr::set_names(sheet)
   }
-
   return(all_data)
 }
 

@@ -96,7 +96,7 @@ ui <- fluidPage(
               label = "Load example data",
               class = "btn btn-info btn-tooltip",
               title = "Click here to try our example data",
-              width = "177px"
+              width = "180px"
             ),
 
             br(),
@@ -181,8 +181,7 @@ ui <- fluidPage(
             radioButtons(
               inputId = "vis_tab_radio_input",
               label = "Graph type",
-              choices = c("Tile", "Line", "Dot"),
-              selected = NULL
+              choices = c("Tile", "Line", "Dot")
             )
 
             # hr(),
@@ -461,6 +460,14 @@ server <- function(input, output) {
 
   # Visualize -------------------------------------------------------------
 
+  # Universal:
+  # - x.drug, x.text, scales, x.decimal, x.mic.line, mic.threshold
+  # Tile/Dot plot:
+  # - y.drug, y.text, y.decimal, y.mic.line, colour.palette
+  # Line plot:
+  # - line.drug, line.include, line.decimal, plot.type,
+  #   colour.palette (RColorBrewer),  line.text, y.text
+
   observeEvent(input$results_tab_vis_button, {
     updateNavbarPage(
       inputId  = "navbar",
@@ -468,82 +475,93 @@ server <- function(input, output) {
     )
   })
 
-  # observeEvent(cti_results(), {
-  #   enable(id = "vis_tab_submit_button")
-  # })
+  cti_plot_data <- reactive(cti_results())
 
   cti_plot_dims <- reactive({
-    n_assay <- length(unique(cti_results()$assay))
+    req(cti_plot_data())
+
+    n_assay <- length(unique(cti_plot_data()$assay))
     n_rows <- ceiling(n_assay / 2)
     n_cols <- ifelse(n_assay == 1, 1, 2)
     list(n_cols, n_rows)
   })
 
-  output$cti_plot <- renderPlot(
-    if (input$vis_tab_radio_input == "Tile") {
-      cti.tile.plot(
-        data = cti_results(),
-        x.drug = "cols_conc",
-        y.drug = "rows_conc",
-        col.fill = "cti_avg",
-        col.analysis = "assay",
-        n.cols = cti_plot_dims()[[1]],
-        n.rows = cti_plot_dims()[[2]],
-        scales = "free",
-        x.decimal = 2,
-        x.mic.line = TRUE,
-        y.mic.line = TRUE,
-        col.mic = "bio_normal",
-        colour.palette = "BOB",
-        add.axis.lines = TRUE
-      )
-    } else if (input$vis_tab_radio_input == "Line") {
-      cti.line.plot(
-        data = cti_results(),
-        x.drug = "rows_conc",
-        col.data = "bio_normal_avg",
-        line.drug = "cols_conc",
-        plot.type = "replicates",
-        col.analysis = "assay",
-        n.cols = cti_plot_dims()[[1]],
-        n.rows = cti_plot_dims()[[2]],
-        scales = "free",
-        x.decimal = 2,
-        line.decimal = 2,
-        x.mic.line = TRUE,
-        add.axis.lines = TRUE
-      )
-    } else if (input$vis_tab_radio_input == "Dot") {
-      cti.dot.plot(
-        data = cti_results(),
-        x.drug = "cols_conc",
-        y.drug = "rows_conc",
-        col.fill = "cti_avg",
-        col.size = "effect",
-        col.analysis = "assay",
-        n.cols = cti_plot_dims()[[1]],
-        n.rows = cti_plot_dims()[[2]],
-        scales = "free",
-        x.decimal = 2,
-        x.mic.line = TRUE,
-        y.mic.line = TRUE,
-        col.mic = "bio_normal",
-        colour.palette = "BOB",
-        add.axis.lines = TRUE
+  observeEvent(cti_plot_data(), {
+    req(cti_plot_data())
+
+    output$cti_plot <- renderPlot(
+      if (input$vis_tab_radio_input == "Tile") {
+        cti.tile.plot(
+          data = cti_plot_data(),
+          x.drug = "cols_conc",
+          y.drug = "rows_conc",
+          col.fill = "cti_avg",
+          col.analysis = "assay",
+          n.cols = cti_plot_dims()[[1]],
+          n.rows = cti_plot_dims()[[2]],
+          scales = "free",
+          x.decimal = 2,
+          x.mic.line = TRUE,
+          y.mic.line = TRUE,
+          col.mic = "bio_normal",
+          colour.palette = "BOB",
+          add.axis.lines = TRUE
+        )
+      } else if (input$vis_tab_radio_input == "Line") {
+        cti.line.plot(
+          data = cti_plot_data(),
+          x.drug = "rows_conc",
+          col.data = "bio_normal_avg",
+          line.drug = "cols_conc",
+          plot.type = "replicates",
+          col.analysis = "assay",
+          n.cols = cti_plot_dims()[[1]],
+          n.rows = cti_plot_dims()[[2]],
+          scales = "free",
+          x.decimal = 2,
+          line.decimal = 2,
+          x.mic.line = TRUE,
+          add.axis.lines = TRUE
+        )
+      } else if (input$vis_tab_radio_input == "Dot") {
+        # TODO Since we're using "effect" we need to take an average...?
+        cti.dot.plot(
+          data = cti_plot_data(),
+          x.drug = "cols_conc",
+          y.drug = "rows_conc",
+          col.fill = "cti_avg",
+          col.size = "effect",
+          col.analysis = "assay",
+          n.cols = cti_plot_dims()[[1]],
+          n.rows = cti_plot_dims()[[2]],
+          scales = "free",
+          x.decimal = 2,
+          x.mic.line = TRUE,
+          y.mic.line = TRUE,
+          col.mic = "bio_normal",
+          colour.palette = "BOB",
+          add.axis.lines = TRUE
+        )
+      }
+    )
+  })
+
+  observeEvent(cti_plot_data(), {
+    req(cti_plot_data())
+
+    if (input$vis_tab_radio_input %in% c("Tile", "Line", "Dot")) {
+      output$vis_tab_plot_ui <- renderUI(
+        tagList(
+          plotOutput(
+            outputId = "cti_plot",
+            inline = FALSE,
+            height = 100 + (300 * cti_plot_dims()[[2]]),
+            width = ifelse(cti_plot_dims()[[1]] == 1, "60%", "100%")
+          ) %>% shinycssloaders::withSpinner()
+        )
       )
     }
-  )
-
-  output$vis_tab_plot_ui <- renderUI(
-    tagList(
-      plotOutput(
-        outputId = "cti_plot",
-        inline = FALSE,
-        height = 100 + (300 * cti_plot_dims()[[2]]),
-        width = ifelse(cti_plot_dims()[[1]] == 1, "60%", "100%")
-      ) %>% shinycssloaders::withSpinner()
-    )
-  )
+  })
 
 } # Shiny sever close
 
