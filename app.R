@@ -356,16 +356,19 @@ server <- function(input, output) {
     ) %>% cti_results()
   })
 
+
+  # |- Display results ----------------------------------------------------
+
   cti_results_display <- reactive({
     req(cti_results())
 
     cti_results() %>%
-      select(
-        any_of(c("assay", "replicate")),
-        starts_with("cols"),
-        starts_with("rows"),
-        starts_with("cti")
-      ) %>%
+      # select(
+      #   any_of(c("assay", "replicate")),
+      #   starts_with("cols"),
+      #   starts_with("rows"),
+      #   starts_with("cti")
+      # ) %>%
       mutate(across(where(is.numeric), ~signif(.x, digits = 4)))
   })
 
@@ -373,7 +376,7 @@ server <- function(input, output) {
     cti_results_display(),
     rownames = FALSE,
     class = "table-striped",
-    options = list(dom = "tip", pageLength = 15)
+    options = list(dom = "tip", scrollX = TRUE, pageLength = 15)
   )
 
   output$results_tab_table_ui <- renderUI({
@@ -445,6 +448,13 @@ server <- function(input, output) {
     enable(id = "vis_tab_submit_button")
   })
 
+  cti_plot_dims <- reactive({
+    n_assay <- length(unique(cti_results()$assay))
+    n_rows <- ceiling(n_assay / 2)
+    n_cols <- ifelse(n_assay == 1, 1, 2)
+    list(n_cols, n_rows)
+  })
+
   output$cti_plot <- renderPlot(
     if (input$vis_tab_radio_input == "Tile") {
       cti.tile.plot(
@@ -453,7 +463,42 @@ server <- function(input, output) {
         y.drug = "rows_conc",
         col.fill = "cti_avg",
         col.analysis = "assay",
-        n.cols = 2,
+        n.cols = cti_plot_dims()[[1]],
+        n.rows = cti_plot_dims()[[2]],
+        scales = "free",
+        x.decimal = 2,
+        x.mic.line = TRUE,
+        y.mic.line = TRUE,
+        col.mic = "bio_normal",
+        colour.palette = "BOB",
+        add.axis.lines = TRUE
+      )
+    } else if (input$vis_tab_radio_input == "Line") {
+      cti.line.plot(
+        data = cti_results(),
+        x.drug = "rows_conc",
+        col.data = "bio_normal_avg",
+        line.drug = "cols_conc",
+        plot.type = "replicates",
+        col.analysis = "assay",
+        n.cols = cti_plot_dims()[[1]],
+        n.rows = cti_plot_dims()[[2]],
+        scales = "free",
+        x.decimal = 2,
+        line.decimal = 2,
+        x.mic.line = TRUE,
+        add.axis.lines = TRUE
+      )
+    } else if (input$vis_tab_radio_input == "Dot") {
+      cti.dot.plot(
+        data = cti_results(),
+        x.drug = "cols_conc",
+        y.drug = "rows_conc",
+        col.fill = "cti_avg",
+        col.size = "effect",
+        col.analysis = "assay",
+        n.cols = cti_plot_dims()[[1]],
+        n.rows = cti_plot_dims()[[2]],
         scales = "free",
         x.decimal = 2,
         x.mic.line = TRUE,
@@ -465,16 +510,14 @@ server <- function(input, output) {
     }
   )
 
-  n_rows_plotted <- reactive(length(unique(cti_results()$assay)) / 2)
-
   observeEvent(input$vis_tab_submit_button, {
     output$vis_tab_plot_ui <- renderUI(
       tagList(
         plotOutput(
           outputId = "cti_plot",
           inline = FALSE,
-          height = 200 + (200 * n_rows_plotted()),
-          width = "98%"
+          height = 100 + (300 * cti_plot_dims()[[2]]),
+          width = ifelse(cti_plot_dims()[[1]] == 1, "60%", "100%")
         ) %>% shinycssloaders::withSpinner()
       )
     )

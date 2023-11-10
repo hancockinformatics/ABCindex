@@ -231,7 +231,7 @@ cti.analysis <- function(
     data.split <- split(x = data, f = data[col.analysis])
 
     results.cti.split <- lapply(
-      cli::cli_progress_along(data.split, "Calculating CTIs: "),
+      cli::cli_progress_along(data.split, "Calculating CTIs:"),
       function(i) {
 
         cti.calculations(
@@ -872,7 +872,7 @@ cti.line.plot <- function(
     mic.threshold = 0.5,
     colour.palette = "Spectral",
     col.analysis = NULL,
-    scales="fixed",
+    scales = "fixed",
     n.rows = NULL,
     n.cols = NULL,
     x.text = "Drug 1",
