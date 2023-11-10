@@ -57,3 +57,13 @@
 .caret {
   display: none;
 }
+
+/* Increase font size in large buttons */
+.btn-lg {
+  font-size: 22px;
+}
+
+/* Increase fonr size in navbar dropdown menu */
+.dropdown-menu {
+  font-size: 18px;
+}

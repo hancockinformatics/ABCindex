@@ -1,13 +1,12 @@
-# Start -------------------------------------------------------------------
+# Load packages -----------------------------------------------------------
 
 library(dplyr)
 library(ggplot2)
 library(shinyjs)
 library(shiny)
-message("\n===> START <===\n")
 
 
-# Shiny UI ----------------------------------------------------------------
+# Define UI ---------------------------------------------------------------
 
 ui <- fluidPage(
 
@@ -145,14 +144,18 @@ ui <- fluidPage(
         sidebarLayout(
           sidebarPanel = sidebarPanel(
             id = "results_sidebarpanel",
+
             h3("CTI results"),
             p("Information about interpreting the results."),
-            uiOutput("cti_results_button")
+
+            div(id = "results_tab_input_names_ui"),
+
+            uiOutput("cti_results_button"),
           ),
 
           mainPanel = mainPanel(
             id = "results_tab_mainpanel",
-            uiOutput("results_tab_table_ui")
+            div(id = "results_tab_placeholder_div")
           )
         ),
         div(
@@ -175,24 +178,22 @@ ui <- fluidPage(
             h3("Visualize CTI results"),
             p("Information about the different visualization available."),
 
-            br(),
-
             radioButtons(
               inputId = "vis_tab_radio_input",
               label = "Graph type",
-              choices = c("Tile", "Line", "Dot")
-            ),
-
-            hr(),
-
-            disabled(
-              actionButton(
-                inputId = "vis_tab_submit_button",
-                label = "Create visualization",
-                class = "btn btn-primary btn-tooltip",
-                title = "Once you've analyzed your data you can plot the results"
-              )
+              choices = c("Tile", "Line", "Dot"),
+              selected = NULL
             )
+
+            # hr(),
+            # disabled(
+            #   actionButton(
+            #     inputId = "vis_tab_submit_button",
+            #     label = "Create visualization",
+            #     class = "btn btn-primary btn-tooltip",
+            #     title = "Once you've analyzed your data you can plot the results"
+            #   )
+            # )
           ),
 
           mainPanel = mainPanel(
@@ -233,7 +234,7 @@ ui <- fluidPage(
 )
 
 
-# Shiny Server ------------------------------------------------------------
+# Define Server -----------------------------------------------------------
 
 server <- function(input, output) {
 
@@ -369,22 +370,46 @@ server <- function(input, output) {
       #   starts_with("rows"),
       #   starts_with("cti")
       # ) %>%
-      mutate(across(where(is.numeric), ~signif(.x, digits = 4)))
+      mutate(across(where(is.numeric), ~signif(.x, digits = 4))) %>%
+      split(x = ., f = .$assay) %>%
+      purrr::map(~select(.x, -assay))
+  })
+
+  observeEvent(cti_results_display(), {
+    req(cti_results_display())
+
+    insertUI(
+      selector = "#results_tab_input_names_ui",
+      where = "afterEnd",
+      ui = tagList(
+        hr(),
+        selectInput(
+          inputId = "results_tab_user_data_sheet_name",
+          label = "Select an uploaded sheet to see the results:",
+          choices = names(cti_results_display())
+        )
+      )
+    )
   })
 
   output$results_table_output <- DT::renderDataTable(
-    cti_results_display(),
+    cti_results_display()[[input$results_tab_user_data_sheet_name]],
     rownames = FALSE,
     class = "table-striped",
-    options = list(dom = "tip", scrollX = TRUE, pageLength = 15)
+    options = list(dom = "tip", pageLength = 15, scrollX = TRUE)
   )
 
-  output$results_tab_table_ui <- renderUI({
+  observeEvent(cti_results_display(), {
     req(cti_results_display())
 
-    tagList(
-      h1("Results table"),
-      DT::dataTableOutput("results_table_output")
+    insertUI(
+      selector = "#results_tab_placeholder_div",
+      where = "afterEnd",
+      ui = tagList(div(
+        id = "results_tab_table",
+        # br(),
+        DT::dataTableOutput("results_table_output")
+      ))
     )
   })
 
@@ -414,21 +439,20 @@ server <- function(input, output) {
   observeEvent(input$upload_tab_submit_button, {
     output$cti_results_button <- renderUI(
       tagList(
-        hr(),
-
-        actionButton(
-          inputId = "results_tab_vis_button",
-          label = "Visualize your results",
-          class = "btn btn-primary btn-tooltip"
-        ),
-
-        hr(),
-
-        downloadButton(
-          outputId = "cti_results_handler",
-          label = "Download your results",
-          class = "btn btn-success",
-          style = "width: 100%;"
+        div(
+          class = "form-group",
+          downloadButton(
+            outputId = "cti_results_handler",
+            label = "Download your results",
+            class = "btn btn-success"
+          ),
+          HTML("&nbsp;"),
+          actionButton(
+            inputId = "results_tab_vis_button",
+            label = "Visualize your results",
+            icon = icon("chart-bar"),
+            class = "btn btn-primary btn-tooltip"
+          )
         )
       )
     )
@@ -444,9 +468,9 @@ server <- function(input, output) {
     )
   })
 
-  observeEvent(cti_results(), {
-    enable(id = "vis_tab_submit_button")
-  })
+  # observeEvent(cti_results(), {
+  #   enable(id = "vis_tab_submit_button")
+  # })
 
   cti_plot_dims <- reactive({
     n_assay <- length(unique(cti_results()$assay))
@@ -510,20 +534,20 @@ server <- function(input, output) {
     }
   )
 
-  observeEvent(input$vis_tab_submit_button, {
-    output$vis_tab_plot_ui <- renderUI(
-      tagList(
-        plotOutput(
-          outputId = "cti_plot",
-          inline = FALSE,
-          height = 100 + (300 * cti_plot_dims()[[2]]),
-          width = ifelse(cti_plot_dims()[[1]] == 1, "60%", "100%")
-        ) %>% shinycssloaders::withSpinner()
-      )
+  output$vis_tab_plot_ui <- renderUI(
+    tagList(
+      plotOutput(
+        outputId = "cti_plot",
+        inline = FALSE,
+        height = 100 + (300 * cti_plot_dims()[[2]]),
+        width = ifelse(cti_plot_dims()[[1]] == 1, "60%", "100%")
+      ) %>% shinycssloaders::withSpinner()
     )
-  })
+  )
 
 } # Shiny sever close
 
-# Run the application
+
+# Run the application -----------------------------------------------------
+
 shinyApp(ui = ui, server = server)
