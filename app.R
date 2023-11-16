@@ -407,17 +407,20 @@ server <- function(input, output) {
   observeEvent(cti_results_display(), {
     req(cti_results_display())
 
+    removeUI(selector = "#analysis_tab_assay_selection")
+
     insertUI(
       selector = "#analysis_tab_input_names_ui",
       where = "afterEnd",
-      ui = tagList(
+      ui = tagList(div(
+        id = "analysis_tab_assay_selection",
         hr(),
         selectInput(
           inputId = "analysis_tab_user_data_sheet_name",
           label = "Select an uploaded sheet to see the results:",
           choices = names(cti_results_display())
         )
-      )
+      ))
     )
   })
 
