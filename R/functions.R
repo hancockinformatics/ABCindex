@@ -396,6 +396,7 @@ cti.calculations <- function(
       group_by(.data[[x.drug]], .data[[y.drug]]) %>%
       mutate(
         bio_normal_avg = mean(bio_normal),
+        effect_avg = mean(effect),
         cti_avg = mean(cti)
       ) %>%
       ungroup()
@@ -1151,7 +1152,7 @@ cti.dot.plot <- function(
     y.drug,
     col.fill,
     col.size,
-    size.range = c(3, 16),
+    size.range = c(3, 22),
     col.analysis = NULL,
     scales = "fixed",
     n.rows = NULL,

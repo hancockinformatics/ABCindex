@@ -527,7 +527,7 @@ server <- function(input, output) {
           x.mic.line = TRUE,
           y.mic.line = TRUE,
           col.mic = "bio_normal",
-          colour.palette = "BOB",
+          colour.palette = "RB",
           add.axis.lines = TRUE
         )
       } else if (input$vis_tab_radio_input == "Line") {
@@ -547,13 +547,12 @@ server <- function(input, output) {
           add.axis.lines = TRUE
         )
       } else if (input$vis_tab_radio_input == "Dot") {
-        # TODO Since we're using "effect" we need to take an average...?
         cti.dot.plot(
           data = cti_plot_data(),
           x.drug = "cols_conc",
           y.drug = "rows_conc",
           col.fill = "cti_avg",
-          col.size = "effect",
+          col.size = "effect_avg",
           col.analysis = "assay",
           n.cols = cti_plot_dims()[[1]],
           n.rows = cti_plot_dims()[[2]],
@@ -562,7 +561,7 @@ server <- function(input, output) {
           x.mic.line = TRUE,
           y.mic.line = TRUE,
           col.mic = "bio_normal",
-          colour.palette = "BOB",
+          colour.palette = "RB",
           add.axis.lines = TRUE
         )
       }
