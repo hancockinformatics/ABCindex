@@ -26,7 +26,7 @@ cti.reader <- function(file, sheet = "all") {
     all_sheets <- readxl::excel_sheets(file)
 
     all_data <- lapply(
-      cli::cli_progress_along(all_sheets, "Loading plate data:"),
+      cli::cli_progress_along(all_sheets, "Loading plate data"),
       function(i) {
         cti.reader.single(file, all_sheets[i])
       }
@@ -34,7 +34,7 @@ cti.reader <- function(file, sheet = "all") {
 
   } else {
     all_data <- lapply(
-      cli::cli_progress_along(sheet, "Loading plate data:"),
+      cli::cli_progress_along(sheet, "Loading plate data"),
       function(i) {
         cti.reader.single(file, sheet[i])
       }
@@ -159,6 +159,7 @@ cti.reader.single <- function(file, sheet) {
 #'  different analyses, e.g. Crystal Violet and TTC assays.
 #' @param delta Logical; Should calculation include simple difference of biofilm
 #'   eliminated? Defaults to FALSE.
+#' @param normalize Logical; Should the data be normalized? Defaults to TRUE.
 #' @param minflag.value Minimum value, below which effects will be flagged to
 #'   indicate lack of effect. Defaults to 0.5
 #' @param minflag.char Character which will be placed in cells to be flagged
@@ -204,6 +205,7 @@ cti.analysis <- function(
     col.data,
     col.analysis = NULL,
     col.reps = NULL,
+    normalize = TRUE,
     delta = FALSE,
     minflag.value = 0.5,
     minflag.char = "X",
@@ -221,6 +223,7 @@ cti.analysis <- function(
       y.drug = y.drug,
       col.data = col.data,
       col.reps = col.reps,
+      normalize = normalize,
       delta = delta,
       minflag.value = minflag.value,
       minflag.char = minflag.char
@@ -238,7 +241,7 @@ cti.analysis <- function(
     data.split <- split(x = data, f = data[col.analysis])
 
     results.cti.split <- lapply(
-      cli::cli_progress_along(data.split, "Calculating CTIs:"),
+      cli::cli_progress_along(data.split, "Calculating CTIs"),
       function(i) {
 
         cti.calculations(
@@ -247,6 +250,7 @@ cti.analysis <- function(
           y.drug = y.drug,
           col.data = col.data,
           col.reps = col.reps,
+          normalize = normalize,
           delta = delta,
           minflag.value = minflag.value,
           minflag.char = minflag.char
@@ -275,6 +279,7 @@ cti.analysis <- function(
 #' @param y.drug Character; Column name which contains concentrations of the
 #'   second drug
 #' @param col.data Character; Column name which contains the measured effect
+#' @param normalize Logical; Should the data be normalized? Defaults to TRUE.
 #' @param delta Logical; Should calculation include simple difference of biofilm
 #'   eliminated? Defaults to FALSE.
 #' @param minflag.value Minimum value, below which effects will be flagged to
@@ -300,12 +305,11 @@ cti.calculations <- function(
     x.drug,
     y.drug,
     col.data,
+    normalize = TRUE,
     delta = FALSE,
     minflag.value = 0.5,
     minflag.char = "X"
 ) {
-  # Sys.sleep(time = 30)
-
   # Make sure drug concentrations are factors
   data_clean <- data %>%
     mutate(
@@ -325,20 +329,37 @@ cti.calculations <- function(
         pull(.data[[col.data]]) %>%
         mean()
 
-      data_clean %>%
-        mutate(
-          bio_normal = ifelse(
-            .data[[col.data]] < 0,
-            yes = 0,
-            no = .data[[col.data]] / baseline
-          ),
-          effect = ifelse(
-            (1 - bio_normal) >= 0,
-            yes = (1 - bio_normal),
-            no = 0
-          ),
-          min = ifelse(effect < minflag.value, minflag.char, NA)
-        )
+      if (normalize) {
+        data_clean %>%
+          mutate(
+            bio_normal = ifelse(
+              .data[[col.data]] < 0,
+              yes = 0,
+              no = .data[[col.data]] / baseline
+            ),
+            effect = ifelse(
+              (1 - bio_normal) >= 0,
+              yes = (1 - bio_normal),
+              no = 0
+            ),
+            min = ifelse(effect < minflag.value, minflag.char, NA)
+          )
+      } else {
+        data_clean %>%
+          mutate(
+            bio_normal = ifelse(
+              .data[[col.data]] < 0,
+              yes = 0,
+              no = .data[[col.data]]
+            ),
+            effect = ifelse(
+              (baseline - bio_normal) >= 0,
+              yes = (baseline - bio_normal),
+              no = 0
+            ),
+            min = ifelse(effect < minflag.value, minflag.char, NA)
+          )
+      }
 
     } else {
       data_split <- split(x = data_clean, f = data_clean[col.reps])
@@ -350,12 +371,37 @@ cti.calculations <- function(
           pull(.data[[col.data]]) %>%
           mean()
 
-        data_effect <- x %>%
-          mutate(
-            bio_normal = .data[[col.data]] / baseline,
-            effect = ifelse((1 - bio_normal) >= 0, (1 - bio_normal), 0),
-            min = ifelse(effect < minflag.value, minflag.char, NA)
-          )
+        if (normalize) {
+          x %>%
+            mutate(
+              bio_normal = ifelse(
+                .data[[col.data]] < 0,
+                yes = 0,
+                no = .data[[col.data]] / baseline
+              ),
+              effect = ifelse(
+                (1 - bio_normal) >= 0,
+                yes = (1 - bio_normal),
+                no = 0
+              ),
+              min = ifelse(effect < minflag.value, minflag.char, NA)
+            )
+        } else {
+          x %>%
+            mutate(
+              bio_normal = ifelse(
+                .data[[col.data]] < 0,
+                yes = 0,
+                no = .data[[col.data]]
+              ),
+              effect = ifelse(
+                (baseline - bio_normal) >= 0,
+                yes = (baseline - bio_normal),
+                no = 0
+              ),
+              min = ifelse(effect < minflag.value, minflag.char, NA)
+            )
+        }
       }) %>% bind_rows()
     }
 

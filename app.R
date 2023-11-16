@@ -155,6 +155,12 @@ ui <- fluidPage(
             h3("CTI results"),
             p("Information about interpreting the results."),
 
+            checkboxInput(
+              inputId = "analysis_tab_check_normal",
+              label = "Normalize the data",
+              value = TRUE
+            ),
+
             disabled(
               actionButton(
                 inputId = "upload_tab_submit_button",
@@ -378,7 +384,8 @@ server <- function(input, output) {
       y.drug = "rows_conc",
       col.data = "bio",
       col.analysis = "assay",
-      col.reps = "replicate"
+      col.reps = "replicate",
+      normalize = input$analysis_tab_check_normal
     ) %>% cti_results()
   })
 
