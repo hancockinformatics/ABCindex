@@ -1,7 +1,7 @@
 # TODO
-# - Add normalization toggle for data processing
 # - Add jitter toggle to line plots
 # - Change colour schemes
+# - Implement function arguments as UI toggles/selectors/etc.
 
 
 # Load packages -----------------------------------------------------------
@@ -204,17 +204,13 @@ ui <- fluidPage(
               inputId = "vis_tab_radio_input",
               label = "Graph type",
               choices = c("Tile", "Line", "Dot")
-            )
+            ),
 
-            # hr(),
-            # disabled(
-            #   actionButton(
-            #     inputId = "vis_tab_submit_button",
-            #     label = "Create visualization",
-            #     class = "btn btn-primary btn-tooltip",
-            #     title = "Once you've analyzed your data you can plot the results"
-            #   )
-            # )
+            actionButton(
+              inputId = "draw",
+              label = "Create visualization",
+              class = "btn btn-primary"
+            )
           ),
 
           mainPanel = mainPanel(
@@ -408,7 +404,6 @@ server <- function(input, output) {
     req(cti_results_display())
 
     removeUI(selector = "#analysis_tab_assay_selection")
-
     insertUI(
       selector = "#analysis_tab_input_names_ui",
       where = "afterEnd",
@@ -419,7 +414,8 @@ server <- function(input, output) {
           inputId = "analysis_tab_user_data_sheet_name",
           label = "Select an uploaded sheet to see the results:",
           choices = names(cti_results_display())
-        )
+        ),
+        hr()
       ))
     )
   })
@@ -519,11 +515,11 @@ server <- function(input, output) {
     list(n_cols, n_rows)
   })
 
-  observeEvent(cti_plot_data(), {
+  observeEvent(input$draw, {
     req(cti_plot_data())
 
     output$cti_plot <- renderPlot(
-      if (input$vis_tab_radio_input == "Tile") {
+      if (isolate(input$vis_tab_radio_input) == "Tile") {
         cti.tile.plot(
           data = cti_plot_data(),
           x.drug = "cols_conc",
@@ -540,7 +536,7 @@ server <- function(input, output) {
           colour.palette = "RB",
           add.axis.lines = TRUE
         )
-      } else if (input$vis_tab_radio_input == "Line") {
+      } else if (isolate(input$vis_tab_radio_input) == "Line") {
         cti.line.plot(
           data = cti_plot_data(),
           x.drug = "rows_conc",
@@ -556,7 +552,7 @@ server <- function(input, output) {
           x.mic.line = TRUE,
           add.axis.lines = TRUE
         )
-      } else if (input$vis_tab_radio_input == "Dot") {
+      } else if (isolate(input$vis_tab_radio_input) == "Dot") {
         cti.dot.plot(
           data = cti_plot_data(),
           x.drug = "cols_conc",
@@ -578,21 +574,19 @@ server <- function(input, output) {
     )
   })
 
-  observeEvent(cti_plot_data(), {
+  observeEvent(input$draw, {
     req(cti_plot_data())
 
-    if (input$vis_tab_radio_input %in% c("Tile", "Line", "Dot")) {
-      output$vis_tab_plot_ui <- renderUI(
-        tagList(
-          plotOutput(
-            outputId = "cti_plot",
-            inline = FALSE,
-            height = 100 + (300 * cti_plot_dims()[[2]]),
-            width = ifelse(cti_plot_dims()[[1]] == 1, "60%", "100%")
-          ) %>% shinycssloaders::withSpinner()
-        )
+    output$vis_tab_plot_ui <- renderUI(
+      tagList(
+        plotOutput(
+          outputId = "cti_plot",
+          inline = FALSE,
+          height = 100 + (300 * cti_plot_dims()[[2]]),
+          width = ifelse(cti_plot_dims()[[1]] == 1, "60%", "100%")
+        ) %>% shinycssloaders::withSpinner()
       )
-    }
+    )
   })
 
 } # Shiny sever close

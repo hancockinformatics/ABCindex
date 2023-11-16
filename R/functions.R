@@ -859,6 +859,7 @@ cti.tile.plot <- function(
 
     theme_classic(base_size = 20) +
     theme(
+      text = element_text(family = "Helvetica"),
       axis.title = element_text(face = "bold"),
       axis.text = element_text(colour = "black", face = "bold"),
       panel.spacing = unit(5, "mm"),
@@ -1130,6 +1131,7 @@ cti.line.plot <- function(
 
     theme_classic(base_size = 20) +
     theme(
+      text = element_text(family = "Helvetica"),
       axis.title = element_text(face = "bold"),
       axis.text = element_text(colour = "black", face = "bold"),
       panel.spacing = unit(10, "mm"),
@@ -1500,6 +1502,7 @@ cti.dot.plot <- function(
 
     theme_classic(base_size = 20) +
     theme(
+      text = element_text(family = "Helvetica"),
       axis.title = element_text(face = "bold"),
       axis.text = element_text(colour = "black", face = "bold"),
       panel.spacing = unit(5, "mm"),
