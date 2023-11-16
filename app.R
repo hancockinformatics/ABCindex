@@ -86,7 +86,7 @@ ui <- fluidPage(
 
       tabPanel(
         value = "upload_tab",
-        title = "Upload data",
+        title = "Upload",
 
         sidebarLayout(
           sidebarPanel = sidebarPanel(
@@ -145,8 +145,8 @@ ui <- fluidPage(
       # Results ---------------------------------------------------------------
 
       tabPanel(
-        value = "results_tab",
-        title = "Results",
+        value = "analysis_tab",
+        title = "Analyze",
 
         sidebarLayout(
           sidebarPanel = sidebarPanel(
@@ -164,14 +164,14 @@ ui <- fluidPage(
               )
             ),
 
-            div(id = "results_tab_input_names_ui"),
+            div(id = "analysis_tab_input_names_ui"),
 
             uiOutput("cti_results_button"),
           ),
 
           mainPanel = mainPanel(
-            id = "results_tab_mainpanel",
-            div(id = "results_tab_placeholder_div")
+            id = "analysis_tab_mainpanel",
+            div(id = "analysis_tab_placeholder_div")
           )
         ),
         div(
@@ -358,7 +358,7 @@ server <- function(input, output) {
 
     updateNavbarPage(
       inputId  = "navbar",
-      selected = "results_tab"
+      selected = "analysis_tab"
     )
 
     enable(id = "upload_tab_submit_button")
@@ -401,12 +401,12 @@ server <- function(input, output) {
     req(cti_results_display())
 
     insertUI(
-      selector = "#results_tab_input_names_ui",
+      selector = "#analysis_tab_input_names_ui",
       where = "afterEnd",
       ui = tagList(
         hr(),
         selectInput(
-          inputId = "results_tab_user_data_sheet_name",
+          inputId = "analysis_tab_user_data_sheet_name",
           label = "Select an uploaded sheet to see the results:",
           choices = names(cti_results_display())
         )
@@ -415,7 +415,7 @@ server <- function(input, output) {
   })
 
   output$results_table_output <- DT::renderDataTable(
-    cti_results_display()[[input$results_tab_user_data_sheet_name]],
+    cti_results_display()[[input$analysis_tab_user_data_sheet_name]],
     rownames = FALSE,
     class = "table-striped",
     options = list(dom = "tip", pageLength = 15, scrollX = TRUE)
@@ -425,10 +425,10 @@ server <- function(input, output) {
     req(cti_results_display())
 
     insertUI(
-      selector = "#results_tab_placeholder_div",
+      selector = "#analysis_tab_placeholder_div",
       where = "afterEnd",
       ui = tagList(div(
-        id = "results_tab_table",
+        id = "analysis_tab_table",
         # br(),
         DT::dataTableOutput("results_table_output")
       ))
@@ -470,7 +470,7 @@ server <- function(input, output) {
           ),
           HTML("&nbsp;"),
           actionButton(
-            inputId = "results_tab_vis_button",
+            inputId = "analysis_tab_vis_button",
             label = "Visualize your results",
             icon = icon("chart-bar"),
             class = "btn btn-primary btn-tooltip"
@@ -491,7 +491,7 @@ server <- function(input, output) {
   # - line.drug, line.include, line.decimal, plot.type,
   #   colour.palette (RColorBrewer),  line.text, y.text
 
-  observeEvent(input$results_tab_vis_button, {
+  observeEvent(input$analysis_tab_vis_button, {
     updateNavbarPage(
       inputId  = "navbar",
       selected = "vis_tab"
