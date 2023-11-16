@@ -1,3 +1,9 @@
+# TODO
+# - Add normalization toggle for data processing
+# - Add jitter toggle to line plots
+# - Change colour schemes
+
+
 # Load packages -----------------------------------------------------------
 
 library(dplyr)
@@ -115,9 +121,10 @@ ui <- fluidPage(
 
             disabled(
               actionButton(
-                inputId = "upload_tab_submit_button",
-                label = "Submit plate data for CTI calculations",
+                inputId = "upload_tab_proceed_button",
+                label = "Proceed to CTI calculations",
                 class = "btn btn-primary btn-tooltip",
+                icon = icon("arrow-right"),
                 title = "Upload your plate data, then click here to analyze"
               )
             )
@@ -147,6 +154,15 @@ ui <- fluidPage(
 
             h3("CTI results"),
             p("Information about interpreting the results."),
+
+            disabled(
+              actionButton(
+                inputId = "upload_tab_submit_button",
+                label = "Perform CTI calculations",
+                icon = icon("calculator"),
+                class = "btn btn-primary btn-tooltip"
+              )
+            ),
 
             div(id = "results_tab_input_names_ui"),
 
@@ -278,7 +294,7 @@ server <- function(input, output) {
 
   upload_tab_data_display <- reactive({
     req(upload_tab_data_1())
-    enable("upload_tab_submit_button")
+    enable("upload_tab_proceed_button")
 
     purrr::map(
       upload_tab_data_1(),
@@ -327,7 +343,6 @@ server <- function(input, output) {
 
   # Results ---------------------------------------------------------------
 
-  cti_results <- reactiveVal()
   upload_tab_data_2 <- reactiveVal()
 
   observeEvent(upload_tab_data_1(), {
@@ -338,13 +353,24 @@ server <- function(input, output) {
       upload_tab_data_2()
   })
 
-  observeEvent(input$upload_tab_submit_button, {
+  observeEvent(input$upload_tab_proceed_button, {
     req(upload_tab_data_2())
 
     updateNavbarPage(
       inputId  = "navbar",
       selected = "results_tab"
     )
+
+    enable(id = "upload_tab_submit_button")
+  })
+
+
+  # |- Display results ----------------------------------------------------
+
+  cti_results <- reactiveVal()
+
+  observeEvent(input$upload_tab_submit_button, {
+    req(upload_tab_data_2())
 
     cti.analysis(
       data = upload_tab_data_2(),
@@ -355,9 +381,6 @@ server <- function(input, output) {
       col.reps = "replicate"
     ) %>% cti_results()
   })
-
-
-  # |- Display results ----------------------------------------------------
 
   cti_results_display <- reactive({
     req(cti_results())
