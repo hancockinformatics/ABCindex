@@ -142,11 +142,11 @@ ui <- fluidPage(
       ),
 
 
-      # Results ---------------------------------------------------------------
+      # Analysis ----------------------------------------------------------
 
       tabPanel(
         value = "analysis_tab",
-        title = "Analyze",
+        title = "Analysis",
 
         sidebarLayout(
           sidebarPanel = sidebarPanel(
@@ -341,7 +341,7 @@ server <- function(input, output) {
   })
 
 
-  # Results ---------------------------------------------------------------
+  # Analysis --------------------------------------------------------------
 
   upload_tab_data_2 <- reactiveVal()
 
