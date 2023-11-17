@@ -529,7 +529,7 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
-          "X axis compound"
+          "X compound"
         ),
         div(
           class = "col-lg-9",
@@ -540,7 +540,12 @@ server <- function(input, output) {
               x = colnames(cti_plot_data()),
               pattern = "conc",
               value = TRUE
-            )
+            ),
+            selected = grep(
+              x = colnames(cti_plot_data()),
+              pattern = "conc",
+              value = TRUE
+            )[1]
           )
         )
       ),
@@ -556,7 +561,7 @@ server <- function(input, output) {
           textInput(
             inputId = "plot_input_x_label",
             label = NULL,
-            value = NULL
+            value = "Drug 1"
           )
         )
       ),
@@ -594,7 +599,7 @@ server <- function(input, output) {
           numericInput(
             inputId = "plot_input_x_decimal",
             label = NULL,
-            value = 1,
+            value = 2,
             min = 1,
             max = 4,
             step = 1
@@ -653,7 +658,7 @@ server <- function(input, output) {
           selectInput(
             inputId = "plot_input_colour_palette",
             label = NULL,
-            choices = c()
+            choices = names(preset.palettes)
           )
         )
       ),
@@ -662,7 +667,7 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
-          "Y axis compound"
+          "Y compound"
         ),
         div(
           class = "col-lg-9",
@@ -673,7 +678,12 @@ server <- function(input, output) {
               x = colnames(cti_plot_data()),
               pattern = "conc",
               value = TRUE
-            )
+            ),
+            selected = grep(
+              x = colnames(cti_plot_data()),
+              pattern = "conc",
+              value = TRUE
+            )[2]
           )
         )
       ),
@@ -689,7 +699,7 @@ server <- function(input, output) {
           textInput(
             inputId = "plot_input_y_label",
             label = NULL,
-            value = NULL
+            value = "Drug 2"
           )
         )
       ),
@@ -705,7 +715,7 @@ server <- function(input, output) {
           numericInput(
             inputId = "plot_input_y_decimal",
             label = NULL,
-            value = 1,
+            value = 2,
             min = 1,
             max = 4,
             step = 1
@@ -768,7 +778,7 @@ server <- function(input, output) {
             choices = c(
               "Replicates" = "replicate",
               "Mean" = "mean",
-              "Mean+-SD" = "mean_sd"
+              "Mean/SD" = "mean_sd"
             )
           )
         )
@@ -890,18 +900,20 @@ server <- function(input, output) {
       if (isolate(input$vis_tab_radio_input) == "Tile") {
         cti.tile.plot(
           data = cti_plot_data(),
-          x.drug = "cols_conc",
-          y.drug = "rows_conc",
+          x.drug = isolate(input$plot_input_x),
+          y.drug = isolate(input$plot_input_y),
           col.fill = "cti_avg",
           col.analysis = "assay",
           n.cols = cti_plot_dims()[[1]],
           n.rows = cti_plot_dims()[[2]],
-          scales = "free",
-          x.decimal = 2,
-          x.mic.line = TRUE,
-          y.mic.line = TRUE,
+          scales = isolate(input$plot_input_scales),
+          x.decimal = isolate(input$plot_input_x_decimal),
+          x.text = isolate(input$plot_input_x_label),
+          y.text = isolate(input$plot_input_y_label),
+          x.mic.line = isolate(input$plot_input_x_mic_line),
+          y.mic.line = isolate(input$plot_input_y_mic_line),
           col.mic = "bio_normal",
-          colour.palette = "RB",
+          colour.palette = isolate(input$plot_input_colour_palette),
           add.axis.lines = TRUE
         )
       } else if (isolate(input$vis_tab_radio_input) == "Line") {
