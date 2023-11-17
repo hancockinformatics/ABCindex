@@ -763,7 +763,7 @@ server <- function(input, output) {
             inputId = "plot_input_line_type",
             label = NULL,
             choices = c(
-              "Replicates" = "replicate",
+              "Replicates" = "replicates",
               "Mean" = "mean",
               "Mean/SD" = "mean_sd"
             )
@@ -803,7 +803,12 @@ server <- function(input, output) {
               x = colnames(cti_plot_data()),
               pattern = "conc",
               value = TRUE
-            )
+            ),
+            selected = grep(
+              x = colnames(cti_plot_data()),
+              pattern = "conc",
+              value = TRUE
+            )[2]
           )
         )
       ),
@@ -819,6 +824,7 @@ server <- function(input, output) {
           selectInput(
             inputId = "plot_input_lines_include",
             label = NULL,
+            multiple = TRUE,
             choices = c()
           )
         )
@@ -854,7 +860,7 @@ server <- function(input, output) {
           textInput(
             inputId = "plot_input_line_label",
             label = NULL,
-            value = NULL
+            value = "Drug 2"
           )
         )
       ),
@@ -870,7 +876,7 @@ server <- function(input, output) {
           textInput(
             inputId = "plot_input_y_label2",
             label = NULL,
-            value = NULL
+            value = "Measurement"
           )
         )
       )
@@ -930,17 +936,23 @@ server <- function(input, output) {
       } else if (isolate(input$vis_tab_radio_input) == "Line") {
         cti.line.plot(
           data = cti_plot_data(),
-          x.drug = "rows_conc",
-          col.data = "bio_normal_avg",
-          line.drug = "cols_conc",
-          plot.type = "replicates",
+          plot.type = isolate(input$plot_input_line_type),
+          x.drug = isolate(input$plot_input_x),
+          col.data = "bio_normal",
+          line.drug = isolate(input$plot_input_line),
+          # line.include = isolate(input$plot_input_lines_include),
+          colour.palette = isolate(input$plot_input_line_colours),
           col.analysis = "assay",
           n.cols = cti_plot_dims()[[1]],
           n.rows = cti_plot_dims()[[2]],
-          scales = "free",
-          x.decimal = 2,
-          line.decimal = 2,
-          x.mic.line = TRUE,
+          scales = isolate(input$plot_input_scales),
+          x.decimal = isolate(input$plot_input_x_decimal),
+          line.decimal = isolate(input$plot_input_line_decimal),
+          x.mic.line = isolate(input$plot_input_x_mic_line),
+          mic.threshold = isolate(input$plot_input_mic_threshold),
+          x.text = isolate(input$plot_input_x_label),
+          y.text = isolate(input$plot_input_y_label2),
+          line.text = isolate(input$plot_input_line_label),
           add.axis.lines = TRUE
         )
       }
