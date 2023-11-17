@@ -80,14 +80,6 @@ ui <- fluidPage(
             ),
             class = "btn btn-primary btn-lg"
           )
-        ),
-
-        div(
-          class = "footer",
-          p(
-            style = "margin-top: 10.5px; margin-bottom: 10.5px",
-            "Here's a footer"
-          )
         )
       ),
 
@@ -143,14 +135,6 @@ ui <- fluidPage(
           mainPanel = mainPanel(
             div(id = "upload_tab_placeholder_div")
           )
-        ),
-
-        div(
-          class = "footer",
-          p(
-            style = "margin-top: 10.5px; margin-bottom: 10.5px",
-            "Here's a footer"
-          )
         )
       ),
 
@@ -192,14 +176,6 @@ ui <- fluidPage(
             id = "analysis_tab_mainpanel",
             div(id = "analysis_tab_placeholder_div")
           )
-        ),
-
-        div(
-          class = "footer",
-          p(
-            style = "margin-top: 10.5px; margin-bottom: 10.5px",
-            "Here's a footer"
-          )
         )
       ),
 
@@ -218,31 +194,27 @@ ui <- fluidPage(
 
             radioButtons(
               inputId = "vis_tab_radio_input",
-              label = "Graph type",
-              choices = c("Tile", "Line", "Dot")
+              label = "Plot type",
+              choices = c("Tile", "Dot", "Line")
             ),
 
-            uiOutput("plot_inputs"),
-
-            hr(),
+            br(),
             actionButton(
               inputId = "draw",
               label = "Create visualization",
               class = "btn btn-primary"
-            )
+            ),
+
+            hr(),
+
+            uiOutput("plot_inputs_universal", fill = TRUE),
+            uiOutput("plot_inputs_tile_dot", fill = TRUE),
+            uiOutput("plot_inputs_line", fill = TRUE)
           ),
 
           mainPanel = mainPanel(
             id = "vis_tab_mainpanel",
             uiOutput("vis_tab_plot_ui")
-          )
-        ),
-
-        div(
-          class = "footer",
-          p(
-            style = "margin-top: 10.5px; margin-bottom: 10.5px",
-            "Here's a footer"
           )
         )
       ),
@@ -259,14 +231,6 @@ ui <- fluidPage(
           HTML("<h1 style='margin-top: 15px;'>About</h1>"),
           p("Here is some About text."),
           p("Blah blah blah R blah blah Shiny blah blah blah Hancock Lab.")
-        ),
-
-        div(
-          class = "footer",
-          p(
-            style = "margin-top: 10.5px; margin-bottom: 10.5px",
-            "Here's a footer"
-          )
         )
       )
     )
@@ -512,14 +476,6 @@ server <- function(input, output) {
 
   # Visualize -------------------------------------------------------------
 
-  # Universal:
-  # - x.drug, x.text, scales, x.decimal, x.mic.line, mic.threshold
-  # Tile/Dot plot:
-  # - y.drug, y.text, y.decimal, y.mic.line, colour.palette
-  # Line plot:
-  # - line.drug, line.include, line.decimal, plot.type,
-  #   colour.palette (RColorBrewer),  line.text, y.text
-
   observeEvent(input$analysis_tab_vis_button, {
     updateNavbarPage(
       inputId  = "navbar",
@@ -541,7 +497,18 @@ server <- function(input, output) {
 
   # |- Set up inputs ------------------------------------------------------
 
-  output$plot_inputs <- renderUI({
+  # Universal:
+  # - x.drug, x.text, scales, x.decimal, x.mic.line, mic.threshold
+  # Tile/Dot plot:
+  # - y.drug, y.text, y.decimal, y.mic.line, colour.palette
+  # Line plot:
+  # - line.drug, line.include, line.decimal, plot.type,
+  #   colour.palette (RColorBrewer),  line.text, y.text
+
+
+  # | - - Universal -------------------------------------------------------
+
+  output$plot_inputs_universal <- renderUI({
     list(
       ## Template ##
       # div(
@@ -556,7 +523,7 @@ server <- function(input, output) {
       #   )
       # )
 
-      hr(),
+      h4("All plot types:"),
 
       div(
         class = "form-group",
@@ -645,21 +612,276 @@ server <- function(input, output) {
           class = "col-lg-2",
           checkboxInput(
             inputId = "plot_input_x_mic_line",
-            label = "Include?",
+            label = HTML("<b>Include?</b>"),
             value = TRUE
           )
         ),
         div(
-          class = "col-lg-7",
-          numericInput(
-            inputId = "plot_input_x_mic_threshold",
-            label = NULL,
-            value = 0.5
+          class = "form-group",
+          tags$label(
+            class = "col-lg-2 control-label",
+            "Threshold:"
+          ),
+          div(
+            class = "col-lg-5",
+            numericInput(
+              inputId = "plot_input_x_mic_threshold",
+              label = NULL,
+              value = 0.5
+            )
           )
         )
       )
     )
   })
+
+
+  # | - - Tile/Dot --------------------------------------------------------
+
+  output$plot_inputs_tile_dot <- renderUI({
+    list(
+      h4("Tile & Dot plots:"),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          "Colours"
+        ),
+        div(
+          class = "col-lg-9",
+          selectInput(
+            inputId = "plot_input_colour_palette",
+            label = NULL,
+            choices = c()
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          "Y axis compound"
+        ),
+        div(
+          class = "col-lg-9",
+          selectInput(
+            inputId = "plot_input_y",
+            label = NULL,
+            choices = grep(
+              x = colnames(cti_plot_data()),
+              pattern = "conc",
+              value = TRUE
+            )
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          "Y axis label"
+        ),
+        div(
+          class = "col-lg-9",
+          textInput(
+            inputId = "plot_input_y_label",
+            label = NULL,
+            value = NULL
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          "Y axis digits"
+        ),
+        div(
+          class = "col-lg-9",
+          numericInput(
+            inputId = "plot_input_y_decimal",
+            label = NULL,
+            value = 1,
+            min = 1,
+            max = 4,
+            step = 1
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          "Y MIC"
+        ),
+        div(
+          class = "col-lg-2",
+          checkboxInput(
+            inputId = "plot_input_y_mic_line",
+            label = HTML("<b>Include?</b>"),
+            value = TRUE
+          )
+        ),
+        div(
+          class = "form-group",
+          tags$label(
+            class = "col-lg-2 control-label",
+            "Threshold:"
+          ),
+          div(
+            class = "col-lg-5",
+            numericInput(
+              inputId = "plot_input_y_mic_threshold",
+              label = NULL,
+              value = 0.5
+            )
+          )
+        )
+      )
+    )
+  })
+
+
+  # | - - Line ------------------------------------------------------------
+
+  output$plot_inputs_line <- renderUI({
+    list(
+      h4("Line plots:"),
+      # - line.drug, line.include, line.decimal, plot.type,
+      #   colour.palette (RColorBrewer), line.text, y.text
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          "Line type"
+        ),
+        div(
+          class = "col-lg-9",
+          radioButtons(
+            inputId = "plot_input_line_type",
+            label = NULL,
+            choices = c(
+              "Replicates" = "replicate",
+              "Mean" = "mean",
+              "Mean+-SD" = "mean_sd"
+            )
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          "Colours"
+        ),
+        div(
+          class = "col-lg-9",
+          selectInput(
+            inputId = "plot_input_line_colours",
+            label = NULL,
+            choices = rownames(RColorBrewer::brewer.pal.info),
+            selected = "Spectral"
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          "Lines"
+        ),
+        div(
+          class = "col-lg-9",
+          selectInput(
+            inputId = "plot_input_line",
+            label = NULL,
+            choices = grep(
+              x = colnames(cti_plot_data()),
+              pattern = "conc",
+              value = TRUE
+            )
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          "Included conc."
+        ),
+        div(
+          class = "col-lg-9",
+          selectInput(
+            inputId = "plot_input_lines_include",
+            label = NULL,
+            choices = c()
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          "Line digits"
+        ),
+        div(
+          class = "col-lg-9",
+          numericInput(
+            inputId = "plot_input_line_decimal",
+            label = NULL,
+            value = 1,
+            min = 1,
+            max = 4,
+            step = 1
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          "Line label"
+        ),
+        div(
+          class = "col-lg-9",
+          textInput(
+            inputId = "plot_input_line_label",
+            label = NULL,
+            value = NULL
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          "Y axis label"
+        ),
+        div(
+          class = "col-lg-9",
+          textInput(
+            inputId = "plot_input_y_label2",
+            label = NULL,
+            value = NULL
+          )
+        )
+      )
+    )
+  })
+
+
+  # |- Draw the plot ------------------------------------------------------
 
   observeEvent(input$draw, {
     req(cti_plot_data())
@@ -734,7 +956,6 @@ server <- function(input, output) {
       )
     )
   })
-
 } # Shiny sever close
 
 

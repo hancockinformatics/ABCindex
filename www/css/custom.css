@@ -13,6 +13,11 @@
   display: none;
 }
 
+/* Remove top margin for checkboxes */
+.checkbox {
+  margin-top: 0;
+}
+
 /* Remove some of the padding from containers */
 .container-fluid {
   padding-left: 0;
