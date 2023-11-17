@@ -201,7 +201,7 @@ ui <- fluidPage(
             br(),
             actionButton(
               inputId = "draw",
-              label = "Create visualization",
+              label = "Create or update the plot",
               class = "btn btn-primary"
             ),
 
@@ -611,29 +611,30 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
+          "MIC cutoff:"
+        ),
+        div(
+          class = "col-lg-9",
+          numericInput(
+            inputId = "plot_input_mic_threshold",
+            label = NULL,
+            value = 0.5
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
           "X MIC"
         ),
         div(
-          class = "col-lg-2",
+          class = "col-lg-9",
           checkboxInput(
             inputId = "plot_input_x_mic_line",
-            label = HTML("<b>Include?</b>"),
+            label = "Include?",
             value = TRUE
-          )
-        ),
-        div(
-          class = "form-group",
-          tags$label(
-            class = "col-lg-2 control-label",
-            "Threshold:"
-          ),
-          div(
-            class = "col-lg-5",
-            numericInput(
-              inputId = "plot_input_x_mic_threshold",
-              label = NULL,
-              value = 0.5
-            )
           )
         )
       )
@@ -658,7 +659,8 @@ server <- function(input, output) {
           selectInput(
             inputId = "plot_input_colour_palette",
             label = NULL,
-            choices = names(preset.palettes)
+            choices = names(preset.palettes),
+            selected = "RB"
           )
         )
       ),
@@ -733,23 +735,8 @@ server <- function(input, output) {
           class = "col-lg-2",
           checkboxInput(
             inputId = "plot_input_y_mic_line",
-            label = HTML("<b>Include?</b>"),
+            label = "Include?",
             value = TRUE
-          )
-        ),
-        div(
-          class = "form-group",
-          tags$label(
-            class = "col-lg-2 control-label",
-            "Threshold:"
-          ),
-          div(
-            class = "col-lg-5",
-            numericInput(
-              inputId = "plot_input_y_mic_threshold",
-              label = NULL,
-              value = 0.5
-            )
           )
         )
       )
@@ -908,10 +895,34 @@ server <- function(input, output) {
           n.rows = cti_plot_dims()[[2]],
           scales = isolate(input$plot_input_scales),
           x.decimal = isolate(input$plot_input_x_decimal),
+          y.decimal = isolate(input$plot_input_y_decimal),
           x.text = isolate(input$plot_input_x_label),
           y.text = isolate(input$plot_input_y_label),
           x.mic.line = isolate(input$plot_input_x_mic_line),
           y.mic.line = isolate(input$plot_input_y_mic_line),
+          mic.threshold = isolate(input$plot_input_mic_threshold),
+          col.mic = "bio_normal",
+          colour.palette = isolate(input$plot_input_colour_palette),
+          add.axis.lines = TRUE
+        )
+      } else if (isolate(input$vis_tab_radio_input) == "Dot") {
+        cti.dot.plot(
+          data = cti_plot_data(),
+          x.drug = isolate(input$plot_input_x),
+          y.drug = isolate(input$plot_input_y),
+          col.fill = "cti_avg",
+          col.size = "effect_avg",
+          col.analysis = "assay",
+          n.cols = cti_plot_dims()[[1]],
+          n.rows = cti_plot_dims()[[2]],
+          scales = isolate(input$plot_input_scales),
+          x.decimal = isolate(input$plot_input_x_decimal),
+          y.decimal = isolate(input$plot_input_y_decimal),
+          x.text = isolate(input$plot_input_x_label),
+          y.text = isolate(input$plot_input_y_label),
+          x.mic.line = isolate(input$plot_input_x_mic_line),
+          y.mic.line = isolate(input$plot_input_y_mic_line),
+          mic.threshold = isolate(input$plot_input_mic_threshold),
           col.mic = "bio_normal",
           colour.palette = isolate(input$plot_input_colour_palette),
           add.axis.lines = TRUE
@@ -930,24 +941,6 @@ server <- function(input, output) {
           x.decimal = 2,
           line.decimal = 2,
           x.mic.line = TRUE,
-          add.axis.lines = TRUE
-        )
-      } else if (isolate(input$vis_tab_radio_input) == "Dot") {
-        cti.dot.plot(
-          data = cti_plot_data(),
-          x.drug = "cols_conc",
-          y.drug = "rows_conc",
-          col.fill = "cti_avg",
-          col.size = "effect_avg",
-          col.analysis = "assay",
-          n.cols = cti_plot_dims()[[1]],
-          n.rows = cti_plot_dims()[[2]],
-          scales = "free",
-          x.decimal = 2,
-          x.mic.line = TRUE,
-          y.mic.line = TRUE,
-          col.mic = "bio_normal",
-          colour.palette = "RB",
           add.axis.lines = TRUE
         )
       }
