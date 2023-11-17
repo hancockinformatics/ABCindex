@@ -75,9 +75,11 @@ ui <- fluidPage(
         ),
 
         div(
-          class = "panel-footer",
-          style = "text-align: center; position: fixed; width: 100%; bottom: 0;",
-          p("Some text will go here.")
+          class = "footer",
+          p(
+            style = "margin-top: 10.5px; margin-bottom: 10.5px",
+            "Here's a footer"
+          )
         )
       ),
 
@@ -134,10 +136,13 @@ ui <- fluidPage(
             div(id = "upload_tab_placeholder_div")
           )
         ),
+
         div(
-          class = "panel-footer",
-          style = "text-align: center; position: fixed; width: 100%; bottom: 0;",
-          p("Some text will go here.")
+          class = "footer",
+          p(
+            style = "margin-top: 10.5px; margin-bottom: 10.5px",
+            "Here's a footer"
+          )
         )
       ),
 
@@ -180,10 +185,13 @@ ui <- fluidPage(
             div(id = "analysis_tab_placeholder_div")
           )
         ),
+
         div(
-          class = "panel-footer",
-          style = "text-align: center; position: fixed; width: 100%; bottom: 0;",
-          p("Some text will go here.")
+          class = "footer",
+          p(
+            style = "margin-top: 10.5px; margin-bottom: 10.5px",
+            "Here's a footer"
+          )
         )
       ),
 
@@ -206,6 +214,9 @@ ui <- fluidPage(
               choices = c("Tile", "Line", "Dot")
             ),
 
+            uiOutput("plot_inputs"),
+
+            hr(),
             actionButton(
               inputId = "draw",
               label = "Create visualization",
@@ -220,9 +231,11 @@ ui <- fluidPage(
         ),
 
         div(
-          class = "panel-footer",
-          style = "text-align: center; position: fixed; width: 100%; bottom: 0;",
-          p("Some text will go here.")
+          class = "footer",
+          p(
+            style = "margin-top: 10.5px; margin-bottom: 10.5px",
+            "Here's a footer"
+          )
         )
       ),
 
@@ -241,9 +254,11 @@ ui <- fluidPage(
         ),
 
         div(
-          class = "panel-footer",
-          style = "text-align: center; position: fixed; width: 100%; bottom: 0;",
-          p("Some text will go here.")
+          class = "footer",
+          p(
+            style = "margin-top: 10.5px; margin-bottom: 10.5px",
+            "Here's a footer"
+          )
         )
       )
     )
@@ -513,6 +528,66 @@ server <- function(input, output) {
     n_rows <- ceiling(n_assay / 2)
     n_cols <- ifelse(n_assay == 1, 1, 2)
     list(n_cols, n_rows)
+  })
+
+
+  # |- Set up inputs ------------------------------------------------------
+
+  output$plot_inputs <- renderUI({
+    list(
+      selectInput(
+        inputId = "plot_input_x",
+        label = "X axis compound",
+        choices = grep(
+          x = colnames(cti_plot_data()),
+          pattern = "conc",
+          value = TRUE
+        ),
+        selected = "cols_conc"
+      ),
+
+      textInput(
+        inputId = "plot_input_x_label",
+        label = "X axis label",
+        value = NULL,
+        placeholder = "X axis label"
+      ),
+
+      selectInput(
+        inputId = "plot_input_scales",
+        label = "Scales",
+        choices = c(
+          "Free" = "free",
+          "Fixed" = "fixed",
+          "Free X" = "free_x",
+          "Free Y" = "free_y"
+        ),
+        selected = "free"
+      ),
+
+      numericInput(
+        inputId = "plot_input_x_decimal",
+        label = "X axis significant digits",
+        value = 1,
+        min = 1,
+        max = 4,
+        step = 1
+      ),
+
+      h4("X MIC:"),
+
+      checkboxInput(
+        inputId = "plot_input_x_mic_line",
+        label = "Include X MIC line",
+        value = TRUE
+      ),
+
+      numericInput(
+        inputId = "plot_input_x_mic_threshold",
+        label = "Threshold:",
+        value = 0.5
+      )
+    )
   })
 
   observeEvent(input$draw, {
