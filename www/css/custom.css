@@ -90,5 +90,5 @@
 /* Make the default notifications bigger */
 .shiny-notification {
   font-size: 20px;
-  margin-bottom: 60px;
+  /*margin-bottom: 60px;*/
 }
