@@ -20,7 +20,15 @@ ui <- fluidPage(
   theme = "css/cosmo_bootstrap.css",
   useShinyjs(),
   tags$head(
-    tags$link(rel = "stylesheet", type = "text/css", href = "css/custom.css")
+    tags$link(rel = "stylesheet", type = "text/css", href = "css/custom.css"),
+
+    tags$style(
+      type = "text/css",
+      paste0(
+        "#inline label{ display: table-cell; text-align: center; ",
+        "vertical-align: middle; } #inline .form-group { display: table-row;}"
+      )
+    )
   ),
 
 
@@ -535,57 +543,120 @@ server <- function(input, output) {
 
   output$plot_inputs <- renderUI({
     list(
-      selectInput(
-        inputId = "plot_input_x",
-        label = "X axis compound",
-        choices = grep(
-          x = colnames(cti_plot_data()),
-          pattern = "conc",
-          value = TRUE
+      ## Template ##
+      # div(
+      #   class = "form-group",
+      #   tags$label(
+      #     class = "col-lg-3 control-label",
+      #     ""
+      #   ),
+      #   div(
+      #     class = "col-lg-9",
+      #     selectInput()
+      #   )
+      # )
+
+      hr(),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          "X axis compound"
         ),
-        selected = "cols_conc"
+        div(
+          class = "col-lg-9",
+          selectInput(
+            inputId = "plot_input_x",
+            label = NULL,
+            choices = grep(
+              x = colnames(cti_plot_data()),
+              pattern = "conc",
+              value = TRUE
+            )
+          )
+        )
       ),
 
-      textInput(
-        inputId = "plot_input_x_label",
-        label = "X axis label",
-        value = NULL,
-        placeholder = "X axis label"
-      ),
-
-      selectInput(
-        inputId = "plot_input_scales",
-        label = "Scales",
-        choices = c(
-          "Free" = "free",
-          "Fixed" = "fixed",
-          "Free X" = "free_x",
-          "Free Y" = "free_y"
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          "X axis label"
         ),
-        selected = "free"
+        div(
+          class = "col-lg-9",
+          textInput(
+            inputId = "plot_input_x_label",
+            label = NULL,
+            value = NULL
+          )
+        )
       ),
 
-      numericInput(
-        inputId = "plot_input_x_decimal",
-        label = "X axis significant digits",
-        value = 1,
-        min = 1,
-        max = 4,
-        step = 1
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          "Scales"
+        ),
+        div(
+          class = "col-lg-9",
+          selectInput(
+            inputId = "plot_input_scales",
+            label = NULL,
+            choices = c(
+              "Free" = "free",
+              "Fixed" = "fixed",
+              "Free X" = "free_x",
+              "Free Y" = "free_y"
+            ),
+            selected = "free"
+          )
+        )
       ),
 
-      h4("X MIC:"),
-
-      checkboxInput(
-        inputId = "plot_input_x_mic_line",
-        label = "Include X MIC line",
-        value = TRUE
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          "X axis digits"
+        ),
+        div(
+          class = "col-lg-9",
+          numericInput(
+            inputId = "plot_input_x_decimal",
+            label = NULL,
+            value = 1,
+            min = 1,
+            max = 4,
+            step = 1
+          )
+        )
       ),
 
-      numericInput(
-        inputId = "plot_input_x_mic_threshold",
-        label = "Threshold:",
-        value = 0.5
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          "X MIC"
+        ),
+        div(
+          class = "col-lg-2",
+          checkboxInput(
+            inputId = "plot_input_x_mic_line",
+            label = "Include?",
+            value = TRUE
+          )
+        ),
+        div(
+          class = "col-lg-7",
+          numericInput(
+            inputId = "plot_input_x_mic_threshold",
+            label = NULL,
+            value = 0.5
+          )
+        )
       )
     )
   })
