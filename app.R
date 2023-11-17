@@ -803,6 +803,22 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
+          "X values"
+        ),
+        div(
+          class = "col-lg-2",
+          checkboxInput(
+            inputId = "plot_input_jitter_x",
+            label = "Jitter",
+            value = TRUE
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
           "Colours"
         ),
         div(
@@ -965,6 +981,7 @@ server <- function(input, output) {
         cti.line.plot(
           data = cti_plot_data(),
           plot.type = isolate(input$plot_input_line_type),
+          jitter.x = isolate(input$plot_input_jitter_x),
           x.drug = isolate(input$plot_input_x),
           col.data = "bio_normal",
           line.drug = isolate(input$plot_input_line),

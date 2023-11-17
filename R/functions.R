@@ -817,6 +817,8 @@ cti.tile.plot <- function(
 #'   the right names. Applies to all facets, and defaults to "all".
 #' @param plot.type Type of graph to draw; one of "replicates", "mean", or
 #'   "mean_sd". See Details for more information about each.
+#' @param jitter.x Logical; Should points be jittered along the x axis? Defaults
+#'   to TRUE.
 #' @param x.mic.line Logical; should a line be drawn to indicate MIC of the
 #'   compound on the x-axis? Defaults to FALSE, and is calculated using
 #'   `col.data`.
@@ -850,6 +852,7 @@ cti.line.plot <- function(
     line.drug,
     line.include = "all",
     plot.type = "mean_sd",
+    jitter.x = TRUE,
     x.mic.line = FALSE,
     mic.threshold = 0.5,
     colour.palette = "Spectral",
@@ -955,10 +958,14 @@ cti.line.plot <- function(
           colour = .data[[line.drug]]
         )
       ) +
-        geom_line(position = position_dodge(width = 0.5), linewidth = 1.5) +
+        geom_line(
+          position = position_dodge(width = ifelse(jitter.x, 0.5, 0)),
+          linewidth = 1.5
+        ) +
+
         geom_linerange(
           aes(ymin = mean - sd, ymax = mean + sd),
-          position = position_dodge(width = 0.5),
+          position = position_dodge(width = ifelse(jitter.x, 0.5, 0)),
           alpha = 0.5,
           linewidth = 1.25
         )
@@ -973,7 +980,10 @@ cti.line.plot <- function(
           colour = .data[[line.drug]]
         )
       ) +
-        geom_line(position = position_dodge(width = 0.5), linewidth = 1.5)
+        geom_line(
+          position = position_dodge(width = ifelse(jitter.x, 0.5, 0)),
+          linewidth = 1.5
+        )
 
     } else if (plot.type == "replicates") {
       ggplot(
@@ -985,10 +995,14 @@ cti.line.plot <- function(
           colour = .data[[line.drug]]
         )
       ) +
-        geom_point(position = position_dodge(width = 0.5), size = 2) +
+        geom_point(
+          position = position_dodge(width = ifelse(jitter.x, 0.5, 0)),
+          size = 2
+        ) +
+
         geom_line(
           aes(y = mean),
-          position = position_dodge(width = 0.5),
+          position = position_dodge(width = ifelse(jitter.x, 0.5, 0)),
           linewidth = 1.5
         )
     }
