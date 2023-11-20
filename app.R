@@ -78,11 +78,6 @@ ui <- fluidPage(
             ),
             class = "btn btn-primary btn-lg"
           )
-        ),
-        div(
-          class = "footer",
-          style = "position:fixed;",
-          p("Test")
         )
       ),
 
@@ -138,12 +133,6 @@ ui <- fluidPage(
           mainPanel = mainPanel(
             div(id = "upload_tab_placeholder_div")
           )
-        ),
-
-        div(
-          class = "footer",
-          style = "position:fixed;",
-          p("Test")
         )
       ),
 
@@ -185,11 +174,6 @@ ui <- fluidPage(
             id = "analysis_tab_mainpanel",
             div(id = "analysis_tab_placeholder_div")
           )
-        ),
-        div(
-          class = "footer",
-          style = "position:fixed;",
-          p("Test")
         )
       ),
 
@@ -230,12 +214,6 @@ ui <- fluidPage(
             id = "vis_tab_mainpanel",
             uiOutput("vis_tab_plot_ui")
           )
-        ),
-
-        div(
-          class = "footer",
-          style = "position:relative;",
-          p("Test")
         )
       ),
 
@@ -251,12 +229,6 @@ ui <- fluidPage(
           HTML("<h1 style='margin-top: 15px;'>About</h1>"),
           p("Here is some About text."),
           p("Blah blah blah R blah blah Shiny blah blah blah Hancock Lab.")
-        ),
-
-        div(
-          class = "footer",
-          style = "position:fixed;",
-          p("Test")
         )
       )
     )

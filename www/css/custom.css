@@ -29,17 +29,6 @@
   font-size: 18px;
 }
 
-/* Custom footer class */
-.footer {
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  text-align: center;
-  color: black;
-  background-color: #f5f5f5;
-  border-top: 1px solid #dddddd;
-}
-
 /* Customizing the Github image inserted into the right side of the navbar */
 #github-img{
   position: absolute;
