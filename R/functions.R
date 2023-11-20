@@ -803,291 +803,6 @@ cti.tile.plot <- function(
 }
 
 
-#' Plot biofilm percentages over a range of concentrations
-#'
-#' @param data Data frame containing the measured biofilm (normalized)
-#' @param x.drug Character; Column name containing the concentration of the
-#'   first compound, which will be plotted on the x-axis.
-#' @param col.data Character; Column name containing the values which will be
-#'   plotted on the y-axis. If the `data` includes replicates, they will be
-#'   averaged.
-#' @param line.drug Compound which is mapped to the lines/colours of the graph
-#' @param line.include Values (concentrations) to include in the plot for the
-#'   `line.drug`. Must be exact matches, so use `levels(data$line.drug)` to get
-#'   the right names. Applies to all facets, and defaults to "all".
-#' @param plot.type Type of graph to draw; one of "replicates", "mean", or
-#'   "mean_sd". See Details for more information about each.
-#' @param jitter.x Logical; Should points be jittered along the x axis? Defaults
-#'   to TRUE.
-#' @param x.mic.line Logical; should a line be drawn to indicate MIC of the
-#'   compound on the x-axis? Defaults to FALSE, and is calculated using
-#'   `col.data`.
-#' @param mic.threshold Threshold for determining MIC; defaults to 0.5
-#' @param colour.palette Colours to use for the lines. All of the RColorBrewer
-#'   palettes are supported; see `RColorBrewer::display.brewer.all()` for all
-#'   options.
-#' @param col.analysis Character; Optional column name to use for faceting the
-#'   plot.
-#' @param scales Character; passed into `facet_wrap` to determine how the x- and
-#'   y-axis scales are set. See `?facet_wrap` for details.
-#' @param n.rows Number of rows to use when faceting.
-#' @param n.cols Number of columns to use when faceting.
-#' @param x.text Character; Title for the x-axis.
-#' @param y.text Character; Title for the y-axis.
-#' @param line.text Title of the legend for the compound mapped to lines/colours
-#' @param x.decimal Number of decimal places to show for x-axis labels. Will
-#'   apply to all facets.
-#' @param line.decimal Number of decimal places to show for line legend labels.
-#'   Will apply to all facets.
-#' @param add.axis.lines Logical; Add a line to the x- and y-axis when faceting
-#'   with fixed axis. Defaults to TRUE.
-#'
-#' @return
-#' @export
-#'
-cti.line.plot <- function(
-    data,
-    x.drug,
-    col.data,
-    line.drug,
-    line.include = "all",
-    plot.type = "mean_sd",
-    jitter.x = TRUE,
-    x.mic.line = FALSE,
-    mic.threshold = 0.5,
-    colour.palette = "Spectral",
-    col.analysis = NULL,
-    scales = "fixed",
-    n.rows = NULL,
-    n.cols = NULL,
-    x.text = "Drug 1",
-    y.text = "Measurement",
-    line.text = "Drug 2",
-    x.decimal = 1,
-    line.decimal = 1,
-    add.axis.lines = TRUE
-) {
-
-  if (any(c("spec_tbl_df", "tbl_df", "tbl") %in% class(data))) {
-    data <- as.data.frame(data)
-  }
-
-  stopifnot(
-    "'plot.type' must be one of: 'replicates', 'mean', or 'mean_sd'" =
-      plot.type %in% c("replicates", "mean", "mean_sd")
-  )
-
-  if (!is.null(col.analysis)) {
-    data[col.analysis] <- droplevels(data[col.analysis])
-  }
-
-  data <- data %>%
-    mutate(across(all_of(c(x.drug, line.drug)), forcats::fct_inseq))
-
-  data_clean <-
-    if (line.include[1] != "all") {
-      filter(data, .data[[line.drug]] %in% line.include)
-    } else {
-      data
-    }
-
-  # When calculating means and standard deviation, make sure to include
-  # "col.analysis" as a grouping variable, if it exists.
-  data_avg <-
-    if (is.null(col.analysis)) {
-      data_clean %>%
-        group_by(.data[[x.drug]], .data[[line.drug]]) %>%
-        mutate(
-          mean = mean(.data[[col.data]]),
-          sd = sd(.data[[col.data]])
-        )
-    } else {
-      data_clean %>%
-        group_by(.data[[col.analysis]], .data[[x.drug]], .data[[line.drug]]) %>%
-        mutate(
-          mean = mean(.data[[col.data]]),
-          sd = sd(.data[[col.data]])
-        )
-    }
-
-
-  # MIC
-  if (x.mic.line) {
-
-    if (is.null(col.analysis)) {
-      mic.table <- cti.mic(
-        data = data,
-        x.drug = x.drug,
-        y.drug = line.drug,
-        col.data = col.data,
-        threshold = mic.threshold
-      )
-
-      mic.table$XLAB <- which(levels(droplevels(data[[x.drug]])) == mic.table$XMIC)
-    } else {
-
-      data.split <- split(x = data, f = data[col.analysis])
-
-      mic.table.split <- lapply(data.split, function(d) {
-        result.mic <- cti.mic(
-          data = d,
-          x.drug = x.drug,
-          y.drug = line.drug,
-          col.data = col.data,
-          threshold = mic.threshold
-        )
-
-        result.mic$XLAB <- which(levels(droplevels(d[[x.drug]])) == result.mic$XMIC)
-        result.mic
-      })
-
-      mic.table <- do.call(rbind, mic.table.split)
-      mic.table[, col.analysis] <- rownames(mic.table)
-      rownames(mic.table) <- NULL
-    }
-  }
-
-  main_geoms <-
-    if (plot.type == "mean_sd") {
-      ggplot(
-        data_avg,
-        aes(
-          x = .data[[x.drug]],
-          y = mean,
-          group = .data[[line.drug]],
-          colour = .data[[line.drug]]
-        )
-      ) +
-        geom_line(
-          position = position_dodge(width = ifelse(jitter.x, 0.5, 0)),
-          linewidth = 1.5
-        ) +
-
-        geom_linerange(
-          aes(ymin = mean - sd, ymax = mean + sd),
-          position = position_dodge(width = ifelse(jitter.x, 0.5, 0)),
-          alpha = 0.5,
-          linewidth = 1.25
-        )
-
-    } else if (plot.type == "mean") {
-      ggplot(
-        data_avg,
-        aes(
-          x = .data[[x.drug]],
-          y = mean,
-          group = .data[[line.drug]],
-          colour = .data[[line.drug]]
-        )
-      ) +
-        geom_line(
-          position = position_dodge(width = ifelse(jitter.x, 0.5, 0)),
-          linewidth = 1.5
-        )
-
-    } else if (plot.type == "replicates") {
-      ggplot(
-        data_avg,
-        aes(
-          x = .data[[x.drug]],
-          y = .data[[col.data]],
-          group = .data[[line.drug]],
-          colour = .data[[line.drug]]
-        )
-      ) +
-        geom_point(
-          position = position_dodge(width = ifelse(jitter.x, 0.5, 0)),
-          size = 2
-        ) +
-
-        geom_line(
-          aes(y = mean),
-          position = position_dodge(width = ifelse(jitter.x, 0.5, 0)),
-          linewidth = 1.5
-        )
-    }
-
-  main_geoms +
-    {if (!is.null(col.analysis)) {
-      facet_wrap(
-        ~.data[[col.analysis]],
-        nrow = n.rows,
-        ncol = n.cols,
-        scales = scales
-      )
-    }} +
-
-    {if (x.mic.line) {
-      geom_vline(data = mic.table, aes(xintercept = XLAB))
-    }} +
-
-    scale_color_brewer(
-      palette = colour.palette,
-      labels = ~sprintf(
-        paste0("%.", line.decimal, "f"),
-        as.numeric(.x)
-      )
-    ) +
-
-    scale_x_discrete(labels = ~sprintf(
-      paste0("%.", x.decimal, "f"),
-      as.numeric(.x)
-    )) +
-
-    {if (max(data_avg[col.data]) > 1.5) {
-      message("Squishing values over 1.5...")
-      scale_y_continuous(
-        limits = c(0, 1.5),
-        breaks = seq(0, 1.5, 0.5),
-        oob = scales::squish
-      )
-    }} +
-
-    labs(
-      x = x.text,
-      y = y.text,
-      colour = paste(strwrap(line.text, width = 12), collapse = "\n")
-    ) +
-
-    {if (add.axis.lines) {
-      annotate(
-        "segment",
-        x = -Inf,
-        xend = Inf,
-        y = -Inf,
-        yend = -Inf,
-        linewidth = 1
-      )
-    }} +
-    {if (add.axis.lines) {
-      annotate(
-        "segment",
-        x = -Inf,
-        xend = -Inf,
-        y = -Inf,
-        yend = Inf,
-        linewidth = 1
-      )
-    }} +
-
-    theme_classic(base_size = 20) +
-    theme(
-      text = element_text(family = "Helvetica"),
-      axis.title = element_text(face = "bold"),
-      axis.text = element_text(colour = "black", face = "bold"),
-      panel.spacing = unit(10, "mm"),
-      panel.grid.major.y = element_line(),
-      strip.background = element_blank(),
-      strip.text = element_text(face = "bold"),
-      legend.title = element_text(face = "bold")
-    ) +
-
-    {if (x.decimal > 2) {
-      theme(axis.text.x = element_text(angle = 45, hjust = 1))
-    }}
-}
-
-
 #' col.dot.plot
 #'
 #' @param data Data frame, as output by `cti.analysis()`
@@ -1378,6 +1093,291 @@ cti.dot.plot <- function(
       legend.title = element_text(face = "bold"),
       legend.key.height = unit(10, "mm"),
       legend.text.align = 1
+    ) +
+
+    {if (x.decimal > 2) {
+      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    }}
+}
+
+
+#' Plot biofilm percentages over a range of concentrations
+#'
+#' @param data Data frame containing the measured biofilm (normalized)
+#' @param x.drug Character; Column name containing the concentration of the
+#'   first compound, which will be plotted on the x-axis.
+#' @param col.data Character; Column name containing the values which will be
+#'   plotted on the y-axis. If the `data` includes replicates, they will be
+#'   averaged.
+#' @param line.drug Compound which is mapped to the lines/colours of the graph
+#' @param line.include Values (concentrations) to include in the plot for the
+#'   `line.drug`. Must be exact matches, so use `levels(data$line.drug)` to get
+#'   the right names. Applies to all facets, and defaults to "all".
+#' @param plot.type Type of graph to draw; one of "replicates", "mean", or
+#'   "mean_sd". See Details for more information about each.
+#' @param jitter.x Logical; Should points be jittered along the x axis? Defaults
+#'   to TRUE.
+#' @param x.mic.line Logical; should a line be drawn to indicate MIC of the
+#'   compound on the x-axis? Defaults to FALSE, and is calculated using
+#'   `col.data`.
+#' @param mic.threshold Threshold for determining MIC; defaults to 0.5
+#' @param colour.palette Colours to use for the lines. All of the RColorBrewer
+#'   palettes are supported; see `RColorBrewer::display.brewer.all()` for all
+#'   options.
+#' @param col.analysis Character; Optional column name to use for faceting the
+#'   plot.
+#' @param scales Character; passed into `facet_wrap` to determine how the x- and
+#'   y-axis scales are set. See `?facet_wrap` for details.
+#' @param n.rows Number of rows to use when faceting.
+#' @param n.cols Number of columns to use when faceting.
+#' @param x.text Character; Title for the x-axis.
+#' @param y.text Character; Title for the y-axis.
+#' @param line.text Title of the legend for the compound mapped to lines/colours
+#' @param x.decimal Number of decimal places to show for x-axis labels. Will
+#'   apply to all facets.
+#' @param line.decimal Number of decimal places to show for line legend labels.
+#'   Will apply to all facets.
+#' @param add.axis.lines Logical; Add a line to the x- and y-axis when faceting
+#'   with fixed axis. Defaults to TRUE.
+#'
+#' @return
+#' @export
+#'
+cti.line.plot <- function(
+    data,
+    x.drug,
+    col.data,
+    line.drug,
+    line.include = "all",
+    plot.type = "mean_sd",
+    jitter.x = TRUE,
+    x.mic.line = FALSE,
+    mic.threshold = 0.5,
+    colour.palette = "Spectral",
+    col.analysis = NULL,
+    scales = "fixed",
+    n.rows = NULL,
+    n.cols = NULL,
+    x.text = "Drug 1",
+    y.text = "Measurement",
+    line.text = "Drug 2",
+    x.decimal = 1,
+    line.decimal = 1,
+    add.axis.lines = TRUE
+) {
+
+  if (any(c("spec_tbl_df", "tbl_df", "tbl") %in% class(data))) {
+    data <- as.data.frame(data)
+  }
+
+  stopifnot(
+    "'plot.type' must be one of: 'replicates', 'mean', or 'mean_sd'" =
+      plot.type %in% c("replicates", "mean", "mean_sd")
+  )
+
+  if (!is.null(col.analysis)) {
+    data[col.analysis] <- droplevels(data[col.analysis])
+  }
+
+  data <- data %>%
+    mutate(across(all_of(c(x.drug, line.drug)), forcats::fct_inseq))
+
+  data_clean <-
+    if (line.include[1] != "all") {
+      filter(data, .data[[line.drug]] %in% line.include)
+    } else {
+      data
+    }
+
+  # When calculating means and standard deviation, make sure to include
+  # "col.analysis" as a grouping variable, if it exists.
+  data_avg <-
+    if (is.null(col.analysis)) {
+      data_clean %>%
+        group_by(.data[[x.drug]], .data[[line.drug]]) %>%
+        mutate(
+          mean = mean(.data[[col.data]]),
+          sd = sd(.data[[col.data]])
+        )
+    } else {
+      data_clean %>%
+        group_by(.data[[col.analysis]], .data[[x.drug]], .data[[line.drug]]) %>%
+        mutate(
+          mean = mean(.data[[col.data]]),
+          sd = sd(.data[[col.data]])
+        )
+    }
+
+
+  # MIC
+  if (x.mic.line) {
+
+    if (is.null(col.analysis)) {
+      mic.table <- cti.mic(
+        data = data,
+        x.drug = x.drug,
+        y.drug = line.drug,
+        col.data = col.data,
+        threshold = mic.threshold
+      )
+
+      mic.table$XLAB <- which(levels(droplevels(data[[x.drug]])) == mic.table$XMIC)
+    } else {
+
+      data.split <- split(x = data, f = data[col.analysis])
+
+      mic.table.split <- lapply(data.split, function(d) {
+        result.mic <- cti.mic(
+          data = d,
+          x.drug = x.drug,
+          y.drug = line.drug,
+          col.data = col.data,
+          threshold = mic.threshold
+        )
+
+        result.mic$XLAB <- which(levels(droplevels(d[[x.drug]])) == result.mic$XMIC)
+        result.mic
+      })
+
+      mic.table <- do.call(rbind, mic.table.split)
+      mic.table[, col.analysis] <- rownames(mic.table)
+      rownames(mic.table) <- NULL
+    }
+  }
+
+  main_geoms <-
+    if (plot.type == "mean_sd") {
+      ggplot(
+        data_avg,
+        aes(
+          x = .data[[x.drug]],
+          y = mean,
+          group = .data[[line.drug]],
+          colour = .data[[line.drug]]
+        )
+      ) +
+        geom_line(
+          position = position_dodge(width = ifelse(jitter.x, 0.5, 0)),
+          linewidth = 1.5
+        ) +
+
+        geom_linerange(
+          aes(ymin = mean - sd, ymax = mean + sd),
+          position = position_dodge(width = ifelse(jitter.x, 0.5, 0)),
+          alpha = 0.5,
+          linewidth = 1.25
+        )
+
+    } else if (plot.type == "mean") {
+      ggplot(
+        data_avg,
+        aes(
+          x = .data[[x.drug]],
+          y = mean,
+          group = .data[[line.drug]],
+          colour = .data[[line.drug]]
+        )
+      ) +
+        geom_line(
+          position = position_dodge(width = ifelse(jitter.x, 0.5, 0)),
+          linewidth = 1.5
+        )
+
+    } else if (plot.type == "replicates") {
+      ggplot(
+        data_avg,
+        aes(
+          x = .data[[x.drug]],
+          y = .data[[col.data]],
+          group = .data[[line.drug]],
+          colour = .data[[line.drug]]
+        )
+      ) +
+        geom_point(
+          position = position_dodge(width = ifelse(jitter.x, 0.5, 0)),
+          size = 2
+        ) +
+
+        geom_line(
+          aes(y = mean),
+          position = position_dodge(width = ifelse(jitter.x, 0.5, 0)),
+          linewidth = 1.5
+        )
+    }
+
+  main_geoms +
+    {if (!is.null(col.analysis)) {
+      facet_wrap(
+        ~.data[[col.analysis]],
+        nrow = n.rows,
+        ncol = n.cols,
+        scales = scales
+      )
+    }} +
+
+    {if (x.mic.line) {
+      geom_vline(data = mic.table, aes(xintercept = XLAB))
+    }} +
+
+    scale_color_brewer(
+      palette = colour.palette,
+      labels = ~sprintf(
+        paste0("%.", line.decimal, "f"),
+        as.numeric(.x)
+      )
+    ) +
+
+    scale_x_discrete(labels = ~sprintf(
+      paste0("%.", x.decimal, "f"),
+      as.numeric(.x)
+    )) +
+
+    {if (max(data_avg[col.data]) > 1.5) {
+      warning("Squishing values over 1.5")
+      scale_y_continuous(
+        limits = c(0, 1.5),
+        breaks = seq(0, 1.5, 0.5),
+        oob = scales::squish
+      )
+    }} +
+
+    labs(
+      x = x.text,
+      y = y.text,
+      colour = paste(strwrap(line.text, width = 12), collapse = "\n")
+    ) +
+
+    {if (add.axis.lines) {
+      annotate(
+        "segment",
+        x = -Inf,
+        xend = Inf,
+        y = -Inf,
+        yend = -Inf,
+        linewidth = 1
+      )
+    }} +
+    {if (add.axis.lines) {
+      annotate(
+        "segment",
+        x = -Inf,
+        xend = -Inf,
+        y = -Inf,
+        yend = Inf,
+        linewidth = 1
+      )
+    }} +
+
+    theme_classic(base_size = 20) +
+    theme(
+      text = element_text(family = "Helvetica"),
+      axis.title = element_text(face = "bold"),
+      axis.text = element_text(colour = "black", face = "bold"),
+      panel.spacing = unit(10, "mm"),
+      panel.grid.major.y = element_line(),
+      strip.background = element_blank(),
+      strip.text = element_text(face = "bold"),
+      legend.title = element_text(face = "bold")
     ) +
 
     {if (x.decimal > 2) {

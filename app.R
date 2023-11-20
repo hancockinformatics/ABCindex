@@ -1,7 +1,5 @@
 # TODO
-# - Add jitter toggle to line plots
 # - Change colour schemes
-# - Implement function arguments as UI toggles/selectors/etc.
 
 
 # Load packages -----------------------------------------------------------
@@ -598,6 +596,25 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
+          "X axis digits"
+        ),
+        div(
+          class = "col-lg-9",
+          numericInput(
+            inputId = "plot_input_x_decimal",
+            label = NULL,
+            value = 2,
+            min = 1,
+            max = 4,
+            step = 1
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
           "Scales"
         ),
         div(
@@ -612,25 +629,6 @@ server <- function(input, output) {
               "Free Y" = "free_y"
             ),
             selected = "free"
-          )
-        )
-      ),
-
-      div(
-        class = "form-group",
-        tags$label(
-          class = "col-lg-3 control-label",
-          "X axis digits"
-        ),
-        div(
-          class = "col-lg-9",
-          numericInput(
-            inputId = "plot_input_x_decimal",
-            label = NULL,
-            value = 2,
-            min = 1,
-            max = 4,
-            step = 1
           )
         )
       ),
@@ -680,7 +678,7 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
-          "Colours"
+          "CTI colours"
         ),
         div(
           class = "col-lg-9",
@@ -777,8 +775,7 @@ server <- function(input, output) {
   output$plot_inputs_line <- renderUI({
     list(
       h4("Line plots:"),
-      # - line.drug, line.include, line.decimal, plot.type,
-      #   colour.palette (RColorBrewer), line.text, y.text
+
       div(
         class = "form-group",
         tags$label(
@@ -803,40 +800,7 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
-          "X values"
-        ),
-        div(
-          class = "col-lg-2",
-          checkboxInput(
-            inputId = "plot_input_jitter_x",
-            label = "Jitter",
-            value = TRUE
-          )
-        )
-      ),
-
-      div(
-        class = "form-group",
-        tags$label(
-          class = "col-lg-3 control-label",
-          "Colours"
-        ),
-        div(
-          class = "col-lg-9",
-          selectInput(
-            inputId = "plot_input_line_colours",
-            label = NULL,
-            choices = rownames(RColorBrewer::brewer.pal.info),
-            selected = "Spectral"
-          )
-        )
-      ),
-
-      div(
-        class = "form-group",
-        tags$label(
-          class = "col-lg-3 control-label",
-          "Lines"
+          "Line compound"
         ),
         div(
           class = "col-lg-9",
@@ -913,6 +877,39 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
+          "Line colours"
+        ),
+        div(
+          class = "col-lg-9",
+          selectInput(
+            inputId = "plot_input_line_colours",
+            label = NULL,
+            choices = rownames(RColorBrewer::brewer.pal.info),
+            selected = "Spectral"
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          "X values"
+        ),
+        div(
+          class = "col-lg-2",
+          checkboxInput(
+            inputId = "plot_input_jitter_x",
+            label = "Jitter",
+            value = TRUE
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
           "Y axis label"
         ),
         div(
@@ -924,6 +921,21 @@ server <- function(input, output) {
           )
         )
       )
+    )
+  })
+
+
+  # |- Update inputs ------------------------------------------------------
+
+  observeEvent(input$plot_input_line, {
+    unique_conc <- cti_plot_data() %>%
+      pull(input$plot_input_line) %>%
+      unique()
+
+    updateSelectInput(
+      inputId = "plot_input_lines_include",
+      choices = unique_conc,
+      selected = unique_conc
     )
   })
 
@@ -978,6 +990,14 @@ server <- function(input, output) {
           add.axis.lines = TRUE
         )
       } else if (isolate(input$vis_tab_radio_input) == "Line") {
+
+        if (max(cti_plot_data()$bio_normal) > 1.5 ) {
+          showNotification(
+            ui = "Squishing values over 1.5",
+            type = "warning"
+          )
+        }
+
         cti.line.plot(
           data = cti_plot_data(),
           plot.type = isolate(input$plot_input_line_type),
@@ -985,7 +1005,7 @@ server <- function(input, output) {
           x.drug = isolate(input$plot_input_x),
           col.data = "bio_normal",
           line.drug = isolate(input$plot_input_line),
-          # line.include = isolate(input$plot_input_lines_include),
+          line.include = isolate(input$plot_input_lines_include),
           colour.palette = isolate(input$plot_input_line_colours),
           col.analysis = "assay",
           n.cols = cti_plot_dims()[[1]],
