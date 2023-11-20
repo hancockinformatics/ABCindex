@@ -555,6 +555,7 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
+          title = "Compound on the x-axis",
           "X compound"
         ),
         div(
@@ -580,6 +581,7 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
+          title = "Label for the x-axis; applies to the entire plot",
           "X axis label"
         ),
         div(
@@ -587,7 +589,7 @@ server <- function(input, output) {
           textInput(
             inputId = "plot_input_x_label",
             label = NULL,
-            value = "Drug 1"
+            value = "Concentration (ug/mL)"
           )
         )
       ),
@@ -596,6 +598,7 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
+          title = "Number of decimal places to show for the x-axis",
           "X axis digits"
         ),
         div(
@@ -615,6 +618,10 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
+          title = paste0(
+            "Should axis scales be 'Free', 'Fixed', or free in ",
+            "only one dimension?"
+          ),
           "Scales"
         ),
         div(
@@ -637,6 +644,7 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
+          title = "Threshold for calculating MICs; applies to x- and y-axis compounds",
           "MIC cutoff:"
         ),
         div(
@@ -653,6 +661,7 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
+          title = "Draw a line to indicate MIC for x-axis compound?",
           "X MIC"
         ),
         div(
@@ -678,6 +687,7 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
+          title = "Colour palette to use for the CTI values",
           "CTI colours"
         ),
         div(
@@ -695,6 +705,7 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
+          title = "Compound on the y-axis",
           "Y compound"
         ),
         div(
@@ -720,6 +731,7 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
+          title = "Label for the y-axis; applies to the entire plot",
           "Y axis label"
         ),
         div(
@@ -727,7 +739,7 @@ server <- function(input, output) {
           textInput(
             inputId = "plot_input_y_label",
             label = NULL,
-            value = "Drug 2"
+            value = "Concentration (ug/mL)"
           )
         )
       ),
@@ -736,6 +748,7 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
+          title = "Number of decimal places to show for the y-axis",
           "Y axis digits"
         ),
         div(
@@ -755,6 +768,7 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
+          title = "Draw a line to indicate MIC for y-axis compound?",
           "Y MIC"
         ),
         div(
@@ -790,7 +804,7 @@ server <- function(input, output) {
             choices = c(
               "Replicates" = "replicates",
               "Mean" = "mean",
-              "Mean/SD" = "mean_sd"
+              "Mean±SD" = "mean_sd"
             )
           )
         )
@@ -800,6 +814,7 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
+          title = "Compound mapped to different lines",
           "Line compound"
         ),
         div(
@@ -825,6 +840,7 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
+          title = "Concentrations to plot as lines",
           "Included conc."
         ),
         div(
@@ -842,6 +858,24 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
+          title = "Label for the line legend",
+          "Line label"
+        ),
+        div(
+          class = "col-lg-9",
+          textInput(
+            inputId = "plot_input_line_label",
+            label = NULL,
+            value = "Concentration (ug/mL)"
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          title = "Number of decimal places to show for the line compound",
           "Line digits"
         ),
         div(
@@ -861,22 +895,7 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
-          "Line label"
-        ),
-        div(
-          class = "col-lg-9",
-          textInput(
-            inputId = "plot_input_line_label",
-            label = NULL,
-            value = "Drug 2"
-          )
-        )
-      ),
-
-      div(
-        class = "form-group",
-        tags$label(
-          class = "col-lg-3 control-label",
+          title = "Colour palette to map to lines/concentrations",
           "Line colours"
         ),
         div(
@@ -884,7 +903,7 @@ server <- function(input, output) {
           selectInput(
             inputId = "plot_input_line_colours",
             label = NULL,
-            choices = rownames(RColorBrewer::brewer.pal.info),
+            choices = sort(rownames(RColorBrewer::brewer.pal.info)),
             selected = "Spectral"
           )
         )
@@ -894,6 +913,7 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
+          title = "Apply a 'jitter' along the x-axis to prevent overlapping lines",
           "X values"
         ),
         div(
@@ -910,6 +930,7 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
+          title = "Label for the y-axis; applies to the entire plot",
           "Y axis label"
         ),
         div(
@@ -917,7 +938,7 @@ server <- function(input, output) {
           textInput(
             inputId = "plot_input_y_label2",
             label = NULL,
-            value = "Measurement"
+            value = "% Biofilm"
           )
         )
       )
@@ -928,6 +949,8 @@ server <- function(input, output) {
   # |- Update inputs ------------------------------------------------------
 
   observeEvent(input$plot_input_line, {
+    req(cti_plot_data())
+
     unique_conc <- cti_plot_data() %>%
       pull(input$plot_input_line) %>%
       unique()
