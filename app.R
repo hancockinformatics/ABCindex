@@ -716,7 +716,7 @@ server <- function(input, output) {
             label = NULL,
             choices = c("X", "Y"),
             selected = c("X", "Y"),
-            inline = TRUE,
+            inline = TRUE
           )
         )
       )
@@ -930,7 +930,7 @@ server <- function(input, output) {
             label = NULL,
             choices = c("X", "Y"),
             selected = c("X", "Y"),
-            inline = TRUE,
+            inline = TRUE
           )
         )
       )
@@ -1217,7 +1217,7 @@ server <- function(input, output) {
             label = NULL,
             choices = c("X"),
             selected = c("X"),
-            inline = TRUE,
+            inline = TRUE
           )
         )
       )
