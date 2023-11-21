@@ -689,8 +689,8 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
-          title = "Threshold for calculating MICs; applies to x- and y-axis compounds",
-          "MIC cutoff:"
+          title = "Threshold for calculating MICs; applies to x- and y-axis",
+          "MIC cutoff"
         ),
         div(
           class = "col-lg-9",
@@ -904,7 +904,7 @@ server <- function(input, output) {
         tags$label(
           class = "col-lg-3 control-label",
           title = "Threshold for calculating MICs; applies to x- and y-axis compounds",
-          "MIC cutoff:"
+          "MIC cutoff"
         ),
         div(
           class = "col-lg-9",
@@ -1191,7 +1191,7 @@ server <- function(input, output) {
         tags$label(
           class = "col-lg-3 control-label",
           title = "Threshold for calculating MICs; applies to x- and y-axis compounds",
-          "MIC cutoff:"
+          "MIC cutoff"
         ),
         div(
           class = "col-lg-9",
