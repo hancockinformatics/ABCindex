@@ -190,24 +190,29 @@ ui <- fluidPage(
             h3("Visualize CTI results"),
             p("Information about the different visualization available."),
 
-            radioButtons(
-              inputId = "vis_tab_radio_input",
-              label = "Plot type",
-              choices = c("Tile", "Dot", "Line")
-            ),
 
-            br(),
             actionButton(
               inputId = "draw",
               label = "Create or update the plot",
-              class = "btn btn-primary"
+              class = "btn btn-primary",
+              style = "margin-bottom: 15px;"
             ),
-
-            hr(),
-
-            uiOutput("plot_inputs_universal", fill = TRUE),
-            uiOutput("plot_inputs_tile_dot", fill = TRUE),
-            uiOutput("plot_inputs_line", fill = TRUE)
+            br(),
+            tabsetPanel(
+              id = "visualize_tabs",
+              tabPanel(
+                "Tile",
+                uiOutput("plot_inputs_tile", fill = TRUE)
+              ),
+              tabPanel(
+                "Dot",
+                uiOutput("plot_inputs_tile_dot", fill = TRUE)
+              ),
+              tabPanel(
+                "Line",
+                uiOutput("plot_inputs_line", fill = TRUE)
+              )
+            )
           ),
 
           mainPanel = mainPanel(
@@ -495,33 +500,42 @@ server <- function(input, output) {
 
   # |- Set up inputs ------------------------------------------------------
 
-  # Universal:
-  # - x.drug, x.text, scales, x.decimal, x.mic.line, mic.threshold
-  # Tile/Dot plot:
-  # - y.drug, y.text, y.decimal, y.mic.line, colour.palette
-  # Line plot:
-  # - line.drug, line.include, line.decimal, plot.type,
-  #   colour.palette (RColorBrewer),  line.text, y.text
+  ## Template ##
+  # div(
+  #   class = "form-group",
+  #   tags$label(
+  #     class = "col-lg-3 control-label",
+  #     ""
+  #   ),
+  #   div(
+  #     class = "col-lg-9",
+  #     selectInput()
+  #   )
+  # )
 
 
-  # | - - Universal -------------------------------------------------------
+  # | - - Tile ------------------------------------------------------------
 
-  output$plot_inputs_universal <- renderUI({
+  output$plot_inputs_tile <- renderUI({
     list(
-      ## Template ##
-      # div(
-      #   class = "form-group",
-      #   tags$label(
-      #     class = "col-lg-3 control-label",
-      #     ""
-      #   ),
-      #   div(
-      #     class = "col-lg-9",
-      #     selectInput()
-      #   )
-      # )
-
-      h4("All plot types:"),
+      div(
+        class = "form-group",
+        style = "margin-top: 15px",
+        tags$label(
+          class = "col-lg-3 control-label",
+          title = "Colour palette to use for the CTI values",
+          "CTI colours"
+        ),
+        div(
+          class = "col-lg-9",
+          selectInput(
+            inputId = "plot_tile_colour_palette",
+            label = NULL,
+            choices = names(preset.palettes),
+            selected = "RB"
+          )
+        )
+      ),
 
       div(
         class = "form-group",
@@ -533,7 +547,7 @@ server <- function(input, output) {
         div(
           class = "col-lg-9",
           selectInput(
-            inputId = "plot_input_x",
+            inputId = "plot_tile_x_drug",
             label = NULL,
             choices = grep(
               x = colnames(cti_plot_data()),
@@ -559,7 +573,7 @@ server <- function(input, output) {
         div(
           class = "col-lg-9",
           textInput(
-            inputId = "plot_input_x_label",
+            inputId = "plot_tile_x_text",
             label = NULL,
             value = "Concentration (ug/mL)"
           )
@@ -576,99 +590,12 @@ server <- function(input, output) {
         div(
           class = "col-lg-9",
           numericInput(
-            inputId = "plot_input_x_decimal",
+            inputId = "plot_tile_x_decimal",
             label = NULL,
             value = 2,
             min = 1,
             max = 4,
             step = 1
-          )
-        )
-      ),
-
-      div(
-        class = "form-group",
-        tags$label(
-          class = "col-lg-3 control-label",
-          title = paste0(
-            "Should axis scales be 'Free', 'Fixed', or free in ",
-            "only one dimension?"
-          ),
-          "Scales"
-        ),
-        div(
-          class = "col-lg-9",
-          selectInput(
-            inputId = "plot_input_scales",
-            label = NULL,
-            choices = c(
-              "Free" = "free",
-              "Fixed" = "fixed",
-              "Free X" = "free_x",
-              "Free Y" = "free_y"
-            ),
-            selected = "free"
-          )
-        )
-      ),
-
-      div(
-        class = "form-group",
-        tags$label(
-          class = "col-lg-3 control-label",
-          title = "Threshold for calculating MICs; applies to x- and y-axis compounds",
-          "MIC cutoff:"
-        ),
-        div(
-          class = "col-lg-9",
-          numericInput(
-            inputId = "plot_input_mic_threshold",
-            label = NULL,
-            value = 0.5
-          )
-        )
-      ),
-
-      div(
-        class = "form-group",
-        tags$label(
-          class = "col-lg-3 control-label",
-          title = "Draw a line to indicate MIC for x-axis compound?",
-          "X MIC"
-        ),
-        div(
-          class = "col-lg-9",
-          checkboxInput(
-            inputId = "plot_input_x_mic_line",
-            label = "Include?",
-            value = TRUE
-          )
-        )
-      )
-    )
-  })
-
-
-  # | - - Tile/Dot --------------------------------------------------------
-
-  output$plot_inputs_tile_dot <- renderUI({
-    list(
-      h4("Tile & Dot plots:"),
-
-      div(
-        class = "form-group",
-        tags$label(
-          class = "col-lg-3 control-label",
-          title = "Colour palette to use for the CTI values",
-          "CTI colours"
-        ),
-        div(
-          class = "col-lg-9",
-          selectInput(
-            inputId = "plot_input_colour_palette",
-            label = NULL,
-            choices = names(preset.palettes),
-            selected = "RB"
           )
         )
       ),
@@ -683,7 +610,7 @@ server <- function(input, output) {
         div(
           class = "col-lg-9",
           selectInput(
-            inputId = "plot_input_y",
+            inputId = "plot_tile_y_drug",
             label = NULL,
             choices = grep(
               x = colnames(cti_plot_data()),
@@ -709,7 +636,7 @@ server <- function(input, output) {
         div(
           class = "col-lg-9",
           textInput(
-            inputId = "plot_input_y_label",
+            inputId = "plot_tile_y_text",
             label = NULL,
             value = "Concentration (ug/mL)"
           )
@@ -726,7 +653,7 @@ server <- function(input, output) {
         div(
           class = "col-lg-9",
           numericInput(
-            inputId = "plot_input_y_decimal",
+            inputId = "plot_tile_y_decimal",
             label = NULL,
             value = 2,
             min = 1,
@@ -740,15 +667,274 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
-          title = "Draw a line to indicate MIC for y-axis compound?",
-          "Y MIC"
+          title = paste0(
+            "Should axis scales be 'Free', 'Fixed', or free in ",
+            "only one dimension?"
+          ),
+          "Scales"
         ),
         div(
-          class = "col-lg-2",
-          checkboxInput(
-            inputId = "plot_input_y_mic_line",
-            label = "Include?",
-            value = TRUE
+          class = "col-lg-9",
+          selectInput(
+            inputId = "plot_tile_scales",
+            label = NULL,
+            choices = c(
+              "Free" = "free",
+              "Fixed" = "fixed",
+              "Free X" = "free_x",
+              "Free Y" = "free_y"
+            ),
+            selected = "free"
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          title = "Threshold for calculating MICs; applies to x- and y-axis compounds",
+          "MIC cutoff:"
+        ),
+        div(
+          class = "col-lg-9",
+          numericInput(
+            inputId = "plot_tile_mic_threshold",
+            label = NULL,
+            value = 0.5
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          title = "Include MIC lines on x- or y-axis",
+          "Draw MICs"
+        ),
+        div(
+          class = "col-lg-9",
+          checkboxGroupInput(
+            inputId = "plot_tile_mic_lines",
+            label = NULL,
+            choices = c("X", "Y"),
+            selected = c("X", "Y"),
+            inline = TRUE,
+          )
+        )
+      )
+    )
+  })
+
+
+  # | - - Dot -------------------------------------------------------------
+
+  output$plot_inputs_tile_dot <- renderUI({
+    list(
+      div(
+        class = "form-group",
+        style = "margin-top: 15px",
+        tags$label(
+          class = "col-lg-3 control-label",
+          title = "Colour palette to use for the CTI values",
+          "CTI colours"
+        ),
+        div(
+          class = "col-lg-9",
+          selectInput(
+            inputId = "plot_dot_colour_palette",
+            label = NULL,
+            choices = names(preset.palettes),
+            selected = "RB"
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          title = "Compound on the x-axis",
+          "X compound"
+        ),
+        div(
+          class = "col-lg-9",
+          selectInput(
+            inputId = "plot_dot_x_drug",
+            label = NULL,
+            choices = grep(
+              x = colnames(cti_plot_data()),
+              pattern = "conc",
+              value = TRUE
+            ),
+            selected = grep(
+              x = colnames(cti_plot_data()),
+              pattern = "conc",
+              value = TRUE
+            )[1]
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          title = "Label for the x-axis; applies to the entire plot",
+          "X axis label"
+        ),
+        div(
+          class = "col-lg-9",
+          textInput(
+            inputId = "plot_dot_x_text",
+            label = NULL,
+            value = "Concentration (ug/mL)"
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          title = "Number of decimal places to show for the x-axis",
+          "X axis digits"
+        ),
+        div(
+          class = "col-lg-9",
+          numericInput(
+            inputId = "plot_dot_x_decimal",
+            label = NULL,
+            value = 2,
+            min = 1,
+            max = 4,
+            step = 1
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          title = "Compound on the y-axis",
+          "Y compound"
+        ),
+        div(
+          class = "col-lg-9",
+          selectInput(
+            inputId = "plot_dot_y_drug",
+            label = NULL,
+            choices = grep(
+              x = colnames(cti_plot_data()),
+              pattern = "conc",
+              value = TRUE
+            ),
+            selected = grep(
+              x = colnames(cti_plot_data()),
+              pattern = "conc",
+              value = TRUE
+            )[2]
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          title = "Label for the y-axis; applies to the entire plot",
+          "Y axis label"
+        ),
+        div(
+          class = "col-lg-9",
+          textInput(
+            inputId = "plot_dot_y_text",
+            label = NULL,
+            value = "Concentration (ug/mL)"
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          title = "Number of decimal places to show for the y-axis",
+          "Y axis digits"
+        ),
+        div(
+          class = "col-lg-9",
+          numericInput(
+            inputId = "plot_dot_y_decimal",
+            label = NULL,
+            value = 2,
+            min = 1,
+            max = 4,
+            step = 1
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          title = paste0(
+            "Should axis scales be 'Free', 'Fixed', or free in ",
+            "only one dimension?"
+          ),
+          "Scales"
+        ),
+        div(
+          class = "col-lg-9",
+          selectInput(
+            inputId = "plot_dot_scales",
+            label = NULL,
+            choices = c(
+              "Free" = "free",
+              "Fixed" = "fixed",
+              "Free X" = "free_x",
+              "Free Y" = "free_y"
+            ),
+            selected = "free"
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          title = "Threshold for calculating MICs; applies to x- and y-axis compounds",
+          "MIC cutoff:"
+        ),
+        div(
+          class = "col-lg-9",
+          numericInput(
+            inputId = "plot_dot_mic_threshold",
+            label = NULL,
+            value = 0.5
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          title = "Include MIC lines on x- or y-axis",
+          "Draw MICs"
+        ),
+        div(
+          class = "col-lg-9",
+          checkboxGroupInput(
+            inputId = "plot_dot_mic_lines",
+            label = NULL,
+            choices = c("X", "Y"),
+            selected = c("X", "Y"),
+            inline = TRUE,
           )
         )
       )
@@ -760,10 +946,9 @@ server <- function(input, output) {
 
   output$plot_inputs_line <- renderUI({
     list(
-      h4("Line plots:"),
-
       div(
         class = "form-group",
+        style = "margin-top: 15px",
         tags$label(
           class = "col-lg-3 control-label",
           "Line type"
@@ -771,7 +956,8 @@ server <- function(input, output) {
         div(
           class = "col-lg-9",
           radioButtons(
-            inputId = "plot_input_line_type",
+            inputId = "plot_line_type",
+            inline = TRUE,
             label = NULL,
             choices = c(
               "Replicates" = "replicates",
@@ -786,13 +972,76 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
+          title = "Compound on the x-axis",
+          "X compound"
+        ),
+        div(
+          class = "col-lg-9",
+          selectInput(
+            inputId = "plot_line_x_drug",
+            label = NULL,
+            choices = grep(
+              x = colnames(cti_plot_data()),
+              pattern = "conc",
+              value = TRUE
+            ),
+            selected = grep(
+              x = colnames(cti_plot_data()),
+              pattern = "conc",
+              value = TRUE
+            )[1]
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          title = "Label for the x-axis; applies to the entire plot",
+          "X axis label"
+        ),
+        div(
+          class = "col-lg-9",
+          textInput(
+            inputId = "plot_line_x_text",
+            label = NULL,
+            value = "Concentration (ug/mL)"
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          title = "Number of decimal places to show for the x-axis",
+          "X axis digits"
+        ),
+        div(
+          class = "col-lg-9",
+          numericInput(
+            inputId = "plot_line_x_decimal",
+            label = NULL,
+            value = 2,
+            min = 1,
+            max = 4,
+            step = 1
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
           title = "Compound mapped to different lines",
           "Line compound"
         ),
         div(
           class = "col-lg-9",
           selectInput(
-            inputId = "plot_input_line",
+            inputId = "plot_line_line_drug",
             label = NULL,
             choices = grep(
               x = colnames(cti_plot_data()),
@@ -818,7 +1067,7 @@ server <- function(input, output) {
         div(
           class = "col-lg-9",
           selectInput(
-            inputId = "plot_input_lines_include",
+            inputId = "plot_line_line_include",
             label = NULL,
             multiple = TRUE,
             choices = c()
@@ -836,7 +1085,7 @@ server <- function(input, output) {
         div(
           class = "col-lg-9",
           textInput(
-            inputId = "plot_input_line_label",
+            inputId = "plot_line_line_text",
             label = NULL,
             value = "Concentration (ug/mL)"
           )
@@ -853,7 +1102,7 @@ server <- function(input, output) {
         div(
           class = "col-lg-9",
           numericInput(
-            inputId = "plot_input_line_decimal",
+            inputId = "plot_line_line_decimal",
             label = NULL,
             value = 1,
             min = 1,
@@ -873,7 +1122,7 @@ server <- function(input, output) {
         div(
           class = "col-lg-9",
           selectInput(
-            inputId = "plot_input_line_colours",
+            inputId = "plot_line_colour_palette",
             label = NULL,
             choices = sort(rownames(RColorBrewer::brewer.pal.info)),
             selected = "Spectral"
@@ -885,15 +1134,24 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
-          title = "Apply a 'jitter' along the x-axis to prevent overlapping lines",
-          "X values"
+          title = paste0(
+            "Should axis scales be 'Free', 'Fixed', or free in ",
+            "only one dimension?"
+          ),
+          "Scales"
         ),
         div(
-          class = "col-lg-2",
-          checkboxInput(
-            inputId = "plot_input_jitter_x",
-            label = "Jitter",
-            value = TRUE
+          class = "col-lg-9",
+          selectInput(
+            inputId = "plot_line_scales",
+            label = NULL,
+            choices = c(
+              "Free" = "free",
+              "Fixed" = "fixed",
+              "Free X" = "free_x",
+              "Free Y" = "free_y"
+            ),
+            selected = "free"
           )
         )
       ),
@@ -908,9 +1166,62 @@ server <- function(input, output) {
         div(
           class = "col-lg-9",
           textInput(
-            inputId = "plot_input_y_label2",
+            inputId = "plot_line_y_text",
             label = NULL,
             value = "% Biofilm"
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          title = "Apply a 'jitter' along the x-axis to prevent overlapping lines",
+          "X values"
+        ),
+        div(
+          class = "col-lg-2",
+          checkboxInput(
+            inputId = "plot_line_jitter_x",
+            label = "Jitter",
+            value = TRUE
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          title = "Threshold for calculating MICs; applies to x- and y-axis compounds",
+          "MIC cutoff:"
+        ),
+        div(
+          class = "col-lg-9",
+          numericInput(
+            inputId = "plot_line_mic_threshold",
+            label = NULL,
+            value = 0.5
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
+          title = "Include MIC lines on x- or y-axis",
+          "Draw MICs"
+        ),
+        div(
+          class = "col-lg-9",
+          checkboxGroupInput(
+            inputId = "plot_line_mic_lines",
+            label = NULL,
+            choices = c("X"),
+            selected = c("X"),
+            inline = TRUE,
           )
         )
       )
@@ -920,15 +1231,15 @@ server <- function(input, output) {
 
   # |- Update inputs ------------------------------------------------------
 
-  observeEvent(input$plot_input_line, {
+  observeEvent(input$plot_line_type, {
     req(cti_plot_data())
 
     unique_conc <- cti_plot_data() %>%
-      pull(input$plot_input_line) %>%
+      pull(input$plot_line_line_drug) %>%
       unique()
 
     updateSelectInput(
-      inputId = "plot_input_lines_include",
+      inputId = "plot_line_line_include",
       choices = unique_conc,
       selected = unique_conc
     )
@@ -941,50 +1252,48 @@ server <- function(input, output) {
     req(cti_plot_data())
 
     output$cti_plot <- renderPlot(
-      if (isolate(input$vis_tab_radio_input) == "Tile") {
+      if (isolate(input$visualize_tabs) == "Tile") {
         cti.tile.plot(
           data = cti_plot_data(),
-          x.drug = isolate(input$plot_input_x),
-          y.drug = isolate(input$plot_input_y),
+          x.drug = isolate(input$plot_tile_x_drug),
+          y.drug = isolate(input$plot_tile_y_drug),
           col.fill = "cti_avg",
           col.analysis = "assay",
           n.cols = cti_plot_dims()[[1]],
           n.rows = cti_plot_dims()[[2]],
-          scales = isolate(input$plot_input_scales),
-          x.decimal = isolate(input$plot_input_x_decimal),
-          y.decimal = isolate(input$plot_input_y_decimal),
-          x.text = isolate(input$plot_input_x_label),
-          y.text = isolate(input$plot_input_y_label),
-          x.mic.line = isolate(input$plot_input_x_mic_line),
-          y.mic.line = isolate(input$plot_input_y_mic_line),
-          mic.threshold = isolate(input$plot_input_mic_threshold),
+          scales = isolate(input$plot_tile_scales),
+          x.decimal = isolate(input$plot_tile_x_decimal),
+          y.decimal = isolate(input$plot_tile_y_decimal),
+          x.text = isolate(input$plot_tile_x_text),
+          y.text = isolate(input$plot_tile_y_text),
+          x.mic.line = ("X" %in% isolate(input$plot_tile_mic_lines)),
+          y.mic.line = ("Y" %in% isolate(input$plot_tile_mic_lines)),
+          mic.threshold = isolate(input$plot_tile_mic_threshold),
           col.mic = "bio_normal",
-          colour.palette = isolate(input$plot_input_colour_palette),
-          add.axis.lines = TRUE
+          colour.palette = isolate(input$plot_tile_colour_palette)
         )
-      } else if (isolate(input$vis_tab_radio_input) == "Dot") {
+      } else if (isolate(input$visualize_tabs) == "Dot") {
         cti.dot.plot(
           data = cti_plot_data(),
-          x.drug = isolate(input$plot_input_x),
-          y.drug = isolate(input$plot_input_y),
+          x.drug = isolate(input$plot_dot_x_drug),
+          y.drug = isolate(input$plot_dot_y_drug),
           col.fill = "cti_avg",
           col.size = "effect_avg",
           col.analysis = "assay",
           n.cols = cti_plot_dims()[[1]],
           n.rows = cti_plot_dims()[[2]],
-          scales = isolate(input$plot_input_scales),
-          x.decimal = isolate(input$plot_input_x_decimal),
-          y.decimal = isolate(input$plot_input_y_decimal),
-          x.text = isolate(input$plot_input_x_label),
-          y.text = isolate(input$plot_input_y_label),
-          x.mic.line = isolate(input$plot_input_x_mic_line),
-          y.mic.line = isolate(input$plot_input_y_mic_line),
-          mic.threshold = isolate(input$plot_input_mic_threshold),
+          scales = isolate(input$plot_dot_scales),
+          x.decimal = isolate(input$plot_dot_x_decimal),
+          y.decimal = isolate(input$plot_dot_y_decimal),
+          x.text = isolate(input$plot_dot_x_text),
+          y.text = isolate(input$plot_dot_y_text),
+          x.mic.line = ("X" %in% isolate(input$plot_dot_mic_lines)),
+          y.mic.line = ("Y" %in% isolate(input$plot_dot_mic_lines)),
+          mic.threshold = isolate(input$plot_dot_mic_threshold),
           col.mic = "bio_normal",
-          colour.palette = isolate(input$plot_input_colour_palette),
-          add.axis.lines = TRUE
+          colour.palette = isolate(input$plot_dot_colour_palette)
         )
-      } else if (isolate(input$vis_tab_radio_input) == "Line") {
+      } else if (isolate(input$visualize_tabs) == "Line") {
 
         if (max(cti_plot_data()$bio_normal) > 1.5 ) {
           showNotification(
@@ -995,25 +1304,24 @@ server <- function(input, output) {
 
         cti.line.plot(
           data = cti_plot_data(),
-          plot.type = isolate(input$plot_input_line_type),
-          jitter.x = isolate(input$plot_input_jitter_x),
-          x.drug = isolate(input$plot_input_x),
+          plot.type = isolate(input$plot_line_type),
+          x.drug = isolate(input$plot_line_x_drug),
+          line.drug = isolate(input$plot_line_line_drug),
           col.data = "bio_normal",
-          line.drug = isolate(input$plot_input_line),
-          line.include = isolate(input$plot_input_lines_include),
-          colour.palette = isolate(input$plot_input_line_colours),
           col.analysis = "assay",
+          line.include = isolate(input$plot_line_line_include),
           n.cols = cti_plot_dims()[[1]],
           n.rows = cti_plot_dims()[[2]],
-          scales = isolate(input$plot_input_scales),
-          x.decimal = isolate(input$plot_input_x_decimal),
-          line.decimal = isolate(input$plot_input_line_decimal),
-          x.mic.line = isolate(input$plot_input_x_mic_line),
-          mic.threshold = isolate(input$plot_input_mic_threshold),
-          x.text = isolate(input$plot_input_x_label),
-          y.text = isolate(input$plot_input_y_label2),
-          line.text = isolate(input$plot_input_line_label),
-          add.axis.lines = TRUE
+          scales = isolate(input$plot_line_scales),
+          x.decimal = isolate(input$plot_line_x_decimal),
+          line.decimal = isolate(input$plot_line_line_decimal),
+          x.text = isolate(input$plot_line_x_text),
+          y.text = isolate(input$plot_line_y_text),
+          line.text = isolate(input$plot_line_line_text),
+          x.mic.line = ("X" %in% isolate(input$plot_line_mic_lines)),
+          mic.threshold = isolate(input$plot_line_mic_threshold),
+          jitter.x = isolate(input$plot_line_jitter_x),
+          colour.palette = isolate(input$plot_line_colour_palette)
         )
       }
     )
@@ -1023,14 +1331,12 @@ server <- function(input, output) {
     req(cti_plot_data())
 
     output$vis_tab_plot_ui <- renderUI(
-      tagList(
-        plotOutput(
-          outputId = "cti_plot",
-          inline = FALSE,
-          height = 100 + (300 * cti_plot_dims()[[2]]),
-          width = ifelse(cti_plot_dims()[[1]] == 1, "60%", "100%")
-        ) %>% shinycssloaders::withSpinner()
-      )
+      plotOutput(
+        outputId = "cti_plot",
+        inline = FALSE,
+        height = 100 + (300 * cti_plot_dims()[[2]]),
+        width = ifelse(cti_plot_dims()[[1]] == 1, "60%", "100%")
+      ) %>% shinycssloaders::withSpinner()
     )
   })
 } # Shiny sever close
