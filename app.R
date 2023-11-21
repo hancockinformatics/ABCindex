@@ -1,7 +1,3 @@
-# TODO
-# - Change colour schemes
-
-
 # Load packages -----------------------------------------------------------
 
 library(dplyr)
@@ -14,8 +10,8 @@ library(shiny)
 
 ui <- fluidPage(
 
-  HTML("<base target='_blank' rel='noopener noreferrer'>"),
   theme = "css/cosmo_bootstrap.css",
+  HTML("<base target='_blank' rel='noopener noreferrer'>"),
   useShinyjs(),
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "css/custom.css"),
@@ -53,7 +49,7 @@ ui <- fluidPage(
 
 
     navbarMenu(
-      title = "",
+      title = NULL,
       icon = icon("bars"),
 
       # Home page -----------------------------------------------------------

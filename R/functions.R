@@ -990,7 +990,7 @@ cti.dot.plot <- function(
   data_nozero <- data_nozero[!data_nozero[, y.drug] == 0, ]
 
 
-  # 4. The graph uses geom_tile() as the main geometry
+  # 4. The graph uses geom_point() as the main geometry
   ggplot(data_nozero, aes(.data[[x.drug]], .data[[y.drug]])) +
 
     geom_point(
@@ -1333,7 +1333,6 @@ cti.line.plot <- function(
     )) +
 
     {if (max(data_avg[col.data]) > 1.5) {
-      warning("Squishing values over 1.5")
       scale_y_continuous(
         limits = c(0, 1.5),
         breaks = seq(0, 1.5, 0.5),
