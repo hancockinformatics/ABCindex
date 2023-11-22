@@ -220,10 +220,10 @@ abci.analysis <- function(
   options("cli.progress_show_after" = 0)
 
   # If "col.analysis" is NULL (default), assume input "data" is a single
-  # analysis, and make the usual call to `abci.calculations()`
+  # analysis, and make the usual call to `abci.analysis.single()`
   if (is.null(col.analysis)) {
 
-    results.abci <- abci.calculations(
+    results.abci <- abci.analysis.single(
       data = data,
       x.drug = x.drug,
       y.drug = y.drug,
@@ -250,7 +250,7 @@ abci.analysis <- function(
       cli::cli_progress_along(data.split, "Calculating ABCi values"),
       function(i) {
 
-        abci.calculations(
+        abci.analysis.single(
           data = data.split[[i]],
           x.drug = x.drug,
           y.drug = y.drug,
@@ -315,7 +315,7 @@ abci.analysis <- function(
 #'   and shouldn't be used directly. It handles one assay/analysis (i.e. a sheet
 #'   within a spreadsheet), dealing with replicates accordingly.
 #'
-abci.calculations <- function(
+abci.analysis.single <- function(
     data,
     x.drug,
     y.drug,
