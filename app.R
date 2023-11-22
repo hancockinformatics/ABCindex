@@ -47,17 +47,17 @@ ui <- fluidPage(
   navbarPage(
     id = "navbar",
     position = "static-top",
-    windowTitle = "ShinyCTI",
+    windowTitle = "ShinyABCi",
     title = div(
       id = "title_tab_bar",
 
-      HTML("<p title='Welcome to ShinyCTI!'>ShinyCTI</p>"),
+      HTML("<p title='Welcome to ShinyABCi!'>ShinyABCi</p>"),
 
       div(
         id = "github-img",
         HTML(paste0(
-          "<a href='https://github.com/hancockinformatics/ShinyCTI'> ",
-          "<img src='github.svg' title='Visit ShinyCTI on Github to browse ",
+          "<a href='https://github.com/hancockinformatics/ShinyABCi'> ",
+          "<img src='github.svg' title='Visit ShinyABCi on Github to browse ",
           "the code or submit an issue.' alt='Github'> </a>"
         ))
       )
@@ -77,7 +77,7 @@ ui <- fluidPage(
           class = "jumbotron",
           HTML("<h1 style='margin-top: 15px;'>Welcome</h1>"),
           p("Here is some welcome text."),
-          p("Blah blah blah CTI blah blah biofilm blah blah blah synergy."),
+          p("Blah blah blah ABCi blah blah biofilm blah blah blah."),
 
           br(),
 
@@ -134,7 +134,7 @@ ui <- fluidPage(
             disabled(
               actionButton(
                 inputId = "upload_tab_proceed_button",
-                label = "Proceed to CTI calculations",
+                label = "Proceed to ABCi calculations",
                 class = "btn btn-primary btn-tooltip",
                 icon = icon("arrow-right"),
                 title = "Upload your plate data, then click here to analyze"
@@ -159,7 +159,7 @@ ui <- fluidPage(
           sidebarPanel = sidebarPanel(
             id = "results_sidebarpanel",
 
-            h3("CTI results"),
+            h3("ABCi results"),
             p("Information about interpreting the results."),
 
             checkboxInput(
@@ -171,7 +171,7 @@ ui <- fluidPage(
             disabled(
               actionButton(
                 inputId = "upload_tab_submit_button",
-                label = "Perform CTI calculations",
+                label = "Perform ABCi calculations",
                 icon = icon("calculator"),
                 class = "btn btn-primary btn-tooltip"
               )
@@ -179,7 +179,7 @@ ui <- fluidPage(
 
             div(id = "analysis_tab_input_names_ui"),
 
-            uiOutput("cti_results_button"),
+            uiOutput("abci_results_button"),
           ),
 
           mainPanel = mainPanel(
@@ -199,7 +199,7 @@ ui <- fluidPage(
         sidebarLayout(
           sidebarPanel = sidebarPanel(
             id = "vis_sidebarpanel",
-            h3("Visualize CTI results"),
+            h3("Visualize ABCi results"),
             p("Information about the different visualization available."),
 
 
@@ -277,7 +277,7 @@ server <- function(input, output) {
   # |- User data ----------------------------------------------------------
 
   observeEvent(input$upload_tab_user_data, {
-    cti.reader(input$upload_tab_user_data$datapath) %>%
+    abci.reader(input$upload_tab_user_data$datapath) %>%
       upload_tab_data_1()
   })
 
@@ -290,7 +290,7 @@ server <- function(input, output) {
     if (file.exists("example_data/cti_example_data_type2.xlsx")) {
       upload_tab_example_indicator(1)
 
-      cti.reader("example_data/cti_example_data_type2.xlsx") %>%
+      abci.reader("example_data/cti_example_data_type2.xlsx") %>%
         upload_tab_data_1()
     } else {
       showNotification("Example data not found!", type = "error")
@@ -375,12 +375,12 @@ server <- function(input, output) {
 
   # |- Display results ----------------------------------------------------
 
-  cti_results <- reactiveVal()
+  abci_results <- reactiveVal()
 
   observeEvent(input$upload_tab_submit_button, {
     req(upload_tab_data_2())
 
-    cti.analysis(
+    abci.analysis(
       data = upload_tab_data_2(),
       x.drug = "cols_conc",
       y.drug = "rows_conc",
@@ -388,26 +388,26 @@ server <- function(input, output) {
       col.analysis = "assay",
       col.reps = "replicate",
       normalize = input$analysis_tab_check_normal
-    ) %>% cti_results()
+    ) %>% abci_results()
   })
 
-  cti_results_display <- reactive({
-    req(cti_results())
+  abci_results_display <- reactive({
+    req(abci_results())
 
-    cti_results() %>%
+    abci_results() %>%
       # select(
       #   any_of(c("assay", "replicate")),
       #   starts_with("cols"),
       #   starts_with("rows"),
-      #   starts_with("cti")
+      #   starts_with("abci")
       # ) %>%
       mutate(across(where(is.numeric), ~signif(.x, digits = 4))) %>%
       split(x = ., f = .$assay) %>%
       purrr::map(~select(.x, -assay))
   })
 
-  observeEvent(cti_results_display(), {
-    req(cti_results_display())
+  observeEvent(abci_results_display(), {
+    req(abci_results_display())
 
     removeUI(selector = "#analysis_tab_assay_selection")
     insertUI(
@@ -419,7 +419,7 @@ server <- function(input, output) {
         selectInput(
           inputId = "analysis_tab_user_data_sheet_name",
           label = "Select an uploaded sheet to see the results:",
-          choices = names(cti_results_display())
+          choices = names(abci_results_display())
         ),
         hr()
       ))
@@ -427,21 +427,20 @@ server <- function(input, output) {
   })
 
   output$results_table_output <- DT::renderDataTable(
-    cti_results_display()[[input$analysis_tab_user_data_sheet_name]],
+    abci_results_display()[[input$analysis_tab_user_data_sheet_name]],
     rownames = FALSE,
     class = "table-striped",
     options = list(dom = "tip", pageLength = 15, scrollX = TRUE)
   )
 
-  observeEvent(cti_results_display(), {
-    req(cti_results_display())
+  observeEvent(abci_results_display(), {
+    req(abci_results_display())
 
     insertUI(
       selector = "#analysis_tab_placeholder_div",
       where = "afterEnd",
       ui = tagList(div(
         id = "analysis_tab_table",
-        # br(),
         DT::dataTableOutput("results_table_output")
       ))
     )
@@ -450,13 +449,13 @@ server <- function(input, output) {
 
   # |- Download results ---------------------------------------------------
 
-  output$cti_results_handler <- downloadHandler(
+  output$abci_results_handler <- downloadHandler(
     filename = function() {
       if (upload_tab_example_indicator() == 1) {
-        "shinyCTI_example_data_results.csv"
+        "shinyABCi_example_data_results.csv"
       } else {
         paste0(
-          "shinyCTI_",
+          "shinyABCi_",
           tools::file_path_sans_ext(input$upload_tab_user_data$name),
           "_results.csv"
         )
@@ -464,19 +463,19 @@ server <- function(input, output) {
     },
     content = function(filename) {
       readr::write_csv(
-        x = cti_results(),
+        x = abci_results(),
         file = filename
       )
     }
   )
 
   observeEvent(input$upload_tab_submit_button, {
-    output$cti_results_button <- renderUI(
+    output$abci_results_button <- renderUI(
       tagList(
         div(
           class = "form-group",
           downloadButton(
-            outputId = "cti_results_handler",
+            outputId = "abci_results_handler",
             label = "Download your results",
             class = "btn btn-success"
           ),
@@ -502,12 +501,12 @@ server <- function(input, output) {
     )
   })
 
-  cti_plot_data <- reactive(cti_results())
+  abci_plot_data <- reactive(abci_results())
 
-  cti_plot_dims <- reactive({
-    req(cti_plot_data())
+  abci_plot_dims <- reactive({
+    req(abci_plot_data())
 
-    n_assay <- length(unique(cti_plot_data()$assay))
+    n_assay <- length(unique(abci_plot_data()$assay))
     n_rows <- ceiling(n_assay / 2)
     n_cols <- ifelse(n_assay == 1, 1, 2)
     list(n_cols, n_rows)
@@ -539,8 +538,8 @@ server <- function(input, output) {
         style = "margin-top: 15px",
         tags$label(
           class = "col-lg-3 control-label",
-          title = "Colour palette to use for the CTI values",
-          "CTI colours"
+          title = "Colour palette to use for the ABCi values",
+          "ABCi colours"
         ),
         div(
           class = "col-lg-9",
@@ -566,12 +565,12 @@ server <- function(input, output) {
             inputId = "plot_tile_x_drug",
             label = NULL,
             choices = grep(
-              x = colnames(cti_plot_data()),
+              x = colnames(abci_plot_data()),
               pattern = "conc",
               value = TRUE
             ),
             selected = grep(
-              x = colnames(cti_plot_data()),
+              x = colnames(abci_plot_data()),
               pattern = "conc",
               value = TRUE
             )[1]
@@ -629,12 +628,12 @@ server <- function(input, output) {
             inputId = "plot_tile_y_drug",
             label = NULL,
             choices = grep(
-              x = colnames(cti_plot_data()),
+              x = colnames(abci_plot_data()),
               pattern = "conc",
               value = TRUE
             ),
             selected = grep(
-              x = colnames(cti_plot_data()),
+              x = colnames(abci_plot_data()),
               pattern = "conc",
               value = TRUE
             )[2]
@@ -753,8 +752,8 @@ server <- function(input, output) {
         style = "margin-top: 15px",
         tags$label(
           class = "col-lg-3 control-label",
-          title = "Colour palette to use for the CTI values",
-          "CTI colours"
+          title = "Colour palette to use for the ABCi values",
+          "ABCi colours"
         ),
         div(
           class = "col-lg-9",
@@ -780,12 +779,12 @@ server <- function(input, output) {
             inputId = "plot_dot_x_drug",
             label = NULL,
             choices = grep(
-              x = colnames(cti_plot_data()),
+              x = colnames(abci_plot_data()),
               pattern = "conc",
               value = TRUE
             ),
             selected = grep(
-              x = colnames(cti_plot_data()),
+              x = colnames(abci_plot_data()),
               pattern = "conc",
               value = TRUE
             )[1]
@@ -843,12 +842,12 @@ server <- function(input, output) {
             inputId = "plot_dot_y_drug",
             label = NULL,
             choices = grep(
-              x = colnames(cti_plot_data()),
+              x = colnames(abci_plot_data()),
               pattern = "conc",
               value = TRUE
             ),
             selected = grep(
-              x = colnames(cti_plot_data()),
+              x = colnames(abci_plot_data()),
               pattern = "conc",
               value = TRUE
             )[2]
@@ -997,12 +996,12 @@ server <- function(input, output) {
             inputId = "plot_line_x_drug",
             label = NULL,
             choices = grep(
-              x = colnames(cti_plot_data()),
+              x = colnames(abci_plot_data()),
               pattern = "conc",
               value = TRUE
             ),
             selected = grep(
-              x = colnames(cti_plot_data()),
+              x = colnames(abci_plot_data()),
               pattern = "conc",
               value = TRUE
             )[1]
@@ -1060,12 +1059,12 @@ server <- function(input, output) {
             inputId = "plot_line_line_drug",
             label = NULL,
             choices = grep(
-              x = colnames(cti_plot_data()),
+              x = colnames(abci_plot_data()),
               pattern = "conc",
               value = TRUE
             ),
             selected = grep(
-              x = colnames(cti_plot_data()),
+              x = colnames(abci_plot_data()),
               pattern = "conc",
               value = TRUE
             )[2]
@@ -1257,9 +1256,9 @@ server <- function(input, output) {
   # |- Update inputs ------------------------------------------------------
 
   observeEvent(input$plot_line_type, {
-    req(cti_plot_data())
+    req(abci_plot_data())
 
-    unique_conc <- cti_plot_data() %>%
+    unique_conc <- abci_plot_data() %>%
       pull(input$plot_line_line_drug) %>%
       unique()
 
@@ -1274,18 +1273,18 @@ server <- function(input, output) {
   # |- Draw the plot ------------------------------------------------------
 
   observeEvent(input$draw, {
-    req(cti_plot_data())
+    req(abci_plot_data())
 
-    output$cti_plot <- renderPlot(
+    output$abci_plot <- renderPlot(
       if (isolate(input$visualize_tabs) == "tile") {
-        cti.tile.plot(
-          data = cti_plot_data(),
+        abci.tile.plot(
+          data = abci_plot_data(),
           x.drug = isolate(input$plot_tile_x_drug),
           y.drug = isolate(input$plot_tile_y_drug),
-          col.fill = "cti_avg",
+          col.fill = "abci_avg",
           col.analysis = "assay",
-          n.cols = cti_plot_dims()[[1]],
-          n.rows = cti_plot_dims()[[2]],
+          n.cols = abci_plot_dims()[[1]],
+          n.rows = abci_plot_dims()[[2]],
           scales = isolate(input$plot_tile_scales),
           x.decimal = isolate(input$plot_tile_x_decimal),
           y.decimal = isolate(input$plot_tile_y_decimal),
@@ -1298,15 +1297,15 @@ server <- function(input, output) {
           colour.palette = isolate(input$plot_tile_colour_palette)
         )
       } else if (isolate(input$visualize_tabs) == "dot") {
-        cti.dot.plot(
-          data = cti_plot_data(),
+        abci.dot.plot(
+          data = abci_plot_data(),
           x.drug = isolate(input$plot_dot_x_drug),
           y.drug = isolate(input$plot_dot_y_drug),
-          col.fill = "cti_avg",
+          col.fill = "abci_avg",
           col.size = "effect_avg",
           col.analysis = "assay",
-          n.cols = cti_plot_dims()[[1]],
-          n.rows = cti_plot_dims()[[2]],
+          n.cols = abci_plot_dims()[[1]],
+          n.rows = abci_plot_dims()[[2]],
           scales = isolate(input$plot_dot_scales),
           x.decimal = isolate(input$plot_dot_x_decimal),
           y.decimal = isolate(input$plot_dot_y_decimal),
@@ -1320,23 +1319,23 @@ server <- function(input, output) {
         )
       } else if (isolate(input$visualize_tabs) == "line") {
 
-        if (max(cti_plot_data()$bio_normal) > 1.5 ) {
+        if (max(abci_plot_data()$bio_normal) > 1.5 ) {
           showNotification(
             ui = "Squishing values over 1.5",
             type = "warning"
           )
         }
 
-        cti.line.plot(
-          data = cti_plot_data(),
+        abci.line.plot(
+          data = abci_plot_data(),
           plot.type = isolate(input$plot_line_type),
           x.drug = isolate(input$plot_line_x_drug),
           line.drug = isolate(input$plot_line_line_drug),
           col.data = "bio_normal",
           col.analysis = "assay",
           line.include = isolate(input$plot_line_line_include),
-          n.cols = cti_plot_dims()[[1]],
-          n.rows = cti_plot_dims()[[2]],
+          n.cols = abci_plot_dims()[[1]],
+          n.rows = abci_plot_dims()[[2]],
           scales = isolate(input$plot_line_scales),
           x.decimal = isolate(input$plot_line_x_decimal),
           line.decimal = isolate(input$plot_line_line_decimal),
@@ -1353,14 +1352,14 @@ server <- function(input, output) {
   })
 
   observeEvent(input$draw, {
-    req(cti_plot_data())
+    req(abci_plot_data())
 
     output$vis_tab_plot_ui <- renderUI(
       plotOutput(
-        outputId = "cti_plot",
+        outputId = "abci_plot",
         inline = FALSE,
-        height = 100 + (300 * cti_plot_dims()[[2]]),
-        width = ifelse(cti_plot_dims()[[1]] == 1, "60%", "100%")
+        height = 100 + (300 * abci_plot_dims()[[2]]),
+        width = ifelse(abci_plot_dims()[[1]] == 1, "60%", "100%")
       ) %>% shinycssloaders::withSpinner()
     )
   })

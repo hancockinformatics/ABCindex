@@ -1,2 +1,2 @@
-# ShinyCTI
-Draft of the upcoming CTI Shiny app.
+# ShinyABCi
+Shiny app to calculate Anti-Biofilm Combined Index (ABCi).

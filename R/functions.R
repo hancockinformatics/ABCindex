@@ -18,7 +18,7 @@
 #' @description The returned list is named based on the names from the sheets,
 #'   with a suffix to denote the plate within each sheet.
 #'
-cti.reader <- function(file, sheet = "all") {
+abci.reader <- function(file, sheet = "all") {
   options("cli.progress_show_after" = 0)
 
   if (sheet == "all") {
@@ -28,7 +28,7 @@ cti.reader <- function(file, sheet = "all") {
     all_data <- lapply(
       cli::cli_progress_along(all_sheets, "Loading plate data"),
       function(i) {
-        cti.reader.single(file, all_sheets[i])
+        abci.reader.single(file, all_sheets[i])
       }
     ) %>% purrr::set_names(all_sheets)
 
@@ -36,7 +36,7 @@ cti.reader <- function(file, sheet = "all") {
     all_data <- lapply(
       cli::cli_progress_along(sheet, "Loading plate data"),
       function(i) {
-        cti.reader.single(file, sheet[i])
+        abci.reader.single(file, sheet[i])
       }
     ) %>% purrr::set_names(sheet)
   }
@@ -60,9 +60,9 @@ cti.reader <- function(file, sheet = "all") {
 #' @export
 #'
 #' @description This function is meant for internal use only, and is called by
-#'   `cti.reader()`. See that help page for more info: `?cti.reader`.
+#'   `abci.reader()`. See that help page for more info: `?abci.reader`.
 #'
-cti.reader.single <- function(file, sheet) {
+abci.reader.single <- function(file, sheet) {
   # Read in the sheet, which can contain one or more plates separated by empty
   # rows
   suppressMessages(
@@ -146,7 +146,7 @@ cti.reader.single <- function(file, sheet) {
 }
 
 
-#' Calculate CTI values for one or more analyses
+#' Calculate ABCi values for one or more analyses
 #'
 #' @param data Data frame containing the concentrations of two drugs, and the
 #'   assay output/measurement
@@ -170,20 +170,20 @@ cti.reader.single <- function(file, sheet) {
 #' \item{effect}{The effect of the drugs; the control value minus the measured
 #' biomass}
 #' \item{min}{Column indicating samples with effects below the set threshold}
-#' \item{cti}{Combined Therapy Index; measure of the efficacy of two or more
-#' drugs combined, relative to their individual performance}
+#' \item{abci}{Anti-Biofilm Combined Index; measure of the efficacy of two or
+#' more drugs combined, relative to their individual performance}
 #' \item{delta}{Optional; simple difference in biofilm killed}
 #' @export
 #'
 #' @description Takes the data of checkerboard assays (surviving biofilm at
 #'   different concentrations of two drugs) and calculates biofilm percentages
-#'   and CTIs. The user provided `data` must contain at least three columns: two
+#'   and ABCi. The user provided `data` must contain at least three columns: two
 #'   with the concentrations of the drugs (`x.drug` and `y.drug`), and one with
 #'   the biomass (`col.data`). Optionally, one can provide `col.analysis` which
 #'   servers to split the single table `data` into groups, which are analyzed
 #'   separately before being recombined in the output.
 #'
-#'   The steps for `cti.analysis()` are as follows:
+#'   The steps for `abci.analysis()` are as follows:
 #'   1. Identify the average `col.data` of the untreated controls, where
 #'   the concentrations of `x.drug` and `y.drug` are 0
 #'   2. Divide all remaing rows of `col.data` by the untreated control value,
@@ -194,11 +194,11 @@ cti.reader.single <- function(file, sheet) {
 #'   with an user provided character (`minflag.char`)
 #'   5. Identify the average "effect" for each concentration of `x.drug` when
 #'   the concentration of `y.drug` is 0. These are the "reference values"
-#'   6. Use the reference values to calculate the CTI of each drug combination
+#'   6. Use the reference values to calculate the ABCi of each drug combination
 #'   7. If requested with "delta = TRUE", also calculate the simple differences
 #'   in biofilm eliminated
 #'
-cti.analysis <- function(
+abci.analysis <- function(
     data,
     x.drug,
     y.drug,
@@ -214,10 +214,10 @@ cti.analysis <- function(
   options("cli.progress_show_after" = 0)
 
   # If "col.analysis" is NULL (default), assume input "data" is a single
-  # analysis, and make the usual call to `cti.calculations()`
+  # analysis, and make the usual call to `abci.calculations()`
   if (is.null(col.analysis)) {
 
-    results.cti <- cti.calculations(
+    results.abci <- abci.calculations(
       data = data,
       x.drug = x.drug,
       y.drug = y.drug,
@@ -231,7 +231,7 @@ cti.analysis <- function(
 
   } else {
     # Otherwise, when "col.analysis" is not NULL, we'll split the input "data"
-    # into a list of data frames, and apply `cti.calculation()` to each, before
+    # into a list of data frames, and apply `abci.calculation()` to each, before
     # binding the results back together.
     stopifnot(
       "Column given by 'col.analysis' must be present in input 'data'" =
@@ -240,11 +240,11 @@ cti.analysis <- function(
 
     data.split <- split(x = data, f = data[col.analysis])
 
-    results.cti.split <- lapply(
-      cli::cli_progress_along(data.split, "Calculating CTIs"),
+    results.abci.split <- lapply(
+      cli::cli_progress_along(data.split, "Calculating ABCi values"),
       function(i) {
 
-        cti.calculations(
+        abci.calculations(
           data = data.split[[i]],
           x.drug = x.drug,
           y.drug = y.drug,
@@ -258,19 +258,19 @@ cti.analysis <- function(
       }
     )
 
-    results.cti <- do.call(rbind, results.cti.split)
-    rownames(results.cti) <- NULL
+    results.abci <- do.call(rbind, results.abci.split)
+    rownames(results.abci) <- NULL
   }
 
   if (!is.null(output)) {
-    write.csv(results.cti, file = output, row.names = FALSE)
+    write.csv(results.abci, file = output, row.names = FALSE)
   }
 
-  return(results.cti)
+  return(results.abci)
 }
 
 
-#' Tidy-calculate CTI values for a single analysis
+#' Tidy-calculate ABCi values for a single analysis
 #'
 #' @param data Data frame containing the concentrations of two drugs, and the
 #'   assay output/measurement
@@ -291,15 +291,15 @@ cti.analysis <- function(
 #' \item{effect}{The effect of the drugs; the control value minus the measured
 #' biomass}
 #' \item{min}{Column indicating samples with effects below the set threshold}
-#' \item{cti}{Combined Therapy Index; measure of the efficacy of two or more
-#' drugs combined, relative to their individual performance}
+#' \item{abci}{Anti-Biofilm Combined Index; measure of the efficacy of two or
+#' more drugs combined, relative to their individual performance}
 #' \item{delta}{Optional; simple difference in biofilm killed}
 #'
 #' @export
 #'
-#' @description This function is only meant to be called by `cti.analysis`, and
+#' @description This function is only meant to be called by `abci.analysis`, and
 #'   shouldn't be used directly.
-cti.calculations <- function(
+abci.calculations <- function(
     data,
     col.reps = NULL,
     x.drug,
@@ -423,13 +423,13 @@ cti.calculations <- function(
       left_join(data_reference_y)
   )
 
-  # CTI: Calculate CTI, using the "effect" in each row and the reference values
+  # ABCi: Calculate ABCi, using the "effect" in each row and the reference values
   # from the previous step. The `rowwise()` call is required to make sure the
   # max reference values are done per-row, NOT over the whole table!
-  data_cti <- data_ref %>%
+  data_abci <- data_ref %>%
     rowwise() %>%
     mutate(
-      cti = case_when(
+      abci = case_when(
         ref_x == 0 & ref_y == 0 & effect == 0 ~ 0,
         ref_x == 0 & ref_y == 0 ~ 100,
         TRUE ~ 2 * (effect - max(ref_x, ref_y)) / sum(ref_x, ref_y)
@@ -438,19 +438,19 @@ cti.calculations <- function(
     ungroup()
 
   if (!is.null(col.reps)) {
-    data_cti <- data_cti %>%
+    data_abci <- data_abci %>%
       group_by(.data[[x.drug]], .data[[y.drug]]) %>%
       mutate(
         bio_normal_avg = mean(bio_normal),
         effect_avg = mean(effect),
-        cti_avg = mean(cti)
+        abci_avg = mean(abci)
       ) %>%
       ungroup()
   }
 
   data_final <-
     if (delta) {
-      data_cti %>%
+      data_abci %>%
         rowwise() %>%
         mutate(delta = case_when(
           ref_x == 0 & ref_y == 0 & effect == 0 ~ 0,
@@ -458,7 +458,7 @@ cti.calculations <- function(
           TRUE ~ (effect - max(ref_x, ref_y)) * 100
         ))
     } else {
-      data_cti
+      data_abci
     }
 
   return(data_final)
@@ -482,7 +482,7 @@ cti.calculations <- function(
 #' @description Uses the provided data frame to determine the Minimum Inhibitory
 #'   Concentration (MIC), based on a desired threshold.
 #'
-cti.mic <- function(
+abci.mic <- function(
     data,
     x.drug,
     y.drug,
@@ -525,9 +525,9 @@ cti.mic <- function(
 }
 
 
-#' Create a tile plot of CTI values
+#' Create a tile plot of ABCi values
 #'
-#' @param data Data frame, as output by `cti.analysis()`
+#' @param data Data frame, as output by `abci.analysis()`
 #' @param x.drug Character; Column containing concentrations for the first drug
 #' @param y.drug Character; Column containing concentrations for the second drug
 #' @param col.fill Character; Column containing the values to plot
@@ -535,9 +535,9 @@ cti.mic <- function(
 #'   by which to facet the plot
 #' @param scales Should the scales be "fixed" (default), "free", or
 #'   "free_x"/"free_y"? See `?facet_wrap` for more details.
-#' @param n.rows Number of rows when facting. Defaults to NULL (let's ggplot2
+#' @param n.rows Number of rows when faceting. Defaults to NULL (let's ggplot2
 #'   choose.)
-#' @param n.cols Number of columns when facting. Defaults to NULL (let's ggplot2
+#' @param n.cols Number of columns when faceting. Defaults to NULL (let's ggplot2
 #'   choose.)
 #' @param x.text Character; Name to give the first drug/x axis
 #' @param y.text Character; Name to give the second drug/y axis
@@ -546,7 +546,7 @@ cti.mic <- function(
 #' @param y.decimal Number of decimal places to show behind y axis labels.
 #'   Defaults to 1.
 #' @param minflag Logical; Should rows previously flagged in
-#'   `cti.analysis()` be labeled? Defaults to FALSE.
+#'   `abci.analysis()` be labeled? Defaults to FALSE.
 #' @param x.mic.line Logical; Include MIC line for the drug on the x axis?
 #'   Default to FALSE.
 #' @param y.mic.line Logical; Include MIC line for the drug on the y axis?
@@ -554,7 +554,7 @@ cti.mic <- function(
 #' @param col.mic Character; Column name to use for calculating MIC
 #' @param mic.threshold Threshold to use when calculating MIC. Defaults to 0.5.
 #' @param delta Logical; Are plotted values the simple "delta" as calculated by
-#'   `cti.analysis()`? Defaults to FALSE.
+#'   `abci.analysis()`? Defaults to FALSE.
 #' @param colour.palette Either one of the pre-made palettes, or a list of
 #'   colours to use
 #' @param n.colours Number of "break points" in the colour legend
@@ -569,14 +569,14 @@ cti.mic <- function(
 #' @export
 #'
 #' @description The main graphic function. It takes the data.frame produced by
-#'   `cti.analysis()`, and uses `ggplot2` to produce a standard CTI graph. If
+#'   `abci.analysis()`, and uses `ggplot2` to produce a standard ABCi graph. If
 #'   requested, this function will calculate the MICs for the individual drugs
 #'   (to make reference lines). The axes are formatted as needed for ggplot2,
 #'   without zero values and with the right significant digits. The
 #'   `col.analysis` argument can be used to create facets to compare different
 #'   assays.
 #'
-cti.tile.plot <- function(
+abci.tile.plot <- function(
     data,
     x.drug,
     y.drug,
@@ -651,7 +651,7 @@ cti.tile.plot <- function(
   }
 
 
-  # 2. MICs are calculated by `cti.mic()` and recovered as a data frame. Drug
+  # 2. MICs are calculated by `abci.mic()` and recovered as a data frame. Drug
   # concentrations need to be converted to positions on their respective axes,
   # as the `geom_(x|y)line` functions only work by position. And since we don't
   # plot zero concentrations, we need to subtract one from the level to end up
@@ -659,7 +659,7 @@ cti.tile.plot <- function(
   if (any(x.mic.line, y.mic.line)) {
 
     if (is.null(col.analysis)) {
-      mic.table <- cti.mic(
+      mic.table <- abci.mic(
         data = data,
         x.drug = x.drug,
         y.drug = y.drug,
@@ -677,7 +677,7 @@ cti.tile.plot <- function(
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
-        result.mic <- cti.mic(
+        result.mic <- abci.mic(
           data = d,
           x.drug = x.drug,
           y.drug = y.drug,
@@ -751,8 +751,8 @@ cti.tile.plot <- function(
 
     scale_fill_gradientn(
       name = ifelse(
-        grepl(x = col.fill, pattern = "cti", ignore.case = TRUE),
-        "CTI",
+        grepl(x = col.fill, pattern = "abci", ignore.case = TRUE),
+        "ABCi",
         col.fill
       ),
       colours = plot.palette,
@@ -805,7 +805,7 @@ cti.tile.plot <- function(
 
 #' col.dot.plot
 #'
-#' @param data Data frame, as output by `cti.analysis()`
+#' @param data Data frame, as output by `abci.analysis()`
 #' @param x.drug Character; Column containing concentrations for the first drug
 #' @param y.drug Character; Column containing concentrations for the second drug
 #' @param col.fill Character; Column containing the values to plot
@@ -827,7 +827,7 @@ cti.tile.plot <- function(
 #' @param y.decimal Number of decimal places to show behind y axis labels.
 #'   Defaults to 1.
 #' @param minflag Logical; Should rows previously flagged in
-#'   `cti.analysis()` be labeled? Defaults to FALSE.
+#'   `abci.analysis()` be labeled? Defaults to FALSE.
 #' @param x.mic.line Logical; Include MIC line for the drug on the x axis?
 #'   Default to FALSE.
 #' @param y.mic.line Logical; Include MIC line for the drug on the y axis?
@@ -835,7 +835,7 @@ cti.tile.plot <- function(
 #' @param col.mic Character; Column name to use for calculating MIC
 #' @param mic.threshold Threshold for calculating MIC. Defaults to 0.5.
 #' @param delta Logical; Are plotted values the simple "delta" as calculated by
-#'   `cti.analysis()`? Defaults to FALSE.
+#'   `abci.analysis()`? Defaults to FALSE.
 #' @param colour.palette Either one of the pre-made palettes, or a list of
 #'   colours to use
 #' @param n.colours Number of "break points" in the colour legend
@@ -850,7 +850,7 @@ cti.tile.plot <- function(
 #' @export
 #'
 #' @examples
-cti.dot.plot <- function(
+abci.dot.plot <- function(
     data,
     x.drug,
     y.drug,
@@ -935,7 +935,7 @@ cti.dot.plot <- function(
   }
 
 
-  # 2. MICs are calculated by `cti.mic()` and recovered as a data frame. Drug
+  # 2. MICs are calculated by `abci.mic()` and recovered as a data frame. Drug
   # concentrations need to be converted to positions on their respective axes,
   # as the `geom_(x|y)line` functions only work by position. And since we don't
   # plot zero concentrations, we need to subtract one from the level to end up
@@ -943,7 +943,7 @@ cti.dot.plot <- function(
   if (any(x.mic.line, y.mic.line)) {
 
     if (is.null(col.analysis)) {
-      mic.table <- cti.mic(
+      mic.table <- abci.mic(
         data = data,
         x.drug = x.drug,
         y.drug = y.drug,
@@ -961,7 +961,7 @@ cti.dot.plot <- function(
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
-        result.mic <- cti.mic(
+        result.mic <- abci.mic(
           data = d,
           x.drug = x.drug,
           y.drug = y.drug,
@@ -1041,8 +1041,8 @@ cti.dot.plot <- function(
 
     scale_colour_gradientn(
       name = ifelse(
-        grepl(x = col.fill, pattern = "cti", ignore.case = TRUE),
-        "CTI",
+        grepl(x = col.fill, pattern = "abci", ignore.case = TRUE),
+        "ABCi",
         col.fill
       ),
       colours = plot.palette,
@@ -1143,7 +1143,7 @@ cti.dot.plot <- function(
 #' @return
 #' @export
 #'
-cti.line.plot <- function(
+abci.line.plot <- function(
     data,
     x.drug,
     col.data,
@@ -1213,7 +1213,7 @@ cti.line.plot <- function(
   if (x.mic.line) {
 
     if (is.null(col.analysis)) {
-      mic.table <- cti.mic(
+      mic.table <- abci.mic(
         data = data,
         x.drug = x.drug,
         y.drug = line.drug,
@@ -1227,7 +1227,7 @@ cti.line.plot <- function(
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
-        result.mic <- cti.mic(
+        result.mic <- abci.mic(
           data = d,
           x.drug = x.drug,
           y.drug = line.drug,
