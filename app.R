@@ -47,10 +47,10 @@ ui <- fluidPage(
       )
     ),
 
-
     navbarMenu(
       title = NULL,
       icon = icon("bars"),
+
 
       # Home page -----------------------------------------------------------
 
@@ -1120,8 +1120,17 @@ server <- function(input, output) {
           selectInput(
             inputId = "plot_line_colour_palette",
             label = NULL,
-            choices = sort(rownames(RColorBrewer::brewer.pal.info)),
-            selected = "Spectral"
+            choices = c(
+              "magma",
+              "inferno",
+              "plasma",
+              "viridis",
+              "cividis",
+              "rocket",
+              "mako",
+              "turbo"
+            ),
+            selected = "viridis"
           )
         )
       ),

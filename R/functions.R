@@ -1153,7 +1153,7 @@ cti.line.plot <- function(
     jitter.x = TRUE,
     x.mic.line = FALSE,
     mic.threshold = 0.5,
-    colour.palette = "Spectral",
+    colour.palette = "viridis",
     col.analysis = NULL,
     scales = "fixed",
     n.rows = NULL,
@@ -1319,8 +1319,8 @@ cti.line.plot <- function(
       geom_vline(data = mic.table, aes(xintercept = XLAB))
     }} +
 
-    scale_color_brewer(
-      palette = colour.palette,
+    scale_colour_viridis_d(
+      option = colour.palette,
       labels = ~sprintf(
         paste0("%.", line.decimal, "f"),
         as.numeric(.x)
