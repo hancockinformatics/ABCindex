@@ -557,7 +557,6 @@ abci.mic <- function(
 #'   `abci.analysis()`? Defaults to FALSE.
 #' @param colour.palette Either one of the pre-made palettes, or a list of
 #'   colours to use
-#' @param n.colours Number of "break points" in the colour legend
 #' @param colour.na Colour assigned to any NA values. Defaults to "white".
 #' @param scale.limits Limits for the colour scale. Defaults to `c(-2, 2)`.
 #' @param scale.breaks Breaks for the colour scale. Defaults to `seq(2, -2,
@@ -582,6 +581,7 @@ abci.tile.plot <- function(
     y.drug,
     col.fill,
     col.analysis = NULL,
+    split = FALSE,
     scales="fixed",
     n.rows = NULL,
     n.cols = NULL,
@@ -596,7 +596,6 @@ abci.tile.plot <- function(
     mic.threshold = 0.5,
     delta = FALSE,
     colour.palette = "YP",
-    n.colours = 2,
     colour.na = "white",
     scale.limits = c(-2.0, 2.0),
     scale.breaks = seq(2, -2, -0.5),
@@ -614,36 +613,44 @@ abci.tile.plot <- function(
   data <- data %>%
     mutate(across(all_of(c(x.drug, y.drug)), forcats::fct_inseq))
 
-  if (colour.palette %in% names(preset.palettes)) {
-    plot.palette <- preset.palettes[[colour.palette]]
-
-    if (colour.palette %in% c("PAN", "SUN", "BOB")) {
-      n.colours <- 3
-    }
-  } else {
-    plot.palette <- colour.palette
-  }
-
   upper <- max(scale.limits)
   lower <- min(scale.limits)
 
-  if (n.colours == 2) {
-    colour.pointers = scales::rescale(
-      c(upper, 3 * upper / 4, upper / 2, upper / 4, 0, lower / 4, 3 * lower / 4, lower),
-      to = c(0, 1)
-    )
-  } else if (n.colours == 3) {
-    colour.pointers = scales::rescale(
-      c(upper, upper / 2, upper / 4, upper / 8, 0, lower / 4, lower / 2, lower),
-      to = c(0, 1)
+  if (!split) {
+    plot.palette <- preset.palettes[[colour.palette]]
+
+    colour.pointers <-
+      if (colour.palette %in% c("PAN", "SUN", "BOB")) {
+        scales::rescale(
+          c(upper, upper / 2, upper / 4, upper / 8, 0, lower / 4, lower / 2, lower),
+          to = c(0, 1)
+        )
+      } else {
+        scales::rescale(
+          c(upper, 3 * upper / 4, upper / 2, upper / 4, 0, lower / 4, 3 * lower / 4, lower),
+          to = c(0, 1)
+        )
+      }
+
+  } else {
+    plot.palette <- preset.palettes.split[[colour.palette]]
+
+    colour.pointers <- list(
+      up = scales::rescale(
+        c(upper, 3 * upper / 4, upper / 2, upper / 4, 0),
+        to = c(0, 1)
+      ),
+      down = scales::rescale(
+        c(lower, 3 * lower / 4, lower / 2, lower / 4, 0),
+        to = c(0, 1)
+      )
     )
   }
 
+
   if (delta) {
     scale.limits <- c(-100, 100)
-
     scale.breaks <- seq(100, -100, -25)
-
     colour.pointers <- scales::rescale(
       c(100, 50, 25, 0, -25, -50, -100),
       to = c(0, 1)
@@ -707,7 +714,7 @@ abci.tile.plot <- function(
 
 
   # 4. The graph uses `geom_raster()` as the main geometry (faster than
-  # `geom_tile()`), and all cells are the same size.
+  # `geom_tile()`), since all cells are the same size.
   ggplot(data_nozero, aes(.data[[x.drug]], .data[[y.drug]])) +
 
     geom_raster(aes(fill = .data[[col.fill]])) +
@@ -838,7 +845,6 @@ abci.tile.plot <- function(
 #'   `abci.analysis()`? Defaults to FALSE.
 #' @param colour.palette Either one of the pre-made palettes, or a list of
 #'   colours to use
-#' @param n.colours Number of "break points" in the colour legend
 #' @param colour.na Colour assigned to any NA values. Defaults to "white".
 #' @param scale.limits Limits for the colour scale. Defaults to `c(-2, 2)`.
 #' @param scale.breaks Breaks for the colour scale. Defaults to `seq(2, -2,
@@ -856,8 +862,9 @@ abci.dot.plot <- function(
     y.drug,
     col.fill,
     col.size,
-    size.range = c(3, 22),
     col.analysis = NULL,
+    split = FALSE,
+    size.range = c(3, 22),
     scales = "fixed",
     n.rows = NULL,
     n.cols = NULL,
@@ -872,7 +879,6 @@ abci.dot.plot <- function(
     mic.threshold = 0.5,
     delta = FALSE,
     colour.palette = "YP",
-    n.colours = 2,
     colour.na = "white",
     scale.limits = c(-2.0, 2.0),
     scale.breaks = seq(2, -2, -0.5),
@@ -890,37 +896,37 @@ abci.dot.plot <- function(
   data <- data %>%
     mutate(across(all_of(c(x.drug, y.drug)), forcats::fct_inseq))
 
-  if (colour.palette %in% names(preset.palettes)) {
-    plot.palette <- preset.palettes[[colour.palette]]
-
-    if (colour.palette %in% c("PAN", "SUN", "BOB")) {
-      n.colours <- 3
-    }
-  } else {
-    plot.palette <- colour.palette
-  }
-
   upper <- max(scale.limits)
   lower <- min(scale.limits)
 
-  if (n.colours == 2) {
-    colour.pointers = scales::rescale(
-      c(
-        upper,
-        3 * upper / 4,
-        upper / 2,
-        upper / 4,
-        0,
-        lower / 4,
-        3 * lower / 4,
-        lower
+  if (!split) {
+    plot.palette <- preset.palettes[[colour.palette]]
+
+    colour.pointers <-
+      if (colour.palette %in% c("PAN", "SUN", "BOB")) {
+        scales::rescale(
+          c(upper, upper / 2, upper / 4, upper / 8, 0, lower / 4, lower / 2, lower),
+          to = c(0, 1)
+        )
+      } else {
+        scales::rescale(
+          c(upper, 3 * upper / 4, upper / 2, upper / 4, 0, lower / 4, 3 * lower / 4, lower),
+          to = c(0, 1)
+        )
+      }
+
+  } else {
+    plot.palette <- preset.palettes.split[[colour.palette]]
+
+    colour.pointers <- list(
+      up = scales::rescale(
+        c(upper, 3 * upper / 4, upper / 2, upper / 4, 0),
+        to = c(0, 1)
       ),
-      to = c(0, 1)
-    )
-  } else if (n.colours == 3) {
-    colour.pointers = scales::rescale(
-      c(upper, upper / 2, upper / 4, upper / 8, 0, lower / 4, lower / 2, lower),
-      to = c(0, 1)
+      down = scales::rescale(
+        c(lower, 3 * lower / 4, lower / 2, lower / 4, 0),
+        to = c(0, 1)
+      )
     )
   }
 
@@ -985,13 +991,8 @@ abci.dot.plot <- function(
   }
 
 
-  # 3. Zero values are removed
-  data_nozero <- data[!data[, x.drug] == 0, ]
-  data_nozero <- data_nozero[!data_nozero[, y.drug] == 0, ]
-
-
-  # 4. The graph uses geom_point() as the main geometry
-  ggplot(data_nozero, aes(.data[[x.drug]], .data[[y.drug]])) +
+  # 3. The graph uses geom_point() as the main geometry
+  ggplot(data, aes(.data[[x.drug]], .data[[y.drug]])) +
 
     geom_point(
       aes(

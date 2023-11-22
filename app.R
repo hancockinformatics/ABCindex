@@ -1,19 +1,19 @@
 # To do -------------------------------------------------------------------
 
 #' - Tile plots: Add checkbox for minflag, using "<" as the character
-#' - Rename to Anti-Biofilm Combination Index (ABCi)
+#' - Include zero concentrations for dot plots
+#' - Increase maximum dot size for dot plots
+#' - Some way to preview colour palettes?
+#'
 #' - Split tile plots: Two options, strict or lax:
 #'     - Positive half: ABCi > 0.1  or ABCi > -1
 #'     - Negative half: ABCi < -0.1 or ABCi < 1
+#'
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
 #'     if (effect > 0.9) {
 #'       add * to tile, or border around dot
 #'     }
 #'   }
-#' - Include zero concentrations for dot plots
-#' - Increase maximum dot size for dot plots
-#' - Swap circles for ellipses?
-#' - Some way to preview colour palettes?
 
 
 # Load packages -----------------------------------------------------------
@@ -287,10 +287,10 @@ server <- function(input, output) {
   upload_tab_example_indicator <- reactiveVal(0)
 
   observeEvent(input$upload_tab_example, {
-    if (file.exists("example_data/cti_example_data_type2.xlsx")) {
+    if (file.exists("example_data/example_data_lucas.xlsx")) {
       upload_tab_example_indicator(1)
 
-      abci.reader("example_data/cti_example_data_type2.xlsx") %>%
+      abci.reader("example_data/example_data_lucas.xlsx") %>%
         upload_tab_data_1()
     } else {
       showNotification("Example data not found!", type = "error")
@@ -1283,6 +1283,7 @@ server <- function(input, output) {
           y.drug = isolate(input$plot_tile_y_drug),
           col.fill = "abci_avg",
           col.analysis = "assay",
+          split = FALSE,
           n.cols = abci_plot_dims()[[1]],
           n.rows = abci_plot_dims()[[2]],
           scales = isolate(input$plot_tile_scales),
@@ -1304,6 +1305,7 @@ server <- function(input, output) {
           col.fill = "abci_avg",
           col.size = "effect_avg",
           col.analysis = "assay",
+          split = FALSE,
           n.cols = abci_plot_dims()[[1]],
           n.rows = abci_plot_dims()[[2]],
           scales = isolate(input$plot_dot_scales),
