@@ -1,3 +1,21 @@
+# To do -------------------------------------------------------------------
+
+#' - Tile plots: Add checkbox for minflag, using "<" as the character
+#' - Rename to Anti-Biofilm Combination Index (ABCi)
+#' - Split tile plots: Two options, strict or lax:
+#'     - Positive half: ABCi > 0.1  or ABCi > -1
+#'     - Negative half: ABCi < -0.1 or ABCi < 1
+#' - if (ref_x < 0.9 & ref_y < 0.9) {
+#'     if (effect > 0.9) {
+#'       add * to tile, or border around dot
+#'     }
+#'   }
+#' - Include zero concentrations for dot plots
+#' - Increase maximum dot size for dot plots
+#' - Swap circles for ellipses?
+#' - Some way to preview colour palettes?
+
+
 # Load packages -----------------------------------------------------------
 
 library(dplyr)
@@ -9,13 +27,11 @@ library(shiny)
 # Define UI ---------------------------------------------------------------
 
 ui <- fluidPage(
-
   theme = "css/cosmo_bootstrap.css",
   HTML("<base target='_blank' rel='noopener noreferrer'>"),
   useShinyjs(),
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "css/custom.css"),
-
     tags$style(
       type = "text/css",
       paste0(
@@ -190,22 +206,26 @@ ui <- fluidPage(
             actionButton(
               inputId = "draw",
               label = "Create or update the plot",
-              class = "btn btn-primary",
-              style = "margin-bottom: 15px;"
+              class = "btn btn-primary"
             ),
-            br(),
+
+            hr(),
+
             tabsetPanel(
               id = "visualize_tabs",
               tabPanel(
-                "Tile",
+                title = strong("Tile"),
+                value = "tile",
                 uiOutput("plot_inputs_tile", fill = TRUE)
               ),
               tabPanel(
-                "Dot",
+                title = strong("Dot"),
+                value = "dot",
                 uiOutput("plot_inputs_tile_dot", fill = TRUE)
               ),
               tabPanel(
-                "Line",
+                title = strong("Line"),
+                value = "line",
                 uiOutput("plot_inputs_line", fill = TRUE)
               )
             )
@@ -1257,7 +1277,7 @@ server <- function(input, output) {
     req(cti_plot_data())
 
     output$cti_plot <- renderPlot(
-      if (isolate(input$visualize_tabs) == "Tile") {
+      if (isolate(input$visualize_tabs) == "tile") {
         cti.tile.plot(
           data = cti_plot_data(),
           x.drug = isolate(input$plot_tile_x_drug),
@@ -1277,7 +1297,7 @@ server <- function(input, output) {
           col.mic = "bio_normal",
           colour.palette = isolate(input$plot_tile_colour_palette)
         )
-      } else if (isolate(input$visualize_tabs) == "Dot") {
+      } else if (isolate(input$visualize_tabs) == "dot") {
         cti.dot.plot(
           data = cti_plot_data(),
           x.drug = isolate(input$plot_dot_x_drug),
@@ -1298,7 +1318,7 @@ server <- function(input, output) {
           col.mic = "bio_normal",
           colour.palette = isolate(input$plot_dot_colour_palette)
         )
-      } else if (isolate(input$visualize_tabs) == "Line") {
+      } else if (isolate(input$visualize_tabs) == "line") {
 
         if (max(cti_plot_data()$bio_normal) > 1.5 ) {
           showNotification(
