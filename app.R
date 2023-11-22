@@ -1,7 +1,6 @@
 # To do -------------------------------------------------------------------
 
 #' - Tile plots: Add checkbox for minflag, using "<" as the character
-#' - Include zero concentrations for dot plots
 #' - Increase maximum dot size for dot plots
 #' - Some way to preview colour palettes?
 #'
@@ -1277,7 +1276,7 @@ server <- function(input, output) {
 
     output$abci_plot <- renderPlot(
       if (isolate(input$visualize_tabs) == "tile") {
-        abci.tile.plot(
+        abci.plot.tile(
           data = abci_plot_data(),
           x.drug = isolate(input$plot_tile_x_drug),
           y.drug = isolate(input$plot_tile_y_drug),
@@ -1298,7 +1297,7 @@ server <- function(input, output) {
           colour.palette = isolate(input$plot_tile_colour_palette)
         )
       } else if (isolate(input$visualize_tabs) == "dot") {
-        abci.dot.plot(
+        abci.plot.dot(
           data = abci_plot_data(),
           x.drug = isolate(input$plot_dot_x_drug),
           y.drug = isolate(input$plot_dot_y_drug),
@@ -1328,7 +1327,7 @@ server <- function(input, output) {
           )
         }
 
-        abci.line.plot(
+        abci.plot.line(
           data = abci_plot_data(),
           plot.type = isolate(input$plot_line_type),
           x.drug = isolate(input$plot_line_x_drug),
