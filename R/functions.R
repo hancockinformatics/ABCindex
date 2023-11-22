@@ -1,22 +1,27 @@
 #' Read a spreadsheet containing plate data
 #'
 #' @param file Path to an Excel spreadsheet, containing one or more sheets
-#'   within, each with data in a 96-well type format.
+#'   within, each with data in a 96 well-type format.
 #' @param sheet Either the specific name(s) of one or more sheets to read data
 #'   from, or "all" to read all sheets.
 #'
-#' @return A list of data frames, one for each plate detected, with the
-#'   following columns:
-#'   \item{rows}{The compound in the rows (A-H)}
+#' @return A list of data frames (tibbles), one for each plate detected, with
+#'   the following columns:
+#'   \item{assay}{The assay or analysis name, pulled from the sheet name}
+#'   \item{replicate}{Denotes different plates within the same sheet. Always
+#'   included, even with only one replicate.}
+#'   \item{well}{Well ID for each row in the data}
 #'   \item{cols}{The compound in the columns (1-12)}
-#'   \item{row_conc}{Concentration of compound in a row}
-#'   \item{col_conc}{Concentration of compound in a column}
+#'   \item{cols_conc}{Concentration of compound in a column}
+#'   \item{rows}{The compound in the rows (A-H)}
+#'   \item{rows_conc}{Concentration of compound in a row}
 #'   \item{bio}{The measured values contained within the wells, for a specific
 #'   row-column combination}
+#'
 #' @export
 #'
 #' @description The returned list is named based on the names from the sheets,
-#'   with a suffix to denote the plate within each sheet.
+#'   with a suffix to denote the plate (replicate) within each sheet.
 #'
 abci.reader <- function(file, sheet = "all") {
   options("cli.progress_show_after" = 0)
@@ -50,13 +55,18 @@ abci.reader <- function(file, sheet = "all") {
 #'   within, each with data in a 96-well type format
 #' @param sheet The name of a specific sheet with `file` to read data from
 #'
-#' @return A data frame with the following columns:
-#'   \item{rows}{The compound in the rows (A-H)}
+#' @return A data frame (tibble), one for each plate detected, with the
+#'   following columns:
+#'   \item{replicate}{Denotes different plates within the same sheet. Always
+#'   included, even with only one replicate.}
+#'   \item{well}{Well ID for each row in the data}
 #'   \item{cols}{The compound in the columns (1-12)}
-#'   \item{row_conc}{Concentration of compound in a row}
-#'   \item{col_conc}{Concentration of compound in a column}
+#'   \item{cols_conc}{Concentration of compound in a column}
+#'   \item{rows}{The compound in the rows (A-H)}
+#'   \item{rows_conc}{Concentration of compound in a row}
 #'   \item{bio}{The measured values contained within the wells, for a specific
 #'   row-column combination}
+#'
 #' @export
 #'
 #' @description This function is meant for internal use only, and is called by
@@ -146,33 +156,45 @@ abci.reader.single <- function(file, sheet) {
 }
 
 
-#' Calculate ABCi values for one or more analyses
+#' Tidy-calculate ABCi values for one or more analyses
 #'
 #' @param data Data frame containing the concentrations of two drugs, and the
 #'   assay output/measurement
-#' @param x.drug Character; Column name which contains concentrations of the
-#'   first drug
-#' @param y.drug Character; Column name which contains concentrations of the
-#'   second drug
-#' @param col.data Character; Column name which contains the measured effect
-#' @param col.analysis Character; Defines a column which separates `data` into
+#' @param x.drug Character; Column name of concentrations of the first drug
+#' @param y.drug Character; Column name of concentrations of the second drug
+#' @param col.data Character; Column name which contains the measured value
+#' @param col.analysis Character; Defines a column which separates the data into
 #'  different analyses, e.g. Crystal Violet and TTC assays.
+#' @param col.reps Character; Column name denoting replicates. Defaults to NULL
+#'   for no replicates.
+#' @param normalize Logical; Should the data be normalized? Defaults to TRUE.
 #' @param delta Logical; Should calculation include simple difference of biofilm
 #'   eliminated? Defaults to FALSE.
-#' @param normalize Logical; Should the data be normalized? Defaults to TRUE.
 #' @param minflag.value Minimum value, below which effects will be flagged to
 #'   indicate lack of effect. Defaults to 0.5
 #' @param minflag.char Character which will be placed in cells to be flagged
 #'   when graphing the results. Defaults to "X".
-#' @param output File path to save results as a CSV file. Defaults to NULL.
 #'
-#' @return Data frame with the following new columns:
-#' \item{effect}{The effect of the drugs; the control value minus the measured
-#' biomass}
-#' \item{min}{Column indicating samples with effects below the set threshold}
-#' \item{abci}{Anti-Biofilm Combined Index; measure of the efficacy of two or
-#' more drugs combined, relative to their individual performance}
-#' \item{delta}{Optional; simple difference in biofilm killed}
+#' @return A data frame (tibble) with all the original columns, plus the
+#'   following new columns:
+#'   \item{bio_normal}{Either the normalized measurement, or the original
+#'   measurement, with a floor of 0}
+#'   \item{effect}{The effect of the drugs, calculated as (1 - "bio_normal")
+#'   when normalizing, or ("baseline" - "bio_normal") if not. Values below 0 are
+#'   not allowed.}
+#'   \item{min}{Column indicating samples with effects below the threshold set
+#'   by `minflag.value`}
+#'   \item{ref_x}{For a given concentration of `x.drug`, the average effect when
+#'   `y.drug` is 0}
+#'   \item{ref_y}{For a given concentration of `y.drug`, the average effect when
+#'   `x.drug` is 0}
+#'   \item{abci}{Anti-Biofilm Combined Index; measure of the efficacy of two or
+#'   more drugs combined, relative to their individual performance}
+#'   \item{bio_normal_avg}{Averaged "bio_normal", universally calculated}
+#'   \item{effect_avg}{Averaged "effect", universally calculated}
+#'   \item{abci_avg}{Averaged ABCi, universally calculate}
+#'   \item{delta}{Optional; simple difference in the measurement}
+#'
 #' @export
 #'
 #' @description Takes the data of checkerboard assays (surviving biofilm at
@@ -182,21 +204,6 @@ abci.reader.single <- function(file, sheet) {
 #'   the biomass (`col.data`). Optionally, one can provide `col.analysis` which
 #'   servers to split the single table `data` into groups, which are analyzed
 #'   separately before being recombined in the output.
-#'
-#'   The steps for `abci.analysis()` are as follows:
-#'   1. Identify the average `col.data` of the untreated controls, where
-#'   the concentrations of `x.drug` and `y.drug` are 0
-#'   2. Divide all remaing rows of `col.data` by the untreated control value,
-#'   to normalize the data
-#'   3. Calculate the "effect" column (biomass killed) by subtracting each
-#'   normalized value from 1
-#'   4. Flag all conditions with "effect" below a threshold (`minflag.value`)
-#'   with an user provided character (`minflag.char`)
-#'   5. Identify the average "effect" for each concentration of `x.drug` when
-#'   the concentration of `y.drug` is 0. These are the "reference values"
-#'   6. Use the reference values to calculate the ABCi of each drug combination
-#'   7. If requested with "delta = TRUE", also calculate the simple differences
-#'   in biofilm eliminated
 #'
 abci.analysis <- function(
     data,
@@ -208,8 +215,7 @@ abci.analysis <- function(
     normalize = TRUE,
     delta = FALSE,
     minflag.value = 0.5,
-    minflag.char = "X",
-    output = NULL
+    minflag.char = "X"
 ) {
   options("cli.progress_show_after" = 0)
 
@@ -262,149 +268,169 @@ abci.analysis <- function(
     rownames(results.abci) <- NULL
   }
 
-  if (!is.null(output)) {
-    write.csv(results.abci, file = output, row.names = FALSE)
-  }
-
   return(results.abci)
 }
 
 
-#' Tidy-calculate ABCi values for a single analysis
+#' INTERNAL Tidy-calculate ABCi values for a single analysis
 #'
 #' @param data Data frame containing the concentrations of two drugs, and the
-#'   assay output/measurement
-#' @param x.drug Character; Column name which contains concentrations of the
-#'   first drug
-#' @param y.drug Character; Column name which contains concentrations of the
-#'   second drug
-#' @param col.data Character; Column name which contains the measured effect
+#'   assay output/measurement.
+#' @param x.drug Character; Column name of concentrations of the first drug.
+#' @param y.drug Character; Column name of concentrations of the second drug.
+#' @param col.data Character; Column name which contains the measured effect.
+#' @param col.reps Character; Column name denoting replicates. Defaults to NULL
+#'   for no replicates.
 #' @param normalize Logical; Should the data be normalized? Defaults to TRUE.
 #' @param delta Logical; Should calculation include simple difference of biofilm
 #'   eliminated? Defaults to FALSE.
 #' @param minflag.value Minimum value, below which effects will be flagged to
-#'   indicate lack of effect. Defaults to 0.5
+#'   indicate lack of effect. Defaults to 0.5.
 #' @param minflag.char Character which will be placed in cells to be flagged
 #'   when graphing the results. Defaults to "X".
 #'
-#' @return Data frame with the following new columns:
-#' \item{effect}{The effect of the drugs; the control value minus the measured
-#' biomass}
-#' \item{min}{Column indicating samples with effects below the set threshold}
-#' \item{abci}{Anti-Biofilm Combined Index; measure of the efficacy of two or
-#' more drugs combined, relative to their individual performance}
-#' \item{delta}{Optional; simple difference in biofilm killed}
+#' @return A data frame (tibble) with all the original columns, plus the
+#'   following new columns:
+#'   \item{bio_normal}{Either the normalized measurement, or the original
+#'   measurement, with a floor of 0}
+#'   \item{effect}{The effect of the drugs, calculated as (1 - "bio_normal")
+#'   when normalizing, or ("baseline" - "bio_normal") if not. Values below 0 are
+#'   not allowed.}
+#'   \item{min}{Column indicating samples with effects below the threshold set
+#'   by `minflag.value`}
+#'   \item{ref_x}{For a given concentration of `x.drug`, the average effect when
+#'   `y.drug` is 0}
+#'   \item{ref_y}{For a given concentration of `y.drug`, the average effect when
+#'   `x.drug` is 0}
+#'   \item{abci}{Anti-Biofilm Combined Index; measure of the efficacy of two or
+#'   more drugs combined, relative to their individual performance}
+#'   \item{bio_normal_avg}{Averaged "bio_normal", universally calculated}
+#'   \item{effect_avg}{Averaged "effect", universally calculated}
+#'   \item{abci_avg}{Averaged ABCi, universally calculate}
+#'   \item{delta}{Optional; simple difference in the measurement}
 #'
 #' @export
 #'
-#' @description This function is only meant to be called by `abci.analysis`, and
-#'   shouldn't be used directly.
+#' @description This function is only meant to be called by `abci.analysis()`,
+#'   and shouldn't be used directly. It handles one assay/analysis (i.e. a sheet
+#'   within a spreadsheet), dealing with replicates accordingly.
+#'
 abci.calculations <- function(
     data,
-    col.reps = NULL,
     x.drug,
     y.drug,
     col.data,
+    col.reps = NULL,
     normalize = TRUE,
     delta = FALSE,
     minflag.value = 0.5,
     minflag.char = "X"
 ) {
-  # Make sure drug concentrations are factors
-  data_clean <- data %>%
-    mutate(
-      across(all_of(c(x.drug, y.drug)), as.character),
-      across(all_of(c(x.drug, y.drug)), forcats::fct_inseq)
-    )
 
-  # For "data_effect", we are doing a few things. First, identify the baseline
-  # reading, when the concentration of both drugs is 0. Then, each cell of data
-  # is divided by that value, UNLESS the cell is < 0, in which case it's
-  # assigned to 0. The effect is calculated as "1 - bio_normal", again with a
-  # floor of 0. Finally we flag values below the `minflag.value` argument.
-  data_effect <-
-    if (is.null(col.reps)) {
-      baseline <- data_clean %>%
-        filter(.data[[x.drug]] == "0" & .data[[y.drug]] == "0") %>%
-        pull(.data[[col.data]]) %>%
-        mean()
+  # Make sure drug concentrations are properly ordered factors
+  data_clean <- data %>%
+    mutate(across(all_of(c(x.drug, y.drug)), forcats::fct_inseq))
+
+  # For "data_effect", we are doing a few things. When we're normalizing:
+  # - Identify the baseline reading, when the concentration of both drugs is 0
+  # - "bio_normal" is calculated by dividing each well of data by the baseline,
+  #    unless the well is < 0, in which case return 0
+  # - "effect" is calculated as (1 - "bio_normal"), again not allowing negative
+  #   values
+  # - Finally we flag values below the `minflag.value` argument with
+  #   `minflag.char`
+  #
+  # If we're not normalizing:
+  # - Identify the baseline reading, when the concentration of both drugs is 0
+  # - "bio_normal" is the same as the input column, excepting that wells with a
+  #   reading of < 0 are assigned to 0
+  # - The "effect" column is calculated as ("baseline" - "bio_normal"), again
+  #   with a floor of 0
+  # - Finally we flag values below the `minflag.value` argument with
+  #   `minflag.char`. Here the default `minflag.value` of 0.5 probably doesn't
+  #   make sense...
+  data_effect <- if (is.null(col.reps)) {
+
+    baseline <- data_clean %>%
+      filter(.data[[x.drug]] == "0" & .data[[y.drug]] == "0") %>%
+      pull(.data[[col.data]]) %>%
+      mean()
+
+    if (normalize) {
+
+      data_clean %>% mutate(
+        bio_normal = ifelse(
+          .data[[col.data]] > 0,
+          yes = .data[[col.data]] / baseline,
+          no = 0
+        ),
+        effect = ifelse(
+          (1 - bio_normal) >= 0,
+          yes = (1 - bio_normal),
+          no = 0
+        ),
+        min = ifelse(effect < minflag.value, minflag.char, NA)
+      )
+    } else {
+      data_clean %>% mutate(
+        bio_normal = ifelse(
+          .data[[col.data]] > 0,
+          yes = .data[[col.data]],
+          no = 0
+        ),
+        effect = ifelse(
+          (baseline - bio_normal) >= 0,
+          yes = (baseline - bio_normal),
+          no = 0
+        ),
+        min = ifelse(effect < minflag.value, minflag.char, NA)
+      )
+    }
+
+  } else {
+    data_split <- split(x = data_clean, f = data_clean[col.reps])
+
+    lapply(data_split, function(x) {
 
       if (normalize) {
-        data_clean %>%
-          mutate(
-            bio_normal = ifelse(
-              .data[[col.data]] < 0,
-              yes = 0,
-              no = .data[[col.data]] / baseline
-            ),
-            effect = ifelse(
-              (1 - bio_normal) >= 0,
-              yes = (1 - bio_normal),
-              no = 0
-            ),
-            min = ifelse(effect < minflag.value, minflag.char, NA)
-          )
-      } else {
-        data_clean %>%
-          mutate(
-            bio_normal = ifelse(
-              .data[[col.data]] < 0,
-              yes = 0,
-              no = .data[[col.data]]
-            ),
-            effect = ifelse(
-              (baseline - bio_normal) >= 0,
-              yes = (baseline - bio_normal),
-              no = 0
-            ),
-            min = ifelse(effect < minflag.value, minflag.char, NA)
-          )
-      }
-
-    } else {
-      data_split <- split(x = data_clean, f = data_clean[col.reps])
-
-      lapply(data_split, function(x) {
-
         baseline <- x %>%
           filter(.data[[x.drug]] == "0" & .data[[y.drug]] == "0") %>%
           pull(.data[[col.data]]) %>%
           mean()
 
-        if (normalize) {
-          x %>%
-            mutate(
-              bio_normal = ifelse(
-                .data[[col.data]] < 0,
-                yes = 0,
-                no = .data[[col.data]] / baseline
-              ),
-              effect = ifelse(
-                (1 - bio_normal) >= 0,
-                yes = (1 - bio_normal),
-                no = 0
-              ),
-              min = ifelse(effect < minflag.value, minflag.char, NA)
-            )
-        } else {
-          x %>%
-            mutate(
-              bio_normal = ifelse(
-                .data[[col.data]] < 0,
-                yes = 0,
-                no = .data[[col.data]]
-              ),
-              effect = ifelse(
-                (baseline - bio_normal) >= 0,
-                yes = (baseline - bio_normal),
-                no = 0
-              ),
-              min = ifelse(effect < minflag.value, minflag.char, NA)
-            )
-        }
-      }) %>% bind_rows()
-    }
+        x %>% mutate(
+          bio_normal = ifelse(
+            .data[[col.data]] > 0,
+            yes = .data[[col.data]] / baseline,
+            no = 0
+          ),
+          effect = ifelse(
+            (1 - bio_normal) >= 0,
+            yes = (1 - bio_normal),
+            no = 0
+          ),
+          min = ifelse(effect < minflag.value, minflag.char, NA)
+        )
+      } else {
+        x %>% mutate(
+          bio_normal = ifelse(
+            .data[[col.data]] > 0,
+            yes = .data[[col.data]],
+            no = 0
+          ),
+          effect = ifelse(
+            (baseline - bio_normal) >= 0,
+            yes = (baseline - bio_normal),
+            no = 0
+          ),
+          min = ifelse(effect < minflag.value, minflag.char, NA)
+        )
+      }
+    }) %>% bind_rows()
+  }
 
+  # Get the reference "effect" for each drug, which is the (average) effect at
+  # each concentration, when the other drug has a concentration of 0
   data_reference_x <- data_effect %>%
     filter(.data[[y.drug]] == "0") %>%
     group_by(.data[[x.drug]]) %>%
@@ -423,7 +449,7 @@ abci.calculations <- function(
       left_join(data_reference_y)
   )
 
-  # ABCi: Calculate ABCi, using the "effect" in each row and the reference values
+  # Calculate ABCi, using the "effect" in each row and the reference values
   # from the previous step. The `rowwise()` call is required to make sure the
   # max reference values are done per-row, NOT over the whole table!
   data_abci <- data_ref %>%
@@ -437,16 +463,17 @@ abci.calculations <- function(
     ) %>%
     ungroup()
 
-  if (!is.null(col.reps)) {
-    data_abci <- data_abci %>%
-      group_by(.data[[x.drug]], .data[[y.drug]]) %>%
-      mutate(
-        bio_normal_avg = mean(bio_normal),
-        effect_avg = mean(effect),
-        abci_avg = mean(abci)
-      ) %>%
-      ungroup()
-  }
+  # This averaging (intended for when we have replicates) is done universally,
+  # so we're always working with the same columns in the downstream functions,
+  # whether we have replicates or not
+  data_abci <- data_abci %>%
+    group_by(.data[[x.drug]], .data[[y.drug]]) %>%
+    mutate(
+      bio_normal_avg = mean(bio_normal),
+      effect_avg = mean(effect),
+      abci_avg = mean(abci)
+    ) %>%
+    ungroup()
 
   data_final <-
     if (delta) {
@@ -465,18 +492,19 @@ abci.calculations <- function(
 }
 
 
-#' Calculate MIC values
+#' INTERNAL Calculate MIC values
 #'
 #' @param data Data frame containing the concentrations of two drugs, and the
 #'   assay output/measurement
-#' @param x.drug Character; Column name which contains concentrations of the
-#'   first drug
-#' @param y.drug Character; Column name which contains concentrations of the
-#'   second drug
-#' @param col.data Character; Column name which contains the measured effect
+#' @param x.drug Character; Column name of concentrations of the first drug
+#' @param y.drug Character; Column name of concentrations of the second drug
+#' @param col.data Character; Column name which contains the measured value
 #' @param threshold Numeric; cutoff for determining MIC
 #'
-#' @return
+#' @return A data frame with the following columns:
+#'   \item{XMIC}{MIC value for `x.drug`}
+#'   \item{YMIC}{MIC value for `y.drug`}
+#'
 #' @export
 #'
 #' @description Uses the provided data frame to determine the Minimum Inhibitory
