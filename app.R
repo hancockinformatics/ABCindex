@@ -1,18 +1,18 @@
 # To do -------------------------------------------------------------------
 
-#' - Tile plots: Add checkbox for minflag, using "<" as the character
-#' - Increase maximum dot size for dot plots
+#' - Tweak dot size for dot plots
 #' - Some way to preview colour palettes?
-#'
-#' - Split tile plots: Two options, strict or lax:
-#'     - Positive half: ABCi > 0.1  or ABCi > -1
-#'     - Negative half: ABCi < -0.1 or ABCi < 1
 #'
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
 #'     if (effect > 0.9) {
 #'       add * to tile, or border around dot
 #'     }
 #'   }
+#'
+#' - Split tile plots: Two options, strict or lax:
+#'     - Positive half: ABCi > 0.1  or ABCi > -1
+#'     - Negative half: ABCi < -0.1 or ABCi < 1
+#'
 
 
 # Load packages -----------------------------------------------------------
@@ -556,8 +556,16 @@ server <- function(input, output) {
           selectInput(
             inputId = "plot_tile_colour_palette",
             label = NULL,
-            choices = names(preset.palettes),
-            selected = "RB"
+            choices = c(
+              "Orange-purple" = "OP",
+              "Yellow-purple" = "YP",
+              "Yellow-Blue" = "YB",
+              "Red-Blue" = "RB",
+              "Sunset" = "SUN",
+              "PAN" = "PAN",
+              "Bob's choice" = "BOB"
+            ),
+            selected = "BOB"
           )
         )
       ),
@@ -789,8 +797,16 @@ server <- function(input, output) {
           selectInput(
             inputId = "plot_dot_colour_palette",
             label = NULL,
-            choices = names(preset.palettes),
-            selected = "RB"
+            choices = c(
+              "Orange-purple" = "OP",
+              "Yellow-purple" = "YP",
+              "Yellow-Blue" = "YB",
+              "Red-Blue" = "RB",
+              "Sunset" = "SUN",
+              "PAN" = "PAN",
+              "Bob's choice" = "BOB"
+            ),
+            selected = "BOB"
           )
         )
       ),

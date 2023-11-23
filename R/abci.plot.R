@@ -93,7 +93,7 @@ abci.plot.tile <- function(
 
   if (minflag) {
     data <- data %>%
-      mutate(min = ifelse(effect_avg < minflag.value, "X", NA))
+      mutate(min = ifelse(effect_avg < minflag.value, "<", NA))
   }
 
   upper <- max(scale.limits)
