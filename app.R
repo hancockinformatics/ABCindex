@@ -41,7 +41,7 @@ ui <- fluidPage(
   ),
 
 
-  # Set up the navbar page ------------------------------------------------
+  # Navbar page -----------------------------------------------------------
 
   navbarPage(
     id = "navbar",
@@ -67,7 +67,7 @@ ui <- fluidPage(
       icon = icon("bars"),
 
 
-      # Home page -----------------------------------------------------------
+      # |- Home page ------------------------------------------------------
 
       tabPanel(
         value = "home_tab",
@@ -93,7 +93,7 @@ ui <- fluidPage(
       ),
 
 
-      # Upload --------------------------------------------------------------
+      # |- Upload ---------------------------------------------------------
 
       tabPanel(
         value = "upload_tab",
@@ -148,7 +148,7 @@ ui <- fluidPage(
       ),
 
 
-      # Analysis ----------------------------------------------------------
+      # |- Analysis -------------------------------------------------------
 
       tabPanel(
         value = "analysis_tab",
@@ -189,7 +189,7 @@ ui <- fluidPage(
       ),
 
 
-      # Visualize -------------------------------------------------------------
+      # |- Visualize ------------------------------------------------------
 
       tabPanel(
         value = "vis_tab",
@@ -238,7 +238,7 @@ ui <- fluidPage(
       ),
 
 
-      # About ---------------------------------------------------------------
+      # |- About ----------------------------------------------------------
 
       tabPanel(
         value = "about_tab",
@@ -539,7 +539,7 @@ server <- function(input, output) {
   # )
 
 
-  # | - - Tile ------------------------------------------------------------
+  # |-- Tile --------------------------------------------------------------
 
   output$plot_inputs_tile <- renderUI({
     list(
@@ -780,7 +780,7 @@ server <- function(input, output) {
   })
 
 
-  # | - - Dot -------------------------------------------------------------
+  # |-- Dot ---------------------------------------------------------------
 
   output$plot_inputs_tile_dot <- renderUI({
     list(
@@ -1002,7 +1002,7 @@ server <- function(input, output) {
   })
 
 
-  # | - - Line ------------------------------------------------------------
+  # |-- Line --------------------------------------------------------------
 
   output$plot_inputs_line <- renderUI({
     list(
@@ -1348,6 +1348,7 @@ server <- function(input, output) {
           minflag.value = isolate(input$plot_tile_min_flag),
           colour.palette = isolate(input$plot_tile_colour_palette)
         )
+
       } else if (isolate(input$visualize_tabs) == "dot") {
         abci.plot.dot(
           data = abci_plot_data(),
@@ -1370,6 +1371,7 @@ server <- function(input, output) {
           col.mic = "bio_normal",
           colour.palette = isolate(input$plot_dot_colour_palette)
         )
+
       } else if (isolate(input$visualize_tabs) == "line") {
 
         if (max(abci_plot_data()$bio_normal) > 1.5 ) {
@@ -1378,7 +1380,6 @@ server <- function(input, output) {
             type = "warning"
           )
         }
-
         abci.plot.line(
           data = abci_plot_data(),
           plot.type = isolate(input$plot_line_type),
