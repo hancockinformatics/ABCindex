@@ -329,7 +329,12 @@ server <- function(input, output) {
     upload_tab_data_display()[[input$user_data_sheet_name]],
     rownames = FALSE,
     class = "table-striped",
-    options = list(dom = "tip", pageLength = 15)
+    options = list(
+      dom = "ltip",
+      columnDefs = list(
+        list(targets = 0, render = ellipsis.render(60))
+      )
+    )
   )
 
   observeEvent(upload_tab_data_1(), {
@@ -429,7 +434,13 @@ server <- function(input, output) {
     abci_results_display()[[input$analysis_tab_user_data_sheet_name]],
     rownames = FALSE,
     class = "table-striped",
-    options = list(dom = "tip", pageLength = 15, scrollX = TRUE)
+    options = list(
+      dom = "ltip",
+      scrollX = TRUE,
+      columnDefs = list(
+        list(targets = 0, render = ellipsis.render(30))
+      )
+    )
   )
 
   observeEvent(abci_results_display(), {
