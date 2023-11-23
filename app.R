@@ -80,12 +80,12 @@ ui <- fluidPage(
 
           actionButton(
             inputId = "get_started",
+            class = "btn btn-primary btn-lg",
             label = div(
               icon("play"),
               HTML("&nbsp;"), # Horizontal spacer
               HTML("Get started")
-            ),
-            class = "btn btn-primary btn-lg"
+            )
           )
         )
       ),
@@ -108,8 +108,8 @@ ui <- fluidPage(
 
             actionButton(
               inputId = "upload_tab_example",
-              label = "Load example data",
               class = "btn btn-info btn-tooltip",
+              label = "Load example data",
               title = "Click here to try our example data",
               width = "180px"
             ),
@@ -131,8 +131,8 @@ ui <- fluidPage(
             disabled(
               actionButton(
                 inputId = "upload_tab_proceed_button",
-                label = "Proceed to ABCi calculations",
                 class = "btn btn-primary btn-tooltip",
+                label = "Proceed to ABCi calculations",
                 icon = icon("arrow-right"),
                 title = "Upload your plate data, then click here to analyze"
               )
@@ -168,9 +168,9 @@ ui <- fluidPage(
             disabled(
               actionButton(
                 inputId = "upload_tab_submit_button",
+                class = "btn btn-info btn-tooltip",
                 label = "Perform ABCi calculations",
-                icon = icon("calculator"),
-                class = "btn btn-primary btn-tooltip"
+                icon = icon("calculator")
               )
             ),
 
@@ -199,11 +199,10 @@ ui <- fluidPage(
             h3("Visualize ABCi results"),
             p("Information about the different visualization available."),
 
-
             actionButton(
               inputId = "draw",
-              label = "Create or update the plot",
-              class = "btn btn-primary"
+              class = "btn btn-info btn-tooltip",
+              label = "Create or update the plot"
             ),
 
             hr(),
@@ -343,7 +342,7 @@ server <- function(input, output) {
       where = "afterEnd",
       ui = tagList(div(
         id = "upload_tab_input_preview_div",
-        h1("Input data preview"),
+        h2("Input data preview"),
         br(),
         DT::dataTableOutput("upload_tab_preview")
       ))
@@ -375,7 +374,7 @@ server <- function(input, output) {
   })
 
 
-  # |- Display results ----------------------------------------------------
+  # |- Process results ----------------------------------------------------
 
   abci_results <- reactiveVal()
 
@@ -392,6 +391,9 @@ server <- function(input, output) {
       normalize = input$analysis_tab_check_normal
     ) %>% abci_results()
   })
+
+
+  # |- Display results ----------------------------------------------------
 
   abci_results_display <- reactive({
     req(abci_results())
@@ -449,6 +451,8 @@ server <- function(input, output) {
       where = "afterEnd",
       ui = tagList(div(
         id = "analysis_tab_table",
+        h2("ABCi results"),
+        br(),
         DT::dataTableOutput("results_table_output")
       ))
     )
@@ -490,9 +494,9 @@ server <- function(input, output) {
           HTML("&nbsp;"),
           actionButton(
             inputId = "analysis_tab_vis_button",
+            class = "btn btn-primary btn-tooltip",
             label = "Visualize your results",
-            icon = icon("chart-bar"),
-            class = "btn btn-primary btn-tooltip"
+            icon = icon("chart-bar")
           )
         )
       )
@@ -727,7 +731,7 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
-          title = "Flag cells which don't kill much biofilm",
+          title = "Flag cells which don't kill much biofilm. Set to 0 to hide.",
           "Flag low killing"
         ),
         div(
