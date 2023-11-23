@@ -44,6 +44,12 @@
   margin: auto;
 }
 
+/* Adjust modal dialogs */
+.modal-dialog {
+  width: fit-content;
+  top: 10vh;
+}
+
 /* Adjust padding for elements of the navbar */
 .navbar,
 .tab-content {

@@ -1,7 +1,6 @@
 # To do -------------------------------------------------------------------
 
 #' - Tweak dot size for dot plots
-#' - Some way to preview colour palettes?
 #'
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
 #'     if (effect > 0.9) {
@@ -45,7 +44,6 @@ ui <- fluidPage(
 
   navbarPage(
     id = "navbar",
-    position = "static-top",
     windowTitle = "ShinyABCi",
     title = div(
       id = "title_tab_bar",
@@ -549,7 +547,10 @@ server <- function(input, output) {
         tags$label(
           class = "col-lg-3 control-label",
           title = "Colour palette to use for the ABCi values",
-          "ABCi colours"
+          actionLink(
+            inputId = "tile_preview_colours",
+            label = "ABCi colours"
+          )
         ),
         div(
           class = "col-lg-9",
@@ -1315,6 +1316,16 @@ server <- function(input, output) {
       inputId = "plot_line_line_include",
       choices = unique_conc,
       selected = unique_conc
+    )
+  })
+
+  observeEvent(input$tile_preview_colours, {
+    showModal(
+      modalDialog(
+        title = "ABCi colour palettes",
+        easyClose = TRUE,
+        HTML("<img src='preview_palettes.png'>")
+      )
     )
   })
 
