@@ -22,6 +22,8 @@
 #'   to 1.
 #' @param minflag Logical; Should rows previously flagged by `abci.analysis()`
 #'   be labeled? Defaults to FALSE.
+#' @param minflag.value Minimum value, below which effects will be flagged to
+#'   indicate lack of effect. Defaults to 0.5
 #' @param x.mic.line Logical; Include MIC line for the drug on the x-axis?
 #'   Defaults to FALSE.
 #' @param y.mic.line Logical; Include MIC line for the drug on the y-axis?
@@ -65,6 +67,7 @@ abci.plot.tile <- function(
     x.decimal = 1,
     y.decimal = 1,
     minflag = FALSE,
+    minflag.value = 0.5,
     x.mic.line = FALSE,
     y.mic.line = FALSE,
     col.mic,
@@ -87,6 +90,11 @@ abci.plot.tile <- function(
 
   data <- data %>%
     mutate(across(all_of(c(x.drug, y.drug)), forcats::fct_inseq))
+
+  if (minflag) {
+    data <- data %>%
+      mutate(min = ifelse(effect_avg < minflag.value, "X", NA))
+  }
 
   upper <- max(scale.limits)
   lower <- min(scale.limits)
@@ -192,7 +200,7 @@ abci.plot.tile <- function(
 
     geom_raster(aes(fill = .data[[col.fill]])) +
 
-    { if (!is.null(col.analysis)) {
+    {if (!is.null(col.analysis)) {
       facet_wrap(
         ~.data[[col.analysis]],
         nrow = n.rows,
@@ -201,9 +209,9 @@ abci.plot.tile <- function(
       )
     }} +
 
-    { if (minflag) geom_text(aes(label = min)) } +
+    {if (minflag) geom_text(aes(label = min), size = 8)} +
 
-    { if (x.mic.line) {
+    {if (x.mic.line) {
       geom_vline(data = mic.table, aes(xintercept = XLAB))
     }} +
 

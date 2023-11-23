@@ -12,10 +12,6 @@
 #' @param normalize Logical; Should the data be normalized? Defaults to TRUE.
 #' @param delta Logical; Should calculation include simple difference of biofilm
 #'   eliminated? Defaults to FALSE.
-#' @param minflag.value Minimum value, below which effects will be flagged to
-#'   indicate lack of effect. Defaults to 0.5
-#' @param minflag.char Character which will be placed in cells to be flagged
-#'   when graphing the results. Defaults to "X".
 #'
 #' @return A data frame (tibble) with all the original columns, plus the
 #'   following new columns:
@@ -24,8 +20,6 @@
 #'   \item{effect}{The effect of the drugs, calculated as (1 - "bio_normal")
 #'   when normalizing, or ("baseline" - "bio_normal") if not. Values below 0 are
 #'   not allowed.}
-#'   \item{min}{Column indicating samples with effects below the threshold set
-#'   by `minflag.value`}
 #'   \item{ref_x}{For a given concentration of `x.drug`, the average effect when
 #'   `y.drug` is 0}
 #'   \item{ref_y}{For a given concentration of `y.drug`, the average effect when
@@ -55,9 +49,7 @@ abci.analysis <- function(
     col.analysis = NULL,
     col.reps = NULL,
     normalize = TRUE,
-    delta = FALSE,
-    minflag.value = 0.5,
-    minflag.char = "X"
+    delta = FALSE
 ) {
   options("cli.progress_show_after" = 0)
 
@@ -72,9 +64,7 @@ abci.analysis <- function(
       col.data = col.data,
       col.reps = col.reps,
       normalize = normalize,
-      delta = delta,
-      minflag.value = minflag.value,
-      minflag.char = minflag.char
+      delta = delta
     )
 
   } else {
@@ -99,9 +89,7 @@ abci.analysis <- function(
           col.data = col.data,
           col.reps = col.reps,
           normalize = normalize,
-          delta = delta,
-          minflag.value = minflag.value,
-          minflag.char = minflag.char
+          delta = delta
         )
       }
     )
@@ -126,10 +114,6 @@ abci.analysis <- function(
 #' @param normalize Logical; Should the data be normalized? Defaults to TRUE.
 #' @param delta Logical; Should calculation include simple difference of biofilm
 #'   eliminated? Defaults to FALSE.
-#' @param minflag.value Minimum value, below which effects will be flagged to
-#'   indicate lack of effect. Defaults to 0.5.
-#' @param minflag.char Character which will be placed in cells to be flagged
-#'   when graphing the results. Defaults to "X".
 #'
 #' @return A data frame (tibble) with all the original columns, plus the
 #'   following new columns:
@@ -138,8 +122,6 @@ abci.analysis <- function(
 #'   \item{effect}{The effect of the drugs, calculated as (1 - "bio_normal")
 #'   when normalizing, or ("baseline" - "bio_normal") if not. Values below 0 are
 #'   not allowed.}
-#'   \item{min}{Column indicating samples with effects below the threshold set
-#'   by `minflag.value`}
 #'   \item{ref_x}{For a given concentration of `x.drug`, the average effect when
 #'   `y.drug` is 0}
 #'   \item{ref_y}{For a given concentration of `y.drug`, the average effect when
@@ -164,9 +146,7 @@ abci.analysis.single <- function(
     col.data,
     col.reps = NULL,
     normalize = TRUE,
-    delta = FALSE,
-    minflag.value = 0.5,
-    minflag.char = "X"
+    delta = FALSE
 ) {
 
   # Make sure drug concentrations are properly ordered factors
@@ -179,8 +159,6 @@ abci.analysis.single <- function(
   #    unless the well is < 0, in which case return 0
   # - "effect" is calculated as (1 - "bio_normal"), again not allowing negative
   #   values
-  # - Finally we flag values below the `minflag.value` argument with
-  #   `minflag.char`
   #
   # If we're not normalizing:
   # - Identify the baseline reading, when the concentration of both drugs is 0
@@ -188,9 +166,6 @@ abci.analysis.single <- function(
   #   reading of < 0 are assigned to 0
   # - The "effect" column is calculated as ("baseline" - "bio_normal"), again
   #   with a floor of 0
-  # - Finally we flag values below the `minflag.value` argument with
-  #   `minflag.char`. Here the default `minflag.value` of 0.5 probably doesn't
-  #   make sense...
   data_effect <- if (is.null(col.reps)) {
 
     baseline <- data_clean %>%
@@ -210,8 +185,7 @@ abci.analysis.single <- function(
           (1 - bio_normal) >= 0,
           yes = (1 - bio_normal),
           no = 0
-        ),
-        min = ifelse(effect < minflag.value, minflag.char, NA)
+        )
       )
     } else {
       data_clean %>% mutate(
@@ -224,8 +198,7 @@ abci.analysis.single <- function(
           (baseline - bio_normal) >= 0,
           yes = (baseline - bio_normal),
           no = 0
-        ),
-        min = ifelse(effect < minflag.value, minflag.char, NA)
+        )
       )
     }
 
@@ -250,8 +223,7 @@ abci.analysis.single <- function(
             (1 - bio_normal) >= 0,
             yes = (1 - bio_normal),
             no = 0
-          ),
-          min = ifelse(effect < minflag.value, minflag.char, NA)
+          )
         )
       } else {
         x %>% mutate(
@@ -264,8 +236,7 @@ abci.analysis.single <- function(
             (baseline - bio_normal) >= 0,
             yes = (baseline - bio_normal),
             no = 0
-          ),
-          min = ifelse(effect < minflag.value, minflag.char, NA)
+          )
         )
       }
     }) %>% bind_rows()

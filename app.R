@@ -718,6 +718,25 @@ server <- function(input, output) {
         class = "form-group",
         tags$label(
           class = "col-lg-3 control-label",
+          title = "Flag cells which don't kill much biofilm",
+          "Flag low killing"
+        ),
+        div(
+          class = "col-lg-9",
+          numericInput(
+            inputId = "plot_tile_min_flag",
+            label = NULL,
+            value = 0.5,
+            min = 0,
+            step = 0.1
+          )
+        )
+      ),
+
+      div(
+        class = "form-group",
+        tags$label(
+          class = "col-lg-3 control-label",
           title = "Threshold for calculating MICs; applies to x- and y-axis",
           "MIC cutoff"
         ),
@@ -1265,6 +1284,10 @@ server <- function(input, output) {
 
   # |- Update inputs ------------------------------------------------------
 
+  plot_tile_min_info <- reactive({
+    ifelse(input$plot_tile_min_flag > 0, TRUE, FALSE)
+  })
+
   observeEvent(input$plot_line_type, {
     req(abci_plot_data())
 
@@ -1305,6 +1328,8 @@ server <- function(input, output) {
           y.mic.line = ("Y" %in% isolate(input$plot_tile_mic_lines)),
           mic.threshold = isolate(input$plot_tile_mic_threshold),
           col.mic = "bio_normal",
+          minflag = isolate(plot_tile_min_info()),
+          minflag.value = isolate(input$plot_tile_min_flag),
           colour.palette = isolate(input$plot_tile_colour_palette)
         )
       } else if (isolate(input$visualize_tabs) == "dot") {
