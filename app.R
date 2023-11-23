@@ -20,61 +20,50 @@ library(dplyr)
 library(ggplot2)
 library(shinyjs)
 library(shiny)
+library(bslib)
 
 
 # Define UI ---------------------------------------------------------------
 
 ui <- fluidPage(
-  theme = "css/cosmo_bootstrap.css",
+  theme = bs_theme(version = 5, preset = "cosmo"),
   HTML("<base target='_blank' rel='noopener noreferrer'>"),
   useShinyjs(),
   tags$head(
-    tags$link(rel = "stylesheet", type = "text/css", href = "css/custom.css"),
-    tags$style(
-      type = "text/css",
-      paste0(
-        "#inline label{ display: table-cell; text-align: center; ",
-        "vertical-align: middle; } #inline .form-group { display: table-row;}"
-      )
-    )
+    tags$link(rel = "stylesheet", type = "text/css", href = "css/custom.css")
   ),
 
 
   # Navbar page -----------------------------------------------------------
 
-  navbarPage(
+  page_navbar(
     id = "navbar",
-    windowTitle = "ShinyABCi",
-    title = div(
-      id = "title_tab_bar",
+    collapsible = TRUE,
+    window_title = "ShinyABCi",
+    title = "ShinyABCi",
 
-      HTML("<p title='Welcome to ShinyABCi!'>ShinyABCi</p>"),
+    # footer = tags$footer(
+    #   style = "margin: 80px",
+    #   p("Footer content")
+    # ),
+
+
+    # |- Home page ------------------------------------------------------
+
+    nav_panel(
+      value = "home_tab",
+      title = "Home",
 
       div(
-        id = "github-img",
-        HTML(paste0(
-          "<a href='https://github.com/hancockinformatics/ShinyABCi'> ",
-          "<img src='github.svg' title='Visit ShinyABCi on Github to browse ",
-          "the code or submit an issue.' alt='Github'> </a>"
-        ))
-      )
-    ),
+        class = "card bg-light mb-3 mx-auto",
+        style = "width: 67%",
 
-    navbarMenu(
-      title = NULL,
-      icon = icon("bars"),
+        div(class = "card-header", h1("Welcome")),
 
-
-      # |- Home page ------------------------------------------------------
-
-      tabPanel(
-        value = "home_tab",
-        title = "Home",
         div(
-          class = "jumbotron",
-          HTML("<h1 style='margin-top: 15px;'>Welcome</h1>"),
-          p("Here is some welcome text."),
-          p("Blah blah blah ABCi blah blah biofilm blah blah blah."),
+          class = "card-body",
+          p(class = "card-text", "Here is some welcome text."),
+          p(class = "card-text", "Blah blah blah ABCi blah blah biofilm blah blah blah."),
 
           br(),
 
@@ -86,169 +75,197 @@ ui <- fluidPage(
               HTML("&nbsp;"), # Horizontal spacer
               HTML("Get started")
             )
+          ),
+
+          br(),
+          br(),
+          actionButton(
+            inputId = "test_btn",
+            label = "Test"
           )
         )
-      ),
+      )
+    ),
 
 
-      # |- Upload ---------------------------------------------------------
+    # |- Upload ---------------------------------------------------------
 
-      tabPanel(
-        value = "upload_tab",
-        title = "Upload",
+    nav_panel(
+      value = "upload_tab",
+      title = "Upload",
 
-        sidebarLayout(
-          sidebarPanel = sidebarPanel(
-            id = "upload_tab_sidebarpanel",
-            width = 4,
-            h3("Upload your plate data"),
-            p("Info about upload."),
+      sidebarLayout(
+        sidebarPanel = sidebarPanel(
+          id = "upload_tab_sidebarpanel",
+          width = 4,
+          h3("Upload your plate data"),
+          p("Info about upload."),
 
-            br(),
+          br(),
 
+          actionButton(
+            inputId = "upload_tab_example",
+            class = "btn btn-info btn-tooltip",
+            label = "Load example data",
+            title = "Click here to try our example data",
+            width = "180px"
+          ),
+
+          br(),
+          br(),
+
+          fileInput(
+            inputId = "upload_tab_user_data",
+            label = NULL,
+            buttonLabel = list(icon("upload"), "Upload plate data..."),
+            accept = c("xls", ".xls", "xlsx", ".xlsx")
+          ),
+
+          div(id = "upload_tab_input_names_ui"),
+
+          hr(),
+
+          disabled(
             actionButton(
-              inputId = "upload_tab_example",
+              inputId = "upload_tab_proceed_button",
+              class = "btn btn-primary btn-tooltip",
+              label = "Proceed to ABCi calculations",
+              icon = icon("arrow-right"),
+              title = "Upload your plate data, then click here to analyze"
+            )
+          )
+        ),
+
+        mainPanel = mainPanel(
+          div(id = "upload_tab_placeholder_div")
+        )
+      )
+    ),
+
+
+    # |- Analysis -------------------------------------------------------
+
+    nav_panel(
+      value = "analysis_tab",
+      title = "Analysis",
+
+      sidebarLayout(
+        sidebarPanel = sidebarPanel(
+          id = "results_sidebarpanel",
+
+          h3("ABCi results"),
+          p("Information about interpreting the results."),
+
+          checkboxInput(
+            inputId = "analysis_tab_check_normal",
+            label = "Normalize the data",
+            value = TRUE
+          ),
+
+          disabled(
+            actionButton(
+              inputId = "upload_tab_submit_button",
               class = "btn btn-info btn-tooltip",
-              label = "Load example data",
-              title = "Click here to try our example data",
-              width = "180px"
-            ),
-
-            br(),
-            br(),
-
-            fileInput(
-              inputId = "upload_tab_user_data",
-              label = NULL,
-              buttonLabel = list(icon("upload"), "Upload plate data..."),
-              accept = c("xls", ".xls", "xlsx", ".xlsx")
-            ),
-
-            div(id = "upload_tab_input_names_ui"),
-
-            hr(),
-
-            disabled(
-              actionButton(
-                inputId = "upload_tab_proceed_button",
-                class = "btn btn-primary btn-tooltip",
-                label = "Proceed to ABCi calculations",
-                icon = icon("arrow-right"),
-                title = "Upload your plate data, then click here to analyze"
-              )
+              label = "Perform ABCi calculations",
+              icon = icon("calculator")
             )
           ),
 
-          mainPanel = mainPanel(
-            div(id = "upload_tab_placeholder_div")
-          )
+          div(id = "analysis_tab_input_names_ui"),
+
+          uiOutput("abci_results_button"),
+        ),
+
+        mainPanel = mainPanel(
+          id = "analysis_tab_mainpanel",
+          div(id = "analysis_tab_placeholder_div")
         )
-      ),
+      )
+    ),
 
 
-      # |- Analysis -------------------------------------------------------
+    # |- Visualize ------------------------------------------------------
 
-      tabPanel(
-        value = "analysis_tab",
-        title = "Analysis",
+    nav_panel(
+      value = "vis_tab",
+      title = "Visualize",
 
-        sidebarLayout(
-          sidebarPanel = sidebarPanel(
-            id = "results_sidebarpanel",
+      sidebarLayout(
+        sidebarPanel = sidebarPanel(
+          id = "vis_sidebarpanel",
+          h3("Visualize ABCi results"),
+          p("Information about the different visualization available."),
 
-            h3("ABCi results"),
-            p("Information about interpreting the results."),
-
-            checkboxInput(
-              inputId = "analysis_tab_check_normal",
-              label = "Normalize the data",
-              value = TRUE
-            ),
-
-            disabled(
-              actionButton(
-                inputId = "upload_tab_submit_button",
-                class = "btn btn-info btn-tooltip",
-                label = "Perform ABCi calculations",
-                icon = icon("calculator")
-              )
-            ),
-
-            div(id = "analysis_tab_input_names_ui"),
-
-            uiOutput("abci_results_button"),
+          actionButton(
+            inputId = "draw",
+            class = "btn btn-info btn-tooltip",
+            label = "Create or update the plot"
           ),
 
-          mainPanel = mainPanel(
-            id = "analysis_tab_mainpanel",
-            div(id = "analysis_tab_placeholder_div")
-          )
-        )
-      ),
+          hr(),
 
-
-      # |- Visualize ------------------------------------------------------
-
-      tabPanel(
-        value = "vis_tab",
-        title = "Visualize",
-
-        sidebarLayout(
-          sidebarPanel = sidebarPanel(
-            id = "vis_sidebarpanel",
-            h3("Visualize ABCi results"),
-            p("Information about the different visualization available."),
-
-            actionButton(
-              inputId = "draw",
-              class = "btn btn-info btn-tooltip",
-              label = "Create or update the plot"
+          tabsetPanel(
+            id = "visualize_tabs",
+            tabPanel(
+              title = strong("Tile"),
+              value = "tile",
+              uiOutput("plot_inputs_tile", fill = TRUE)
             ),
-
-            hr(),
-
-            tabsetPanel(
-              id = "visualize_tabs",
-              tabPanel(
-                title = strong("Tile"),
-                value = "tile",
-                uiOutput("plot_inputs_tile", fill = TRUE)
-              ),
-              tabPanel(
-                title = strong("Dot"),
-                value = "dot",
-                uiOutput("plot_inputs_tile_dot", fill = TRUE)
-              ),
-              tabPanel(
-                title = strong("Line"),
-                value = "line",
-                uiOutput("plot_inputs_line", fill = TRUE)
-              )
+            tabPanel(
+              title = strong("Dot"),
+              value = "dot",
+              uiOutput("plot_inputs_tile_dot", fill = TRUE)
+            ),
+            tabPanel(
+              title = strong("Line"),
+              value = "line",
+              uiOutput("plot_inputs_line", fill = TRUE)
             )
-          ),
-
-          mainPanel = mainPanel(
-            id = "vis_tab_mainpanel",
-            uiOutput("vis_tab_plot_ui")
           )
+        ),
+
+        mainPanel = mainPanel(
+          id = "vis_tab_mainpanel",
+          uiOutput("vis_tab_plot_ui")
         )
-      ),
+      )
+    ),
 
 
-      # |- About ----------------------------------------------------------
+    # |- About ----------------------------------------------------------
 
-      tabPanel(
-        value = "about_tab",
-        title = "About",
+    nav_panel(
+      value = "about_tab",
+      title = "About",
+
+      div(
+        class = "card bg-light mb-3 mx-auto",
+        style = "width: 67%",
+
+        div(class = "card-header", h1("About")),
 
         div(
-          class = "jumbotron",
-          HTML("<h1 style='margin-top: 15px;'>About</h1>"),
+          class = "card-body",
           p("Here is some About text."),
           p("Blah blah blah R blah blah Shiny blah blah blah Hancock Lab.")
         )
       )
+    ),
+
+
+  # |- Right-side items ---------------------------------------------------
+
+    nav_spacer(),
+
+    nav_item(
+      tags$a(
+        icon("github"),
+        "Github",
+        href = "https://github.com/hancockinformatics/ShinyABCi",
+        title = "Visit our Github to browse the code or submit an issue"
+      )
     )
+    # )
   )
 )
 
@@ -256,6 +273,10 @@ ui <- fluidPage(
 # Define Server -----------------------------------------------------------
 
 server <- function(input, output) {
+
+  observeEvent(input$test_btn, {
+    showNotification(ui = "Test message", duration = NULL, type = "message")
+  })
 
 
   # Upload ----------------------------------------------------------------
