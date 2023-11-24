@@ -204,17 +204,17 @@ ui <- page_fluid(
             tabPanel(
               title = strong("Tile"),
               value = "tile",
-              uiOutput("plot_inputs_tile", fill = TRUE)
+              uiOutput("plot_inputs_tile")
             ),
             tabPanel(
               title = strong("Dot"),
               value = "dot",
-              uiOutput("plot_inputs_tile_dot", fill = TRUE)
+              uiOutput("plot_inputs_tile_dot")
             ),
             tabPanel(
               title = strong("Line"),
               value = "line",
-              uiOutput("plot_inputs_line", fill = TRUE)
+              uiOutput("plot_inputs_line")
             )
           )
         ),
@@ -545,13 +545,13 @@ server <- function(input, output) {
 
   ## Template ##
   # div(
-  #   class = "form-group",
+  #   class = "form-group row",
   #   tags$label(
-  #     class = "col-lg-3 control-label",
-  #     ""
+  #     class = "col-sm-3 col-form-label",
+  #     "content"
   #   ),
   #   div(
-  #     class = "col-lg-9",
+  #     class = "col-sm-9",
   #     selectInput()
   #   )
   # )
@@ -562,10 +562,10 @@ server <- function(input, output) {
   output$plot_inputs_tile <- renderUI({
     list(
       div(
-        class = "form-group",
+        class = "form-group row",
         style = "margin-top: 15px",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Colour palette to use for the ABCi values",
           actionLink(
             inputId = "tile_preview_colours",
@@ -573,7 +573,7 @@ server <- function(input, output) {
           )
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           selectInput(
             inputId = "plot_tile_colour_palette",
             label = NULL,
@@ -592,14 +592,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Compound on the x-axis",
           "X compound"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           selectInput(
             inputId = "plot_tile_x_drug",
             label = NULL,
@@ -618,14 +618,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Label for the x-axis; applies to the entire plot",
           "X axis label"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           textInput(
             inputId = "plot_tile_x_text",
             label = NULL,
@@ -635,14 +635,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Number of decimal places to show for the x-axis",
           "X axis digits"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           numericInput(
             inputId = "plot_tile_x_decimal",
             label = NULL,
@@ -655,14 +655,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Compound on the y-axis",
           "Y compound"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           selectInput(
             inputId = "plot_tile_y_drug",
             label = NULL,
@@ -681,14 +681,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Label for the y-axis; applies to the entire plot",
           "Y axis label"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           textInput(
             inputId = "plot_tile_y_text",
             label = NULL,
@@ -698,14 +698,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Number of decimal places to show for the y-axis",
           "Y axis digits"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           numericInput(
             inputId = "plot_tile_y_decimal",
             label = NULL,
@@ -718,9 +718,9 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = paste0(
             "Should axis scales be 'Free', 'Fixed', or free in ",
             "only one dimension?"
@@ -728,7 +728,7 @@ server <- function(input, output) {
           "Scales"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           selectInput(
             inputId = "plot_tile_scales",
             label = NULL,
@@ -744,14 +744,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Flag cells which don't kill much biofilm. Set to 0 to hide.",
           "Flag low killing"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           numericInput(
             inputId = "plot_tile_min_flag",
             label = NULL,
@@ -763,14 +763,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Threshold for calculating MICs; applies to x- and y-axis",
           "MIC cutoff"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           numericInput(
             inputId = "plot_tile_mic_threshold",
             label = NULL,
@@ -780,14 +780,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Include MIC lines on x- or y-axis",
           "Draw MICs"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           checkboxGroupInput(
             inputId = "plot_tile_mic_lines",
             label = NULL,
@@ -806,15 +806,15 @@ server <- function(input, output) {
   output$plot_inputs_tile_dot <- renderUI({
     list(
       div(
-        class = "form-group",
+        class = "form-group row",
         style = "margin-top: 15px",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Colour palette to use for the ABCi values",
           "ABCi colours"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           selectInput(
             inputId = "plot_dot_colour_palette",
             label = NULL,
@@ -833,14 +833,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Compound on the x-axis",
           "X compound"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           selectInput(
             inputId = "plot_dot_x_drug",
             label = NULL,
@@ -859,14 +859,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Label for the x-axis; applies to the entire plot",
           "X axis label"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           textInput(
             inputId = "plot_dot_x_text",
             label = NULL,
@@ -876,14 +876,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Number of decimal places to show for the x-axis",
           "X axis digits"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           numericInput(
             inputId = "plot_dot_x_decimal",
             label = NULL,
@@ -896,14 +896,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Compound on the y-axis",
           "Y compound"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           selectInput(
             inputId = "plot_dot_y_drug",
             label = NULL,
@@ -922,14 +922,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Label for the y-axis; applies to the entire plot",
           "Y axis label"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           textInput(
             inputId = "plot_dot_y_text",
             label = NULL,
@@ -939,14 +939,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Number of decimal places to show for the y-axis",
           "Y axis digits"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           numericInput(
             inputId = "plot_dot_y_decimal",
             label = NULL,
@@ -959,9 +959,9 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = paste0(
             "Should axis scales be 'Free', 'Fixed', or free in ",
             "only one dimension?"
@@ -969,7 +969,7 @@ server <- function(input, output) {
           "Scales"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           selectInput(
             inputId = "plot_dot_scales",
             label = NULL,
@@ -985,14 +985,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Threshold for calculating MICs; applies to x- and y-axis compounds",
           "MIC cutoff"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           numericInput(
             inputId = "plot_dot_mic_threshold",
             label = NULL,
@@ -1002,14 +1002,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Include MIC lines on x- or y-axis",
           "Draw MICs"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           checkboxGroupInput(
             inputId = "plot_dot_mic_lines",
             label = NULL,
@@ -1028,14 +1028,14 @@ server <- function(input, output) {
   output$plot_inputs_line <- renderUI({
     list(
       div(
-        class = "form-group",
+        class = "form-group row",
         style = "margin-top: 15px",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           "Line type"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           radioButtons(
             inputId = "plot_line_type",
             inline = TRUE,
@@ -1050,14 +1050,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Compound on the x-axis",
           "X compound"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           selectInput(
             inputId = "plot_line_x_drug",
             label = NULL,
@@ -1076,14 +1076,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Label for the x-axis; applies to the entire plot",
           "X axis label"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           textInput(
             inputId = "plot_line_x_text",
             label = NULL,
@@ -1093,14 +1093,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Number of decimal places to show for the x-axis",
           "X axis digits"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           numericInput(
             inputId = "plot_line_x_decimal",
             label = NULL,
@@ -1113,14 +1113,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Compound mapped to different lines",
           "Line compound"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           selectInput(
             inputId = "plot_line_line_drug",
             label = NULL,
@@ -1139,14 +1139,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Concentrations to plot as lines",
           "Included conc."
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           selectInput(
             inputId = "plot_line_line_include",
             label = NULL,
@@ -1157,14 +1157,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Label for the line legend",
           "Line label"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           textInput(
             inputId = "plot_line_line_text",
             label = NULL,
@@ -1174,14 +1174,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Number of decimal places to show for the line compound",
           "Line digits"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           numericInput(
             inputId = "plot_line_line_decimal",
             label = NULL,
@@ -1194,14 +1194,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Colour palette to map to lines/concentrations",
           "Line colours"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           selectInput(
             inputId = "plot_line_colour_palette",
             label = NULL,
@@ -1221,9 +1221,9 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = paste0(
             "Should axis scales be 'Free', 'Fixed', or free in ",
             "only one dimension?"
@@ -1231,7 +1231,7 @@ server <- function(input, output) {
           "Scales"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           selectInput(
             inputId = "plot_line_scales",
             label = NULL,
@@ -1247,14 +1247,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Label for the y-axis; applies to the entire plot",
           "Y axis label"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           textInput(
             inputId = "plot_line_y_text",
             label = NULL,
@@ -1264,16 +1264,16 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Apply a 'jitter' along the x-axis to prevent overlapping lines",
           "X values"
         ),
         div(
-          class = "col-lg-2",
-          checkboxInput(
-            inputId = "plot_line_jitter_x",
+          class = "col-sm-3",
+          input_switch(
+            id = "plot_line_jitter_x",
             label = "Jitter",
             value = TRUE
           )
@@ -1281,14 +1281,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Threshold for calculating MICs; applies to x- and y-axis compounds",
           "MIC cutoff"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           numericInput(
             inputId = "plot_line_mic_threshold",
             label = NULL,
@@ -1298,14 +1298,14 @@ server <- function(input, output) {
       ),
 
       div(
-        class = "form-group",
+        class = "form-group row",
         tags$label(
-          class = "col-lg-3 control-label",
+          class = "col-sm-3 col-form-label",
           title = "Include MIC lines on x- or y-axis",
           "Draw MICs"
         ),
         div(
-          class = "col-lg-9",
+          class = "col-sm-9",
           checkboxGroupInput(
             inputId = "plot_line_mic_lines",
             label = NULL,
