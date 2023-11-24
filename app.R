@@ -811,7 +811,10 @@ server <- function(input, output) {
         tags$label(
           class = "col-sm-3 col-form-label",
           title = "Colour palette to use for the ABCi values",
-          "ABCi colours"
+          actionLink(
+            inputId = "dot_preview_colours",
+            label = "ABCi colours"
+          )
         ),
         div(
           class = "col-sm-9",
@@ -1198,7 +1201,10 @@ server <- function(input, output) {
         tags$label(
           class = "col-sm-3 col-form-label",
           title = "Colour palette to map to lines/concentrations",
-          "Line colours"
+          actionLink(
+            inputId = "line_preview_colours",
+            label = "Line colours"
+          )
         ),
         div(
           class = "col-sm-9",
@@ -1319,7 +1325,7 @@ server <- function(input, output) {
   })
 
 
-  # |- Update inputs ------------------------------------------------------
+  # |- Update inputs and observe ------------------------------------------
 
   plot_tile_min_info <- reactive({
     ifelse(input$plot_tile_min_flag > 0, TRUE, FALSE)
@@ -1339,13 +1345,37 @@ server <- function(input, output) {
     )
   })
 
+  # In theory these two observers could be combined, but when they are we don't
+  # get the right behaviour...
   observeEvent(input$tile_preview_colours, {
     showModal(
       modalDialog(
         title = "ABCi colour palettes",
         easyClose = TRUE,
-        HTML("<img src='preview_palettes.png'>")
-      )
+        size = "l",
+        HTML("<img src='preview_palettes.png' class='center'>")
+      ) %>% tagAppendAttributes(class = "modal-dialog-centered")
+    )
+  })
+  observeEvent(input$dot_preview_colours, {
+    showModal(
+      modalDialog(
+        title = "ABCi colour palettes",
+        easyClose = TRUE,
+        size = "l",
+        HTML("<img src='preview_palettes.png' class='center'>")
+      ) %>% tagAppendAttributes(class = "modal-dialog-centered")
+    )
+  })
+
+  observeEvent(input$line_preview_colours, {
+    showModal(
+      modalDialog(
+        title = "Line colour palettes",
+        easyClose = TRUE,
+        size = "l",
+        HTML("<img src='viridis_palettes.png' class='center'>")
+      ) %>% tagAppendAttributes(class = "modal-dialog-centered")
     )
   })
 
@@ -1448,7 +1478,7 @@ server <- function(input, output) {
       ) %>% shinycssloaders::withSpinner()
     )
   })
-} # Shiny sever close
+  } # Shiny sever close
 
 
 # Run the application -----------------------------------------------------

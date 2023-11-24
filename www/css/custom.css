@@ -8,6 +8,14 @@
   font-size: 22px;
 }
 
+/* Allow for centering of images */
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
 /* Fix padding for the navbar */
 .container-fluid {
   padding-left: 0;
@@ -20,10 +28,7 @@
 
 /* Tweak placement and size of modal dialogs */
 .modal-dialog {
-  top: 10vh;
-}
-.modal-content {
-  width: fit-content;
+  top: 15vh;
 }
 
 /* Increase size of the progress bar when uploading files */

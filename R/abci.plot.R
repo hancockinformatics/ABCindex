@@ -1,4 +1,6 @@
 # Set our preferred theme for all plots
+library(ggplot2)
+
 theme_set(
   theme_classic(base_size = 24) +
     theme(
@@ -385,8 +387,10 @@ abci.plot.dot <- function(
     data[col.analysis] <- droplevels(data[col.analysis])
   }
 
-  data <- data %>%
-    mutate(across(all_of(c(x.drug, y.drug)), forcats::fct_inseq))
+  data <- data %>% mutate(
+    across(all_of(c(x.drug, y.drug)), forcats::fct_inseq),
+    effect_scaled = scales::rescale(.data[[col.size]], to = c(0, 10))
+  )
 
   upper <- max(scale.limits)
   lower <- min(scale.limits)
@@ -482,7 +486,7 @@ abci.plot.dot <- function(
 
   ggplot(data, aes(.data[[x.drug]], .data[[y.drug]])) +
 
-    geom_point(aes(colour = .data[[col.fill]], size = .data[[col.size]])) +
+    geom_point(aes(colour = .data[[col.fill]], size = effect_scaled)) +
 
     {if (!is.null(col.analysis)) {
       facet_wrap(
@@ -535,10 +539,9 @@ abci.plot.dot <- function(
 
     scale_size_continuous(
       name = "Biofilm\nkilled",
-      range = size.range
-      # trans = "exp",
-      # breaks = seq(0, 1, 0.25) * 5,
-      # labels = paste0(seq(0, 1, 0.25) * 100, "%")
+      range = size.range,
+      trans = scales::exp_trans(base = 2),
+      labels = ~paste0(.x * 10, "%")
     ) +
 
     {if (add.axis.lines) {
