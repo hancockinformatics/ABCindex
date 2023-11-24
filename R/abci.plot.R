@@ -1,3 +1,20 @@
+# Set our preferred theme for all plots
+theme_set(
+  theme_classic(base_size = 24) +
+    theme(
+      text = element_text(family = "Helvetica"),
+      axis.title = element_text(face = "bold"),
+      axis.text = element_text(colour = "black", face = "bold"),
+      panel.spacing = unit(5, "mm"),
+      strip.background = element_blank(),
+      strip.text = element_text(face = "bold", size = 24),
+      legend.title = element_text(face = "bold"),
+      legend.key.height = unit(15, "mm"),
+      legend.text.align = 1
+    )
+)
+
+
 #' Create a tile plot of ABCi values
 #'
 #' @param data Data frame, as output by `abci.analysis()`
@@ -272,19 +289,6 @@ abci.plot.tile <- function(
       )
     }} +
 
-    theme_classic(base_size = 20) +
-    theme(
-      text = element_text(family = "Helvetica"),
-      axis.title = element_text(face = "bold"),
-      axis.text = element_text(colour = "black", face = "bold"),
-      panel.spacing = unit(5, "mm"),
-      strip.background = element_blank(),
-      strip.text = element_text(face = "bold"),
-      legend.title = element_text(face = "bold"),
-      legend.key.height = unit(10, "mm"),
-      legend.text.align = 1
-    ) +
-
     {if (x.decimal > 2) {
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
     }}
@@ -352,7 +356,7 @@ abci.plot.dot <- function(
     col.size,
     col.analysis = NULL,
     split = FALSE,
-    size.range = c(3, 22),
+    size.range = c(3, 15),
     scales = "fixed",
     n.rows = NULL,
     n.cols = NULL,
@@ -558,19 +562,6 @@ abci.plot.dot <- function(
         linewidth = 2
       )
     }} +
-
-    theme_classic(base_size = 20) +
-    theme(
-      text = element_text(family = "Helvetica"),
-      axis.title = element_text(face = "bold"),
-      axis.text = element_text(colour = "black", face = "bold"),
-      panel.spacing = unit(5, "mm"),
-      strip.background = element_blank(),
-      strip.text = element_text(face = "bold"),
-      legend.title = element_text(face = "bold"),
-      legend.key.height = unit(10, "mm"),
-      legend.text.align = 1
-    ) +
 
     {if (x.decimal > 2) {
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
@@ -847,17 +838,7 @@ abci.plot.line <- function(
       )
     }} +
 
-    theme_classic(base_size = 20) +
-    theme(
-      text = element_text(family = "Helvetica"),
-      axis.title = element_text(face = "bold"),
-      axis.text = element_text(colour = "black", face = "bold"),
-      panel.spacing = unit(10, "mm"),
-      panel.grid.major.y = element_line(),
-      strip.background = element_blank(),
-      strip.text = element_text(face = "bold"),
-      legend.title = element_text(face = "bold")
-    ) +
+    theme(legend.key.height = NULL) +
 
     {if (x.decimal > 2) {
       theme(axis.text.x = element_text(angle = 45, hjust = 1))

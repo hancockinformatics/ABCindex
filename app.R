@@ -1,7 +1,6 @@
 # To do -------------------------------------------------------------------
 
 #' - Tweak dot size for dot plots
-#' - Increase font size for facet titles and legend
 #'
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
 #'     if (effect > 0.9) {
