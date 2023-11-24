@@ -42,11 +42,6 @@ ui <- fluidPage(
     window_title = "ShinyABCi",
     title = "ShinyABCi",
 
-    # footer = tags$footer(
-    #   style = "margin: 80px",
-    #   p("Footer content")
-    # ),
-
 
     # |- Home page ------------------------------------------------------
 
@@ -55,33 +50,34 @@ ui <- fluidPage(
       title = "Home",
 
       div(
-        class = "card bg-light mb-3 mx-auto",
-        style = "width: 67%",
-
-        div(class = "card-header", h1("Welcome")),
+        class = "container my-5",
 
         div(
-          class = "card-body",
-          p(class = "card-text", "Here is some welcome text."),
-          p(class = "card-text", "Blah blah blah ABCi blah blah biofilm blah blah blah."),
+          class = "row p-4 pb-lg-5 pe-lg-0 pt-lg-5 rounded-3 border shadow-lg text-center",
+          h1(class = "display-5 fw-bold text-body-emphasis", "Welcome"),
+          div(
+            class = "col-lg-6 mx-auto",
+            p(class = "lead mb-4", "Here is some welcome text."),
+            p(class = "lead mb-4", "Blah blah blah ABCi blah blah biofilm blah blah blah."),
 
-          br(),
+            br(),
 
-          actionButton(
-            inputId = "get_started",
-            class = "btn btn-primary btn-lg",
-            label = div(
-              icon("play"),
-              HTML("&nbsp;"), # Horizontal spacer
-              HTML("Get started")
+            actionButton(
+              inputId = "get_started",
+              class = "btn btn-primary btn-lg",
+              label = div(
+                icon("play"),
+                HTML("&nbsp;"), # Horizontal spacer
+                HTML("Get started")
+              )
+            ),
+
+            br(),
+            br(),
+            actionButton(
+              inputId = "test_btn",
+              label = "Test"
             )
-          ),
-
-          br(),
-          br(),
-          actionButton(
-            inputId = "test_btn",
-            label = "Test"
           )
         )
       )
@@ -253,7 +249,7 @@ ui <- fluidPage(
     ),
 
 
-  # |- Right-side items ---------------------------------------------------
+    # |- Right-side items ---------------------------------------------------
 
     nav_spacer(),
 
