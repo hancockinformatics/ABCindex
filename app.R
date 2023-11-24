@@ -1,6 +1,7 @@
 # To do -------------------------------------------------------------------
 
 #' - Tweak dot size for dot plots
+#' - Increase font size for facet titles and legend
 #'
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
 #'     if (effect > 0.9) {
@@ -9,9 +10,8 @@
 #'   }
 #'
 #' - Split tile plots: Two options, strict or lax:
-#'     - Positive half: ABCi > 0.1  or ABCi > -1
-#'     - Negative half: ABCi < -0.1 or ABCi < 1
-#'
+#'     - Positive half: ABCi > 0.1  or ABCi > -0.1
+#'     - Negative half: ABCi < -0.1 or ABCi < 0.1
 
 
 # Load packages -----------------------------------------------------------
@@ -25,7 +25,7 @@ library(bslib)
 
 # Define UI ---------------------------------------------------------------
 
-ui <- fluidPage(
+ui <- page_fluid(
   theme = bs_theme(version = 5, preset = "cosmo"),
   HTML("<base target='_blank' rel='noopener noreferrer'>"),
   useShinyjs(),

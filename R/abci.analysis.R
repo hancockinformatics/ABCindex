@@ -174,7 +174,6 @@ abci.analysis.single <- function(
       mean()
 
     if (normalize) {
-
       data_clean %>% mutate(
         bio_normal = ifelse(
           .data[[col.data]] > 0,
@@ -207,12 +206,12 @@ abci.analysis.single <- function(
 
     lapply(data_split, function(x) {
 
-      if (normalize) {
-        baseline <- x %>%
-          filter(.data[[x.drug]] == "0" & .data[[y.drug]] == "0") %>%
-          pull(.data[[col.data]]) %>%
-          mean()
+      baseline <- x %>%
+        filter(.data[[x.drug]] == "0" & .data[[y.drug]] == "0") %>%
+        pull(.data[[col.data]]) %>%
+        mean()
 
+      if (normalize) {
         x %>% mutate(
           bio_normal = ifelse(
             .data[[col.data]] > 0,
