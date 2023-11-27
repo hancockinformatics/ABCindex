@@ -24,9 +24,7 @@ theme_set(
 #' @param y.drug Character; Column containing concentrations of the second drug
 #' @param col.fill Character; Column containing the values to plot
 #' @param col.analysis Character; Optional column denoting different analyses,
-#'   by which to facet the plot
-#' @param split Logical; Should two graphs be drawn, for positive and negative
-#'   ABCi values? Defaults to FALSE.
+#'   by which to facet the plot.
 #' @param scales Should the scales be "fixed" (default), "free", "free_x", or
 #'   "free_y"? See `?facet_wrap` for more details.
 #' @param n.rows Number of rows when faceting. Defaults to NULL (let's ggplot2
@@ -77,7 +75,6 @@ abci.plot.tile <- function(
     y.drug,
     col.fill,
     col.analysis = NULL,
-    split = FALSE,
     scales = "fixed",
     n.rows = NULL,
     n.cols = NULL,
@@ -118,36 +115,20 @@ abci.plot.tile <- function(
   upper <- max(scale.limits)
   lower <- min(scale.limits)
 
-  if (!split) {
-    plot.palette <- preset.palettes[[colour.palette]]
+  plot.palette <- preset.palettes[[colour.palette]]
 
-    colour.pointers <-
-      if (colour.palette %in% c("PAN", "SUN", "BOB")) {
-        scales::rescale(
-          c(upper, upper / 2, upper / 4, upper / 8, 0, lower / 4, lower / 2, lower),
-          to = c(0, 1)
-        )
-      } else {
-        scales::rescale(
-          c(upper, 3 * upper / 4, upper / 2, upper / 4, 0, lower / 4, 3 * lower / 4, lower),
-          to = c(0, 1)
-        )
-      }
-
-  } else {
-    plot.palette <- preset.palettes.split[[colour.palette]]
-
-    colour.pointers <- list(
-      up = scales::rescale(
-        c(upper, 3 * upper / 4, upper / 2, upper / 4, 0),
-        to = c(0, 1)
-      ),
-      down = scales::rescale(
-        c(lower, 3 * lower / 4, lower / 2, lower / 4, 0),
+  colour.pointers <-
+    if (colour.palette %in% c("PAN", "SUN", "BOB")) {
+      scales::rescale(
+        c(upper, upper / 2, upper / 4, upper / 8, 0, lower / 4, lower / 2, lower),
         to = c(0, 1)
       )
-    )
-  }
+    } else {
+      scales::rescale(
+        c(upper, 3 * upper / 4, upper / 2, upper / 4, 0, lower / 4, 3 * lower / 4, lower),
+        to = c(0, 1)
+      )
+    }
 
   if (delta) {
     scale.limits <- c(-100, 100)
@@ -297,6 +278,37 @@ abci.plot.tile <- function(
 }
 
 
+#' Title
+#'
+#' @param data
+#' @param x.drug
+#' @param y.drug
+#' @param col.fill
+#' @param col.analysis
+#' @param strict
+#' @param scales
+#' @param n.rows
+#' @param n.cols
+#' @param x.text
+#' @param y.text
+#' @param x.decimal
+#' @param y.decimal
+#' @param minflag
+#' @param minflag.value
+#' @param x.mic.line
+#' @param y.mic.line
+#' @param col.mic
+#' @param mic.threshold
+#' @param delta
+#' @param colour.palette
+#' @param colour.na
+#' @param scale.limits
+#' @param scale.breaks
+#' @param add.axis.lines
+#'
+#' @return
+#' @export
+#'
 abci.plot.tile.split <- function(
     data,
     x.drug,

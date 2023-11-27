@@ -1597,6 +1597,10 @@ server <- function(input, output) {
     ifelse(input$plot_tile_min_flag > 0, TRUE, FALSE)
   })
 
+  plot_tile_split_min_info <- reactive({
+    ifelse(input$plot_tile_split_min_flag > 0, TRUE, FALSE)
+  })
+
   observeEvent(input$plot_line_type, {
     req(abci_plot_data())
 
@@ -1659,7 +1663,6 @@ server <- function(input, output) {
           y.drug = isolate(input$plot_tile_y_drug),
           col.fill = "abci_avg",
           col.analysis = "assay",
-          split = FALSE,
           n.cols = abci_plot_dims()[[1]],
           n.rows = abci_plot_dims()[[2]],
           scales = isolate(input$plot_tile_scales),
@@ -1732,25 +1735,25 @@ server <- function(input, output) {
       } else if (isolate(input$visualize_tabs) == "tile_split") {
         abci.plot.tile.split(
           data = abci_plot_data(),
-          x.drug = "cols_conc",
-          y.drug = "rows_conc",
+          x.drug = isolate(input$plot_tile_split_x_drug),
+          y.drug = isolate(input$plot_tile_split_y_drug),
           col.fill = "abci_avg",
           col.analysis = "assay",
-          strict = TRUE,
+          strict = isolate(input$plot_tile_split_strict),
           n.cols = 2,
           n.rows = 2,
-          scales = "fixed",
-          x.decimal = 2,
-          y.decimal = 3,
-          # x.text = isolate(input$plot_tile_split_x_text),
-          # y.text = isolate(input$plot_tile_split_y_text),
-          x.mic.line = TRUE,
-          y.mic.line = TRUE,
-          mic.threshold = 0.5,
+          scales = isolate(input$plot_tile_split_scales),
+          x.decimal = isolate(input$plot_tile_split_x_decimal),
+          y.decimal = isolate(input$plot_tile_split_y_decimal),
+          x.text = isolate(input$plot_tile_split_x_text),
+          y.text = isolate(input$plot_tile_split_y_text),
+          x.mic.line = ("X" %in% isolate(input$plot_tile_split_mic_lines)),
+          y.mic.line = ("Y" %in% isolate(input$plot_tile_split_mic_lines)),
+          mic.threshold = isolate(input$plot_tile_split_mic_threshold),
           col.mic = "bio_normal",
-          minflag = TRUE,
-          minflag.value = 0.5,
-          colour.palette = "BOB"
+          minflag = isolate(plot_tile_split_min_info()),
+          minflag.value = isolate(input$plot_tile_split_min_flag),
+          colour.palette = isolate(input$plot_tile_split_colour_palette)
         )
       }
     )
