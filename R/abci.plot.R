@@ -297,6 +297,235 @@ abci.plot.tile <- function(
 }
 
 
+abci.plot.tile.split <- function(
+    data,
+    x.drug,
+    y.drug,
+    col.fill,
+    col.analysis = NULL,
+    strict = TRUE,
+    scales = "fixed",
+    n.rows = NULL,
+    n.cols = NULL,
+    x.text = "Drug 1",
+    y.text = "Drug 2",
+    x.decimal = 1,
+    y.decimal = 1,
+    minflag = FALSE,
+    minflag.value = 0.5,
+    x.mic.line = FALSE,
+    y.mic.line = FALSE,
+    col.mic,
+    mic.threshold = 0.5,
+    delta = FALSE,
+    colour.palette = "YP",
+    colour.na = "white",
+    scale.limits = c(-2, 2),
+    scale.breaks = seq(-2, 2, 0.5),
+    add.axis.lines = TRUE
+) {
+
+  if (any(c("spec_tbl_df", "tbl_df", "tbl") %in% class(data))) {
+    data <- as.data.frame(data)
+  }
+
+  if (!is.null(col.analysis)) {
+    data[col.analysis] <- droplevels(data[col.analysis])
+  }
+
+  data <- data %>%
+    mutate(across(all_of(c(x.drug, y.drug)), forcats::fct_inseq))
+
+  if (minflag) {
+    data <- data %>%
+      mutate(min = ifelse(effect_avg < minflag.value, "<", NA))
+  }
+
+  upper <- max(scale.limits)
+  lower <- min(scale.limits)
+
+  plot.palette <- preset.palettes.split[[colour.palette]]
+
+  colour.pointers <- list(
+    "up" = scales::rescale(
+      c(upper, 3 * upper / 4, upper / 2, upper / 4, 0),
+      to = c(0, 1)
+    ),
+    "down" = scales::rescale(
+      c(lower, 3 * lower / 4, lower / 2, lower / 4, 0),
+      to = c(0, 1)
+    )
+  )
+
+  if (delta) {
+    scale.limits <- c(-100, 100)
+    scale.breaks <- seq(100, -100, -25)
+    colour.pointers <- scales::rescale(
+      c(100, 50, 25, 0, -25, -50, -100),
+      to = c(0, 1)
+    )
+  }
+
+  # MICs are calculated by `abci.mic()` and recovered as a data frame. Drug
+  # concentrations need to be converted to positions on their respective axes,
+  # as the `geom_(x|y)line` functions only work by position. And since we don't
+  # plot zero concentrations, we need to subtract one from the level to end up
+  # in the right spot.
+  if (any(x.mic.line, y.mic.line)) {
+
+    if (is.null(col.analysis)) {
+      mic.table <- abci.mic(
+        data = data,
+        x.drug = x.drug,
+        y.drug = y.drug,
+        col.data = col.mic,
+        threshold = mic.threshold
+      )
+
+      mic.table$XLAB <-
+        which(levels(droplevels(data[[x.drug]])) == mic.table$XMIC) - 1
+
+      mic.table$YLAB <-
+        which(levels(droplevels(data[[y.drug]])) == mic.table$YMIC) - 1
+    } else {
+
+      data.split <- split(x = data, f = data[col.analysis])
+
+      mic.table.split <- lapply(data.split, function(d) {
+        result.mic <- abci.mic(
+          data = d,
+          x.drug = x.drug,
+          y.drug = y.drug,
+          col.data = col.mic,
+          threshold = mic.threshold
+        )
+
+        result.mic$XLAB <-
+          which(levels(droplevels(d[[x.drug]])) == result.mic$XMIC) - 1
+
+        result.mic$YLAB <-
+          which(levels(droplevels(d[[y.drug]])) == result.mic$YMIC) - 1
+
+        result.mic
+      })
+
+      mic.table <- do.call(rbind, mic.table.split)
+      mic.table[, col.analysis] <- rownames(mic.table)
+      rownames(mic.table) <- NULL
+    }
+  }
+
+  # Zero concentrations are removed before plotting
+  data_nozero <- data[!data[, x.drug] == 0, ]
+  data_nozero <- data_nozero[!data_nozero[, y.drug] == 0, ]
+
+  data_split <- if (strict) {
+    list(
+      "up" = filter(data_nozero, .data[[col.fill]] > 0.1),
+      "down" = filter(data_nozero, .data[[col.fill]] < -0.1)
+    )
+  } else {
+    list(
+      "up" = filter(data_nozero, .data[[col.fill]] > -0.1),
+      "down" = filter(data_nozero, .data[[col.fill]] < 0.1)
+    )
+  }
+
+  scale.limits.split <- list(
+    "up" = c(0, scale.limits[scale.limits > 0]),
+    "down" = c(scale.limits[scale.limits < 0], 0)
+  )
+
+  tile_plots <- purrr::imap(data_split, function(d, nm) {
+
+    # The graph uses `geom_raster()` as the main geometry (faster than
+    # `geom_tile()`), and all cells are the same size.
+    ggplot(d, aes(.data[[x.drug]], .data[[y.drug]])) +
+
+      geom_raster(aes(fill = .data[[col.fill]])) +
+
+      {if (!is.null(col.analysis)) {
+        facet_wrap(
+          ~.data[[col.analysis]],
+          nrow = n.rows,
+          ncol = n.cols,
+          scales = scales
+        )
+      }} +
+
+      {if (minflag) geom_text(aes(label = min), size = 8)} +
+
+      {if (x.mic.line) {
+        geom_vline(data = mic.table, aes(xintercept = XLAB))
+      }} +
+
+      { if (y.mic.line) {
+        geom_hline(data = mic.table, aes(yintercept = YLAB))
+      }} +
+
+      scale_x_discrete(
+        name = x.text,
+        expand = c(0, 0),
+        labels = ~sprintf(
+          paste0("%.", x.decimal, "f"),
+          as.numeric(.x)
+        )
+      ) +
+
+      scale_y_discrete(
+        name = y.text,
+        expand = c(0, 0),
+        labels = ~sprintf(
+          paste0("%.", y.decimal, "f"),
+          as.numeric(.x)
+        )
+      ) +
+
+      scale_fill_gradientn(
+        name = ifelse(
+          grepl(x = col.fill, pattern = "abci", ignore.case = TRUE),
+          "ABCi",
+          col.fill
+        ),
+        colours = plot.palette[[nm]],
+        values = colour.pointers[[nm]],
+        na.value = colour.na,
+        limits = scale.limits.split[[nm]],
+        breaks = scale.breaks,
+        oob = scales::squish
+      ) +
+
+      {if (add.axis.lines) {
+        annotate(
+          "segment",
+          x = -Inf,
+          xend = Inf,
+          y = -Inf,
+          yend = -Inf,
+          linewidth = 1
+        )
+      }} +
+      {if (add.axis.lines) {
+        annotate(
+          "segment",
+          x = -Inf,
+          xend = -Inf,
+          y = -Inf,
+          yend = Inf,
+          linewidth = 1
+        )
+      }} +
+
+      {if (x.decimal > 2) {
+        theme(axis.text.x = element_text(angle = 45, hjust = 1))
+      }} +
+      theme(legend.key.height = unit(7, "mm"))
+  })
+
+  patchwork::wrap_plots(tile_plots, ncol = 1)
+}
+
+
 #' col.dot.plot
 #'
 #' @param data Data frame, as output by `abci.analysis()`

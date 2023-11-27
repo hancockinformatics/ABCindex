@@ -207,6 +207,11 @@ ui <- page_fluid(
               uiOutput("plot_inputs_tile")
             ),
             tabPanel(
+              title = strong("Split tile"),
+              value = "tile_split",
+              uiOutput("plot_inputs_tile_split")
+            ),
+            tabPanel(
               title = strong("Dot"),
               value = "dot",
               uiOutput("plot_inputs_tile_dot")
@@ -790,6 +795,267 @@ server <- function(input, output) {
           class = "col-sm-9",
           checkboxGroupInput(
             inputId = "plot_tile_mic_lines",
+            label = NULL,
+            choices = c("X", "Y"),
+            selected = c("X", "Y"),
+            inline = TRUE
+          )
+        )
+      )
+    )
+  })
+
+
+  # |-- Split tile --------------------------------------------------------
+
+  output$plot_inputs_tile_split <- renderUI({
+    list(
+      div(
+        class = "form-group row",
+        style = "margin-top: 15px",
+        tags$label(
+          class = "col-sm-3 col-form-label",
+          title = "Colour palette to use for the ABCi values",
+          actionLink(
+            inputId = "tile_preview_colours",
+            label = "ABCi colours"
+          )
+        ),
+        div(
+          class = "col-sm-9",
+          selectInput(
+            inputId = "plot_tile_split_colour_palette",
+            label = NULL,
+            choices = c(
+              "Orange-purple" = "OP",
+              "Yellow-purple" = "YP",
+              "Yellow-Blue" = "YB",
+              "Red-Blue" = "RB",
+              "Sunset" = "SUN",
+              "PAN" = "PAN",
+              "Bob's choice" = "BOB"
+            ),
+            selected = "BOB"
+          )
+        )
+      ),
+
+      div(
+        class = "form-group row",
+        tags$label(
+          class = "col-sm-3 col-form-label",
+          title = "Type of splitting/filtering to apply",
+          "Split type"
+        ),
+        div(
+          class = "col-sm-9",
+          checkboxInput(
+            inputId = "plot_tile_split_strict",
+            label = "Strict",
+            value = TRUE
+          )
+        )
+      ),
+
+      div(
+        class = "form-group row",
+        tags$label(
+          class = "col-sm-3 col-form-label",
+          title = "Compound on the x-axis",
+          "X compound"
+        ),
+        div(
+          class = "col-sm-9",
+          selectInput(
+            inputId = "plot_tile_split_x_drug",
+            label = NULL,
+            choices = grep(
+              x = colnames(abci_plot_data()),
+              pattern = "conc",
+              value = TRUE
+            ),
+            selected = grep(
+              x = colnames(abci_plot_data()),
+              pattern = "conc",
+              value = TRUE
+            )[1]
+          )
+        )
+      ),
+
+      div(
+        class = "form-group row",
+        tags$label(
+          class = "col-sm-3 col-form-label",
+          title = "Label for the x-axis; applies to the entire plot",
+          "X axis label"
+        ),
+        div(
+          class = "col-sm-9",
+          textInput(
+            inputId = "plot_tile_split_x_text",
+            label = NULL,
+            value = "Concentration (ug/mL)"
+          )
+        )
+      ),
+
+      div(
+        class = "form-group row",
+        tags$label(
+          class = "col-sm-3 col-form-label",
+          title = "Number of decimal places to show for the x-axis",
+          "X axis digits"
+        ),
+        div(
+          class = "col-sm-9",
+          numericInput(
+            inputId = "plot_tile_split_x_decimal",
+            label = NULL,
+            value = 2,
+            min = 1,
+            max = 4,
+            step = 1
+          )
+        )
+      ),
+
+      div(
+        class = "form-group row",
+        tags$label(
+          class = "col-sm-3 col-form-label",
+          title = "Compound on the y-axis",
+          "Y compound"
+        ),
+        div(
+          class = "col-sm-9",
+          selectInput(
+            inputId = "plot_tile_split_y_drug",
+            label = NULL,
+            choices = grep(
+              x = colnames(abci_plot_data()),
+              pattern = "conc",
+              value = TRUE
+            ),
+            selected = grep(
+              x = colnames(abci_plot_data()),
+              pattern = "conc",
+              value = TRUE
+            )[2]
+          )
+        )
+      ),
+
+      div(
+        class = "form-group row",
+        tags$label(
+          class = "col-sm-3 col-form-label",
+          title = "Label for the y-axis; applies to the entire plot",
+          "Y axis label"
+        ),
+        div(
+          class = "col-sm-9",
+          textInput(
+            inputId = "plot_tile_split_y_text",
+            label = NULL,
+            value = "Concentration (ug/mL)"
+          )
+        )
+      ),
+
+      div(
+        class = "form-group row",
+        tags$label(
+          class = "col-sm-3 col-form-label",
+          title = "Number of decimal places to show for the y-axis",
+          "Y axis digits"
+        ),
+        div(
+          class = "col-sm-9",
+          numericInput(
+            inputId = "plot_tile_split_y_decimal",
+            label = NULL,
+            value = 2,
+            min = 1,
+            max = 4,
+            step = 1
+          )
+        )
+      ),
+
+      div(
+        class = "form-group row",
+        tags$label(
+          class = "col-sm-3 col-form-label",
+          title = paste0(
+            "Should axis scales be 'Free', 'Fixed', or free in ",
+            "only one dimension?"
+          ),
+          "Scales"
+        ),
+        div(
+          class = "col-sm-9",
+          selectInput(
+            inputId = "plot_tile_split_scales",
+            label = NULL,
+            choices = c(
+              "Free" = "free",
+              "Fixed" = "fixed",
+              "Free X" = "free_x",
+              "Free Y" = "free_y"
+            ),
+            selected = "fixed"
+          )
+        )
+      ),
+
+      div(
+        class = "form-group row",
+        tags$label(
+          class = "col-sm-3 col-form-label",
+          title = "Flag cells which don't kill much biofilm. Set to 0 to hide.",
+          "Flag low killing"
+        ),
+        div(
+          class = "col-sm-9",
+          numericInput(
+            inputId = "plot_tile_split_min_flag",
+            label = NULL,
+            value = 0.5,
+            min = 0,
+            step = 0.1
+          )
+        )
+      ),
+
+      div(
+        class = "form-group row",
+        tags$label(
+          class = "col-sm-3 col-form-label",
+          title = "Threshold for calculating MICs; applies to x- and y-axis",
+          "MIC cutoff"
+        ),
+        div(
+          class = "col-sm-9",
+          numericInput(
+            inputId = "plot_tile_split_mic_threshold",
+            label = NULL,
+            value = 0.5
+          )
+        )
+      ),
+
+      div(
+        class = "form-group row",
+        tags$label(
+          class = "col-sm-3 col-form-label",
+          title = "Include MIC lines on x- or y-axis",
+          "Draw MICs"
+        ),
+        div(
+          class = "col-sm-9",
+          checkboxGroupInput(
+            inputId = "plot_tile_split_mic_lines",
             label = NULL,
             choices = c("X", "Y"),
             selected = c("X", "Y"),
@@ -1462,6 +1728,30 @@ server <- function(input, output) {
           jitter.x = isolate(input$plot_line_jitter_x),
           colour.palette = isolate(input$plot_line_colour_palette)
         )
+
+      } else if (isolate(input$visualize_tabs) == "tile_split") {
+        abci.plot.tile.split(
+          data = abci_plot_data(),
+          x.drug = "cols_conc",
+          y.drug = "rows_conc",
+          col.fill = "abci_avg",
+          col.analysis = "assay",
+          strict = TRUE,
+          n.cols = 2,
+          n.rows = 2,
+          scales = "fixed",
+          x.decimal = 2,
+          y.decimal = 3,
+          # x.text = isolate(input$plot_tile_split_x_text),
+          # y.text = isolate(input$plot_tile_split_y_text),
+          x.mic.line = TRUE,
+          y.mic.line = TRUE,
+          mic.threshold = 0.5,
+          col.mic = "bio_normal",
+          minflag = TRUE,
+          minflag.value = 0.5,
+          colour.palette = "BOB"
+        )
       }
     )
   })
@@ -1469,16 +1759,19 @@ server <- function(input, output) {
   observeEvent(input$draw, {
     req(abci_plot_data())
 
+    plot_height <- paste0(100 + (300 * abci_plot_dims()[[2]]), "px")
+    plot_width <- ifelse(abci_plot_dims()[[1]] == 1, "60%", "100%")
+
     output$vis_tab_plot_ui <- renderUI(
       plotOutput(
         outputId = "abci_plot",
         inline = FALSE,
-        height = 100 + (300 * abci_plot_dims()[[2]]),
-        width = ifelse(abci_plot_dims()[[1]] == 1, "60%", "100%")
+        height = plot_height,
+        width = plot_width
       ) %>% shinycssloaders::withSpinner()
     )
   })
-  } # Shiny sever close
+} # Shiny sever close
 
 
 # Run the application -----------------------------------------------------
