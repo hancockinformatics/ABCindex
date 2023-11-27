@@ -1,16 +1,13 @@
 # To do -------------------------------------------------------------------
 
 #' - Tweak dot size for dot plots
+#' - If not normalizing, switch off MICs be default
 #'
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
 #'     if (effect > 0.9) {
 #'       add * to tile, or border around dot
 #'     }
 #'   }
-#'
-#' - Split tile plots: Two options, strict or lax:
-#'     - Positive half: ABCi > 0.1  or ABCi > -0.1
-#'     - Negative half: ABCi < -0.1 or ABCi < 0.1
 
 
 # Load packages -----------------------------------------------------------
@@ -1021,7 +1018,7 @@ server <- function(input, output) {
           numericInput(
             inputId = "plot_tile_split_min_flag",
             label = NULL,
-            value = 0.5,
+            value = 0,
             min = 0,
             step = 0.1
           )

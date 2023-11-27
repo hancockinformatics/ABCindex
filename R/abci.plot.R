@@ -1,3 +1,5 @@
+message("Sourcing functions\n")
+
 # Set our preferred theme for all plots
 library(ggplot2)
 
@@ -278,36 +280,55 @@ abci.plot.tile <- function(
 }
 
 
-#' Title
+#' abci.plot.tile.split
 #'
-#' @param data
-#' @param x.drug
-#' @param y.drug
-#' @param col.fill
-#' @param col.analysis
-#' @param strict
-#' @param scales
-#' @param n.rows
-#' @param n.cols
-#' @param x.text
-#' @param y.text
-#' @param x.decimal
-#' @param y.decimal
-#' @param minflag
-#' @param minflag.value
-#' @param x.mic.line
-#' @param y.mic.line
-#' @param col.mic
-#' @param mic.threshold
-#' @param delta
-#' @param colour.palette
-#' @param colour.na
-#' @param scale.limits
-#' @param scale.breaks
-#' @param add.axis.lines
+#' @param data Data frame, as output by `abci.analysis()`
+#' @param x.drug Character; Column containing concentrations of the first drug
+#' @param y.drug Character; Column containing concentrations of the second drug
+#' @param col.fill Character; Column containing the values to plot
+#' @param col.analysis Character; Optional column denoting different analyses,
+#'   by which to facet the plot.
+#' @param strict Logical; How should splitting/filtering be done? Defaults to
+#'   TRUE.
+#' @param scales Should the scales be "fixed" (default), "free", "free_x", or
+#'   "free_y"? See `?facet_wrap` for more details.
+#' @param n.rows Number of rows when faceting. Defaults to NULL (let's ggplot2
+#'   choose.)
+#' @param n.cols Number of columns when faceting. Defaults to NULL (let's
+#'   ggplot2 choose.)
+#' @param x.text Character; Label for the x-axis
+#' @param y.text Character; Label for the y-axis
+#' @param x.decimal Number of decimal places to show for x-axis labels. Defaults
+#'   to 1.
+#' @param y.decimal Number of decimal places to show for y axis labels. Defaults
+#'   to 1.
+#' @param minflag Logical; Should rows previously flagged by `abci.analysis()`
+#'   be labeled? Defaults to FALSE.
+#' @param minflag.value Minimum value, below which effects will be flagged to
+#'   indicate lack of effect. Defaults to 0.5
+#' @param x.mic.line Logical; Include MIC line for the drug on the x-axis?
+#'   Defaults to FALSE.
+#' @param y.mic.line Logical; Include MIC line for the drug on the y-axis?
+#'   Defaults to FALSE.
+#' @param col.mic Character; Column name to use for calculating MICs
+#' @param mic.threshold Threshold to use when calculating MICs. Defaults to 0.5.
+#' @param delta Logical; Are plotted values the simple "delta" as calculated by
+#'   `abci.analysis()`? Defaults to FALSE.
+#' @param colour.palette One of the pre-made palettes.
+#' @param colour.na Colour assigned to any NA values. Defaults to "white".
+#' @param scale.limits Limits for the colour scale. Defaults to
+#'   `c(-2, 2)`.
+#' @param scale.breaks Breaks for the colour scale. Defaults to
+#'   `seq(-2, 2, 0.5)`.
+#' @param add.axis.lines Should lines be drawn for the x- and y-axis when
+#'   faceting? Defaults to TRUE.
 #'
 #' @return
 #' @export
+#'
+#' @description A version of the tile plot which separates negative and positive
+#' ABCi values, producing two plots instead of one. How the splitting/filtering
+#' is done is controlled via the `strict` argument.
 #'
 abci.plot.tile.split <- function(
     data,
@@ -433,13 +454,39 @@ abci.plot.tile.split <- function(
 
   data_split <- if (strict) {
     list(
-      "up" = filter(data_nozero, .data[[col.fill]] > 0.1),
-      "down" = filter(data_nozero, .data[[col.fill]] < -0.1)
+      "up" = mutate(
+        data_nozero,
+        col_fill = ifelse(
+          test = .data[[col.fill]] > 0.1,
+          yes = .data[[col.fill]],
+          no = NA
+        )),
+      "down" = mutate(
+        data_nozero,
+        col_fill = ifelse(
+          test = .data[[col.fill]] < -0.1,
+          yes = .data[[col.fill]],
+          no = NA
+        )
+      )
     )
   } else {
     list(
-      "up" = filter(data_nozero, .data[[col.fill]] > -0.1),
-      "down" = filter(data_nozero, .data[[col.fill]] < 0.1)
+      "up" = mutate(
+        data_nozero,
+        col_fill = ifelse(
+          test = .data[[col.fill]] > -0.1,
+          yes = .data[[col.fill]],
+          no = NA
+        )),
+      "down" = mutate(
+        data_nozero,
+        col_fill = ifelse(
+          test = .data[[col.fill]] < 0.1,
+          yes = .data[[col.fill]],
+          no = NA
+        )
+      )
     )
   }
 
@@ -454,7 +501,7 @@ abci.plot.tile.split <- function(
     # `geom_tile()`), and all cells are the same size.
     ggplot(d, aes(.data[[x.drug]], .data[[y.drug]])) +
 
-      geom_raster(aes(fill = .data[[col.fill]])) +
+      geom_raster(aes(fill = col_fill)) +
 
       {if (!is.null(col.analysis)) {
         facet_wrap(
