@@ -1,5 +1,3 @@
-message("Sourcing functions\n")
-
 # Set our preferred theme for all plots
 library(ggplot2)
 

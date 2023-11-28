@@ -1,7 +1,6 @@
 # To do -------------------------------------------------------------------
 
 #' - Tweak dot size for dot plots
-#'
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
 #'     if (effect > 0.9) {
 #'       add * to tile, or border around dot
@@ -16,6 +15,12 @@ library(ggplot2)
 library(shinyjs)
 library(shiny)
 library(bslib)
+
+app_version <- gsub(
+  x = readLines("DESCRIPTION")[3],
+  pattern = "^Version\\: ",
+  replacement = "v"
+)
 
 
 # Define UI ---------------------------------------------------------------
@@ -71,7 +76,7 @@ ui <- page_fluid(
             br(),
             actionButton(
               inputId = "test_btn",
-              label = "Test"
+              label = "Notification test"
             )
           )
         )
@@ -234,21 +239,34 @@ ui <- page_fluid(
       value = "about_tab",
       title = "About",
 
-      HTML(paste0(
-        '<div class="container col-xxl-8 px-4 py-5">',
-        '<div class="row flex-lg-row align-items-center g-5 py-5">',
-        '<div class="col-lg-6">',
-        '<h1 class="display-5 fw-bold text-body-emphasis lh-1 mb-3">About</h1>',
-        '<p class="lead">Here is some About text.</p>',
-        '<p class="lead">Blah blah blah R blah blah Shiny blah blah blah Hancock Lab.</p>',
-        '<div class="d-grid gap-2 d-md-flex justify-content-md-start">',
-        '<button type="button" class="btn btn-primary btn-lg px-4 me-md-2">A button</button>',
-        '<button type="button" class="btn btn-outline-secondary btn-lg px-4">A second button</button>',
-        '</div>',
-        '</div>',
-        '</div>',
-        '</div>'
-      ))
+      div(class = "container col-xxl-8 px-4 py-5",
+        div(class = "row flex-lg-row align-items-center g-5 py-5",
+          div(class = "col-lg-6",
+
+            h1(class = "display-5 fw-bold text-body-emphasis lh-1 mb-3",
+              "About"
+            ),
+            p(class = "lead",
+              "Here is some About text."
+            ),
+            p(class = "lead",
+              "Blah blah blah R blah blah Shiny blah blah blah Hancock Lab."
+            ),
+            div(class = "d-grid gap-2 d-md-flex justify-content-md-start",
+              actionButton(
+                inputId = "about_button_1",
+                class = "btn btn-primary btn-lg px-4 me-md-2",
+                label = "A button"
+              ),
+              actionButton(
+                inputId = "about_button_2",
+                class = "btn btn-outline-secondary btn-lg px-4",
+                HTML("A <i>second</i> button")
+              )
+            )
+          )
+        )
+      )
     ),
 
 
@@ -263,8 +281,8 @@ ui <- page_fluid(
         href = "https://github.com/hancockinformatics/ShinyABCi",
         title = "Visit our Github to browse the code or submit an issue"
       )
-    )
-    # )
+    ),
+    nav_item(app_version, style = "color: var(--bs-nav-link-color)")
   )
 )
 
