@@ -42,7 +42,9 @@
 
 /* Customize shiny notifications */
 .shiny-notification {
-  font-size: 20px;
+  font-size: 24px;
+  margin-bottom: 20px;
+  margin-right: 20px;
 }
 .shiny-notification-default {
   color: #161718;
