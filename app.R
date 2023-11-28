@@ -1,7 +1,7 @@
 # To do -------------------------------------------------------------------
 
 #' - Tweak dot size for dot plots
-#' - Slim down display table
+#' - Summary and full results tables...
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
 #'     if (effect > 0.9) {
 #'       add * to tile, or border around dot
@@ -194,7 +194,8 @@ ui <- page_fluid(
           actionButton(
             inputId = "draw",
             class = "btn btn-info btn-tooltip",
-            label = "Create or update the plot"
+            label = "Create or update the plot",
+            icon = icon("chart-bar")
           ),
 
           hr(),
@@ -436,15 +437,20 @@ server <- function(input, output) {
     req(abci_results())
 
     abci_results() %>%
-      # select(
-      #   any_of(c("assay", "replicate")),
-      #   starts_with("cols"),
-      #   starts_with("rows"),
-      #   starts_with("abci")
-      # ) %>%
+      select(
+        assay,
+        starts_with("cols"),
+        starts_with("rows"),
+        ends_with("avg")
+      ) %>%
       mutate(across(where(is.numeric), ~signif(.x, digits = 4))) %>%
       split(x = ., f = .$assay) %>%
-      purrr::map(~select(.x, -assay))
+      purrr::map(
+        ~select(.x, -assay) %>%
+          janitor::clean_names(case = "title") %>%
+          rename("ABCi Avg" = `Abci Avg`) %>%
+          distinct(`Cols Conc`, `Rows Conc`, .keep_all = TRUE)
+      )
   })
 
   observeEvent(abci_results_display(), {
@@ -488,7 +494,7 @@ server <- function(input, output) {
       where = "afterEnd",
       ui = tagList(div(
         id = "analysis_tab_table",
-        h2("ABCi results"),
+        h2("ABCi results summary"),
         br(),
         DT::dataTableOutput("results_table_output")
       ))
@@ -533,7 +539,7 @@ server <- function(input, output) {
             inputId = "analysis_tab_vis_button",
             class = "btn btn-primary btn-tooltip",
             label = "Visualize your results",
-            icon = icon("chart-bar")
+            icon = icon("arrow-right")
           )
         )
       )
