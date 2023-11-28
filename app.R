@@ -234,18 +234,21 @@ ui <- page_fluid(
       value = "about_tab",
       title = "About",
 
-      div(
-        class = "card bg-light mb-3 mx-auto",
-        style = "width: 67%",
-
-        div(class = "card-header", h1("About")),
-
-        div(
-          class = "card-body",
-          p("Here is some About text."),
-          p("Blah blah blah R blah blah Shiny blah blah blah Hancock Lab.")
-        )
-      )
+      HTML(paste0(
+        '<div class="container col-xxl-8 px-4 py-5">',
+        '<div class="row flex-lg-row align-items-center g-5 py-5">',
+        '<div class="col-lg-6">',
+        '<h1 class="display-5 fw-bold text-body-emphasis lh-1 mb-3">About</h1>',
+        '<p class="lead">Here is some About text.</p>',
+        '<p class="lead">Blah blah blah R blah blah Shiny blah blah blah Hancock Lab.</p>',
+        '<div class="d-grid gap-2 d-md-flex justify-content-md-start">',
+        '<button type="button" class="btn btn-primary btn-lg px-4 me-md-2">A button</button>',
+        '<button type="button" class="btn btn-outline-secondary btn-lg px-4">A second button</button>',
+        '</div>',
+        '</div>',
+        '</div>',
+        '</div>'
+      ))
     ),
 
 
