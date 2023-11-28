@@ -1,4 +1,4 @@
-/* Define the width of the file button to match the "Load example data" button */
+/* Set the width of the file button to match the "Load example data" button */
 .btn-file {
   width: 180px;
 }
@@ -8,62 +8,27 @@
   font-size: 22px;
 }
 
-/* So we have just the bars in the navbarMenu */
-.caret {
-  display: none;
+/* Allow for centering of images */
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
 }
 
-/* Remove top margin for checkboxes */
-.checkbox {
-  margin-top: 0;
-}
-
-/* Remove some of the padding from containers */
+/* Fix padding for the navbar */
 .container-fluid {
   padding-left: 0;
   padding-right: 0;
 }
-
-/* Increase font size in navbar dropdown menu */
-.dropdown-menu {
-  font-size: 18px;
-}
-
-/* Customizing the Github image inserted into the right side of the navbar */
-#github-img{
-  position: absolute;
-  right: 10px;
-  top: -4px;
-  bottom: 0;
-  height: 25px;
-}
-
-/* Slim down the jumbotron element */
-.jumbotron {
-  width: 67%;
-  margin: auto;
-}
-
-/* Adjust padding for elements of the navbar */
-.navbar,
-.tab-content {
+.navbar, .tab-content {
   padding-left: 15px;
   padding-right: 15px;
 }
 
-/* Making the top-left title bigger, while maintaining proper vertical
-   alignment in the navbar */
-.navbar-brand {
-  font-size: 40px;
-  line-height: 1.2;
-  padding-top: 0;
-  padding-right: 7px;
-  bottom: 0;
-}
-
-/* Increase the font size of the tab names */
-.navbar-default {
-  font-size: 17.5px;
+/* Tweak placement and size of modal dialogs */
+.modal-dialog {
+  top: 15vh;
 }
 
 /* Increase size of the progress bar when uploading files */
@@ -73,10 +38,4 @@
 .progress .progress-bar {
   font-size: 15px;
   line-height: 18px;
-}
-
-/* Make the default notifications bigger */
-.shiny-notification {
-  font-size: 20px;
-  /*margin-bottom: 60px;*/
 }

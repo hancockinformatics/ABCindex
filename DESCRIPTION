@@ -1,12 +1,12 @@
-Package: ShinyCTI
-Title: ShinyCTI
-Version: 0.99.38
+Package: ShinyABCi
+Title: ShinyABCi
+Version: 0.99.57
 Authors@R:
   person(given = "Travis",
          family = "Blimkie",
          role = c("aut", "cre"),
          email = "travis@hancocklab.com")
-Description: Welcome to ShinyCTI, an interactive Shiny app providing access to
+Description: Welcome to ShinyABCi, an interactive Shiny app providing access to
   a new method of assessing drug effectiveness when treating biofilms.
 License: GPL (>= 3) + file LICENSE
 Encoding: UTF-8
