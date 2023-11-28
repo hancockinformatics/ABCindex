@@ -92,7 +92,7 @@ ui <- page_fluid(
       title = "Upload",
 
       card(
-        height = "90vh",
+        min_height = "90vh",
 
         layout_sidebar(
           sidebar = sidebar(
@@ -119,8 +119,6 @@ ui <- page_fluid(
 
             div(id = "upload_tab_input_names_ui"),
 
-            hr(),
-
             disabled(
               actionButton(
                 inputId = "upload_tab_proceed_button",
@@ -144,35 +142,36 @@ ui <- page_fluid(
       value = "analysis_tab",
       title = "Analysis",
 
-      sidebarLayout(
-        sidebarPanel = sidebarPanel(
-          id = "results_sidebarpanel",
+      card(
+        min_height = "90vh",
 
-          h3("ABCi results"),
-          p("Information about interpreting the results."),
+        layout_sidebar(
+          sidebar = sidebar(
+            id = "results_sidebarpanel",
+            width = "33%",
 
-          checkboxInput(
-            inputId = "analysis_tab_check_normal",
-            label = "Normalize the data", # TODO swap true/false
-            value = TRUE
+            title = "ABCi analysis",
+            p("Information about interpreting the results."),
+
+            checkboxInput(
+              inputId = "analysis_tab_check_normal",
+              label = "Normalize the data", # TODO swap true/false
+              value = TRUE
+            ),
+
+            disabled(
+              actionButton(
+                inputId = "upload_tab_submit_button",
+                class = "btn btn-info btn-tooltip",
+                label = "Perform ABCi calculations",
+                icon = icon("calculator")
+              )
+            ),
+
+            div(id = "analysis_tab_input_names_ui"),
+            uiOutput("abci_results_button")
           ),
 
-          disabled(
-            actionButton(
-              inputId = "upload_tab_submit_button",
-              class = "btn btn-info btn-tooltip",
-              label = "Perform ABCi calculations",
-              icon = icon("calculator")
-            )
-          ),
-
-          div(id = "analysis_tab_input_names_ui"),
-
-          uiOutput("abci_results_button"),
-        ),
-
-        mainPanel = mainPanel(
-          id = "analysis_tab_mainpanel",
           div(id = "analysis_tab_placeholder_div")
         )
       )
@@ -462,13 +461,12 @@ server <- function(input, output) {
       where = "afterEnd",
       ui = tagList(div(
         id = "analysis_tab_assay_selection",
-        hr(),
+
         selectInput(
           inputId = "analysis_tab_user_data_sheet_name",
           label = "Select an uploaded sheet to see the results:",
           choices = names(abci_results_display())
-        ),
-        hr()
+        )
       ))
     )
   })
