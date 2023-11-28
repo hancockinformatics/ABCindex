@@ -2,6 +2,8 @@
 
 #' - Tweak dot size for dot plots
 #' - Summary and full results tables...
+#' - Custom container for results table with tooltips
+#' - Better input labels & tooltips for plot inputs
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
 #'     if (effect > 0.9) {
 #'       add * to tile, or border around dot
@@ -23,11 +25,13 @@ app_version <- gsub(
   replacement = "v"
 )
 
+app_theme <- bs_theme(version = 5, preset = "cosmo")
+
 
 # Define UI ---------------------------------------------------------------
 
 ui <- page_fluid(
-  theme = bs_theme(version = 5, preset = "cosmo"),
+  theme = app_theme,
   HTML("<base target='_blank' rel='noopener noreferrer'>"),
   useShinyjs(),
   tags$head(
@@ -40,6 +44,7 @@ ui <- page_fluid(
   page_navbar(
     id = "navbar",
     collapsible = TRUE,
+    bg = bs_get_variables(app_theme, varnames = "primary"),
     window_title = "ShinyABCi",
     title = "ShinyABCi",
 
