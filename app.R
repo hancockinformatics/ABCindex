@@ -149,14 +149,21 @@ ui <- page_fluid(
           sidebar = sidebar(
             id = "results_sidebarpanel",
             width = "33%",
-
             title = "ABCi analysis",
-            p("Information about interpreting the results."),
 
-            checkboxInput(
+            p(
+              "ShinyABCi expects data to be normalized to percentages, ranging from ",
+              "0 to 1. If your data doesn't meet this criteria, use the options below ",
+              "to have your data normalized."
+            ),
+            radioButtons(
               inputId = "analysis_tab_check_normal",
-              label = "Normalize the data", # TODO swap true/false
-              value = TRUE
+              label = NULL,
+              choices = list(
+                "My data is already normalized (range 0 to 1)" = FALSE,
+                "Normalize my data for me" = TRUE
+              ),
+              selected = FALSE
             ),
 
             disabled(
@@ -167,6 +174,8 @@ ui <- page_fluid(
                 icon = icon("calculator")
               )
             ),
+
+            p("Information about interpreting the results."),
 
             div(id = "analysis_tab_input_names_ui"),
             uiOutput("abci_results_button")
@@ -524,21 +533,20 @@ server <- function(input, output) {
 
   observeEvent(input$upload_tab_submit_button, {
     output$abci_results_button <- renderUI(
-      tagList(
-        div(
-          class = "form-group",
-          downloadButton(
-            outputId = "abci_results_handler",
-            label = "Download your results",
-            class = "btn btn-success"
-          ),
-          HTML("&nbsp;"),
-          actionButton(
-            inputId = "analysis_tab_vis_button",
-            class = "btn btn-primary btn-tooltip",
-            label = "Visualize your results",
-            icon = icon("arrow-right")
-          )
+      div(
+        class = "d-flex gap-2 justify-content-center py-2",
+        downloadButton(
+          outputId = "abci_results_handler",
+          label = "Download your results",
+          class = "btn btn-success align-items-center",
+          style = "width: 50%"
+        ),
+        actionButton(
+          inputId = "analysis_tab_vis_button",
+          label = "Visualize your results",
+          class = "btn btn-primary btn-tooltip align-items-center",
+          icon = icon("arrow-right"),
+          width = "50%"
         )
       )
     )
