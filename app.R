@@ -1027,7 +1027,7 @@ server <- function(input, output) {
           numericInput(
             inputId = "plot_tile_split_min_flag",
             label = NULL,
-            value = ifelse(input$analysis_tab_check_normal, 0.5, 0),
+            value = 0,
             min = 0,
             step = 0.1
           )
@@ -1629,6 +1629,8 @@ server <- function(input, output) {
 
   # |- Update inputs and observe ------------------------------------------
 
+  plot_type <- reactive(input$visualize_tabs)
+
 
   # |-- Advanced options --------------------------------------------------
 
@@ -1867,8 +1869,13 @@ server <- function(input, output) {
   observeEvent(input$draw, {
     req(abci_plot_data())
 
-    plot_height <- paste0(100 + (300 * abci_plot_dims()[[2]]), "px")
     plot_width <- ifelse(abci_plot_dims()[[1]] == 1, "60%", "100%")
+
+    if (plot_type() == "tile_split") {
+      plot_height <- paste0(100 + (600 * abci_plot_dims()[[2]]), "px")
+    } else {
+      plot_height <- paste0(100 + (300 * abci_plot_dims()[[2]]), "px")
+    }
 
     output$vis_tab_plot_ui <- renderUI(
       plotOutput(
