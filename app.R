@@ -1,6 +1,9 @@
 # To do -------------------------------------------------------------------
 
 #' - Tweak dot size for dot plots
+#' - Add 2/3 to colour names, simplify
+#' - Slim down display table
+#' - Pink should be magenta
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
 #'     if (effect > 0.9) {
 #'       add * to tile, or border around dot
@@ -90,49 +93,47 @@ ui <- page_fluid(
       value = "upload_tab",
       title = "Upload",
 
-      sidebarLayout(
-        sidebarPanel = sidebarPanel(
-          id = "upload_tab_sidebarpanel",
-          width = 4,
-          h3("Upload your plate data"),
-          p("Info about upload."),
+      card(
+        height = "90vh",
 
-          br(),
+        layout_sidebar(
+          sidebar = sidebar(
+            id = "upload_tab_sidebarpanel",
+            title = "Upload your plate data",
+            width = "33%",
 
-          actionButton(
-            inputId = "upload_tab_example",
-            class = "btn btn-info btn-tooltip",
-            label = "Load example data",
-            title = "Click here to try our example data",
-            width = "180px"
-          ),
+            p("Info about upload"),
 
-          br(),
-          br(),
-
-          fileInput(
-            inputId = "upload_tab_user_data",
-            label = NULL,
-            buttonLabel = list(icon("upload"), "Upload plate data..."),
-            accept = c("xls", ".xls", "xlsx", ".xlsx")
-          ),
-
-          div(id = "upload_tab_input_names_ui"),
-
-          hr(),
-
-          disabled(
             actionButton(
-              inputId = "upload_tab_proceed_button",
-              class = "btn btn-primary btn-tooltip",
-              label = "Proceed to ABCi calculations",
-              icon = icon("arrow-right"),
-              title = "Upload your plate data, then click here to analyze"
-            )
-          )
-        ),
+              inputId = "upload_tab_example",
+              class = "btn btn-info btn-tooltip",
+              label = "Load example data",
+              title = "Click here to try our example data",
+              width = "180px"
+            ),
 
-        mainPanel = mainPanel(
+            fileInput(
+              inputId = "upload_tab_user_data",
+              label = NULL,
+              buttonLabel = list(icon("upload"), "Upload plate data..."),
+              accept = c("xls", ".xls", "xlsx", ".xlsx")
+            ),
+
+            div(id = "upload_tab_input_names_ui"),
+
+            hr(),
+
+            disabled(
+              actionButton(
+                inputId = "upload_tab_proceed_button",
+                class = "btn btn-primary btn-tooltip",
+                label = "Proceed to ABCi calculations",
+                icon = icon("arrow-right"),
+                title = "Upload your plate data, then click here to analyze"
+              )
+            )
+          ),
+
           div(id = "upload_tab_placeholder_div")
         )
       )
@@ -154,7 +155,7 @@ ui <- page_fluid(
 
           checkboxInput(
             inputId = "analysis_tab_check_normal",
-            label = "Normalize the data",
+            label = "Normalize the data", # TODO swap true/false
             value = TRUE
           ),
 
@@ -240,32 +241,32 @@ ui <- page_fluid(
       title = "About",
 
       div(class = "container col-xxl-8 px-4 py-5",
-        div(class = "row flex-lg-row align-items-center g-5 py-5",
-          div(class = "col-lg-6",
+          div(class = "row flex-lg-row align-items-center g-5 py-5",
+              div(class = "col-lg-6",
 
-            h1(class = "display-5 fw-bold text-body-emphasis lh-1 mb-3",
-              "About"
-            ),
-            p(class = "lead",
-              "Here is some About text."
-            ),
-            p(class = "lead",
-              "Blah blah blah R blah blah Shiny blah blah blah Hancock Lab."
-            ),
-            div(class = "d-grid gap-2 d-md-flex justify-content-md-start",
-              actionButton(
-                inputId = "about_button_1",
-                class = "btn btn-primary btn-lg px-4 me-md-2",
-                label = "A button"
-              ),
-              actionButton(
-                inputId = "about_button_2",
-                class = "btn btn-outline-secondary btn-lg px-4",
-                HTML("A <i>second</i> button")
+                  h1(class = "display-5 fw-bold text-body-emphasis lh-1 mb-3",
+                     "About"
+                  ),
+                  p(class = "lead",
+                    "Here is some About text."
+                  ),
+                  p(class = "lead",
+                    "Blah blah blah R blah blah Shiny blah blah blah Hancock Lab."
+                  ),
+                  div(class = "d-grid gap-2 d-md-flex justify-content-md-start",
+                      actionButton(
+                        inputId = "about_button_1",
+                        class = "btn btn-primary btn-lg px-4 me-md-2",
+                        label = "A button"
+                      ),
+                      actionButton(
+                        inputId = "about_button_2",
+                        class = "btn btn-outline-secondary btn-lg px-4",
+                        HTML("A <i>second</i> button")
+                      )
+                  )
               )
-            )
           )
-        )
       )
     ),
 
@@ -770,7 +771,7 @@ server <- function(input, output) {
         tags$label(
           class = "col-sm-3 col-form-label",
           title = "Flag cells which don't kill much biofilm. Set to 0 to hide.",
-          "Flag low killing"
+          "Flag low killing cutoff"  # TODO
         ),
         div(
           class = "col-sm-9",

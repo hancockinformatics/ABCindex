@@ -209,7 +209,7 @@ abci.plot.tile <- function(
       )
     }} +
 
-    {if (minflag) geom_text(aes(label = min), size = 8)} +
+    {if (minflag) geom_text(aes(label = min), size = 6)} +
 
     {if (x.mic.line) {
       geom_vline(data = mic.table, aes(xintercept = XLAB))
