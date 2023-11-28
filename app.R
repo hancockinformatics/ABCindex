@@ -198,48 +198,48 @@ ui <- page_fluid(
       value = "vis_tab",
       title = "Visualize",
 
-      sidebarLayout(
-        sidebarPanel = sidebarPanel(
-          id = "vis_sidebarpanel",
-          h3("Visualize ABCi results"),
-          p("Information about the different visualization available."),
+      card(
+        min_height = "90vh",
 
-          actionButton(
-            inputId = "draw",
-            class = "btn btn-info btn-tooltip",
-            label = "Create or update the plot",
-            icon = icon("chart-bar")
-          ),
+        layout_sidebar(
+          sidebar = sidebar(
+            id = "vis_sidebarpanel",
+            width = "33%",
 
-          hr(),
+            title = "Visualize ABCi results",
+            p("Information about the different visualization available."),
 
-          tabsetPanel(
-            id = "visualize_tabs",
-            tabPanel(
-              title = strong("Tile"),
-              value = "tile",
-              uiOutput("plot_inputs_tile")
+            actionButton(
+              inputId = "draw",
+              class = "btn btn-info btn-tooltip",
+              label = "Create or update the plot",
+              icon = icon("chart-bar")
             ),
-            tabPanel(
-              title = strong("Split tile"),
-              value = "tile_split",
-              uiOutput("plot_inputs_tile_split")
-            ),
-            tabPanel(
-              title = strong("Dot"),
-              value = "dot",
-              uiOutput("plot_inputs_tile_dot")
-            ),
-            tabPanel(
-              title = strong("Line"),
-              value = "line",
-              uiOutput("plot_inputs_line")
+
+            navset_card_pill(
+              id = "visualize_tabs",
+              nav_panel(
+                title = "Tile",
+                value = "tile",
+                uiOutput("plot_inputs_tile")
+              ),
+              nav_panel(
+                title = "Split tile",
+                value = "tile_split",
+                uiOutput("plot_inputs_tile_split")
+              ),
+              nav_panel(
+                title = "Dot",
+                value = "dot",
+                uiOutput("plot_inputs_tile_dot")
+              ),
+              nav_panel(
+                title = "Line",
+                value = "line",
+                uiOutput("plot_inputs_line")
+              )
             )
-          )
-        ),
-
-        mainPanel = mainPanel(
-          id = "vis_tab_mainpanel",
+          ),
           uiOutput("vis_tab_plot_ui")
         )
       )
