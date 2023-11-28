@@ -581,10 +581,10 @@ server <- function(input, output) {
             choices = c(
               "Orange-purple" = "OP",
               "Yellow-purple" = "YP",
-              "Yellow-Blue" = "YB",
-              "Red-Blue" = "RB",
+              "Yellow-blue" = "YB",
+              "Red-blue" = "RB",
               "Sunset" = "SUN",
-              "PAN" = "PAN",
+              "Pink & blue" = "PAN",
               "Bob's choice" = "BOB"
             ),
             selected = "BOB"
@@ -797,6 +797,16 @@ server <- function(input, output) {
             value = 0.5
           )
         )
+      ),
+
+      div(
+        class = "form-group row",
+        tags$label(
+          actionLink(
+            inputId = "plot_tile_show_advanced",
+            label = "Advanced options..."
+          )
+        )
       )
     )
   })
@@ -825,10 +835,10 @@ server <- function(input, output) {
             choices = c(
               "Orange-purple" = "OP",
               "Yellow-purple" = "YP",
-              "Yellow-Blue" = "YB",
-              "Red-Blue" = "RB",
+              "Yellow-blue" = "YB",
+              "Red-blue" = "RB",
               "Sunset" = "SUN",
-              "PAN" = "PAN",
+              "Pink & blue" = "PAN",
               "Bob's choice" = "BOB"
             ),
             selected = "BOB"
@@ -1058,6 +1068,16 @@ server <- function(input, output) {
             value = 0.5
           )
         )
+      ),
+
+      div(
+        class = "form-group row",
+        tags$label(
+          actionLink(
+            inputId = "plot_tile_split_show_advanced",
+            label = "Advanced options..."
+          )
+        )
       )
     )
   })
@@ -1086,10 +1106,10 @@ server <- function(input, output) {
             choices = c(
               "Orange-purple" = "OP",
               "Yellow-purple" = "YP",
-              "Yellow-Blue" = "YB",
-              "Red-Blue" = "RB",
+              "Yellow-blue" = "YB",
+              "Red-blue" = "RB",
               "Sunset" = "SUN",
-              "PAN" = "PAN",
+              "Pink & blue" = "PAN",
               "Bob's choice" = "BOB"
             ),
             selected = "BOB"
@@ -1281,6 +1301,16 @@ server <- function(input, output) {
             choices = c("X", "Y"),
             selected = c("X", "Y"),
             inline = TRUE
+          )
+        )
+      ),
+
+      div(
+        class = "form-group row",
+        tags$label(
+          actionLink(
+            inputId = "plot_dot_show_advanced",
+            label = "Advanced options..."
           )
         )
       )
@@ -1582,12 +1612,72 @@ server <- function(input, output) {
             inline = TRUE
           )
         )
+      ),
+
+      div(
+        class = "form-group row",
+        tags$label(
+          actionLink(
+            inputId = "plot_line_show_advanced",
+            label = "Advanced options..."
+          )
+        )
       )
     )
   })
 
 
   # |- Update inputs and observe ------------------------------------------
+
+
+  # |-- Advanced options --------------------------------------------------
+
+  observeEvent(input$plot_tile_show_advanced, {
+    showModal(
+      modalDialog(
+        title = "Advanced options",
+        easyClose = TRUE,
+        size = "l",
+        p("Some tile plot options will be moved into here...")
+      ) %>% tagAppendAttributes(class = "modal-dialog-centered")
+    )
+  })
+
+  observeEvent(input$plot_tile_split_show_advanced, {
+    showModal(
+      modalDialog(
+        title = "Advanced options",
+        easyClose = TRUE,
+        size = "l",
+        p("Some split tile plot options will be moved into here...")
+      ) %>% tagAppendAttributes(class = "modal-dialog-centered")
+    )
+  })
+
+  observeEvent(input$plot_dot_show_advanced, {
+    showModal(
+      modalDialog(
+        title = "Advanced options",
+        easyClose = TRUE,
+        size = "l",
+        p("Some dot plot options will be moved into here...")
+      ) %>% tagAppendAttributes(class = "modal-dialog-centered")
+    )
+  })
+
+  observeEvent(input$plot_line_show_advanced, {
+    showModal(
+      modalDialog(
+        title = "Advanced options",
+        easyClose = TRUE,
+        size = "l",
+        p("Some line plot options will be moved into here...")
+      ) %>% tagAppendAttributes(class = "modal-dialog-centered")
+    )
+  })
+
+
+  # |-- Min flagging ------------------------------------------------------
 
   plot_tile_min_info <- reactive({
     ifelse(input$plot_tile_min_flag > 0, TRUE, FALSE)
@@ -1596,6 +1686,9 @@ server <- function(input, output) {
   plot_tile_split_min_info <- reactive({
     ifelse(input$plot_tile_split_min_flag > 0, TRUE, FALSE)
   })
+
+
+  # |-- Line include options ----------------------------------------------
 
   observeEvent(input$plot_line_type, {
     req(abci_plot_data())
@@ -1611,8 +1704,9 @@ server <- function(input, output) {
     )
   })
 
-  # In theory these some of these observers could be combined, but when they are
-  # we don't get the right behaviour...
+
+  # |-- Preview colours ---------------------------------------------------
+
   observeEvent(input$tile_preview_colours, {
     showModal(
       modalDialog(
@@ -1658,7 +1752,7 @@ server <- function(input, output) {
   })
 
 
-  # |- Draw the plot ------------------------------------------------------
+  # |- renderPlot calls ---------------------------------------------------
 
   observeEvent(input$draw, {
     req(abci_plot_data())
@@ -1766,6 +1860,9 @@ server <- function(input, output) {
       }
     )
   })
+
+
+  # |- plotOutput call ----------------------------------------------------
 
   observeEvent(input$draw, {
     req(abci_plot_data())
