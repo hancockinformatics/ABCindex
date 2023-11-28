@@ -1,7 +1,6 @@
 # To do -------------------------------------------------------------------
 
 #' - Tweak dot size for dot plots
-#' - If not normalizing, switch off MICs be default
 #'
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
 #'     if (effect > 0.9) {
@@ -814,7 +813,7 @@ server <- function(input, output) {
           class = "col-sm-3 col-form-label",
           title = "Colour palette to use for the ABCi values",
           actionLink(
-            inputId = "tile_preview_colours",
+            inputId = "tile_split_preview_colours",
             label = "ABCi colours"
           )
         ),
@@ -846,8 +845,8 @@ server <- function(input, output) {
         ),
         div(
           class = "col-sm-9",
-          checkboxInput(
-            inputId = "plot_tile_split_strict",
+          input_switch(
+            id = "plot_tile_split_strict",
             label = "Strict",
             value = TRUE
           )
@@ -1612,25 +1611,37 @@ server <- function(input, output) {
     )
   })
 
-  # In theory these two observers could be combined, but when they are we don't
-  # get the right behaviour...
+  # In theory these some of these observers could be combined, but when they are
+  # we don't get the right behaviour...
   observeEvent(input$tile_preview_colours, {
     showModal(
       modalDialog(
         title = "ABCi colour palettes",
         easyClose = TRUE,
         size = "l",
-        HTML("<img src='preview_palettes.png' class='center'>")
+        HTML("<img src='abci_palettes.png' class='center'>")
       ) %>% tagAppendAttributes(class = "modal-dialog-centered")
     )
   })
+
+  observeEvent(input$tile_split_preview_colours, {
+    showModal(
+      modalDialog(
+        title = "ABCi colour palettes",
+        easyClose = TRUE,
+        size = "m",
+        HTML("<img src='abci_palettes_split.png' class='center'>")
+      ) %>% tagAppendAttributes(class = "modal-dialog-centered")
+    )
+  })
+
   observeEvent(input$dot_preview_colours, {
     showModal(
       modalDialog(
         title = "ABCi colour palettes",
         easyClose = TRUE,
         size = "l",
-        HTML("<img src='preview_palettes.png' class='center'>")
+        HTML("<img src='abci_palettes.png' class='center'>")
       ) %>% tagAppendAttributes(class = "modal-dialog-centered")
     )
   })
