@@ -1,9 +1,7 @@
 # To do -------------------------------------------------------------------
 
 #' - Tweak dot size for dot plots
-#' - Add 2/3 to colour names, simplify
 #' - Slim down display table
-#' - Pink should be magenta
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
 #'     if (effect > 0.9) {
 #'       add * to tile, or border around dot
@@ -601,13 +599,13 @@ server <- function(input, output) {
             inputId = "plot_tile_colour_palette",
             label = NULL,
             choices = c(
-              "Orange-purple" = "OP",
-              "Yellow-purple" = "YP",
-              "Yellow-blue" = "YB",
-              "Red-blue" = "RB",
-              "Sunset" = "SUN",
-              "Pink & blue" = "PAN",
-              "Bob's choice" = "BOB"
+              "Orange-purple (2)" = "OP",
+              "Yellow-purple (2)" = "YP",
+              "Yellow-blue (2)" = "YB",
+              "Red-blue (2)" = "RB",
+              "Orange-yellow-purple (3)" = "SUN",
+              "Magenta-yellow-blue (3)" = "PAN",
+              "Red-yellow-blue (3)" = "BOB"
             ),
             selected = "BOB"
           )
@@ -855,13 +853,13 @@ server <- function(input, output) {
             inputId = "plot_tile_split_colour_palette",
             label = NULL,
             choices = c(
-              "Orange-purple" = "OP",
-              "Yellow-purple" = "YP",
-              "Yellow-blue" = "YB",
-              "Red-blue" = "RB",
-              "Sunset" = "SUN",
-              "Pink & blue" = "PAN",
-              "Bob's choice" = "BOB"
+              "Orange-purple (2)" = "OP",
+              "Yellow-purple (2)" = "YP",
+              "Yellow-blue (2)" = "YB",
+              "Red-blue (2)" = "RB",
+              "Orange-yellow-purple (3)" = "SUN",
+              "Magenta-yellow-blue (3)" = "PAN",
+              "Red-yellow-blue (3)" = "BOB"
             ),
             selected = "BOB"
           )
@@ -1126,13 +1124,13 @@ server <- function(input, output) {
             inputId = "plot_dot_colour_palette",
             label = NULL,
             choices = c(
-              "Orange-purple" = "OP",
-              "Yellow-purple" = "YP",
-              "Yellow-blue" = "YB",
-              "Red-blue" = "RB",
-              "Sunset" = "SUN",
-              "Pink & blue" = "PAN",
-              "Bob's choice" = "BOB"
+              "Orange-purple (2)" = "OP",
+              "Yellow-purple (2)" = "YP",
+              "Yellow-blue (2)" = "YB",
+              "Red-blue (2)" = "RB",
+              "Orange-yellow-purple (3)" = "SUN",
+              "Magenta-yellow-blue (3)" = "PAN",
+              "Red-yellow-blue (3)" = "BOB"
             ),
             selected = "BOB"
           )
