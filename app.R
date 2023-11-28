@@ -757,9 +757,28 @@ server <- function(input, output) {
           numericInput(
             inputId = "plot_tile_min_flag",
             label = NULL,
-            value = 0.5,
+            value = ifelse(input$analysis_tab_check_normal, 0.5, 0),
             min = 0,
             step = 0.1
+          )
+        )
+      ),
+
+      div(
+        class = "form-group row",
+        tags$label(
+          class = "col-sm-3 col-form-label",
+          title = "Include MIC lines on x- or y-axis",
+          "Draw MICs"
+        ),
+        div(
+          class = "col-sm-9",
+          checkboxGroupInput(
+            inputId = "plot_tile_mic_lines",
+            label = NULL,
+            inline = TRUE,
+            choices = c("X", "Y"),
+            selected = if (input$analysis_tab_check_normal) c("X", "Y")
           )
         )
       ),
@@ -777,25 +796,6 @@ server <- function(input, output) {
             inputId = "plot_tile_mic_threshold",
             label = NULL,
             value = 0.5
-          )
-        )
-      ),
-
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-3 col-form-label",
-          title = "Include MIC lines on x- or y-axis",
-          "Draw MICs"
-        ),
-        div(
-          class = "col-sm-9",
-          checkboxGroupInput(
-            inputId = "plot_tile_mic_lines",
-            label = NULL,
-            choices = c("X", "Y"),
-            selected = c("X", "Y"),
-            inline = TRUE
           )
         )
       )
@@ -1018,26 +1018,9 @@ server <- function(input, output) {
           numericInput(
             inputId = "plot_tile_split_min_flag",
             label = NULL,
-            value = 0,
+            value = ifelse(input$analysis_tab_check_normal, 0.5, 0),
             min = 0,
             step = 0.1
-          )
-        )
-      ),
-
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-3 col-form-label",
-          title = "Threshold for calculating MICs; applies to x- and y-axis",
-          "MIC cutoff"
-        ),
-        div(
-          class = "col-sm-9",
-          numericInput(
-            inputId = "plot_tile_split_mic_threshold",
-            label = NULL,
-            value = 0.5
           )
         )
       ),
@@ -1055,8 +1038,25 @@ server <- function(input, output) {
             inputId = "plot_tile_split_mic_lines",
             label = NULL,
             choices = c("X", "Y"),
-            selected = c("X", "Y"),
-            inline = TRUE
+            inline = TRUE,
+            selected = if (input$analysis_tab_check_normal) c("X", "Y")
+          )
+        )
+      ),
+
+      div(
+        class = "form-group row",
+        tags$label(
+          class = "col-sm-3 col-form-label",
+          title = "Threshold for calculating MICs; applies to x- and y-axis",
+          "MIC cutoff"
+        ),
+        div(
+          class = "col-sm-9",
+          numericInput(
+            inputId = "plot_tile_split_mic_threshold",
+            label = NULL,
+            value = 0.5
           )
         )
       )
