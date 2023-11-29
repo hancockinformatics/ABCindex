@@ -105,7 +105,7 @@ ui <- page_fluid(
             title = "Upload your plate data",
             width = "33%",
 
-            p("Info about upload"),
+            p("Info about upload."),
 
             actionButton(
               inputId = "upload_tab_example",
@@ -176,7 +176,8 @@ ui <- page_fluid(
                 inputId = "upload_tab_submit_button",
                 class = "btn btn-info btn-tooltip",
                 label = "Perform ABCi calculations",
-                icon = icon("calculator")
+                icon = icon("calculator"),
+                width = "50%"
               )
             ),
 
@@ -213,7 +214,8 @@ ui <- page_fluid(
               inputId = "draw",
               class = "btn btn-info btn-tooltip",
               label = "Create or update the plot",
-              icon = icon("chart-bar")
+              icon = icon("chart-bar"),
+              width = "50%"
             ),
 
             navset_tab(
@@ -581,6 +583,29 @@ server <- function(input, output) {
 
   # |- Set up inputs ------------------------------------------------------
 
+  # Define some fixed `selectInput()` choices
+  abci_colours <- c(
+    "Orange-purple (2)" = "OP",
+    "Yellow-purple (2)" = "YP",
+    "Yellow-blue (2)" = "YB",
+    "Red-blue (2)" = "RB",
+    "Orange-yellow-purple (3)" = "SUN",
+    "Magenta-yellow-blue (3)" = "PAN",
+    "Red-yellow-blue (3)" = "BOB"
+  )
+
+  line_colours <- purrr::set_names(
+    c("viridis", "magma", "plasma", "inferno", "cividis", "mako", "rocket", "turbo"),
+    stringr::str_to_title
+  )
+
+  plot_scales <- c(
+    "Free X and Y" = "free",
+    "Fixed X and Y" = "fixed",
+    "Free X, Fixed Y" = "free_x",
+    "Free Y, Fixed X" = "free_y"
+  )
+
 
   # |-- Tile --------------------------------------------------------------
 
@@ -594,15 +619,7 @@ server <- function(input, output) {
           inputId = "plot_tile_colour_palette",
           label = NULL,
           selected = "BOB",
-          choices = c(
-            "Orange-purple (2)" = "OP",
-            "Yellow-purple (2)" = "YP",
-            "Yellow-blue (2)" = "YB",
-            "Red-blue (2)" = "RB",
-            "Orange-yellow-purple (3)" = "SUN",
-            "Magenta-yellow-blue (3)" = "PAN",
-            "Red-yellow-blue (3)" = "BOB"
-          )
+          choices = abci_colours
         )
       ),
 
@@ -616,12 +633,7 @@ server <- function(input, output) {
             x = colnames(abci_plot_data()),
             pattern = "conc",
             value = TRUE
-          ),
-          selected = grep(
-            x = colnames(abci_plot_data()),
-            pattern = "conc",
-            value = TRUE
-          )[1]
+          )
         )
       ),
 
@@ -696,13 +708,7 @@ server <- function(input, output) {
         selectInput(
           inputId = "plot_tile_scales",
           label = NULL,
-          choices = c(
-            "Free" = "free",
-            "Fixed" = "fixed",
-            "Free X" = "free_x",
-            "Free Y" = "free_y"
-          ),
-          selected = "free"
+          choices = plot_scales
         )
       ),
 
@@ -766,15 +772,7 @@ server <- function(input, output) {
           inputId = "plot_tile_split_colour_palette",
           label = NULL,
           selected = "BOB",
-          choices = c(
-            "Orange-purple (2)" = "OP",
-            "Yellow-purple (2)" = "YP",
-            "Yellow-blue (2)" = "YB",
-            "Red-blue (2)" = "RB",
-            "Orange-yellow-purple (3)" = "SUN",
-            "Magenta-yellow-blue (3)" = "PAN",
-            "Red-yellow-blue (3)" = "BOB"
-          )
+          choices = abci_colours
         )
       ),
 
@@ -798,12 +796,7 @@ server <- function(input, output) {
             x = colnames(abci_plot_data()),
             pattern = "conc",
             value = TRUE
-          ),
-          selected = grep(
-            x = colnames(abci_plot_data()),
-            pattern = "conc",
-            value = TRUE
-          )[1]
+          )
         )
       ),
 
@@ -879,12 +872,7 @@ server <- function(input, output) {
           inputId = "plot_tile_split_scales",
           label = NULL,
           selected = "fixed",
-          choices = c(
-            "Free" = "free",
-            "Fixed" = "fixed",
-            "Free X" = "free_x",
-            "Free Y" = "free_y"
-          )
+          choices = plot_scales
         )
       ),
 
@@ -948,15 +936,7 @@ server <- function(input, output) {
           inputId = "plot_dot_colour_palette",
           label = NULL,
           selected = "BOB",
-          choices = c(
-            "Orange-purple (2)" = "OP",
-            "Yellow-purple (2)" = "YP",
-            "Yellow-blue (2)" = "YB",
-            "Red-blue (2)" = "RB",
-            "Orange-yellow-purple (3)" = "SUN",
-            "Magenta-yellow-blue (3)" = "PAN",
-            "Red-yellow-blue (3)" = "BOB"
-          )
+          choices = abci_colours
         )
       ),
 
@@ -970,12 +950,7 @@ server <- function(input, output) {
             x = colnames(abci_plot_data()),
             pattern = "conc",
             value = TRUE
-          ),
-          selected = grep(
-            x = colnames(abci_plot_data()),
-            pattern = "conc",
-            value = TRUE
-          )[1]
+          )
         )
       ),
 
@@ -1051,12 +1026,7 @@ server <- function(input, output) {
           inputId = "plot_dot_scales",
           label = NULL,
           selected = "free",
-          choices = c(
-            "Free" = "free",
-            "Fixed" = "fixed",
-            "Free X" = "free_x",
-            "Free Y" = "free_y"
-          )
+          choices = plot_scales
         )
       ),
 
@@ -1068,7 +1038,7 @@ server <- function(input, output) {
           label = NULL,
           inline = TRUE,
           choices = c("X", "Y"),
-          selected = c("X", "Y")
+          selected = if (input$analysis_tab_check_normal) c("X", "Y")
         )
       ),
 
@@ -1126,12 +1096,7 @@ server <- function(input, output) {
             x = colnames(abci_plot_data()),
             pattern = "conc",
             value = TRUE
-          ),
-          selected = grep(
-            x = colnames(abci_plot_data()),
-            pattern = "conc",
-            value = TRUE
-          )[1]
+          )
         )
       ),
 
@@ -1217,17 +1182,7 @@ server <- function(input, output) {
         selectInput(
           inputId = "plot_line_colour_palette",
           label = NULL,
-          selected = "viridis",
-          choices = c(
-            "magma",
-            "inferno",
-            "plasma",
-            "viridis",
-            "cividis",
-            "rocket",
-            "mako",
-            "turbo"
-          )
+          choices = line_colours
         )
       ),
 
@@ -1237,13 +1192,7 @@ server <- function(input, output) {
         selectInput(
           inputId = "plot_line_scales",
           label = NULL,
-          selected = "free",
-          choices = c(
-            "Free" = "free",
-            "Fixed" = "fixed",
-            "Free X" = "free_x",
-            "Free Y" = "free_y"
-          )
+          choices = plot_scales
         )
       ),
 

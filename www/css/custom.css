@@ -41,6 +41,9 @@
 }
 
 /* Customize shiny notifications */
+#shiny-notification-panel {
+  width: 300px;
+}
 .shiny-notification {
   font-size: 24px;
   margin-bottom: 20px;
