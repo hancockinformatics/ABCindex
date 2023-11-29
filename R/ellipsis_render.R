@@ -7,7 +7,7 @@
 #'
 #' @export
 #'
-ellipsis.render <- function(l) {
+ellipsis_render <- function(l) {
   DT::JS(paste0(
     "function(data, type, row, meta) {",
     "if ( type !== 'display' ) {",

@@ -23,7 +23,7 @@
 #' @description The returned list is named based on the names from the sheets,
 #'   with a suffix to denote the plate (replicate) within each sheet.
 #'
-abci.reader <- function(file, sheet = "all") {
+abci_reader <- function(file, sheet = "all") {
   options("cli.progress_show_after" = 0)
 
   if (sheet == "all") {
@@ -33,7 +33,7 @@ abci.reader <- function(file, sheet = "all") {
     all_data <- lapply(
       cli::cli_progress_along(all_sheets, "Loading plate data"),
       function(i) {
-        abci.reader.single(file, all_sheets[i])
+        abci_reader_single(file, all_sheets[i])
       }
     ) %>% purrr::set_names(all_sheets)
 
@@ -41,7 +41,7 @@ abci.reader <- function(file, sheet = "all") {
     all_data <- lapply(
       cli::cli_progress_along(sheet, "Loading plate data"),
       function(i) {
-        abci.reader.single(file, sheet[i])
+        abci_reader_single(file, sheet[i])
       }
     ) %>% purrr::set_names(sheet)
   }
@@ -70,9 +70,9 @@ abci.reader <- function(file, sheet = "all") {
 #' @export
 #'
 #' @description This function is meant for internal use only, and is called by
-#'   `abci.reader()`. See that help page for more info: `?abci.reader`.
+#'   `abci_reader()`. See that help page for more info: `?abci_reader`.
 #'
-abci.reader.single <- function(file, sheet) {
+abci_reader_single <- function(file, sheet) {
   # Read in the sheet, which can contain one or more plates separated by empty
   # rows
   suppressMessages(

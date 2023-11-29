@@ -2,8 +2,8 @@
 
 #' - Tweak dot size for dot plots
 #' - Summary and full results tables...
-#' - Custom container for results table with tooltips
-#' - Better input labels & tooltips for plot inputs
+#' - Custom container for results table with tool tips
+#' - Better input labels & tool tips for plot inputs
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
 #'     if (effect > 0.9) {
 #'       add * to tile, or border around dot
@@ -326,7 +326,7 @@ server <- function(input, output) {
   # |- User data ----------------------------------------------------------
 
   observeEvent(input$upload_tab_user_data, {
-    abci.reader(input$upload_tab_user_data$datapath) %>%
+    abci_reader(input$upload_tab_user_data$datapath) %>%
       upload_tab_data_1()
   })
 
@@ -339,7 +339,7 @@ server <- function(input, output) {
     if (file.exists("example_data/example_data_lucas.xlsx")) {
       upload_tab_example_indicator(1)
 
-      abci.reader("example_data/example_data_lucas.xlsx") %>%
+      abci_reader("example_data/example_data_lucas.xlsx") %>%
         upload_tab_data_1()
     } else {
       showNotification("Example data not found!", type = "error")
@@ -382,7 +382,7 @@ server <- function(input, output) {
     options = list(
       dom = "ltip",
       columnDefs = list(
-        list(targets = 0, render = ellipsis.render(60))
+        list(targets = 0, render = ellipsis_render(60))
       )
     )
   )
@@ -434,7 +434,7 @@ server <- function(input, output) {
   observeEvent(input$upload_tab_submit_button, {
     req(upload_tab_data_2())
 
-    abci.analysis(
+    abci_analysis(
       data = upload_tab_data_2(),
       x.drug = "cols_conc",
       y.drug = "rows_conc",
@@ -495,7 +495,7 @@ server <- function(input, output) {
       dom = "ltip",
       scrollX = TRUE,
       columnDefs = list(
-        list(targets = 0, render = ellipsis.render(30))
+        list(targets = 0, render = ellipsis_render(30))
       )
     )
   )
@@ -1385,7 +1385,7 @@ server <- function(input, output) {
 
     output$abci_plot <- renderPlot(
       if (isolate(input$visualize_tabs) == "tile") {
-        abci.plot.tile(
+        abci_plot_tile(
           data = abci_plot_data(),
           x.drug = isolate(input$plot_tile_x_drug),
           y.drug = isolate(input$plot_tile_y_drug),
@@ -1408,7 +1408,7 @@ server <- function(input, output) {
         )
 
       } else if (isolate(input$visualize_tabs) == "dot") {
-        abci.plot.dot(
+        abci_plot_dot(
           data = abci_plot_data(),
           x.drug = isolate(input$plot_dot_x_drug),
           y.drug = isolate(input$plot_dot_y_drug),
@@ -1438,7 +1438,7 @@ server <- function(input, output) {
             type = "warning"
           )
         }
-        abci.plot.line(
+        abci_plot_line(
           data = abci_plot_data(),
           plot.type = isolate(input$plot_line_type),
           x.drug = isolate(input$plot_line_x_drug),
@@ -1461,7 +1461,7 @@ server <- function(input, output) {
         )
 
       } else if (isolate(input$visualize_tabs) == "tile_split") {
-        abci.plot.tile.split(
+        abci_plot_tile_split(
           data = abci_plot_data(),
           x.drug = isolate(input$plot_tile_split_x_drug),
           y.drug = isolate(input$plot_tile_split_y_drug),

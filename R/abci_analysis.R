@@ -41,7 +41,7 @@
 #'   servers to split the single table `data` into groups, which are analyzed
 #'   separately before being recombined in the output.
 #'
-abci.analysis <- function(
+abci_analysis <- function(
     data,
     x.drug,
     y.drug,
@@ -54,10 +54,10 @@ abci.analysis <- function(
   options("cli.progress_show_after" = 0)
 
   # If "col.analysis" is NULL (default), assume input "data" is a single
-  # analysis, and make the usual call to `abci.analysis.single()`
+  # analysis, and make the usual call to `abci_analysis_single()`
   if (is.null(col.analysis)) {
 
-    results.abci <- abci.analysis.single(
+    results.abci <- abci_analysis_single(
       data = data,
       x.drug = x.drug,
       y.drug = y.drug,
@@ -82,7 +82,7 @@ abci.analysis <- function(
       cli::cli_progress_along(data.split, "Calculating ABCi values"),
       function(i) {
 
-        abci.analysis.single(
+        abci_analysis_single(
           data = data.split[[i]],
           x.drug = x.drug,
           y.drug = y.drug,
@@ -135,11 +135,11 @@ abci.analysis <- function(
 #'
 #' @export
 #'
-#' @description This function is only meant to be called by `abci.analysis()`,
+#' @description This function is only meant to be called by `abci_analysis()`,
 #'   and shouldn't be used directly. It handles one assay/analysis (i.e. a sheet
 #'   within a spreadsheet), dealing with replicates accordingly.
 #'
-abci.analysis.single <- function(
+abci_analysis_single <- function(
     data,
     x.drug,
     y.drug,
