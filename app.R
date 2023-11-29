@@ -593,6 +593,7 @@ server <- function(input, output) {
         selectInput(
           inputId = "plot_tile_colour_palette",
           label = NULL,
+          selected = "BOB",
           choices = c(
             "Orange-purple (2)" = "OP",
             "Yellow-purple (2)" = "YP",
@@ -601,8 +602,7 @@ server <- function(input, output) {
             "Orange-yellow-purple (3)" = "SUN",
             "Magenta-yellow-blue (3)" = "PAN",
             "Red-yellow-blue (3)" = "BOB"
-          ),
-          selected = "BOB"
+          )
         )
       ),
 
@@ -757,257 +757,168 @@ server <- function(input, output) {
 
   output$plot_inputs_tile_split <- renderUI({
     list(
-      div(
-        class = "form-group row",
-        style = "margin-top: 15px",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = "Colour palette to use for the ABCi values",
-          actionLink(
-            inputId = "tile_split_preview_colours",
-            label = "ABCi colours"
-          )
-        ),
-        div(
-          class = "col-sm-8",
-          selectInput(
-            inputId = "plot_tile_split_colour_palette",
-            label = NULL,
-            choices = c(
-              "Orange-purple (2)" = "OP",
-              "Yellow-purple (2)" = "YP",
-              "Yellow-blue (2)" = "YB",
-              "Red-blue (2)" = "RB",
-              "Orange-yellow-purple (3)" = "SUN",
-              "Magenta-yellow-blue (3)" = "PAN",
-              "Red-yellow-blue (3)" = "BOB"
-            ),
-            selected = "BOB"
+      br(),
+
+      wrap_selector(
+        label = actionLink("tile_split_preview_colours", label = "ABCi colours"),
+        label_title = "Colour palette to use for the ABCi values",
+        selectInput(
+          inputId = "plot_tile_split_colour_palette",
+          label = NULL,
+          selected = "BOB",
+          choices = c(
+            "Orange-purple (2)" = "OP",
+            "Yellow-purple (2)" = "YP",
+            "Yellow-blue (2)" = "YB",
+            "Red-blue (2)" = "RB",
+            "Orange-yellow-purple (3)" = "SUN",
+            "Magenta-yellow-blue (3)" = "PAN",
+            "Red-yellow-blue (3)" = "BOB"
           )
         )
       ),
 
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = "Type of splitting/filtering to apply",
-          "Split type"
-        ),
-        div(
-          class = "col-sm-8",
-          input_switch(
-            id = "plot_tile_split_strict",
-            label = "Strict",
+      wrap_selector(
+        label = "Split type",
+        label_title = "Type of splitting/filtering to apply",
+        input_switch(
+          id = "plot_tile_split_strict",
+          label = "Strict",
+          value = TRUE
+        )
+      ),
+
+      wrap_selector(
+        label = "X compound",
+        label_title = "Compound on the x-axis",
+        selectInput(
+          inputId = "plot_tile_split_x_drug",
+          label = NULL,
+          choices = grep(
+            x = colnames(abci_plot_data()),
+            pattern = "conc",
             value = TRUE
-          )
-        )
-      ),
-
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = "Compound on the x-axis",
-          "X compound"
-        ),
-        div(
-          class = "col-sm-8",
-          selectInput(
-            inputId = "plot_tile_split_x_drug",
-            label = NULL,
-            choices = grep(
-              x = colnames(abci_plot_data()),
-              pattern = "conc",
-              value = TRUE
-            ),
-            selected = grep(
-              x = colnames(abci_plot_data()),
-              pattern = "conc",
-              value = TRUE
-            )[1]
-          )
-        )
-      ),
-
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = "Label for the x-axis; applies to the entire plot",
-          "X axis label"
-        ),
-        div(
-          class = "col-sm-8",
-          textInput(
-            inputId = "plot_tile_split_x_text",
-            label = NULL,
-            value = "Concentration (ug/mL)"
-          )
-        )
-      ),
-
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = "Number of decimal places to show for the x-axis",
-          "X axis digits"
-        ),
-        div(
-          class = "col-sm-8",
-          numericInput(
-            inputId = "plot_tile_split_x_decimal",
-            label = NULL,
-            value = 2,
-            min = 1,
-            max = 4,
-            step = 1
-          )
-        )
-      ),
-
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = "Compound on the y-axis",
-          "Y compound"
-        ),
-        div(
-          class = "col-sm-8",
-          selectInput(
-            inputId = "plot_tile_split_y_drug",
-            label = NULL,
-            choices = grep(
-              x = colnames(abci_plot_data()),
-              pattern = "conc",
-              value = TRUE
-            ),
-            selected = grep(
-              x = colnames(abci_plot_data()),
-              pattern = "conc",
-              value = TRUE
-            )[2]
-          )
-        )
-      ),
-
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = "Label for the y-axis; applies to the entire plot",
-          "Y axis label"
-        ),
-        div(
-          class = "col-sm-8",
-          textInput(
-            inputId = "plot_tile_split_y_text",
-            label = NULL,
-            value = "Concentration (ug/mL)"
-          )
-        )
-      ),
-
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = "Number of decimal places to show for the y-axis",
-          "Y axis digits"
-        ),
-        div(
-          class = "col-sm-8",
-          numericInput(
-            inputId = "plot_tile_split_y_decimal",
-            label = NULL,
-            value = 2,
-            min = 1,
-            max = 4,
-            step = 1
-          )
-        )
-      ),
-
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = paste0(
-            "Should axis scales be 'Free', 'Fixed', or free in ",
-            "only one dimension?"
           ),
-          "Scales"
-        ),
-        div(
-          class = "col-sm-8",
-          selectInput(
-            inputId = "plot_tile_split_scales",
-            label = NULL,
-            choices = c(
-              "Free" = "free",
-              "Fixed" = "fixed",
-              "Free X" = "free_x",
-              "Free Y" = "free_y"
-            ),
-            selected = "fixed"
+          selected = grep(
+            x = colnames(abci_plot_data()),
+            pattern = "conc",
+            value = TRUE
+          )[1]
+        )
+      ),
+
+      wrap_selector(
+        label = "X axis label",
+        label_title = "Label for the x-axis; applies to the entire plot",
+        textInput(
+          inputId = "plot_tile_split_x_text",
+          label = NULL,
+          value = "Concentration (ug/mL)"
+        )
+      ),
+
+      wrap_selector(
+        label = "X axis digits",
+        label_title = "Number of decimal places to show for the x-axis",
+        numericInput(
+          inputId = "plot_tile_split_x_decimal",
+          label = NULL,
+          value = 2,
+          min = 1,
+          max = 4,
+          step = 1
+        )
+      ),
+
+      wrap_selector(
+        label = "Y compound",
+        label_title = "Compound on the y-axis",
+        selectInput(
+          inputId = "plot_tile_split_y_drug",
+          label = NULL,
+          choices = grep(
+            x = colnames(abci_plot_data()),
+            pattern = "conc",
+            value = TRUE
+          ),
+          selected = grep(
+            x = colnames(abci_plot_data()),
+            pattern = "conc",
+            value = TRUE
+          )[2]
+        )
+      ),
+
+      wrap_selector(
+        label = "Y axis label",
+        label_title = "Label for the y-axis; applies to the entire plot",
+        textInput(
+          inputId = "plot_tile_split_y_text",
+          label = NULL,
+          value = "Concentration (ug/mL)"
+        )
+      ),
+
+      wrap_selector(
+        label = "Y axis digits",
+        label_title = "Number of decimal places to show for the y-axis",
+        numericInput(
+          inputId = "plot_tile_split_y_decimal",
+          label = NULL,
+          value = 2,
+          min = 1,
+          max = 4,
+          step = 1
+        )
+      ),
+
+      wrap_selector(
+        label = "Scales",
+        label_title = "Should axis scales be 'Free', 'Fixed', or free in only one dimension?",
+        selectInput(
+          inputId = "plot_tile_split_scales",
+          label = NULL,
+          selected = "fixed",
+          choices = c(
+            "Free" = "free",
+            "Fixed" = "fixed",
+            "Free X" = "free_x",
+            "Free Y" = "free_y"
           )
         )
       ),
 
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = "Flag cells which don't kill much biofilm. Set to 0 to hide.",
-          "Flag low killing"
-        ),
-        div(
-          class = "col-sm-8",
-          numericInput(
-            inputId = "plot_tile_split_min_flag",
-            label = NULL,
-            value = 0,
-            min = 0,
-            step = 0.1
-          )
+      wrap_selector(
+        label = "Flag low killing",
+        label_title = "Flag cells which don't kill much biofilm. Set to 0 to hide.",
+        numericInput(
+          inputId = "plot_tile_split_min_flag",
+          label = NULL,
+          value = 0,
+          min = 0,
+          step = 0.1
         )
       ),
 
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = "Include MIC lines on x- or y-axis",
-          "Draw MICs"
-        ),
-        div(
-          class = "col-sm-8",
-          checkboxGroupInput(
-            inputId = "plot_tile_split_mic_lines",
-            label = NULL,
-            choices = c("X", "Y"),
-            inline = TRUE,
-            selected = if (input$analysis_tab_check_normal) c("X", "Y")
-          )
+      wrap_selector(
+        label = "Draw MICs",
+        label_title = "Include MIC lines on x- or y-axis",
+        checkboxGroupInput(
+          inputId = "plot_tile_split_mic_lines",
+          label = NULL,
+          inline = TRUE,
+          choices = c("X", "Y"),
+          selected = if (input$analysis_tab_check_normal) c("X", "Y")
         )
       ),
 
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = "Threshold for calculating MICs; applies to x- and y-axis",
-          "MIC cutoff"
-        ),
-        div(
-          class = "col-sm-8",
-          numericInput(
-            inputId = "plot_tile_split_mic_threshold",
-            label = NULL,
-            value = 0.5
-          )
+      wrap_selector(
+        label = "MIC cutoff",
+        label_title = "Threshold for calculating MICs; applies to x- and y-axis",
+        numericInput(
+          inputId = "plot_tile_split_mic_threshold",
+          label = NULL,
+          value = 0.5
         )
       ),
 
