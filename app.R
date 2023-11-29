@@ -1061,16 +1061,6 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "MIC cutoff",
-        label_title = "Threshold for calculating MICs; applies to x- and y-axis compounds",
-        numericInput(
-          inputId = "plot_dot_mic_threshold",
-          label = NULL,
-          value = 0.5
-        )
-      ),
-
-      wrap_selector(
         label = "Draw MICs",
         label_title = "Include MIC lines on x- or y-axis",
         checkboxGroupInput(
@@ -1079,6 +1069,16 @@ server <- function(input, output) {
           inline = TRUE,
           choices = c("X", "Y"),
           selected = c("X", "Y")
+        )
+      ),
+
+      wrap_selector(
+        label = "MIC cutoff",
+        label_title = "Threshold for calculating MICs; applies to x- and y-axis compounds",
+        numericInput(
+          inputId = "plot_dot_mic_threshold",
+          label = NULL,
+          value = 0.5
         )
       ),
 
@@ -1099,295 +1099,193 @@ server <- function(input, output) {
 
   output$plot_inputs_line <- renderUI({
     list(
-      div(
-        class = "form-group row",
-        style = "margin-top: 15px",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          "Line type"
-        ),
-        div(
-          class = "col-sm-8",
-          radioButtons(
-            inputId = "plot_line_type",
-            inline = TRUE,
-            label = NULL,
-            choices = c(
-              "Replicates" = "replicates",
-              "Mean" = "mean",
-              "Mean±SD" = "mean_sd"
-            )
+      br(),
+
+      wrap_selector(
+        label = "Line type",
+        label_title = "Line type",
+        radioButtons(
+          inputId = "plot_line_type",
+          label = NULL,
+          inline = TRUE,
+          choices = c(
+            "Replicates" = "replicates",
+            "Mean" = "mean",
+            "Mean±SD" = "mean_sd"
           )
         )
       ),
 
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = "Compound on the x-axis",
-          "X compound"
-        ),
-        div(
-          class = "col-sm-8",
-          selectInput(
-            inputId = "plot_line_x_drug",
-            label = NULL,
-            choices = grep(
-              x = colnames(abci_plot_data()),
-              pattern = "conc",
-              value = TRUE
-            ),
-            selected = grep(
-              x = colnames(abci_plot_data()),
-              pattern = "conc",
-              value = TRUE
-            )[1]
-          )
-        )
-      ),
-
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = "Label for the x-axis; applies to the entire plot",
-          "X axis label"
-        ),
-        div(
-          class = "col-sm-8",
-          textInput(
-            inputId = "plot_line_x_text",
-            label = NULL,
-            value = "Concentration (ug/mL)"
-          )
-        )
-      ),
-
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = "Number of decimal places to show for the x-axis",
-          "X axis digits"
-        ),
-        div(
-          class = "col-sm-8",
-          numericInput(
-            inputId = "plot_line_x_decimal",
-            label = NULL,
-            value = 2,
-            min = 1,
-            max = 4,
-            step = 1
-          )
-        )
-      ),
-
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = "Compound mapped to different lines",
-          "Line compound"
-        ),
-        div(
-          class = "col-sm-8",
-          selectInput(
-            inputId = "plot_line_line_drug",
-            label = NULL,
-            choices = grep(
-              x = colnames(abci_plot_data()),
-              pattern = "conc",
-              value = TRUE
-            ),
-            selected = grep(
-              x = colnames(abci_plot_data()),
-              pattern = "conc",
-              value = TRUE
-            )[2]
-          )
-        )
-      ),
-
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = "Concentrations to plot as lines",
-          "Included conc."
-        ),
-        div(
-          class = "col-sm-8",
-          selectInput(
-            inputId = "plot_line_line_include",
-            label = NULL,
-            multiple = TRUE,
-            choices = c()
-          )
-        )
-      ),
-
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = "Label for the line legend",
-          "Line label"
-        ),
-        div(
-          class = "col-sm-8",
-          textInput(
-            inputId = "plot_line_line_text",
-            label = NULL,
-            value = "Concentration (ug/mL)"
-          )
-        )
-      ),
-
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = "Number of decimal places to show for the line compound",
-          "Line digits"
-        ),
-        div(
-          class = "col-sm-8",
-          numericInput(
-            inputId = "plot_line_line_decimal",
-            label = NULL,
-            value = 1,
-            min = 1,
-            max = 4,
-            step = 1
-          )
-        )
-      ),
-
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = "Colour palette to map to lines/concentrations",
-          actionLink(
-            inputId = "line_preview_colours",
-            label = "Line colours"
-          )
-        ),
-        div(
-          class = "col-sm-8",
-          selectInput(
-            inputId = "plot_line_colour_palette",
-            label = NULL,
-            choices = c(
-              "magma",
-              "inferno",
-              "plasma",
-              "viridis",
-              "cividis",
-              "rocket",
-              "mako",
-              "turbo"
-            ),
-            selected = "viridis"
-          )
-        )
-      ),
-
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = paste0(
-            "Should axis scales be 'Free', 'Fixed', or free in ",
-            "only one dimension?"
-          ),
-          "Scales"
-        ),
-        div(
-          class = "col-sm-8",
-          selectInput(
-            inputId = "plot_line_scales",
-            label = NULL,
-            choices = c(
-              "Free" = "free",
-              "Fixed" = "fixed",
-              "Free X" = "free_x",
-              "Free Y" = "free_y"
-            ),
-            selected = "free"
-          )
-        )
-      ),
-
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = "Label for the y-axis; applies to the entire plot",
-          "Y axis label"
-        ),
-        div(
-          class = "col-sm-8",
-          textInput(
-            inputId = "plot_line_y_text",
-            label = NULL,
-            value = "% Biofilm"
-          )
-        )
-      ),
-
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = "Apply a 'jitter' along the x-axis to prevent overlapping lines",
-          "X values"
-        ),
-        div(
-          class = "col-sm-3",
-          input_switch(
-            id = "plot_line_jitter_x",
-            label = "Jitter",
+      wrap_selector(
+        label = "X compound",
+        label_title = "Compound on the x-axis",
+        selectInput(
+          inputId = "plot_line_x_drug",
+          label = NULL,
+          choices = grep(
+            x = colnames(abci_plot_data()),
+            pattern = "conc",
             value = TRUE
+          ),
+          selected = grep(
+            x = colnames(abci_plot_data()),
+            pattern = "conc",
+            value = TRUE
+          )[1]
+        )
+      ),
+
+      wrap_selector(
+        label = "X axis label",
+        label_title = "Label for the x-axis; applies to the entire plot",
+        textInput(
+          inputId = "plot_line_x_text",
+          label = NULL,
+          value = "Concentration (ug/mL)"
+        )
+      ),
+
+      wrap_selector(
+        label = "X axis digits",
+        label_title = "Number of decimal places to show for the x-axis",
+        numericInput(
+          inputId = "plot_line_x_decimal",
+          label = NULL,
+          value = 2,
+          min = 1,
+          max = 4,
+          step = 1
+        )
+      ),
+
+      wrap_selector(
+        label = "Line compound",
+        label_title = "Compound mapped to different lines",
+        selectInput(
+          inputId = "plot_line_line_drug",
+          label = NULL,
+          choices = grep(
+            x = colnames(abci_plot_data()),
+            pattern = "conc",
+            value = TRUE
+          ),
+          selected = grep(
+            x = colnames(abci_plot_data()),
+            pattern = "conc",
+            value = TRUE
+          )[2]
+        )
+      ),
+
+      wrap_selector(
+        label = "Included conc.",
+        label_title = "Concentrations to plot as lines",
+        selectInput(
+          inputId = "plot_line_line_include",
+          label = NULL,
+          multiple = TRUE,
+          choices = c()
+        )
+      ),
+
+      wrap_selector(
+        label = "Line label",
+        label_title = "Label for the line legend",
+        textInput(
+          inputId = "plot_line_line_text",
+          label = NULL,
+          value = "Concentration (ug/mL)"
+        )
+      ),
+
+      wrap_selector(
+        label = "Line digits",
+        label_title = "Number of decimal places to show for the line compound",
+        numericInput(
+          inputId = "plot_line_line_decimal",
+          label = NULL,
+          value = 1,
+          min = 1,
+          max = 4,
+          step = 1
+        )
+      ),
+
+      wrap_selector(
+        label = actionLink("line_preview_colours", label = "Line colours"),
+        label_title = "Colour palette to map to lines/concentrations",
+        selectInput(
+          inputId = "plot_line_colour_palette",
+          label = NULL,
+          selected = "viridis",
+          choices = c(
+            "magma",
+            "inferno",
+            "plasma",
+            "viridis",
+            "cividis",
+            "rocket",
+            "mako",
+            "turbo"
           )
         )
       ),
 
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = "Threshold for calculating MICs; applies to x- and y-axis compounds",
-          "MIC cutoff"
-        ),
-        div(
-          class = "col-sm-8",
-          numericInput(
-            inputId = "plot_line_mic_threshold",
-            label = NULL,
-            value = 0.5
+      wrap_selector(
+        label = "Scales",
+        label_title = "Should axis scales be 'Free', 'Fixed', or free in only one dimension?",
+        selectInput(
+          inputId = "plot_line_scales",
+          label = NULL,
+          selected = "free",
+          choices = c(
+            "Free" = "free",
+            "Fixed" = "fixed",
+            "Free X" = "free_x",
+            "Free Y" = "free_y"
           )
         )
       ),
 
-      div(
-        class = "form-group row",
-        tags$label(
-          class = "col-sm-4 col-form-label",
-          title = "Include MIC lines on x- or y-axis",
-          "Draw MICs"
-        ),
-        div(
-          class = "col-sm-8",
-          checkboxGroupInput(
-            inputId = "plot_line_mic_lines",
-            label = NULL,
-            choices = c("X"),
-            selected = c("X"),
-            inline = TRUE
-          )
+      wrap_selector(
+        label = "Y axis label",
+        label_title = "Label for the y-axis; applies to the entire plot",
+        textInput(
+          inputId = "plot_line_y_text",
+          label = NULL,
+          value = "% Biofilm"
+        )
+      ),
+
+      wrap_selector(
+        label = "X values",
+        label_title = "Apply a 'jitter' along the x-axis to prevent overlapping lines",
+        input_switch(
+          id = "plot_line_jitter_x",
+          label = "Jitter",
+          value = TRUE
+        )
+      ),
+
+      wrap_selector(
+        label = "Draw MICs",
+        label_title = "Include MIC lines on x- or y-axis",
+        checkboxGroupInput(
+          inputId = "plot_line_mic_lines",
+          label = NULL,
+          inline = TRUE,
+          choices = c("X"),
+          selected = c("X")
+        )
+      ),
+
+      wrap_selector(
+        label = "MIC cutoff",
+        label_title = "Threshold for calculating MICs; applies to x- and y-axis compounds",
+        numericInput(
+          inputId = "plot_line_mic_threshold",
+          label = NULL,
+          value = 0.5
         )
       ),
 
