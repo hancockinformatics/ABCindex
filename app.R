@@ -1428,7 +1428,10 @@ server <- function(input, output) {
           mic.threshold = isolate(input$plot_dot_mic_threshold),
           col.mic = "bio_normal",
           colour.palette = isolate(input$plot_dot_colour_palette)
-        )
+        ) +
+          {if (abci_plot_dims()[[2]] == 1) {
+            theme(legend.box = "horizontal")
+          }}
 
       } else if (isolate(input$visualize_tabs) == "line") {
 
@@ -1493,7 +1496,7 @@ server <- function(input, output) {
   observeEvent(input$draw, {
     req(abci_plot_data())
 
-    plot_width <- ifelse(abci_plot_dims()[[1]] == 1, "60%", "100%")
+    plot_width <- ifelse(abci_plot_dims()[[1]] == 1, "67%", "100%")
 
     if (plot_type() == "tile_split") {
       plot_height <- paste0(100 + (600 * abci_plot_dims()[[2]]), "px")
@@ -1504,7 +1507,6 @@ server <- function(input, output) {
     output$vis_tab_plot_ui <- renderUI(
       plotOutput(
         outputId = "abci_plot",
-        inline = FALSE,
         height = plot_height,
         width = plot_width
       ) %>% shinycssloaders::withSpinner()

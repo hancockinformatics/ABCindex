@@ -272,7 +272,7 @@ abci_plot_tile <- function(
       )
     }} +
 
-    {if (x.decimal > 2) {
+    {if (x.decimal > 1) {
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
     }}
 }
@@ -573,7 +573,7 @@ abci_plot_tile_split <- function(
         )
       }} +
 
-      {if (x.decimal > 2) {
+      {if (x.decimal > 1) {
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
       }} +
       theme(legend.key.height = unit(7, "mm"))
@@ -592,8 +592,6 @@ abci_plot_tile_split <- function(
 #' @param col.size Character; Column containing values to map to dot size
 #' @param col.analysis Character; Optional column denoting different analyses,
 #'   by which to facet the plot
-#' @param split Logical; Should two graphs be drawn, for positive and negative
-#'   ABCi values? Defaults to FALSE.
 #' @param size.range Range of dot size, defaults to `c(3, 22)`
 #' @param scales Should the scales be "fixed" (default), "free", "free_x", or
 #'   "free_y"? See `?facet_wrap` for more details.
@@ -681,36 +679,20 @@ abci_plot_dot <- function(
   upper <- max(scale.limits)
   lower <- min(scale.limits)
 
-  if (!split) {
-    plot.palette <- preset_palettes[[colour.palette]]
+  plot.palette <- preset_palettes[[colour.palette]]
 
-    colour.pointers <-
-      if (colour.palette %in% c("PAN", "SUN", "BOB")) {
-        scales::rescale(
-          c(upper, upper / 2, upper / 4, upper / 8, 0, lower / 4, lower / 2, lower),
-          to = c(0, 1)
-        )
-      } else {
-        scales::rescale(
-          c(upper, 3 * upper / 4, upper / 2, upper / 4, 0, lower / 4, 3 * lower / 4, lower),
-          to = c(0, 1)
-        )
-      }
-
-  } else {
-    plot.palette <- preset_palettes_split[[colour.palette]]
-
-    colour.pointers <- list(
-      up = scales::rescale(
-        c(upper, 3 * upper / 4, upper / 2, upper / 4, 0),
-        to = c(0, 1)
-      ),
-      down = scales::rescale(
-        c(lower, 3 * lower / 4, lower / 2, lower / 4, 0),
+  colour.pointers <-
+    if (colour.palette %in% c("PAN", "SUN", "BOB")) {
+      scales::rescale(
+        c(upper, upper / 2, upper / 4, upper / 8, 0, lower / 4, lower / 2, lower),
         to = c(0, 1)
       )
-    )
-  }
+    } else {
+      scales::rescale(
+        c(upper, 3 * upper / 4, upper / 2, upper / 4, 0, lower / 4, 3 * lower / 4, lower),
+        to = c(0, 1)
+      )
+    }
 
   if (delta) {
     scale.limits <- c(-100, 100)
@@ -827,7 +809,9 @@ abci_plot_dot <- function(
       name = "Biofilm\nkilled",
       range = size.range,
       trans = scales::exp_trans(base = 2),
-      labels = ~paste0(.x * 10, "%")
+      breaks = seq(0, 10, 2),
+      labels = ~paste0(.x * 10, "%"),
+      guide = guide_legend(keyheight = unit(10, "mm"))
     ) +
 
     {if (add.axis.lines) {
@@ -852,7 +836,7 @@ abci_plot_dot <- function(
       )
     }} +
 
-    {if (x.decimal > 2) {
+    {if (x.decimal > 1) {
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
     }}
 }
@@ -1129,7 +1113,7 @@ abci_plot_line <- function(
 
     theme(legend.key.height = NULL) +
 
-    {if (x.decimal > 2) {
+    {if (x.decimal > 1) {
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
     }}
 }
