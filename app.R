@@ -3,7 +3,6 @@
 #' - Tweak dot size for dot plots
 #' - Summary and full results tables...
 #' - Custom container for results table with tool tips
-#' - Better input labels & tool tips for plot inputs
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
 #'     if (effect > 0.9) {
 #'       add * to tile, or border around dot
@@ -157,9 +156,9 @@ ui <- page_fluid(
             title = "ABCi analysis",
 
             p(
-              "ShinyABCi expects data to be normalized to percentages, ranging from ",
-              "0 to 1. If your data doesn't meet this criteria, use the options below ",
-              "to have your data normalized."
+              "ShinyABCi expects data to be normalized to percentages, ",
+              "ranging from 0 to 1. If your data doesn't meet this criteria, ",
+              "use the options below to have your data normalized."
             ),
             radioButtons(
               inputId = "analysis_tab_check_normal",
@@ -265,7 +264,7 @@ ui <- page_fluid(
                     "Here is some About text."
                   ),
                   p(class = "lead",
-                    "Blah blah blah R blah blah Shiny blah blah blah Hancock Lab."
+                    "Blah blah R blah blah Shiny blah blah blah Hancock Lab."
                   ),
                   div(class = "d-grid gap-2 d-md-flex justify-content-md-start",
                       actionButton(
@@ -294,7 +293,7 @@ ui <- page_fluid(
         icon("github"),
         "Github",
         href = "https://github.com/hancockinformatics/ShinyABCi",
-        title = "Visit our Github to browse the code or submit an issue"
+        title = "Visit our Github to browse the code or submit an issue."
       )
     ),
     nav_item(app_version, style = "color: var(--bs-nav-link-color)")
@@ -313,13 +312,25 @@ server <- function(input, output) {
 
   # Upload ----------------------------------------------------------------
 
-  upload_tab_data_1 <- reactiveVal()
-
   observeEvent(input$get_started, {
     updateNavbarPage(
       inputId  = "navbar",
       selected = "upload_tab"
     )
+  })
+
+  upload_tab_data_1 <- reactiveVal()
+
+
+  # |- Example data -------------------------------------------------------
+
+  observeEvent(input$upload_tab_example, {
+    if (file.exists("example_data/example_data_lucas.xlsx")) {
+      abci_reader("example_data/example_data_lucas.xlsx") %>%
+        upload_tab_data_1()
+    } else {
+      showNotification("Example data not found!", type = "error")
+    }
   })
 
 
@@ -328,22 +339,6 @@ server <- function(input, output) {
   observeEvent(input$upload_tab_user_data, {
     abci_reader(input$upload_tab_user_data$datapath) %>%
       upload_tab_data_1()
-  })
-
-
-  # |- Example data -------------------------------------------------------
-
-  upload_tab_example_indicator <- reactiveVal(0)
-
-  observeEvent(input$upload_tab_example, {
-    if (file.exists("example_data/example_data_lucas.xlsx")) {
-      upload_tab_example_indicator(1)
-
-      abci_reader("example_data/example_data_lucas.xlsx") %>%
-        upload_tab_data_1()
-    } else {
-      showNotification("Example data not found!", type = "error")
-    }
   })
 
 
@@ -519,16 +514,17 @@ server <- function(input, output) {
   # |- Download results ---------------------------------------------------
 
   output$abci_results_handler <- downloadHandler(
+
     filename = function() {
-      if (upload_tab_example_indicator() == 1) {
-        "shinyABCi_example_data_results.csv"
-      } else {
-        paste0(
-          "shinyABCi_",
-          tools::file_path_sans_ext(input$upload_tab_user_data$name),
-          "_results.csv"
-        )
-      }
+      paste0(
+        "shinyABCi_",
+        ifelse(
+          test = is.null(input$upload_tab_user_data),
+          yes = "example_data",
+          no = tools::file_path_sans_ext(input$upload_tab_user_data$name)
+        ),
+        "_results.csv"
+      )
     },
     content = function(filename) {
       readr::write_csv(

@@ -810,6 +810,7 @@ abci_plot_dot <- function(
       range = size.range,
       trans = scales::exp_trans(base = 2),
       breaks = seq(0, 10, 2),
+      limits = c(0, 10),
       labels = ~paste0(.x * 10, "%"),
       guide = guide_legend(keyheight = unit(10, "mm"))
     ) +
