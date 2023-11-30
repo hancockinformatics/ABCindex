@@ -693,6 +693,19 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
+        label = "Axis labels",
+        label_title = paste0(
+          "Across the plot facets, should the x- and y-axis labels vary ",
+          "(Free) or be the same (Fixed)?"
+        ),
+        selectInput(
+          inputId = "plot_tile_scales",
+          label = NULL,
+          choices = plot_scales
+        )
+      ),
+
+      wrap_selector(
         label = "Draw MIC lines",
         label_title = "Include lines to indicate MIC for the x- and y-axis",
         checkboxGroupInput(
@@ -726,19 +739,6 @@ server <- function(input, output) {
           value = 0,
           min = 0,
           step = 0.1
-        )
-      ),
-
-      wrap_selector(
-        label = "Axis labels",
-        label_title = paste0(
-          "Across the plot facets, should the x- and y-axis labels vary ",
-          "(Free) or be the same (Fixed)?"
-        ),
-        selectInput(
-          inputId = "plot_tile_scales",
-          label = NULL,
-          choices = plot_scales
         )
       )
     )
@@ -865,21 +865,6 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Highlight low killing",
-        label_title = paste0(
-          "Draw a symbol on cells which kill less than the indicated ",
-          "percentage. Zero hides the symbols."
-        ),
-        numericInput(
-          inputId = "plot_tile_split_min_flag",
-          label = NULL,
-          value = 0,
-          min = 0,
-          step = 0.1
-        )
-      ),
-
-      wrap_selector(
         label = "Draw MIC lines",
         label_title = "Include lines to indicate MIC for the x- and y-axis",
         checkboxGroupInput(
@@ -898,6 +883,21 @@ server <- function(input, output) {
           inputId = "plot_tile_split_mic_threshold",
           label = NULL,
           value = 0.5
+        )
+      ),
+
+      wrap_selector(
+        label = "Highlight low killing",
+        label_title = paste0(
+          "Draw a symbol on cells which kill less than the indicated ",
+          "percentage. Zero hides the symbols."
+        ),
+        numericInput(
+          inputId = "plot_tile_split_min_flag",
+          label = NULL,
+          value = 0,
+          min = 0,
+          step = 0.1
         )
       )
     )
@@ -1216,7 +1216,7 @@ server <- function(input, output) {
   })
 
 
-  # |- Update inputs and observe ------------------------------------------
+  # |- Input updates and observers ----------------------------------------
 
   plot_type <- reactive(input$visualize_tabs)
 
@@ -1251,48 +1251,32 @@ server <- function(input, output) {
 
   # |-- Preview colours ---------------------------------------------------
 
+  modal_colours <- list(
+    "abci" = modalDialog(
+      title = "ABCi colour palettes",
+      easyClose = TRUE,
+      size = "l",
+      HTML("<img src='abci_palettes.png' class='center'>")
+    ) %>% tagAppendAttributes(class = "modal-dialog-centered"),
+    "viridis" = modalDialog(
+      title = "Line colour palettes",
+      easyClose = TRUE,
+      size = "l",
+      HTML("<img src='viridis_palettes.png' class='center'>")
+    ) %>% tagAppendAttributes(class = "modal-dialog-centered")
+  )
+
   observeEvent(input$tile_preview_colours, {
-    showModal(
-      modalDialog(
-        title = "ABCi colour palettes",
-        easyClose = TRUE,
-        size = "l",
-        HTML("<img src='abci_palettes.png' class='center'>")
-      ) %>% tagAppendAttributes(class = "modal-dialog-centered")
-    )
+    showModal(modal_colours$abci)
   })
-
   observeEvent(input$tile_split_preview_colours, {
-    showModal(
-      modalDialog(
-        title = "ABCi colour palettes",
-        easyClose = TRUE,
-        size = "m",
-        HTML("<img src='abci_palettes_split.png' class='center'>")
-      ) %>% tagAppendAttributes(class = "modal-dialog-centered")
-    )
+    showModal(modal_colours$abci)
   })
-
   observeEvent(input$dot_preview_colours, {
-    showModal(
-      modalDialog(
-        title = "ABCi colour palettes",
-        easyClose = TRUE,
-        size = "l",
-        HTML("<img src='abci_palettes.png' class='center'>")
-      ) %>% tagAppendAttributes(class = "modal-dialog-centered")
-    )
+    showModal(modal_colours$abci)
   })
-
   observeEvent(input$line_preview_colours, {
-    showModal(
-      modalDialog(
-        title = "Line colour palettes",
-        easyClose = TRUE,
-        size = "l",
-        HTML("<img src='viridis_palettes.png' class='center'>")
-      ) %>% tagAppendAttributes(class = "modal-dialog-centered")
-    )
+    showModal(modal_colours$viridis)
   })
 
 
