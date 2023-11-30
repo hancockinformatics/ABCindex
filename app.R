@@ -172,7 +172,7 @@ ui <- page_fluid(
 
             disabled(
               actionButton(
-                inputId = "upload_tab_submit_button",
+                inputId = "analysis_tab_submit_button",
                 class = "btn btn-info btn-tooltip",
                 label = "Perform ABCi calculations",
                 icon = icon("calculator"),
@@ -400,35 +400,22 @@ server <- function(input, output) {
 
   # Analysis --------------------------------------------------------------
 
-  upload_tab_data_2 <- reactiveVal()
-
-  observeEvent(upload_tab_data_1(), {
-
+  upload_tab_data_2 <- eventReactive(upload_tab_data_1(), {
     upload_tab_data_1() %>%
       bind_rows(.id = "assay") %>%
-      mutate(across(c(cols_conc, rows_conc), forcats::fct_inseq)) %>%
-      upload_tab_data_2()
+      mutate(across(c(cols_conc, rows_conc), forcats::fct_inseq))
   })
 
   observeEvent(input$upload_tab_proceed_button, {
     req(upload_tab_data_2())
-
-    updateNavbarPage(
-      inputId  = "navbar",
-      selected = "analysis_tab"
-    )
-
-    enable(id = "upload_tab_submit_button")
+    updateNavbarPage(inputId  = "navbar", selected = "analysis_tab")
+    enable(id = "analysis_tab_submit_button")
   })
 
 
   # |- Process results ----------------------------------------------------
 
-  abci_results <- reactiveVal()
-
-  observeEvent(input$upload_tab_submit_button, {
-    req(upload_tab_data_2())
-
+  abci_results <- eventReactive(input$analysis_tab_submit_button, {
     abci_analysis(
       data = upload_tab_data_2(),
       x.drug = "cols_conc",
@@ -437,15 +424,13 @@ server <- function(input, output) {
       col.analysis = "assay",
       col.reps = "replicate",
       normalize = input$analysis_tab_check_normal
-    ) %>% abci_results()
+    )
   })
 
 
   # |- Display results ----------------------------------------------------
 
-  abci_results_display <- reactive({
-    req(abci_results())
-
+  abci_results_display <- eventReactive(abci_results(), {
     abci_results() %>%
       select(
         assay,
@@ -472,7 +457,6 @@ server <- function(input, output) {
       where = "afterEnd",
       ui = tagList(div(
         id = "analysis_tab_assay_selection",
-
         selectInput(
           inputId = "analysis_tab_user_data_sheet_name",
           label = "Select an uploaded sheet to see the results:",
@@ -489,15 +473,12 @@ server <- function(input, output) {
     options = list(
       dom = "ltip",
       scrollX = TRUE,
-      columnDefs = list(
-        list(targets = 0, render = ellipsis_render(30))
-      )
+      columnDefs = list(list(targets = 0, render = ellipsis_render(30)))
     )
   )
 
   observeEvent(abci_results_display(), {
     req(abci_results_display())
-
     insertUI(
       selector = "#analysis_tab_placeholder_div",
       where = "afterEnd",
@@ -514,7 +495,6 @@ server <- function(input, output) {
   # |- Download results ---------------------------------------------------
 
   output$abci_results_handler <- downloadHandler(
-
     filename = function() {
       paste0(
         "shinyABCi_",
@@ -534,25 +514,24 @@ server <- function(input, output) {
     }
   )
 
-  observeEvent(input$upload_tab_submit_button, {
-    output$abci_results_button <- renderUI(
-      div(
-        class = "d-flex gap-2 justify-content-center py-2",
-        downloadButton(
-          outputId = "abci_results_handler",
-          label = "Download your results",
-          class = "btn btn-success align-items-center",
-          style = "width: 50%"
-        ),
-        actionButton(
-          inputId = "analysis_tab_vis_button",
-          label = "Visualize your results",
-          class = "btn btn-primary btn-tooltip align-items-center",
-          icon = icon("arrow-right"),
-          width = "50%"
-        )
+  observeEvent(input$analysis_tab_submit_button, {
+    req(abci_results())
+    output$abci_results_button <- renderUI(div(
+      class = "d-flex gap-2 justify-content-center py-2",
+      downloadButton(
+        outputId = "abci_results_handler",
+        label = "Download your results",
+        class = "btn btn-success align-items-center",
+        style = "width: 50%"
+      ),
+      actionButton(
+        inputId = "analysis_tab_vis_button",
+        label = "Visualize your results",
+        class = "btn btn-primary btn-tooltip align-items-center",
+        icon = icon("arrow-right"),
+        width = "50%"
       )
-    )
+    ))
   })
 
 
@@ -1316,13 +1295,13 @@ server <- function(input, output) {
 
   # |-- Min flagging ------------------------------------------------------
 
-  plot_tile_min_info <- reactive({
+  plot_tile_min_info <- reactive(
     ifelse(input$plot_tile_min_flag > 0, TRUE, FALSE)
-  })
+  )
 
-  plot_tile_split_min_info <- reactive({
+  plot_tile_split_min_info <- reactive(
     ifelse(input$plot_tile_split_min_flag > 0, TRUE, FALSE)
-  })
+  )
 
 
   # |-- Line include options ----------------------------------------------
