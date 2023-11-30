@@ -653,10 +653,10 @@ server <- function(input, output) {
         numericInput(
           inputId = "plot_tile_x_decimal",
           label = NULL,
-          value = 2,
-          min = 1,
-          max = 4,
-          step = 1
+          min = 0,
+          max = 5,
+          step = 1,
+          value = 2
         )
       ),
 
@@ -695,38 +695,10 @@ server <- function(input, output) {
         numericInput(
           inputId = "plot_tile_y_decimal",
           label = NULL,
-          value = 2,
-          min = 1,
-          max = 4,
-          step = 1
-        )
-      ),
-
-      wrap_selector(
-        label = "Axis labels",
-        label_title = paste0(
-          "Across the plot facets, should the x- and y-axis labels vary ",
-          "(Free) or be the same (Fixed)?"
-        ),
-        selectInput(
-          inputId = "plot_tile_scales",
-          label = NULL,
-          choices = plot_scales
-        )
-      ),
-
-      wrap_selector(
-        label = "Highlight low killing",
-        label_title = paste0(
-          "Draw a symbol on cells which kill less than the indicated ",
-          "percentage. Zero hides the symbols."
-        ),
-        numericInput(
-          inputId = "plot_tile_min_flag",
-          label = NULL,
-          value = ifelse(input$analysis_tab_check_normal, 0.5, 0),
           min = 0,
-          step = 0.1
+          max = 5,
+          step = 1,
+          value = 2
         )
       ),
 
@@ -752,6 +724,34 @@ server <- function(input, output) {
         )
       ),
 
+      wrap_selector(
+        label = "Highlight low killing",
+        label_title = paste0(
+          "Draw a symbol on cells which kill less than the indicated ",
+          "percentage. Zero hides the symbols."
+        ),
+        numericInput(
+          inputId = "plot_tile_min_flag",
+          label = NULL,
+          value = 0,
+          min = 0,
+          step = 0.1
+        )
+      ),
+
+      wrap_selector(
+        label = "Axis labels",
+        label_title = paste0(
+          "Across the plot facets, should the x- and y-axis labels vary ",
+          "(Free) or be the same (Fixed)?"
+        ),
+        selectInput(
+          inputId = "plot_tile_scales",
+          label = NULL,
+          choices = plot_scales
+        )
+      ),
+
       div(
         class = "form-group row",
         tags$label(
@@ -761,6 +761,17 @@ server <- function(input, output) {
           )
         )
       )
+    )
+  })
+
+  observeEvent(input$plot_tile_show_advanced, {
+    showModal(
+      modalDialog(
+        title = "Advanced options",
+        easyClose = TRUE,
+        size = "m",
+        p("Some tile plot options are kept in here.")
+      ) %>% tagAppendAttributes(class = "modal-dialog-centered")
     )
   })
 
@@ -934,6 +945,17 @@ server <- function(input, output) {
     )
   })
 
+  observeEvent(input$plot_tile_split_show_advanced, {
+    showModal(
+      modalDialog(
+        title = "Advanced options",
+        easyClose = TRUE,
+        size = "l",
+        p("Some split tile plot options will be moved into here...")
+      ) %>% tagAppendAttributes(class = "modal-dialog-centered")
+    )
+  })
+
 
   # |-- Dot ---------------------------------------------------------------
 
@@ -1076,6 +1098,17 @@ server <- function(input, output) {
           )
         )
       )
+    )
+  })
+
+  observeEvent(input$plot_dot_show_advanced, {
+    showModal(
+      modalDialog(
+        title = "Advanced options",
+        easyClose = TRUE,
+        size = "l",
+        p("Some dot plot options will be moved into here...")
+      ) %>% tagAppendAttributes(class = "modal-dialog-centered")
     )
   })
 
@@ -1268,47 +1301,6 @@ server <- function(input, output) {
     )
   })
 
-
-  # |- Update inputs and observe ------------------------------------------
-
-  plot_type <- reactive(input$visualize_tabs)
-
-
-  # |-- Advanced options --------------------------------------------------
-
-  observeEvent(input$plot_tile_show_advanced, {
-    showModal(
-      modalDialog(
-        title = "Advanced options",
-        easyClose = TRUE,
-        size = "l",
-        p("Some tile plot options will be moved into here...")
-      ) %>% tagAppendAttributes(class = "modal-dialog-centered")
-    )
-  })
-
-  observeEvent(input$plot_tile_split_show_advanced, {
-    showModal(
-      modalDialog(
-        title = "Advanced options",
-        easyClose = TRUE,
-        size = "l",
-        p("Some split tile plot options will be moved into here...")
-      ) %>% tagAppendAttributes(class = "modal-dialog-centered")
-    )
-  })
-
-  observeEvent(input$plot_dot_show_advanced, {
-    showModal(
-      modalDialog(
-        title = "Advanced options",
-        easyClose = TRUE,
-        size = "l",
-        p("Some dot plot options will be moved into here...")
-      ) %>% tagAppendAttributes(class = "modal-dialog-centered")
-    )
-  })
-
   observeEvent(input$plot_line_show_advanced, {
     showModal(
       modalDialog(
@@ -1319,6 +1311,11 @@ server <- function(input, output) {
       ) %>% tagAppendAttributes(class = "modal-dialog-centered")
     )
   })
+
+
+  # |- Update inputs and observe ------------------------------------------
+
+  plot_type <- reactive(input$visualize_tabs)
 
 
   # |-- Min flagging ------------------------------------------------------
