@@ -641,7 +641,6 @@ abci_plot_dot <- function(
     col.fill,
     col.size,
     col.analysis = NULL,
-    split = FALSE,
     size.range = c(3, 15),
     scales = "fixed",
     n.rows = NULL,
