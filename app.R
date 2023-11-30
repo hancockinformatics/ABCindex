@@ -319,10 +319,10 @@ server <- function(input, output) {
     updateNavbarPage(inputId = "navbar", selected = "upload")
   })
 
-  input_data_raw <- reactiveVal()
-
 
   # |- Example data -------------------------------------------------------
+
+  input_data_raw <- reactiveVal()
 
   observeEvent(input$load_example_data, {
     if (file.exists("example_data/example_data_lucas.xlsx")) {
@@ -349,7 +349,7 @@ server <- function(input, output) {
   })
 
 
-  # |- Clean the data and preview -----------------------------------------
+  # |- Create input preview -----------------------------------------------
 
   input_data_preview <- reactive({
     req(input_data_raw())
@@ -404,12 +404,6 @@ server <- function(input, output) {
 
   # Analysis --------------------------------------------------------------
 
-  input_data_tidy <- eventReactive(input_data_raw(), {
-    input_data_raw() %>%
-      bind_rows(.id = "assay") %>%
-      mutate(across(c(cols_conc, rows_conc), forcats::fct_inseq))
-  })
-
   observeEvent(input$proceed_abci_calculations, {
     req(input_data_tidy())
     updateNavbarPage(inputId = "navbar", selected = "analysis")
@@ -417,9 +411,25 @@ server <- function(input, output) {
   })
 
 
-  # |- Process results ----------------------------------------------------
+  # |- Tidy input ---------------------------------------------------------
 
-  abci_results <- eventReactive(input$perform_abci_calculations, {
+  input_data_tidy <- reactiveVal()
+
+  observeEvent(input_data_raw(), {
+    input_data_raw() %>%
+      bind_rows(.id = "assay") %>%
+      mutate(across(c(cols_conc, rows_conc), forcats::fct_inseq)) %>%
+      input_data_tidy()
+  })
+
+
+  # |- Calculate results --------------------------------------------------
+
+  abci_results <- reactiveVal()
+
+  observeEvent(input$perform_abci_calculations, {
+    req(input_data_tidy())
+
     abci_analysis(
       data = input_data_tidy(),
       x.drug = "cols_conc",
@@ -428,13 +438,16 @@ server <- function(input, output) {
       col.analysis = "assay",
       col.reps = "replicate",
       normalize = input$normalize_radio
-    )
+    ) %>%
+      abci_results()
   })
 
 
-  # |- Display results ----------------------------------------------------
+  # |- Display results table ----------------------------------------------
 
-  abci_results_display <- eventReactive(abci_results(), {
+  abci_results_display <- reactive({
+    req(abci_results())
+
     abci_results() %>%
       select(
         assay,
@@ -471,7 +484,7 @@ server <- function(input, output) {
   })
 
   output$results_table_DT <- DT::renderDataTable(
-    abci_results_display()[[input$results_names_selectInput]],
+    expr = abci_results_display()[[input$results_names_selectInput]],
     rownames = FALSE,
     class = "table-striped",
     options = list(
@@ -483,6 +496,7 @@ server <- function(input, output) {
 
   observeEvent(abci_results_display(), {
     req(abci_results_display())
+
     insertUI(
       selector = "#results_table_div",
       where = "afterEnd",
@@ -495,7 +509,7 @@ server <- function(input, output) {
   })
 
 
-  # |- Download results ---------------------------------------------------
+  # |- Download and Visualize UI ------------------------------------------
 
   output$download_handler <- downloadHandler(
     filename = function() {
@@ -519,6 +533,7 @@ server <- function(input, output) {
 
   observeEvent(input$perform_abci_calculations, {
     req(abci_results())
+
     output$results_buttons <- renderUI(div(
       class = "d-flex gap-2 justify-content-center py-2",
       downloadButton(
@@ -725,28 +740,7 @@ server <- function(input, output) {
           label = NULL,
           choices = plot_scales
         )
-      ),
-
-      div(
-        class = "form-group row",
-        tags$label(
-          actionLink(
-            inputId = "plot_tile_show_advanced",
-            label = "Advanced options..."
-          )
-        )
       )
-    )
-  })
-
-  observeEvent(input$plot_tile_show_advanced, {
-    showModal(
-      modalDialog(
-        title = "Advanced options",
-        easyClose = TRUE,
-        size = "m",
-        p("Some tile plot options are kept in here.")
-      ) %>% tagAppendAttributes(class = "modal-dialog-centered")
     )
   })
 
@@ -905,28 +899,7 @@ server <- function(input, output) {
           label = NULL,
           value = 0.5
         )
-      ),
-
-      div(
-        class = "form-group row",
-        tags$label(
-          actionLink(
-            inputId = "plot_tile_split_show_advanced",
-            label = "Advanced options..."
-          )
-        )
       )
-    )
-  })
-
-  observeEvent(input$plot_tile_split_show_advanced, {
-    showModal(
-      modalDialog(
-        title = "Advanced options",
-        easyClose = TRUE,
-        size = "l",
-        p("Some split tile plot options will be moved into here...")
-      ) %>% tagAppendAttributes(class = "modal-dialog-centered")
     )
   })
 
@@ -1060,28 +1033,7 @@ server <- function(input, output) {
           label = NULL,
           value = 0.5
         )
-      ),
-
-      div(
-        class = "form-group row",
-        tags$label(
-          actionLink(
-            inputId = "plot_dot_show_advanced",
-            label = "Advanced options..."
-          )
-        )
       )
-    )
-  })
-
-  observeEvent(input$plot_dot_show_advanced, {
-    showModal(
-      modalDialog(
-        title = "Advanced options",
-        easyClose = TRUE,
-        size = "l",
-        p("Some dot plot options will be moved into here...")
-      ) %>% tagAppendAttributes(class = "modal-dialog-centered")
     )
   })
 
@@ -1259,28 +1211,7 @@ server <- function(input, output) {
           label = NULL,
           value = 0.5
         )
-      ),
-
-      div(
-        class = "form-group row",
-        tags$label(
-          actionLink(
-            inputId = "plot_line_show_advanced",
-            label = "Advanced options..."
-          )
-        )
       )
-    )
-  })
-
-  observeEvent(input$plot_line_show_advanced, {
-    showModal(
-      modalDialog(
-        title = "Advanced options",
-        easyClose = TRUE,
-        size = "l",
-        p("Some line plot options will be moved into here...")
-      ) %>% tagAppendAttributes(class = "modal-dialog-centered")
     )
   })
 
