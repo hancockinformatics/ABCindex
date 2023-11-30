@@ -51,12 +51,11 @@ ui <- page_fluid(
     # |- Home page ------------------------------------------------------
 
     nav_panel(
-      value = "home_tab",
+      value = "home",
       title = "Home",
 
       div(
         class = "container my-5",
-
         div(
           class = "row p-4 pb-lg-5 pe-lg-0 pt-lg-5 rounded-3 border shadow-lg text-center",
           h1(class = "display-5 fw-bold text-body-emphasis", "Welcome"),
@@ -79,10 +78,7 @@ ui <- page_fluid(
 
             br(),
             br(),
-            actionButton(
-              inputId = "test_btn",
-              label = "Notification test"
-            )
+            actionButton("notification_test", label = "Notification test")
           )
         )
       )
@@ -92,7 +88,7 @@ ui <- page_fluid(
     # |- Upload ---------------------------------------------------------
 
     nav_panel(
-      value = "upload_tab",
+      value = "upload",
       title = "Upload",
 
       card(
@@ -100,14 +96,13 @@ ui <- page_fluid(
 
         layout_sidebar(
           sidebar = sidebar(
-            id = "upload_tab_sidebarpanel",
             title = "Upload your plate data",
             width = "33%",
 
             p("Info about upload."),
 
             actionButton(
-              inputId = "upload_tab_example",
+              inputId = "load_example_data",
               class = "btn btn-info btn-tooltip",
               label = "Load example data",
               title = "Click here to try our example data",
@@ -115,17 +110,17 @@ ui <- page_fluid(
             ),
 
             fileInput(
-              inputId = "upload_tab_user_data",
+              inputId = "load_user_data",
               label = NULL,
               buttonLabel = list(icon("upload"), "Upload plate data..."),
               accept = c("xls", ".xls", "xlsx", ".xlsx")
             ),
 
-            div(id = "upload_tab_input_names_ui"),
+            div(id = "upload_input_names_div"),
 
             disabled(
               actionButton(
-                inputId = "upload_tab_proceed_button",
+                inputId = "proceed_abci_calculations",
                 class = "btn btn-primary btn-tooltip",
                 label = "Proceed to ABCi calculations",
                 icon = icon("arrow-right"),
@@ -134,7 +129,7 @@ ui <- page_fluid(
             )
           ),
 
-          div(id = "upload_tab_placeholder_div")
+          div(id = "upload_preview_div")
         )
       )
     ),
@@ -143,7 +138,7 @@ ui <- page_fluid(
     # |- Analysis -------------------------------------------------------
 
     nav_panel(
-      value = "analysis_tab",
+      value = "analysis",
       title = "Analysis",
 
       card(
@@ -151,9 +146,8 @@ ui <- page_fluid(
 
         layout_sidebar(
           sidebar = sidebar(
-            id = "results_sidebarpanel",
-            width = "33%",
             title = "ABCi analysis",
+            width = "33%",
 
             p(
               "ShinyABCi expects data to be normalized to percentages, ",
@@ -161,7 +155,7 @@ ui <- page_fluid(
               "use the options below to have your data normalized."
             ),
             radioButtons(
-              inputId = "analysis_tab_check_normal",
+              inputId = "normalize_radio",
               label = NULL,
               choices = list(
                 "My data is already normalized (range 0 to 1)" = FALSE,
@@ -172,7 +166,7 @@ ui <- page_fluid(
 
             disabled(
               actionButton(
-                inputId = "analysis_tab_submit_button",
+                inputId = "perform_abci_calculations",
                 class = "btn btn-info btn-tooltip",
                 label = "Perform ABCi calculations",
                 icon = icon("calculator"),
@@ -181,12 +175,11 @@ ui <- page_fluid(
             ),
 
             p("Information about interpreting the results."),
-
-            div(id = "analysis_tab_input_names_ui"),
-            uiOutput("abci_results_button")
+            div(id = "results_names_ui"),
+            uiOutput("results_buttons")
           ),
 
-          div(id = "analysis_tab_placeholder_div")
+          div(id = "results_table_div")
         )
       )
     ),
@@ -195,7 +188,7 @@ ui <- page_fluid(
     # |- Visualize ------------------------------------------------------
 
     nav_panel(
-      value = "vis_tab",
+      value = "visualize",
       title = "Visualize",
 
       card(
@@ -203,14 +196,13 @@ ui <- page_fluid(
 
         layout_sidebar(
           sidebar = sidebar(
-            id = "vis_sidebarpanel",
+            title = "Visualize ABCi results",
             width = "33%",
 
-            title = "Visualize ABCi results",
             p("Information about the different visualization available."),
 
             actionButton(
-              inputId = "draw",
+              inputId = "create_plot",
               class = "btn btn-info btn-tooltip",
               label = "Create or update the plot",
               icon = icon("chart-bar"),
@@ -241,7 +233,7 @@ ui <- page_fluid(
               )
             )
           ),
-          uiOutput("vis_tab_plot_ui")
+          uiOutput("abci_plot_ui")
         )
       )
     ),
@@ -250,9 +242,7 @@ ui <- page_fluid(
     # |- About ----------------------------------------------------------
 
     nav_panel(
-      value = "about_tab",
       title = "About",
-
       div(class = "container col-xxl-8 px-4 py-5",
           div(class = "row flex-lg-row align-items-center g-5 py-5",
               div(class = "col-lg-6",
@@ -305,7 +295,7 @@ ui <- page_fluid(
 
 server <- function(input, output) {
 
-  observeEvent(input$test_btn, {
+  observeEvent(input$notification_test, {
     showNotification(ui = "Test message", duration = NULL, type = "message")
   })
 
@@ -315,19 +305,19 @@ server <- function(input, output) {
   observeEvent(input$get_started, {
     updateNavbarPage(
       inputId  = "navbar",
-      selected = "upload_tab"
+      selected = "upload"
     )
   })
 
-  upload_tab_data_1 <- reactiveVal()
+  input_data_raw <- reactiveVal()
 
 
   # |- Example data -------------------------------------------------------
 
-  observeEvent(input$upload_tab_example, {
+  observeEvent(input$load_example_data, {
     if (file.exists("example_data/example_data_lucas.xlsx")) {
       abci_reader("example_data/example_data_lucas.xlsx") %>%
-        upload_tab_data_1()
+        input_data_raw()
     } else {
       showNotification("Example data not found!", type = "error")
     }
@@ -336,63 +326,60 @@ server <- function(input, output) {
 
   # |- User data ----------------------------------------------------------
 
-  observeEvent(input$upload_tab_user_data, {
-    abci_reader(input$upload_tab_user_data$datapath) %>%
-      upload_tab_data_1()
+  observeEvent(input$load_user_data, {
+    abci_reader(input$load_user_data$datapath) %>%
+      input_data_raw()
   })
 
 
   # |- Clean the data and preview -----------------------------------------
 
-  upload_tab_data_display <- reactive({
-    req(upload_tab_data_1())
-    enable("upload_tab_proceed_button")
+  input_data_preview <- reactive({
+    req(input_data_raw())
+    enable("proceed_abci_calculations")
 
     purrr::map(
-      upload_tab_data_1(),
+      input_data_raw(),
       ~mutate(.x, across(where(is.numeric), ~signif(.x, digits = 4)))
     )
   })
 
-  observeEvent(upload_tab_data_display(), {
-    req(upload_tab_data_display())
+  observeEvent(input_data_preview(), {
+    req(input_data_preview())
 
     insertUI(
-      selector = "#upload_tab_input_names_ui",
+      selector = "#upload_input_names_div",
       where = "afterEnd",
       ui = tagList(
         selectInput(
-          inputId = "user_data_sheet_name",
+          inputId = "input_data_sheet_names",
           label = "Select an uploaded sheet to preview:",
-          choices = names(upload_tab_data_display())
+          choices = names(input_data_preview())
         )
       )
     )
   })
 
-  output$upload_tab_preview <- DT::renderDataTable(
-    upload_tab_data_display()[[input$user_data_sheet_name]],
+  output$input_data_preview_DT <- DT::renderDataTable(
+    input_data_preview()[[input$input_data_sheet_names]],
     rownames = FALSE,
     class = "table-striped",
     options = list(
       dom = "ltip",
-      columnDefs = list(
-        list(targets = 0, render = ellipsis_render(60))
-      )
+      columnDefs = list(list(targets = 0, render = ellipsis_render(60)))
     )
   )
 
-  observeEvent(upload_tab_data_1(), {
-    req(upload_tab_data_1())
+  observeEvent(input_data_raw(), {
+    req(input_data_raw())
 
     insertUI(
-      selector = "#upload_tab_placeholder_div",
+      selector = "#upload_preview_div",
       where = "afterEnd",
       ui = tagList(div(
-        id = "upload_tab_input_preview_div",
         h2("Input data preview"),
         br(),
-        DT::dataTableOutput("upload_tab_preview")
+        DT::dataTableOutput("input_data_preview_DT")
       ))
     )
   })
@@ -400,30 +387,30 @@ server <- function(input, output) {
 
   # Analysis --------------------------------------------------------------
 
-  upload_tab_data_2 <- eventReactive(upload_tab_data_1(), {
-    upload_tab_data_1() %>%
+  input_data_tidy <- eventReactive(input_data_raw(), {
+    input_data_raw() %>%
       bind_rows(.id = "assay") %>%
       mutate(across(c(cols_conc, rows_conc), forcats::fct_inseq))
   })
 
-  observeEvent(input$upload_tab_proceed_button, {
-    req(upload_tab_data_2())
-    updateNavbarPage(inputId  = "navbar", selected = "analysis_tab")
-    enable(id = "analysis_tab_submit_button")
+  observeEvent(input$proceed_abci_calculations, {
+    req(input_data_tidy())
+    updateNavbarPage(inputId = "navbar", selected = "analysis")
+    enable(id = "perform_abci_calculations")
   })
 
 
   # |- Process results ----------------------------------------------------
 
-  abci_results <- eventReactive(input$analysis_tab_submit_button, {
+  abci_results <- eventReactive(input$perform_abci_calculations, {
     abci_analysis(
-      data = upload_tab_data_2(),
+      data = input_data_tidy(),
       x.drug = "cols_conc",
       y.drug = "rows_conc",
       col.data = "bio",
       col.analysis = "assay",
       col.reps = "replicate",
-      normalize = input$analysis_tab_check_normal
+      normalize = input$normalize_radio
     )
   })
 
@@ -451,23 +438,23 @@ server <- function(input, output) {
   observeEvent(abci_results_display(), {
     req(abci_results_display())
 
-    removeUI(selector = "#analysis_tab_assay_selection")
+    removeUI(selector = "#results_names_selector_div")
     insertUI(
-      selector = "#analysis_tab_input_names_ui",
+      selector = "#results_names_ui",
       where = "afterEnd",
-      ui = tagList(div(
-        id = "analysis_tab_assay_selection",
+      ui = div(
+        id = "results_names_selector_div",
         selectInput(
-          inputId = "analysis_tab_user_data_sheet_name",
+          inputId = "results_names_selectInput",
           label = "Select an uploaded sheet to see the results:",
           choices = names(abci_results_display())
         )
-      ))
+      )
     )
   })
 
-  output$results_table_output <- DT::renderDataTable(
-    abci_results_display()[[input$analysis_tab_user_data_sheet_name]],
+  output$results_table_DT <- DT::renderDataTable(
+    abci_results_display()[[input$results_names_selectInput]],
     rownames = FALSE,
     class = "table-striped",
     options = list(
@@ -480,28 +467,27 @@ server <- function(input, output) {
   observeEvent(abci_results_display(), {
     req(abci_results_display())
     insertUI(
-      selector = "#analysis_tab_placeholder_div",
+      selector = "#results_table_div",
       where = "afterEnd",
-      ui = tagList(div(
-        id = "analysis_tab_table",
+      ui = div(
         h2("ABCi results summary"),
         br(),
-        DT::dataTableOutput("results_table_output")
-      ))
+        DT::dataTableOutput("results_table_DT")
+      )
     )
   })
 
 
   # |- Download results ---------------------------------------------------
 
-  output$abci_results_handler <- downloadHandler(
+  output$download_handler <- downloadHandler(
     filename = function() {
       paste0(
         "shinyABCi_",
         ifelse(
-          test = is.null(input$upload_tab_user_data),
+          test = is.null(input$load_user_data),
           yes = "example_data",
-          no = tools::file_path_sans_ext(input$upload_tab_user_data$name)
+          no = tools::file_path_sans_ext(input$load_user_data$name)
         ),
         "_results.csv"
       )
@@ -514,18 +500,18 @@ server <- function(input, output) {
     }
   )
 
-  observeEvent(input$analysis_tab_submit_button, {
+  observeEvent(input$perform_abci_calculations, {
     req(abci_results())
-    output$abci_results_button <- renderUI(div(
+    output$results_buttons <- renderUI(div(
       class = "d-flex gap-2 justify-content-center py-2",
       downloadButton(
-        outputId = "abci_results_handler",
+        outputId = "download_handler",
         label = "Download your results",
         class = "btn btn-success align-items-center",
         style = "width: 50%"
       ),
       actionButton(
-        inputId = "analysis_tab_vis_button",
+        inputId = "visualize_your_results",
         label = "Visualize your results",
         class = "btn btn-primary btn-tooltip align-items-center",
         icon = icon("arrow-right"),
@@ -537,11 +523,8 @@ server <- function(input, output) {
 
   # Visualize -------------------------------------------------------------
 
-  observeEvent(input$analysis_tab_vis_button, {
-    updateNavbarPage(
-      inputId  = "navbar",
-      selected = "vis_tab"
-    )
+  observeEvent(input$visualize_your_results, {
+    updateNavbarPage(inputId  = "navbar", selected = "visualize")
   })
 
   abci_plot_data <- reactive(abci_results())
@@ -685,7 +668,7 @@ server <- function(input, output) {
           label = NULL,
           inline = TRUE,
           choices = c("X", "Y"),
-          selected = if (input$analysis_tab_check_normal) c("X", "Y")
+          selected = if (input$normalize_radio) c("X", "Y")
         )
       ),
 
@@ -894,7 +877,7 @@ server <- function(input, output) {
           label = NULL,
           inline = TRUE,
           choices = c("X", "Y"),
-          selected = if (input$analysis_tab_check_normal) c("X", "Y")
+          selected = if (input$normalize_radio) c("X", "Y")
         )
       ),
 
@@ -1050,7 +1033,7 @@ server <- function(input, output) {
           label = NULL,
           inline = TRUE,
           choices = c("X", "Y"),
-          selected = if (input$analysis_tab_check_normal) c("X", "Y")
+          selected = if (input$normalize_radio) c("X", "Y")
         )
       ),
 
@@ -1370,7 +1353,7 @@ server <- function(input, output) {
 
   # |- renderPlot calls ---------------------------------------------------
 
-  observeEvent(input$draw, {
+  observeEvent(input$create_plot, {
     req(abci_plot_data())
 
     output$abci_plot <- renderPlot(
@@ -1483,7 +1466,7 @@ server <- function(input, output) {
 
   # |- plotOutput call ----------------------------------------------------
 
-  observeEvent(input$draw, {
+  observeEvent(input$create_plot, {
     req(abci_plot_data())
 
     plot_width <- ifelse(abci_plot_dims()[[1]] == 1, "67%", "100%")
@@ -1494,7 +1477,7 @@ server <- function(input, output) {
       plot_height <- paste0(100 + (300 * abci_plot_dims()[[2]]), "px")
     }
 
-    output$vis_tab_plot_ui <- renderUI(
+    output$abci_plot_ui <- renderUI(
       plotOutput(
         outputId = "abci_plot",
         height = plot_height,
