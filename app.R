@@ -296,17 +296,27 @@ ui <- page_fluid(
 server <- function(input, output) {
 
   observeEvent(input$notification_test, {
-    showNotification(ui = "Test message", duration = NULL, type = "message")
+    # lapply(
+    #   cli::cli_progress_along(c(1, 10), "Testing progress message..."),
+    #   function(i) {
+    #     Sys.sleep(i * 10)
+    # })
+    showNotification(
+      type = "message",
+      duration = NULL,
+      ui = HTML(paste0(
+        "<h4 class='alert-heading'>Hello!</h4>",
+        "<p class='mb-0'> This is a test notification, designed to see how ",
+        "notifications look.</p>"
+      ))
+    )
   })
 
 
   # Upload ----------------------------------------------------------------
 
   observeEvent(input$get_started, {
-    updateNavbarPage(
-      inputId  = "navbar",
-      selected = "upload"
-    )
+    updateNavbarPage(inputId = "navbar", selected = "upload")
   })
 
   input_data_raw <- reactiveVal()
@@ -739,7 +749,6 @@ server <- function(input, output) {
   output$plot_inputs_tile_split <- renderUI({
     list(
       br(),
-
       wrap_selector(
         label = actionLink("tile_split_preview_colours", label = "ABCi colours"),
         label_title = "Colour palette to use for the ABCi values",
@@ -920,7 +929,6 @@ server <- function(input, output) {
   output$plot_inputs_tile_dot <- renderUI({
     list(
       br(),
-
       wrap_selector(
         label = actionLink("dot_preview_colours", label = "ABCi colours"),
         label_title = "Colour palette to use for the ABCi values",
@@ -1076,7 +1084,6 @@ server <- function(input, output) {
   output$plot_inputs_line <- renderUI({
     list(
       br(),
-
       wrap_selector(
         label = "Line type",
         label_title = "Type of line plot to draw",
@@ -1410,8 +1417,12 @@ server <- function(input, output) {
 
         if (max(abci_plot_data()$bio_normal) > 1.5 ) {
           showNotification(
-            ui = "Squishing values over 1.5",
-            type = "warning"
+            type = "warning",
+            duration = 10,
+            ui = HTML(paste0(
+              "<h4 class='alert-heading'>Warning!</h4>",
+              "<p class='mb-0'>Values above 1.5 have been squished.</p>"
+            ))
           )
         }
         abci_plot_line(
