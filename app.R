@@ -329,7 +329,14 @@ server <- function(input, output) {
       abci_reader("example_data/example_data_lucas.xlsx") %>%
         input_data_raw()
     } else {
-      showNotification("Example data not found!", type = "error")
+      showNotification(
+        type = "error",
+        duration = 10,
+        ui = HTML(paste0(
+          "<h4 class='alert-heading'>Error!</h4>",
+          "<p class='mb-0'>Example data not found.</p>"
+        ))
+      )
     }
   })
 
