@@ -625,7 +625,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X compound",
-        label_title = "Compound on the x-axis",
+        label_title = "Compound to plot on the x-axis",
         selectInput(
           inputId = "plot_tile_x_drug",
           label = NULL,
@@ -638,8 +638,8 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "X axis label",
-        label_title = "Label for the x-axis; applies to the entire plot",
+        label = "X axis title",
+        label_title = "Title for the x-axis; applies to the entire plot",
         textInput(
           inputId = "plot_tile_x_text",
           label = NULL,
@@ -649,7 +649,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis digits",
-        label_title = "Number of decimal places to show for the x-axis",
+        label_title = "Number of decimal places to show for concentrations on the x-axis",
         numericInput(
           inputId = "plot_tile_x_decimal",
           label = NULL,
@@ -662,7 +662,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y compound",
-        label_title = "Compound on the y-axis",
+        label_title = "Compound to plot on the y-axis",
         selectInput(
           inputId = "plot_tile_y_drug",
           label = NULL,
@@ -680,8 +680,8 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Y axis label",
-        label_title = "Label for the y-axis; applies to the entire plot",
+        label = "Y axis title",
+        label_title = "Title for the y-axis; applies to the entire plot",
         textInput(
           inputId = "plot_tile_y_text",
           label = NULL,
@@ -691,7 +691,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y axis digits",
-        label_title = "Number of decimal places to show for the y-axis",
+        label_title = "Number of decimal places to show for concentrations on the y-axis",
         numericInput(
           inputId = "plot_tile_y_decimal",
           label = NULL,
@@ -703,8 +703,11 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Scales",
-        label_title = "Should axis scales be 'Free', 'Fixed', or free in only one dimension?",
+        label = "Axis labels",
+        label_title = paste0(
+          "Across the plot facets, should the x- and y-axis labels vary ",
+          "(Free) or be the same (Fixed)?"
+        ),
         selectInput(
           inputId = "plot_tile_scales",
           label = NULL,
@@ -713,8 +716,11 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Flag low killing cutoff",
-        label_title = "Flag cells which don't kill much biofilm. Set to 0 to hide.",
+        label = "Highlight low killing",
+        label_title = paste0(
+          "Draw a symbol on cells which kill less than the indicated ",
+          "percentage. Zero hides the symbols."
+        ),
         numericInput(
           inputId = "plot_tile_min_flag",
           label = NULL,
@@ -725,8 +731,8 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Draw MICs",
-        label_title = "Include MIC lines on x- or y-axis",
+        label = "Draw MIC lines",
+        label_title = "Include lines to indicate MIC for the x- and y-axis",
         checkboxGroupInput(
           inputId = "plot_tile_mic_lines",
           label = NULL,
@@ -777,8 +783,8 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Split type",
-        label_title = "Type of splitting/filtering to apply",
+        label = "Split type", # TODO
+        label_title = "Type of splitting/filtering to apply", # TODO
         input_switch(
           id = "plot_tile_split_strict",
           label = "Strict",
@@ -788,7 +794,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X compound",
-        label_title = "Compound on the x-axis",
+        label_title = "Compound to plot on the x-axis",
         selectInput(
           inputId = "plot_tile_split_x_drug",
           label = NULL,
@@ -801,8 +807,8 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "X axis label",
-        label_title = "Label for the x-axis; applies to the entire plot",
+        label = "X axis title",
+        label_title = "Title for the x-axis; applies to the entire plot",
         textInput(
           inputId = "plot_tile_split_x_text",
           label = NULL,
@@ -812,7 +818,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis digits",
-        label_title = "Number of decimal places to show for the x-axis",
+        label_title = "Number of decimal places to show for concentrations the x-axis",
         numericInput(
           inputId = "plot_tile_split_x_decimal",
           label = NULL,
@@ -843,8 +849,8 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Y axis label",
-        label_title = "Label for the y-axis; applies to the entire plot",
+        label = "Y axis title",
+        label_title = "Title for the y-axis; applies to the entire plot",
         textInput(
           inputId = "plot_tile_split_y_text",
           label = NULL,
@@ -854,7 +860,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y axis digits",
-        label_title = "Number of decimal places to show for the y-axis",
+        label_title = "Number of decimal places to show for concentrations the y-axis",
         numericInput(
           inputId = "plot_tile_split_y_decimal",
           label = NULL,
@@ -866,8 +872,11 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Scales",
-        label_title = "Should axis scales be 'Free', 'Fixed', or free in only one dimension?",
+        label = "Axis labels",
+        label_title = paste0(
+          "Across the plot facets, should the x- and y-axis labels vary ",
+          "(Free) or be the same (Fixed)?"
+        ),
         selectInput(
           inputId = "plot_tile_split_scales",
           label = NULL,
@@ -877,8 +886,11 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Flag low killing",
-        label_title = "Flag cells which don't kill much biofilm. Set to 0 to hide.",
+        label = "Highlight low killing",
+        label_title = paste0(
+          "Draw a symbol on cells which kill less than the indicated ",
+          "percentage. Zero hides the symbols."
+        ),
         numericInput(
           inputId = "plot_tile_split_min_flag",
           label = NULL,
@@ -889,8 +901,8 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Draw MICs",
-        label_title = "Include MIC lines on x- or y-axis",
+        label = "Draw MIC lines",
+        label_title = "Include lines to indicate MIC for the x- and y-axis",
         checkboxGroupInput(
           inputId = "plot_tile_split_mic_lines",
           label = NULL,
@@ -955,8 +967,8 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "X axis label",
-        label_title = "Label for the x-axis; applies to the entire plot",
+        label = "X axis title",
+        label_title = "Title for the x-axis; applies to the entire plot",
         textInput(
           inputId = "plot_dot_x_text",
           label = NULL,
@@ -966,7 +978,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis digits",
-        label_title = "Number of decimal places to show for the x-axis",
+        label_title = "Number of decimal places to show for concentrations the x-axis",
         numericInput(
           inputId = "plot_dot_x_decimal",
           label = NULL,
@@ -997,8 +1009,8 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Y axis label",
-        label_title = "Label for the y-axis; applies to the entire plot",
+        label = "Y axis title",
+        label_title = "Title for the y-axis; applies to the entire plot",
         textInput(
           inputId = "plot_dot_y_text",
           label = NULL,
@@ -1008,7 +1020,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y axis digits",
-        label_title = "Number of decimal places to show for the y-axis",
+        label_title = "Number of decimal places to show for concentrations the y-axis",
         numericInput(
           inputId = "plot_dot_y_decimal",
           label = NULL,
@@ -1020,8 +1032,11 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Scales",
-        label_title = "Should axis scales be 'Free', 'Fixed', or free in only one dimension?",
+        label = "Axis labels",
+        label_title = paste0(
+          "Across the plot facets, should the x- and y-axis labels vary ",
+          "(Free) or be the same (Fixed)?"
+        ),
         selectInput(
           inputId = "plot_dot_scales",
           label = NULL,
@@ -1031,8 +1046,8 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Draw MICs",
-        label_title = "Include MIC lines on x- or y-axis",
+        label = "Draw MIC lines",
+        label_title = "Include lines to indicate MIC for the x- and y-axis",
         checkboxGroupInput(
           inputId = "plot_dot_mic_lines",
           label = NULL,
@@ -1044,7 +1059,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "MIC cutoff",
-        label_title = "Threshold for calculating MICs; applies to x- and y-axis compounds",
+        label_title = "Threshold for calculating MICs; applies to x- and y-axis",
         numericInput(
           inputId = "plot_dot_mic_threshold",
           label = NULL,
@@ -1073,7 +1088,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Line type",
-        label_title = "Line type",
+        label_title = "Type of line plot to draw",
         radioButtons(
           inputId = "plot_line_type",
           label = NULL,
@@ -1101,8 +1116,8 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "X axis label",
-        label_title = "Label for the x-axis; applies to the entire plot",
+        label = "X axis title",
+        label_title = "Title for the x-axis; applies to the entire plot",
         textInput(
           inputId = "plot_line_x_text",
           label = NULL,
@@ -1112,7 +1127,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis digits",
-        label_title = "Number of decimal places to show for the x-axis",
+        label_title = "Number of decimal places to show for concentrations the x-axis",
         numericInput(
           inputId = "plot_line_x_decimal",
           label = NULL,
@@ -1125,7 +1140,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Line compound",
-        label_title = "Compound mapped to different lines",
+        label_title = "Compound mapped to different lines and colours",
         selectInput(
           inputId = "plot_line_line_drug",
           label = NULL,
@@ -1143,8 +1158,8 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Included conc.",
-        label_title = "Concentrations to plot as lines",
+        label = "Included concentrations",
+        label_title = "Concentrations to include in the plot as lines",
         selectInput(
           inputId = "plot_line_line_include",
           label = NULL,
@@ -1154,8 +1169,8 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Line label",
-        label_title = "Label for the line legend",
+        label = "Line title",
+        label_title = "Title for the line/colour legend",
         textInput(
           inputId = "plot_line_line_text",
           label = NULL,
@@ -1165,7 +1180,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Line digits",
-        label_title = "Number of decimal places to show for the line compound",
+        label_title = "Number of decimal places to show for the compound plotted as lines",
         numericInput(
           inputId = "plot_line_line_decimal",
           label = NULL,
@@ -1178,7 +1193,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = actionLink("line_preview_colours", label = "Line colours"),
-        label_title = "Colour palette to map to lines/concentrations",
+        label_title = "Colour palette to map to concentrations, each as a separate line",
         selectInput(
           inputId = "plot_line_colour_palette",
           label = NULL,
@@ -1187,8 +1202,11 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Scales",
-        label_title = "Should axis scales be 'Free', 'Fixed', or free in only one dimension?",
+        label = "Axis labels",
+        label_title = paste0(
+          "Across the plot facets, should the x- and y-axis labels vary ",
+          "(Free) or be the same (Fixed)?"
+        ),
         selectInput(
           inputId = "plot_line_scales",
           label = NULL,
@@ -1197,8 +1215,8 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Y axis label",
-        label_title = "Label for the y-axis; applies to the entire plot",
+        label = "Y axis title",
+        label_title = "Title for the y-axis; applies to the entire plot",
         textInput(
           inputId = "plot_line_y_text",
           label = NULL,
@@ -1207,18 +1225,18 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "X values",
-        label_title = "Apply a 'jitter' along the x-axis to prevent overlapping lines",
+        label = "X-axis jitter",
+        label_title = "Nudge values along the x-axis to prevent overlapping lines",
         input_switch(
           id = "plot_line_jitter_x",
-          label = "Jitter",
+          label = "Enable jitter",
           value = TRUE
         )
       ),
 
       wrap_selector(
-        label = "Draw MICs",
-        label_title = "Include MIC lines on x- or y-axis",
+        label = "Draw MIC lines",
+        label_title = "Include lines to indicate MIC for the x-axis",
         checkboxGroupInput(
           inputId = "plot_line_mic_lines",
           label = NULL,
@@ -1230,7 +1248,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "MIC cutoff",
-        label_title = "Threshold for calculating MICs; applies to x- and y-axis compounds",
+        label_title = "Threshold for calculating MICs; applies to x-axis",
         numericInput(
           inputId = "plot_line_mic_threshold",
           label = NULL,
