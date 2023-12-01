@@ -655,7 +655,7 @@ abci_plot_dot <- function(
     col.mic,
     mic.threshold = 0.5,
     delta = FALSE,
-    colour.palette = "YP",
+    colour.palette = "BOB",
     colour.na = "white",
     scale.limits = c(-2.0, 2.0),
     scale.breaks = seq(2, -2, -0.5),

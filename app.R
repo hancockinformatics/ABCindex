@@ -596,6 +596,14 @@ server <- function(input, output) {
     "Free Y, Fixed X" = "free_y"
   )
 
+  conc_columns <- reactive(
+    grep(
+      x = colnames(abci_plot_data()),
+      pattern = "conc",
+      value = TRUE
+    )
+  )
+
 
   # |-- Tile --------------------------------------------------------------
 
@@ -619,11 +627,7 @@ server <- function(input, output) {
         selectInput(
           inputId = "plot_tile_x_drug",
           label = NULL,
-          choices = grep(
-            x = colnames(abci_plot_data()),
-            pattern = "conc",
-            value = TRUE
-          )
+          choices = conc_columns()
         )
       ),
 
@@ -656,16 +660,8 @@ server <- function(input, output) {
         selectInput(
           inputId = "plot_tile_y_drug",
           label = NULL,
-          choices = grep(
-            x = colnames(abci_plot_data()),
-            pattern = "conc",
-            value = TRUE
-          ),
-          selected = grep(
-            x = colnames(abci_plot_data()),
-            pattern = "conc",
-            value = TRUE
-          )[2]
+          choices = conc_columns(),
+          selected = conc_columns()[2]
         )
       ),
 
@@ -777,11 +773,7 @@ server <- function(input, output) {
         selectInput(
           inputId = "plot_tile_split_x_drug",
           label = NULL,
-          choices = grep(
-            x = colnames(abci_plot_data()),
-            pattern = "conc",
-            value = TRUE
-          )
+          choices = conc_columns()
         )
       ),
 
@@ -814,16 +806,8 @@ server <- function(input, output) {
         selectInput(
           inputId = "plot_tile_split_y_drug",
           label = NULL,
-          choices = grep(
-            x = colnames(abci_plot_data()),
-            pattern = "conc",
-            value = TRUE
-          ),
-          selected = grep(
-            x = colnames(abci_plot_data()),
-            pattern = "conc",
-            value = TRUE
-          )[2]
+          choices = conc_columns(),
+          selected = conc_columns()[2]
         )
       ),
 
@@ -926,11 +910,7 @@ server <- function(input, output) {
         selectInput(
           inputId = "plot_dot_x_drug",
           label = NULL,
-          choices = grep(
-            x = colnames(abci_plot_data()),
-            pattern = "conc",
-            value = TRUE
-          )
+          choices = conc_columns()
         )
       ),
 
@@ -963,16 +943,8 @@ server <- function(input, output) {
         selectInput(
           inputId = "plot_dot_y_drug",
           label = NULL,
-          choices = grep(
-            x = colnames(abci_plot_data()),
-            pattern = "conc",
-            value = TRUE
-          ),
-          selected = grep(
-            x = colnames(abci_plot_data()),
-            pattern = "conc",
-            value = TRUE
-          )[2]
+          choices = conc_columns(),
+          selected = conc_columns()[2]
         )
       ),
 
@@ -1064,11 +1036,7 @@ server <- function(input, output) {
         selectInput(
           inputId = "plot_line_x_drug",
           label = NULL,
-          choices = grep(
-            x = colnames(abci_plot_data()),
-            pattern = "conc",
-            value = TRUE
-          )
+          choices = conc_columns()
         )
       ),
 
@@ -1101,16 +1069,8 @@ server <- function(input, output) {
         selectInput(
           inputId = "plot_line_line_drug",
           label = NULL,
-          choices = grep(
-            x = colnames(abci_plot_data()),
-            pattern = "conc",
-            value = TRUE
-          ),
-          selected = grep(
-            x = colnames(abci_plot_data()),
-            pattern = "conc",
-            value = TRUE
-          )[2]
+          choices = conc_columns(),
+          selected = conc_columns()[2]
         )
       ),
 
@@ -1288,7 +1248,7 @@ server <- function(input, output) {
     output$abci_plot <- renderPlot(
       if (isolate(input$visualize_tabs) == "tile") {
         abci_plot_tile(
-          data = abci_plot_data(),
+          data = isolate(abci_plot_data()),
           x.drug = isolate(input$plot_tile_x_drug),
           y.drug = isolate(input$plot_tile_y_drug),
           col.fill = "abci_avg",
@@ -1311,7 +1271,7 @@ server <- function(input, output) {
 
       } else if (isolate(input$visualize_tabs) == "dot") {
         abci_plot_dot(
-          data = abci_plot_data(),
+          data = isolate(abci_plot_data()),
           x.drug = isolate(input$plot_dot_x_drug),
           y.drug = isolate(input$plot_dot_y_drug),
           col.fill = "abci_avg",
@@ -1348,7 +1308,7 @@ server <- function(input, output) {
           )
         }
         abci_plot_line(
-          data = abci_plot_data(),
+          data = isolate(abci_plot_data()),
           plot.type = isolate(input$plot_line_type),
           x.drug = isolate(input$plot_line_x_drug),
           line.drug = isolate(input$plot_line_line_drug),
@@ -1371,7 +1331,7 @@ server <- function(input, output) {
 
       } else if (isolate(input$visualize_tabs) == "tile_split") {
         abci_plot_tile_split(
-          data = abci_plot_data(),
+          data = isolate(abci_plot_data()),
           x.drug = isolate(input$plot_tile_split_x_drug),
           y.drug = isolate(input$plot_tile_split_y_drug),
           col.fill = "abci_avg",
