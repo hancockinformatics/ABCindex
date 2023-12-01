@@ -174,13 +174,10 @@ ui <- page_fluid(
             ),
 
             p("Information about interpreting the results."),
-
-            uiOutput("results_names_ui"),
-            uiOutput("results_buttons")
+            uiOutput("results_names_buttons")
           ),
 
           uiOutput("results_table_div")
-          # div(id = "results_table_div")
         )
       )
     ),
@@ -474,15 +471,6 @@ server <- function(input, output) {
 
   # |- Update the sidebar -------------------------------------------------
 
-  output$results_names_ui <- renderUI({
-    abci_results_display()
-    selectInput(
-      inputId = "results_names_selectInput",
-      label = "Select an uploaded sheet to see the results:",
-      choices = names(abci_results_display())
-    )
-  })
-
   output$download_handler <- downloadHandler(
     filename = function() {
       paste0(
@@ -504,23 +492,33 @@ server <- function(input, output) {
   )
 
   observeEvent(input$perform_abci_calculations, {
-    req(abci_results())
-    output$results_buttons <- renderUI(div(
-      class = "d-flex gap-2 justify-content-center py-2",
-      downloadButton(
-        outputId = "download_handler",
-        label = "Download your results",
-        class = "btn btn-success align-items-center",
-        style = "width: 50%"
-      ),
-      actionButton(
-        inputId = "visualize_your_results",
-        label = "Visualize your results",
-        class = "btn btn-primary btn-tooltip align-items-center",
-        icon = icon("arrow-right"),
-        width = "50%"
+    req(abci_results(), abci_results_display())
+
+    output$results_names_buttons <- renderUI(
+      tagList(
+        selectInput(
+          inputId = "results_names_selectInput",
+          label = "Select an uploaded sheet to see the results:",
+          choices = names(abci_results_display())
+        ),
+        div(
+          class = "d-flex gap-2 justify-content-center py-2",
+          downloadButton(
+            outputId = "download_handler",
+            label = "Download your results",
+            class = "btn btn-success align-items-center",
+            style = "width: 50%"
+          ),
+          actionButton(
+            inputId = "visualize_your_results",
+            label = "Visualize your results",
+            class = "btn btn-primary btn-tooltip align-items-center",
+            icon = icon("arrow-right"),
+            width = "50%"
+          )
+        )
       )
-    ))
+    )
   })
 
 
@@ -1389,4 +1387,5 @@ server <- function(input, output) {
 
 # Run the application -----------------------------------------------------
 
+message("\n=========================\n")
 shinyApp(ui = ui, server = server)
