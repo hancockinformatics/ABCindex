@@ -39,3 +39,41 @@
   font-size: 15px;
   line-height: 18px;
 }
+
+/* Customize shiny notifications */
+#shiny-notification-panel {
+  width: 400px;
+}
+.shiny-progress-notification .progress-text .progress-message {
+  font-size: 110%;
+  font-weight: normal;
+  color: #161718;
+}
+.shiny-notification-close {
+  font-size: 32px;
+  padding-right: 4px;
+}
+.shiny-notification-default {
+  color: #161718;
+  background: #495057;
+  border: 0;
+  font-size: 1rem;
+}
+.shiny-notification-message {
+  color: #10335b;
+  background: #d4e6f9;
+  border: 0;
+  font-size: 1rem;
+}
+.shiny-notification-warning {
+  color: #662f0a;
+  background: #ffc8a3;
+  border: 0;
+  font-size: 1rem;
+}
+.shiny-notification-error {
+  color: #660017;
+  background: #ff99b0;
+  border: 0;
+  font-size: 1rem;
+}

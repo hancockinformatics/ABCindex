@@ -16,7 +16,7 @@
 #' @description Uses the provided data frame to determine the Minimum Inhibitory
 #'   Concentration (MIC), based on a desired threshold.
 #'
-abci.mic <- function(
+abci_mic <- function(
     data,
     x.drug,
     y.drug,

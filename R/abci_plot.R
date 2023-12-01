@@ -69,7 +69,7 @@ theme_set(
 #'   `col.analysis` argument can be used to create facets to compare different
 #'   assays.
 #'
-abci.plot.tile <- function(
+abci_plot_tile <- function(
     data,
     x.drug,
     y.drug,
@@ -115,7 +115,7 @@ abci.plot.tile <- function(
   upper <- max(scale.limits)
   lower <- min(scale.limits)
 
-  plot.palette <- preset.palettes[[colour.palette]]
+  plot.palette <- preset_palettes[[colour.palette]]
 
   colour.pointers <-
     if (colour.palette %in% c("PAN", "SUN", "BOB")) {
@@ -139,7 +139,7 @@ abci.plot.tile <- function(
     )
   }
 
-  # MICs are calculated by `abci.mic()` and recovered as a data frame. Drug
+  # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
   # concentrations need to be converted to positions on their respective axes,
   # as the `geom_(x|y)line` functions only work by position. And since we don't
   # plot zero concentrations, we need to subtract one from the level to end up
@@ -147,7 +147,7 @@ abci.plot.tile <- function(
   if (any(x.mic.line, y.mic.line)) {
 
     if (is.null(col.analysis)) {
-      mic.table <- abci.mic(
+      mic.table <- abci_mic(
         data = data,
         x.drug = x.drug,
         y.drug = y.drug,
@@ -165,7 +165,7 @@ abci.plot.tile <- function(
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
-        result.mic <- abci.mic(
+        result.mic <- abci_mic(
           data = d,
           x.drug = x.drug,
           y.drug = y.drug,
@@ -209,7 +209,7 @@ abci.plot.tile <- function(
       )
     }} +
 
-    {if (minflag) geom_text(aes(label = min), size = 8)} +
+    {if (minflag) geom_text(aes(label = min), size = 6)} +
 
     {if (x.mic.line) {
       geom_vline(data = mic.table, aes(xintercept = XLAB))
@@ -272,13 +272,13 @@ abci.plot.tile <- function(
       )
     }} +
 
-    {if (x.decimal > 2) {
+    {if (x.decimal > 1) {
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
     }}
 }
 
 
-#' abci.plot.tile.split
+#' abci_plot_tile_split
 #'
 #' @param data Data frame, as output by `abci.analysis()`
 #' @param x.drug Character; Column containing concentrations of the first drug
@@ -328,7 +328,7 @@ abci.plot.tile <- function(
 #' ABCi values, producing two plots instead of one. How the splitting/filtering
 #' is done is controlled via the `strict` argument.
 #'
-abci.plot.tile.split <- function(
+abci_plot_tile_split <- function(
     data,
     x.drug,
     y.drug,
@@ -375,7 +375,7 @@ abci.plot.tile.split <- function(
   upper <- max(scale.limits)
   lower <- min(scale.limits)
 
-  plot.palette <- preset.palettes.split[[colour.palette]]
+  plot.palette <- preset_palettes_split[[colour.palette]]
 
   colour.pointers <- list(
     "up" = scales::rescale(
@@ -397,7 +397,7 @@ abci.plot.tile.split <- function(
     )
   }
 
-  # MICs are calculated by `abci.mic()` and recovered as a data frame. Drug
+  # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
   # concentrations need to be converted to positions on their respective axes,
   # as the `geom_(x|y)line` functions only work by position. And since we don't
   # plot zero concentrations, we need to subtract one from the level to end up
@@ -405,7 +405,7 @@ abci.plot.tile.split <- function(
   if (any(x.mic.line, y.mic.line)) {
 
     if (is.null(col.analysis)) {
-      mic.table <- abci.mic(
+      mic.table <- abci_mic(
         data = data,
         x.drug = x.drug,
         y.drug = y.drug,
@@ -423,7 +423,7 @@ abci.plot.tile.split <- function(
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
-        result.mic <- abci.mic(
+        result.mic <- abci_mic(
           data = d,
           x.drug = x.drug,
           y.drug = y.drug,
@@ -573,7 +573,7 @@ abci.plot.tile.split <- function(
         )
       }} +
 
-      {if (x.decimal > 2) {
+      {if (x.decimal > 1) {
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
       }} +
       theme(legend.key.height = unit(7, "mm"))
@@ -592,8 +592,6 @@ abci.plot.tile.split <- function(
 #' @param col.size Character; Column containing values to map to dot size
 #' @param col.analysis Character; Optional column denoting different analyses,
 #'   by which to facet the plot
-#' @param split Logical; Should two graphs be drawn, for positive and negative
-#'   ABCi values? Defaults to FALSE.
 #' @param size.range Range of dot size, defaults to `c(3, 22)`
 #' @param scales Should the scales be "fixed" (default), "free", "free_x", or
 #'   "free_y"? See `?facet_wrap` for more details.
@@ -628,7 +626,7 @@ abci.plot.tile.split <- function(
 #' @return A ggplot2 object#'
 #' @export
 #'
-#' @description A secondary graphing function. Similar to `abci.plot.tile()`,
+#' @description A secondary graphing function. Similar to `abci_plot_tile()`,
 #'   but the amount of biofilm killed (typically "effect" column) is mapped to
 #'   dot siz. It takes the data produced by `abci.analysis()`. If requested,
 #'   this function will calculate the MICs for the individual drugs (to make
@@ -636,14 +634,13 @@ abci.plot.tile.split <- function(
 #'   zero values and with the right significant digits. The `col.analysis`
 #'   argument can be used to create facets to compare different assays.
 #'
-abci.plot.dot <- function(
+abci_plot_dot <- function(
     data,
     x.drug,
     y.drug,
     col.fill,
     col.size,
     col.analysis = NULL,
-    split = FALSE,
     size.range = c(3, 15),
     scales = "fixed",
     n.rows = NULL,
@@ -658,7 +655,7 @@ abci.plot.dot <- function(
     col.mic,
     mic.threshold = 0.5,
     delta = FALSE,
-    colour.palette = "YP",
+    colour.palette = "BOB",
     colour.na = "white",
     scale.limits = c(-2.0, 2.0),
     scale.breaks = seq(2, -2, -0.5),
@@ -681,36 +678,20 @@ abci.plot.dot <- function(
   upper <- max(scale.limits)
   lower <- min(scale.limits)
 
-  if (!split) {
-    plot.palette <- preset.palettes[[colour.palette]]
+  plot.palette <- preset_palettes[[colour.palette]]
 
-    colour.pointers <-
-      if (colour.palette %in% c("PAN", "SUN", "BOB")) {
-        scales::rescale(
-          c(upper, upper / 2, upper / 4, upper / 8, 0, lower / 4, lower / 2, lower),
-          to = c(0, 1)
-        )
-      } else {
-        scales::rescale(
-          c(upper, 3 * upper / 4, upper / 2, upper / 4, 0, lower / 4, 3 * lower / 4, lower),
-          to = c(0, 1)
-        )
-      }
-
-  } else {
-    plot.palette <- preset.palettes.split[[colour.palette]]
-
-    colour.pointers <- list(
-      up = scales::rescale(
-        c(upper, 3 * upper / 4, upper / 2, upper / 4, 0),
-        to = c(0, 1)
-      ),
-      down = scales::rescale(
-        c(lower, 3 * lower / 4, lower / 2, lower / 4, 0),
+  colour.pointers <-
+    if (colour.palette %in% c("PAN", "SUN", "BOB")) {
+      scales::rescale(
+        c(upper, upper / 2, upper / 4, upper / 8, 0, lower / 4, lower / 2, lower),
         to = c(0, 1)
       )
-    )
-  }
+    } else {
+      scales::rescale(
+        c(upper, 3 * upper / 4, upper / 2, upper / 4, 0, lower / 4, 3 * lower / 4, lower),
+        to = c(0, 1)
+      )
+    }
 
   if (delta) {
     scale.limits <- c(-100, 100)
@@ -723,13 +704,13 @@ abci.plot.dot <- function(
   }
 
 
-  # MICs are calculated by `abci.mic()` and recovered as a data frame. Drug
+  # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
   # concentrations need to be converted to positions on their respective axes,
   # as the `geom_(x|y)line` functions only work by position.
   if (any(x.mic.line, y.mic.line)) {
 
     if (is.null(col.analysis)) {
-      mic.table <- abci.mic(
+      mic.table <- abci_mic(
         data = data,
         x.drug = x.drug,
         y.drug = y.drug,
@@ -747,7 +728,7 @@ abci.plot.dot <- function(
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
-        result.mic <- abci.mic(
+        result.mic <- abci_mic(
           data = d,
           x.drug = x.drug,
           y.drug = y.drug,
@@ -827,7 +808,10 @@ abci.plot.dot <- function(
       name = "Biofilm\nkilled",
       range = size.range,
       trans = scales::exp_trans(base = 2),
-      labels = ~paste0(.x * 10, "%")
+      breaks = seq(0, 10, 2),
+      limits = c(0, 10),
+      labels = ~paste0(.x * 10, "%"),
+      guide = guide_legend(keyheight = unit(10, "mm"))
     ) +
 
     {if (add.axis.lines) {
@@ -852,7 +836,7 @@ abci.plot.dot <- function(
       )
     }} +
 
-    {if (x.decimal > 2) {
+    {if (x.decimal > 1) {
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
     }}
 }
@@ -903,7 +887,7 @@ abci.plot.dot <- function(
 #'   a function of the concentration of two drugs - one on the x-axis, the other
 #'   as differently coloured lines.
 #'
-abci.plot.line <- function(
+abci_plot_line <- function(
     data,
     x.drug,
     col.data,
@@ -972,7 +956,7 @@ abci.plot.line <- function(
   if (x.mic.line) {
 
     if (is.null(col.analysis)) {
-      mic.table <- abci.mic(
+      mic.table <- abci_mic(
         data = data,
         x.drug = x.drug,
         y.drug = line.drug,
@@ -986,7 +970,7 @@ abci.plot.line <- function(
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
-        result.mic <- abci.mic(
+        result.mic <- abci_mic(
           data = d,
           x.drug = x.drug,
           y.drug = line.drug,
@@ -1129,7 +1113,7 @@ abci.plot.line <- function(
 
     theme(legend.key.height = NULL) +
 
-    {if (x.decimal > 2) {
+    {if (x.decimal > 1) {
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
     }}
 }
