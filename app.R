@@ -76,8 +76,7 @@ ui <- page_fluid(
               )
             ),
 
-            br(),
-            br(),
+            hr(),
             actionButton("notification_test", label = "Notification test")
           )
         )
@@ -887,6 +886,14 @@ server <- function(input, output) {
     )
   })
 
+  observeEvent(input$plot_tile_split_strict, {
+    if (input$plot_tile_split_strict) {
+      update_switch("plot_tile_split_strict", label = "Strict")
+    } else {
+      update_switch("plot_tile_split_strict", label = "Loose")
+    }
+  })
+
 
   # |-- Dot ---------------------------------------------------------------
 
@@ -1146,7 +1153,7 @@ server <- function(input, output) {
         label_title = "Nudge values along the x-axis to prevent overlapping lines",
         input_switch(
           id = "plot_line_jitter_x",
-          label = "Enable jitter",
+          label = "On",
           value = TRUE
         )
       ),
@@ -1173,6 +1180,14 @@ server <- function(input, output) {
         )
       )
     )
+  })
+
+  observeEvent(input$plot_line_jitter_x, {
+    if (input$plot_line_jitter_x) {
+      update_switch("plot_line_jitter_x", label = "On")
+    } else {
+      update_switch("plot_line_jitter_x", label = "Off")
+    }
   })
 
 
