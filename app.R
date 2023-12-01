@@ -708,7 +708,7 @@ server <- function(input, output) {
           label = NULL,
           inline = TRUE,
           choices = c("X", "Y"),
-          selected = if (input$normalize_radio) c("X", "Y")
+          selected = c("X", "Y")
         )
       ),
 
@@ -855,7 +855,7 @@ server <- function(input, output) {
           label = NULL,
           inline = TRUE,
           choices = c("X", "Y"),
-          selected = if (input$normalize_radio) c("X", "Y")
+          selected = c("X", "Y")
         )
       ),
 
@@ -1000,7 +1000,7 @@ server <- function(input, output) {
           label = NULL,
           inline = TRUE,
           choices = c("X", "Y"),
-          selected = if (input$normalize_radio) c("X", "Y")
+          selected = c("X", "Y")
         )
       ),
 
