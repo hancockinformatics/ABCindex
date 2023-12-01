@@ -174,11 +174,13 @@ ui <- page_fluid(
             ),
 
             p("Information about interpreting the results."),
-            div(id = "results_names_ui"),
+
+            uiOutput("results_names_ui"),
             uiOutput("results_buttons")
           ),
 
-          div(id = "results_table_div")
+          uiOutput("results_table_div")
+          # div(id = "results_table_div")
         )
       )
     ),
@@ -449,24 +451,6 @@ server <- function(input, output) {
       )
   })
 
-  observeEvent(abci_results_display(), {
-    req(abci_results_display())
-
-    removeUI(selector = "#results_names_selector_div")
-    insertUI(
-      selector = "#results_names_ui",
-      where = "afterEnd",
-      ui = div(
-        id = "results_names_selector_div",
-        selectInput(
-          inputId = "results_names_selectInput",
-          label = "Select an uploaded sheet to see the results:",
-          choices = names(abci_results_display())
-        )
-      )
-    )
-  })
-
   output$results_table_DT <- DT::renderDataTable(
     expr = abci_results_display()[[input$results_names_selectInput]],
     rownames = FALSE,
@@ -478,22 +462,26 @@ server <- function(input, output) {
     )
   )
 
-  observeEvent(abci_results_display(), {
-    req(abci_results_display())
-
-    insertUI(
-      selector = "#results_table_div",
-      where = "afterEnd",
-      ui = div(
-        h2("ABCi results summary"),
-        br(),
-        DT::dataTableOutput("results_table_DT")
-      )
+  output$results_table_div <- renderUI({
+    abci_results_display()
+    tagList(
+      h2("ABCi results summary"),
+      br(),
+      DT::dataTableOutput("results_table_DT")
     )
   })
 
 
-  # |- Download and Visualize UI ------------------------------------------
+  # |- Update the sidebar -------------------------------------------------
+
+  output$results_names_ui <- renderUI({
+    abci_results_display()
+    selectInput(
+      inputId = "results_names_selectInput",
+      label = "Select an uploaded sheet to see the results:",
+      choices = names(abci_results_display())
+    )
+  })
 
   output$download_handler <- downloadHandler(
     filename = function() {
@@ -517,7 +505,6 @@ server <- function(input, output) {
 
   observeEvent(input$perform_abci_calculations, {
     req(abci_results())
-
     output$results_buttons <- renderUI(div(
       class = "d-flex gap-2 justify-content-center py-2",
       downloadButton(
