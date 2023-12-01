@@ -1241,19 +1241,23 @@ server <- function(input, output) {
 
   # |-- Preview colours ---------------------------------------------------
 
-  modal_colours <- list(
-    "abci" = modalDialog(
-      title = "ABCi colour palettes",
-      easyClose = TRUE,
-      size = "l",
-      HTML("<img src='abci_palettes.png' class='center'>")
-    ) %>% tagAppendAttributes(class = "modal-dialog-centered"),
-    "viridis" = modalDialog(
-      title = "Line colour palettes",
-      easyClose = TRUE,
-      size = "l",
-      HTML("<img src='viridis_palettes.png' class='center'>")
-    ) %>% tagAppendAttributes(class = "modal-dialog-centered")
+  modal_colours <- lapply(
+    list(
+      "abci" = modalDialog(
+        title = "ABCi colour palettes",
+        easyClose = TRUE,
+        size = "l",
+        HTML("<img src='abci_palettes.png' class='center'>")
+      ),
+      "viridis" = modalDialog(
+        title = "Line colour palettes",
+        easyClose = TRUE,
+        size = "l",
+        HTML("<img src='viridis_palettes.png' class='center'>")
+      )
+    ),
+    tagAppendAttributes,
+    class = "modal-dialog-centered"
   )
 
   observeEvent(input$tile_preview_colours, {
