@@ -735,8 +735,23 @@ server <- function(input, output) {
           min = 0,
           step = 0.1
         )
+      ),
+
+      div(
+        class = "form-group row",
+        actionLink("plot_tile_advanced", "Advanced options...")
       )
     )
+  })
+
+  observeEvent(input$plot_tile_advanced, {
+    showModal(modalDialog(
+      title = "Advanced options",
+      size = "m",
+      easyClose = TRUE,
+      p("Advanced options will go in here."),
+      footer = modalButton("OK")
+    ) %>% tagAppendAttributes(class = "modal-dialog-centered"))
   })
 
 
