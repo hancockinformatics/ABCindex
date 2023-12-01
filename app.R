@@ -115,7 +115,7 @@ ui <- page_fluid(
               accept = c("xls", ".xls", "xlsx", ".xlsx")
             ),
 
-            div(id = "upload_input_names_div"),
+            uiOutput("upload_input_names_div"),
 
             disabled(
               actionButton(
@@ -128,7 +128,7 @@ ui <- page_fluid(
             )
           ),
 
-          div(id = "upload_preview_div")
+          uiOutput("upload_preview_div")
         )
       )
     ),
@@ -325,8 +325,7 @@ server <- function(input, output) {
 
   observeEvent(input$load_example_data, {
     if (file.exists("example_data/example_data_lucas.xlsx")) {
-      abci_reader("example_data/example_data_lucas.xlsx") %>%
-        input_data_raw()
+      input_data_raw(abci_reader("example_data/example_data_lucas.xlsx"))
     } else {
       showNotification(
         type = "error",
@@ -343,8 +342,7 @@ server <- function(input, output) {
   # |- User data ----------------------------------------------------------
 
   observeEvent(input$load_user_data, {
-    abci_reader(input$load_user_data$datapath) %>%
-      input_data_raw()
+    input_data_raw(abci_reader(input$load_user_data$datapath))
   })
 
 
@@ -360,21 +358,13 @@ server <- function(input, output) {
     )
   })
 
-  observeEvent(input_data_preview(), {
-    req(input_data_preview())
-
-    insertUI(
-      selector = "#upload_input_names_div",
-      where = "afterEnd",
-      ui = tagList(
-        selectInput(
-          inputId = "input_data_sheet_names",
-          label = "Select an uploaded sheet to preview:",
-          choices = names(input_data_preview())
-        )
-      )
+  output$upload_input_names_div <- renderUI(
+    selectInput(
+      inputId = "input_data_sheet_names",
+      label = "Select an uploaded sheet to preview:",
+      choices = names(input_data_preview())
     )
-  })
+  )
 
   output$input_data_preview_DT <- DT::renderDataTable(
     input_data_preview()[[input$input_data_sheet_names]],
@@ -386,17 +376,12 @@ server <- function(input, output) {
     )
   )
 
-  observeEvent(input_data_raw(), {
-    req(input_data_raw())
-
-    insertUI(
-      selector = "#upload_preview_div",
-      where = "afterEnd",
-      ui = tagList(div(
-        h2("Input data preview"),
-        br(),
-        DT::dataTableOutput("input_data_preview_DT")
-      ))
+  output$upload_preview_div <- renderUI({
+    input_data_preview()
+    tagList(
+      h2("Input data preview"),
+      br(),
+      DT::dataTableOutput("input_data_preview_DT")
     )
   })
 
