@@ -1,8 +1,16 @@
 # To do -------------------------------------------------------------------
 
-#' - Tweak dot size for dot plots
-#' - Summary and full results tables...
-#' - Custom container for results table with tool tips
+#' - Summary and full results tables...?
+#' - Custom container for results table with tool tips on column names
+#' - Swap compound selections to a toggle (x-y or y-x)
+#' - Separate toggle for "Flag low killing", move the cutoff to "Advanced"
+#' - Move MIC threshold to "Advanced"
+#' - Add version of split dot plot
+#' - Add legend text below plots, unique for each type of plot
+#' - If data is normalized to percentages, but 0-100, divide by 100
+#' - Change default selection for normalization
+#' - "Axis labels" ("scales") option should moved to "Advanced", be either
+#'   "all free" or "all fixed". Name: "Restrict each facet to the same labels"?
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
 #'     if (effect > 0.9) {
 #'       add * to tile, or border around dot
@@ -747,7 +755,7 @@ server <- function(input, output) {
         input_switch(
           id = "plot_tile_split_strict",
           label = "Strict",
-          value = TRUE
+          value = FALSE
         )
       ),
 
