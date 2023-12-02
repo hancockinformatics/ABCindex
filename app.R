@@ -1374,7 +1374,7 @@ server <- function(input, output) {
   observeEvent(input$create_plot, {
     req(abci_plot_data())
 
-    plot_width <- ifelse(abci_plot_dims()[[1]] == 1, "67%", "100%")
+    plot_width <- ifelse(abci_plot_dims()[[1]] == 1, "800px", "1150px")
 
     if (plot_type() == "tile_split") {
       plot_height <- paste0(100 + (600 * abci_plot_dims()[[2]]), "px")
@@ -1383,11 +1383,14 @@ server <- function(input, output) {
     }
 
     output$abci_plot_ui <- renderUI(
-      plotOutput(
-        outputId = "abci_plot",
-        height = plot_height,
-        width = plot_width
-      ) %>% shinycssloaders::withSpinner()
+      tagList(
+        plotOutput(
+          outputId = "abci_plot",
+          height = plot_height,
+          width = plot_width
+        ) %>% shinycssloaders::withSpinner(),
+        div(p("Here's some legend text."))
+      )
     )
   })
 } # Shiny sever close
