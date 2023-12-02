@@ -1,8 +1,16 @@
 # To do -------------------------------------------------------------------
 
-#' - Tweak dot size for dot plots
-#' - Summary and full results tables...
-#' - Custom container for results table with tool tips
+#' - Summary and full results tables...?
+#' - Custom container for results table with tool tips on column names
+#' - Swap compound selections to a toggle (x-y or y-x)
+#' - Separate toggle for "Flag low killing", move the cutoff to "Advanced"
+#' - Move MIC threshold to "Advanced"
+#' - Add version of split dot plot
+#' - Add legend text below plots, unique for each type of plot
+#' - If data is normalized to percentages, but 0-100, divide by 100
+#' - Change default selection for normalization
+#' - "Axis labels" ("scales") option should moved to "Advanced", be either
+#'   "all free" or "all fixed". Name: "Restrict each facet to the same labels"?
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
 #'     if (effect > 0.9) {
 #'       add * to tile, or border around dot
@@ -76,8 +84,7 @@ ui <- page_fluid(
               )
             ),
 
-            br(),
-            br(),
+            hr(),
             actionButton("notification_test", label = "Notification test")
           )
         )
@@ -116,7 +123,7 @@ ui <- page_fluid(
               accept = c("xls", ".xls", "xlsx", ".xlsx")
             ),
 
-            div(id = "upload_input_names_div"),
+            uiOutput("upload_input_names_div"),
 
             disabled(
               actionButton(
@@ -129,7 +136,7 @@ ui <- page_fluid(
             )
           ),
 
-          div(id = "upload_preview_div")
+          uiOutput("upload_preview_div")
         )
       )
     ),
@@ -175,11 +182,10 @@ ui <- page_fluid(
             ),
 
             p("Information about interpreting the results."),
-            div(id = "results_names_ui"),
-            uiOutput("results_buttons")
+            uiOutput("results_names_buttons")
           ),
 
-          div(id = "results_table_div")
+          uiOutput("results_table_div")
         )
       )
     ),
@@ -326,8 +332,7 @@ server <- function(input, output) {
 
   observeEvent(input$load_example_data, {
     if (file.exists("example_data/example_data_lucas.xlsx")) {
-      abci_reader("example_data/example_data_lucas.xlsx") %>%
-        input_data_raw()
+      input_data_raw(abci_reader("example_data/example_data_lucas.xlsx"))
     } else {
       showNotification(
         type = "error",
@@ -344,8 +349,7 @@ server <- function(input, output) {
   # |- User data ----------------------------------------------------------
 
   observeEvent(input$load_user_data, {
-    abci_reader(input$load_user_data$datapath) %>%
-      input_data_raw()
+    input_data_raw(abci_reader(input$load_user_data$datapath))
   })
 
 
@@ -361,21 +365,13 @@ server <- function(input, output) {
     )
   })
 
-  observeEvent(input_data_preview(), {
-    req(input_data_preview())
-
-    insertUI(
-      selector = "#upload_input_names_div",
-      where = "afterEnd",
-      ui = tagList(
-        selectInput(
-          inputId = "input_data_sheet_names",
-          label = "Select an uploaded sheet to preview:",
-          choices = names(input_data_preview())
-        )
-      )
+  output$upload_input_names_div <- renderUI(
+    selectInput(
+      inputId = "input_data_sheet_names",
+      label = "Select an uploaded sheet to preview:",
+      choices = names(input_data_preview())
     )
-  })
+  )
 
   output$input_data_preview_DT <- DT::renderDataTable(
     input_data_preview()[[input$input_data_sheet_names]],
@@ -387,17 +383,12 @@ server <- function(input, output) {
     )
   )
 
-  observeEvent(input_data_raw(), {
-    req(input_data_raw())
-
-    insertUI(
-      selector = "#upload_preview_div",
-      where = "afterEnd",
-      ui = tagList(div(
-        h2("Input data preview"),
-        br(),
-        DT::dataTableOutput("input_data_preview_DT")
-      ))
+  output$upload_preview_div <- renderUI({
+    input_data_preview()
+    tagList(
+      h2("Input data preview"),
+      br(),
+      DT::dataTableOutput("input_data_preview_DT")
     )
   })
 
@@ -465,24 +456,6 @@ server <- function(input, output) {
       )
   })
 
-  observeEvent(abci_results_display(), {
-    req(abci_results_display())
-
-    removeUI(selector = "#results_names_selector_div")
-    insertUI(
-      selector = "#results_names_ui",
-      where = "afterEnd",
-      ui = div(
-        id = "results_names_selector_div",
-        selectInput(
-          inputId = "results_names_selectInput",
-          label = "Select an uploaded sheet to see the results:",
-          choices = names(abci_results_display())
-        )
-      )
-    )
-  })
-
   output$results_table_DT <- DT::renderDataTable(
     expr = abci_results_display()[[input$results_names_selectInput]],
     rownames = FALSE,
@@ -494,22 +467,17 @@ server <- function(input, output) {
     )
   )
 
-  observeEvent(abci_results_display(), {
-    req(abci_results_display())
-
-    insertUI(
-      selector = "#results_table_div",
-      where = "afterEnd",
-      ui = div(
-        h2("ABCi results summary"),
-        br(),
-        DT::dataTableOutput("results_table_DT")
-      )
+  output$results_table_div <- renderUI({
+    abci_results_display()
+    tagList(
+      h2("ABCi results summary"),
+      br(),
+      DT::dataTableOutput("results_table_DT")
     )
   })
 
 
-  # |- Download and Visualize UI ------------------------------------------
+  # |- Update the sidebar -------------------------------------------------
 
   output$download_handler <- downloadHandler(
     filename = function() {
@@ -532,24 +500,33 @@ server <- function(input, output) {
   )
 
   observeEvent(input$perform_abci_calculations, {
-    req(abci_results())
+    req(abci_results(), abci_results_display())
 
-    output$results_buttons <- renderUI(div(
-      class = "d-flex gap-2 justify-content-center py-2",
-      downloadButton(
-        outputId = "download_handler",
-        label = "Download your results",
-        class = "btn btn-success align-items-center",
-        style = "width: 50%"
-      ),
-      actionButton(
-        inputId = "visualize_your_results",
-        label = "Visualize your results",
-        class = "btn btn-primary btn-tooltip align-items-center",
-        icon = icon("arrow-right"),
-        width = "50%"
+    output$results_names_buttons <- renderUI(
+      tagList(
+        selectInput(
+          inputId = "results_names_selectInput",
+          label = "Select an uploaded sheet to see the results:",
+          choices = names(abci_results_display())
+        ),
+        div(
+          class = "d-flex gap-2 justify-content-center py-2",
+          downloadButton(
+            outputId = "download_handler",
+            label = "Download your results",
+            class = "btn btn-success align-items-center",
+            style = "width: 50%"
+          ),
+          actionButton(
+            inputId = "visualize_your_results",
+            label = "Visualize your results",
+            class = "btn btn-primary btn-tooltip align-items-center",
+            icon = icon("arrow-right"),
+            width = "50%"
+          )
+        )
       )
-    ))
+    )
   })
 
 
@@ -709,7 +686,7 @@ server <- function(input, output) {
           label = NULL,
           inline = TRUE,
           choices = c("X", "Y"),
-          selected = if (input$normalize_radio) c("X", "Y")
+          selected = c("X", "Y")
         )
       ),
 
@@ -736,8 +713,23 @@ server <- function(input, output) {
           min = 0,
           step = 0.1
         )
+      ),
+
+      div(
+        class = "form-group row",
+        actionLink("plot_tile_advanced", "Advanced options...")
       )
     )
+  })
+
+  observeEvent(input$plot_tile_advanced, {
+    showModal(modalDialog(
+      title = "Advanced options",
+      size = "m",
+      easyClose = TRUE,
+      p("Advanced options will go in here."),
+      footer = modalButton("OK")
+    ) %>% tagAppendAttributes(class = "modal-dialog-centered"))
   })
 
 
@@ -763,7 +755,7 @@ server <- function(input, output) {
         input_switch(
           id = "plot_tile_split_strict",
           label = "Strict",
-          value = TRUE
+          value = FALSE
         )
       ),
 
@@ -856,7 +848,7 @@ server <- function(input, output) {
           label = NULL,
           inline = TRUE,
           choices = c("X", "Y"),
-          selected = if (input$normalize_radio) c("X", "Y")
+          selected = c("X", "Y")
         )
       ),
 
@@ -885,6 +877,14 @@ server <- function(input, output) {
         )
       )
     )
+  })
+
+  observeEvent(input$plot_tile_split_strict, {
+    if (input$plot_tile_split_strict) {
+      update_switch("plot_tile_split_strict", label = "Strict")
+    } else {
+      update_switch("plot_tile_split_strict", label = "Loose")
+    }
   })
 
 
@@ -993,7 +993,7 @@ server <- function(input, output) {
           label = NULL,
           inline = TRUE,
           choices = c("X", "Y"),
-          selected = if (input$normalize_radio) c("X", "Y")
+          selected = c("X", "Y")
         )
       ),
 
@@ -1146,7 +1146,7 @@ server <- function(input, output) {
         label_title = "Nudge values along the x-axis to prevent overlapping lines",
         input_switch(
           id = "plot_line_jitter_x",
-          label = "Enable jitter",
+          label = "On",
           value = TRUE
         )
       ),
@@ -1173,6 +1173,14 @@ server <- function(input, output) {
         )
       )
     )
+  })
+
+  observeEvent(input$plot_line_jitter_x, {
+    if (input$plot_line_jitter_x) {
+      update_switch("plot_line_jitter_x", label = "On")
+    } else {
+      update_switch("plot_line_jitter_x", label = "Off")
+    }
   })
 
 
@@ -1211,19 +1219,23 @@ server <- function(input, output) {
 
   # |-- Preview colours ---------------------------------------------------
 
-  modal_colours <- list(
-    "abci" = modalDialog(
-      title = "ABCi colour palettes",
-      easyClose = TRUE,
-      size = "l",
-      HTML("<img src='abci_palettes.png' class='center'>")
-    ) %>% tagAppendAttributes(class = "modal-dialog-centered"),
-    "viridis" = modalDialog(
-      title = "Line colour palettes",
-      easyClose = TRUE,
-      size = "l",
-      HTML("<img src='viridis_palettes.png' class='center'>")
-    ) %>% tagAppendAttributes(class = "modal-dialog-centered")
+  modal_colours <- lapply(
+    list(
+      "abci" = modalDialog(
+        title = "ABCi colour palettes",
+        easyClose = TRUE,
+        size = "l",
+        HTML("<img src='abci_palettes.png' class='center'>")
+      ),
+      "viridis" = modalDialog(
+        title = "Line colour palettes",
+        easyClose = TRUE,
+        size = "l",
+        HTML("<img src='viridis_palettes.png' class='center'>")
+      )
+    ),
+    tagAppendAttributes,
+    class = "modal-dialog-centered"
   )
 
   observeEvent(input$tile_preview_colours, {
@@ -1276,8 +1288,8 @@ server <- function(input, output) {
           y.drug = isolate(input$plot_dot_y_drug),
           col.fill = "abci_avg",
           col.size = "effect_avg",
+          size.range = c(3, 15),
           col.analysis = "assay",
-          split = FALSE,
           n.cols = abci_plot_dims()[[1]],
           n.rows = abci_plot_dims()[[2]],
           scales = isolate(input$plot_dot_scales),
@@ -1362,7 +1374,7 @@ server <- function(input, output) {
   observeEvent(input$create_plot, {
     req(abci_plot_data())
 
-    plot_width <- ifelse(abci_plot_dims()[[1]] == 1, "67%", "100%")
+    plot_width <- ifelse(abci_plot_dims()[[1]] == 1, "800px", "1150px")
 
     if (plot_type() == "tile_split") {
       plot_height <- paste0(100 + (600 * abci_plot_dims()[[2]]), "px")
@@ -1371,11 +1383,14 @@ server <- function(input, output) {
     }
 
     output$abci_plot_ui <- renderUI(
-      plotOutput(
-        outputId = "abci_plot",
-        height = plot_height,
-        width = plot_width
-      ) %>% shinycssloaders::withSpinner()
+      tagList(
+        plotOutput(
+          outputId = "abci_plot",
+          height = plot_height,
+          width = plot_width
+        ) %>% shinycssloaders::withSpinner(),
+        div(p("Here's some legend text."))
+      )
     )
   })
 } # Shiny sever close
@@ -1383,4 +1398,5 @@ server <- function(input, output) {
 
 # Run the application -----------------------------------------------------
 
+message("\n=========================\n")
 shinyApp(ui = ui, server = server)
