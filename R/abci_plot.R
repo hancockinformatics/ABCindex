@@ -16,6 +16,9 @@ theme_set(
     )
 )
 
+# Size mapping
+size_mapping_N1S2 <- readRDS("data/size_mapping_N1S2.Rds")
+
 
 #' Create a tile plot of ABCi values
 #'
@@ -622,6 +625,8 @@ abci_plot_tile_split <- function(
 #'   -0.5)`.
 #' @param add.axis.lines Should lines be drawn for the x- and y-axis when
 #'   faceting? Defaults to TRUE.
+#' @param size_mapping Data frame of values to use for size scaling. Currently
+#'   only supports the one object `size_mapping_N1S2`.
 #'
 #' @return A ggplot2 object#'
 #' @export
@@ -659,7 +664,8 @@ abci_plot_dot <- function(
     colour.na = "white",
     scale.limits = c(-2.0, 2.0),
     scale.breaks = seq(2, -2, -0.5),
-    add.axis.lines = TRUE
+    add.axis.lines = TRUE,
+    size_mapping = size_mapping_N1S2
 ) {
 
   if (any(c("spec_tbl_df", "tbl_df", "tbl") %in% class(data))) {
@@ -672,8 +678,9 @@ abci_plot_dot <- function(
 
   data <- data %>% mutate(
     across(all_of(c(x.drug, y.drug)), forcats::fct_inseq),
-    effect_scaled = scales::rescale(.data[[col.size]], to = c(0, 10))
-  )
+    reference = ceiling(scales::rescale(.data[[col.size]], to = c(0, 100)))
+  ) %>%
+    left_join(size_mapping)
 
   upper <- max(scale.limits)
   lower <- min(scale.limits)
@@ -702,7 +709,6 @@ abci_plot_dot <- function(
       to = c(0, 1)
     )
   }
-
 
   # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
   # concentrations need to be converted to positions on their respective axes,
@@ -753,7 +759,12 @@ abci_plot_dot <- function(
 
   ggplot(data, aes(.data[[x.drug]], .data[[y.drug]])) +
 
-    geom_point(aes(colour = .data[[col.fill]], size = effect_scaled)) +
+    geom_point(
+      aes(
+        colour = .data[[col.fill]],
+        size = scales::rescale(N1S2, to = size.range)
+      )
+    ) +
 
     {if (!is.null(col.analysis)) {
       facet_wrap(
@@ -804,13 +815,10 @@ abci_plot_dot <- function(
       oob = scales::squish
     ) +
 
-    scale_size_continuous(
-      name = "Biofilm\nkilled",
-      range = size.range,
-      trans = scales::exp_trans(base = 2),
-      breaks = seq(0, 10, 2),
-      limits = c(0, 10),
-      labels = ~paste0(.x * 10, "%"),
+    scale_size_identity(
+      name = "Biofilm\nkilled %",
+      breaks = seq.int(from = size.range[1], to = size.range[2], length.out = 6),
+      labels = seq(0, 100, 20),
       guide = guide_legend(keyheight = unit(10, "mm"))
     ) +
 
