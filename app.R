@@ -35,7 +35,19 @@ ui <- page_fluid(
   HTML("<base target='_blank' rel='noopener noreferrer'>"),
   useShinyjs(),
   tags$head(
-    tags$link(rel = "stylesheet", type = "text/css", href = "css/custom.css")
+    tags$link(rel = "stylesheet", type = "text/css", href = "css/custom.css"),
+    tags$link(
+      rel = "icon",
+      type = "image/svg",
+      href = "hancock_lab_logo_32.svg",
+      sizes = "32x32"
+    ),
+    tags$link(
+      rel = "icon",
+      type = "image/svg",
+      href = "hancock_lab_logo_16.svg",
+      sizes = "16x16"
+    )
   ),
 
 
@@ -1401,5 +1413,5 @@ server <- function(input, output) {
 
 # Run the application -----------------------------------------------------
 
-message("\n=========================\n")
+message("\n==>")
 shinyApp(ui = ui, server = server)
