@@ -821,54 +821,58 @@ server <- function(input, output) {
       ),
 
       br(),
-      HTML("<header class='sidebar-title'>Advanced options</header>"),
+      accordion(
+        open = FALSE,
+        accordion_panel(
+          title = "Advanced options",
+          wrap_selector(
+            label = "Split type",
+            label_title = "Type of splitting/filtering to apply",
+            input_switch(
+              id = "plot_tile_split_strict",
+              label = "Strict",
+              value = FALSE
+            )
+          ),
 
-      wrap_selector(
-        label = "Split type",
-        label_title = "Type of splitting/filtering to apply",
-        input_switch(
-          id = "plot_tile_split_strict",
-          label = "Strict",
-          value = FALSE
-        )
-      ),
+          wrap_selector(
+            label = "Axis labels",
+            label_title = paste0(
+              "Across the plot facets, should the x- and y-axis labels vary ",
+              "(Free) or be the same (Fixed)?"
+            ),
+            selectInput(
+              inputId = "plot_tile_split_scales",
+              label = NULL,
+              selected = "fixed",
+              choices = plot_scales
+            )
+          ),
 
-      wrap_selector(
-        label = "Axis labels",
-        label_title = paste0(
-          "Across the plot facets, should the x- and y-axis labels vary ",
-          "(Free) or be the same (Fixed)?"
-        ),
-        selectInput(
-          inputId = "plot_tile_split_scales",
-          label = NULL,
-          selected = "fixed",
-          choices = plot_scales
-        )
-      ),
+          wrap_selector(
+            label = "MIC cutoff",
+            label_title = "Threshold for calculating MICs; applies to x- and y-axis",
+            numericInput(
+              inputId = "plot_tile_split_mic_threshold",
+              label = NULL,
+              value = 0.5
+            )
+          ),
 
-      wrap_selector(
-        label = "MIC cutoff",
-        label_title = "Threshold for calculating MICs; applies to x- and y-axis",
-        numericInput(
-          inputId = "plot_tile_split_mic_threshold",
-          label = NULL,
-          value = 0.5
-        )
-      ),
-
-      wrap_selector(
-        label = "Highlight low killing",
-        label_title = paste0(
-          "Draw a symbol on cells which kill less than the indicated ",
-          "percentage. Zero hides the symbols."
-        ),
-        numericInput(
-          inputId = "plot_tile_split_minflag_value",
-          label = NULL,
-          value = 0.5,
-          min = 0,
-          step = 0.1
+          wrap_selector(
+            label = "Highlight low killing",
+            label_title = paste0(
+              "Draw a symbol on cells which kill less than the indicated ",
+              "percentage. Zero hides the symbols."
+            ),
+            numericInput(
+              inputId = "plot_tile_split_minflag_value",
+              label = NULL,
+              value = 0.5,
+              min = 0,
+              step = 0.1
+            )
+          )
         )
       )
     )
