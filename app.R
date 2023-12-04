@@ -3,12 +3,11 @@
 #' - Summary and full results tables...?
 #' - Custom container for results table with tool tips on column names
 #' - Swap compound selections to a toggle (x-y or y-x)
-#' - Separate toggle for "Flag low killing", move the cutoff to "Advanced"
-#' - Move MIC threshold to "Advanced"
-#' - Add version of split dot plot
-#' - Add legend text below plots, unique for each type of plot
+#' - Better description for tile splitting options (strict/loose)
 #' - "Axis labels" ("scales") option should moved to "Advanced", be either
 #'   "all free" or "all fixed". Name: "Restrict each facet to the same labels"?
+#' - Add version of split dot plot
+#' - Add legend text below plots, unique for each type of plot
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
 #'     if (effect > 0.9) {
 #'       add * to tile, or border around dot
@@ -564,12 +563,7 @@ server <- function(input, output) {
     stringr::str_to_title
   )
 
-  plot_scales <- c(
-    "Free X and Y" = "free",
-    "Fixed X and Y" = "fixed",
-    "Free X, Fixed Y" = "free_x",
-    "Free Y, Fixed X" = "free_y"
-  )
+  plot_scales <- c("Free" = "free", "Fixed" = "fixed")
 
   conc_columns <- reactive(
     grep(
@@ -664,6 +658,31 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
+        label = "Draw MIC lines",
+        label_title = "Include lines to indicate MIC for the x- and y-axis",
+        checkboxGroupInput(
+          inputId = "plot_tile_mic_lines",
+          label = NULL,
+          inline = TRUE,
+          choices = c("X", "Y"),
+          selected = c("X", "Y")
+        )
+      ),
+
+      wrap_selector(
+        label = "Highlight low killing",
+        label_title = "Option to draw a symbol on tiles with low effect",
+        input_switch(
+          id = "plot_tile_minflag_toggle",
+          label = "Off",
+          value = FALSE
+        )
+      ),
+
+      br(),
+      HTML("<header class='sidebar-title'>Advanced options</header>"),
+
+      wrap_selector(
         label = "Axis labels",
         label_title = paste0(
           "Across the plot facets, should the x- and y-axis labels vary ",
@@ -673,18 +692,6 @@ server <- function(input, output) {
           inputId = "plot_tile_scales",
           label = NULL,
           choices = plot_scales
-        )
-      ),
-
-      wrap_selector(
-        label = "Draw MIC lines",
-        label_title = "Include lines to indicate MIC for the x- and y-axis",
-        checkboxGroupInput(
-          inputId = "plot_tile_mic_lines",
-          label = NULL,
-          inline = TRUE,
-          choices = c("X", "Y"),
-          selected = c("X", "Y")
         )
       ),
 
@@ -705,29 +712,22 @@ server <- function(input, output) {
           "percentage. Zero hides the symbols."
         ),
         numericInput(
-          inputId = "plot_tile_min_flag",
+          inputId = "plot_tile_minflag_value",
           label = NULL,
-          value = 0,
+          value = 0.5,
           min = 0,
           step = 0.1
         )
-      ),
-
-      div(
-        class = "form-group row",
-        actionLink("plot_tile_advanced", "Advanced options...")
       )
     )
   })
 
-  observeEvent(input$plot_tile_advanced, {
-    showModal(modalDialog(
-      title = "Advanced options",
-      size = "m",
-      easyClose = TRUE,
-      p("Advanced options will go in here."),
-      footer = modalButton("OK")
-    ) %>% tagAppendAttributes(class = "modal-dialog-centered"))
+  observeEvent(input$plot_tile_minflag_toggle, {
+    if (input$plot_tile_minflag_toggle) {
+      update_switch("plot_tile_minflag_toggle", label = "On")
+    } else {
+      update_switch("plot_tile_minflag_toggle", label = "Off")
+    }
   })
 
 
@@ -744,16 +744,6 @@ server <- function(input, output) {
           label = NULL,
           selected = "BOB",
           choices = abci_colours
-        )
-      ),
-
-      wrap_selector(
-        label = "Split type", # TODO
-        label_title = "Type of splitting/filtering to apply", # TODO
-        input_switch(
-          id = "plot_tile_split_strict",
-          label = "Strict",
-          value = FALSE
         )
       ),
 
@@ -825,6 +815,41 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
+        label = "Draw MIC lines",
+        label_title = "Include lines to indicate MIC for the x- and y-axis",
+        checkboxGroupInput(
+          inputId = "plot_tile_split_mic_lines",
+          label = NULL,
+          inline = TRUE,
+          choices = c("X", "Y"),
+          selected = c("X", "Y")
+        )
+      ),
+
+      wrap_selector(
+        label = "Highlight low killing",
+        label_title = "Option to draw a symbol on tiles with low effect",
+        input_switch(
+          id = "plot_tile_split_minflag_toggle",
+          label = "Off",
+          value = FALSE
+        )
+      ),
+
+      br(),
+      HTML("<header class='sidebar-title'>Advanced options</header>"),
+
+      wrap_selector(
+        label = "Split type",
+        label_title = "Type of splitting/filtering to apply",
+        input_switch(
+          id = "plot_tile_split_strict",
+          label = "Strict",
+          value = FALSE
+        )
+      ),
+
+      wrap_selector(
         label = "Axis labels",
         label_title = paste0(
           "Across the plot facets, should the x- and y-axis labels vary ",
@@ -835,18 +860,6 @@ server <- function(input, output) {
           label = NULL,
           selected = "fixed",
           choices = plot_scales
-        )
-      ),
-
-      wrap_selector(
-        label = "Draw MIC lines",
-        label_title = "Include lines to indicate MIC for the x- and y-axis",
-        checkboxGroupInput(
-          inputId = "plot_tile_split_mic_lines",
-          label = NULL,
-          inline = TRUE,
-          choices = c("X", "Y"),
-          selected = c("X", "Y")
         )
       ),
 
@@ -867,9 +880,9 @@ server <- function(input, output) {
           "percentage. Zero hides the symbols."
         ),
         numericInput(
-          inputId = "plot_tile_split_min_flag",
+          inputId = "plot_tile_split_minflag_value",
           label = NULL,
-          value = 0,
+          value = 0.5,
           min = 0,
           step = 0.1
         )
@@ -882,6 +895,14 @@ server <- function(input, output) {
       update_switch("plot_tile_split_strict", label = "Strict")
     } else {
       update_switch("plot_tile_split_strict", label = "Loose")
+    }
+  })
+
+  observeEvent(input$plot_tile_split_minflag_toggle, {
+    if (input$plot_tile_split_minflag_toggle) {
+      update_switch("plot_tile_split_minflag_toggle", label = "On")
+    } else {
+      update_switch("plot_tile_split_minflag_toggle", label = "Off")
     }
   })
 
@@ -970,6 +991,21 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
+        label = "Draw MIC lines",
+        label_title = "Include lines to indicate MIC for the x- and y-axis",
+        checkboxGroupInput(
+          inputId = "plot_dot_mic_lines",
+          label = NULL,
+          inline = TRUE,
+          choices = c("X", "Y"),
+          selected = c("X", "Y")
+        )
+      ),
+
+      br(),
+      HTML("<header class='sidebar-title'>Advanced options</header>"),
+
+      wrap_selector(
         label = "Axis labels",
         label_title = paste0(
           "Across the plot facets, should the x- and y-axis labels vary ",
@@ -980,18 +1016,6 @@ server <- function(input, output) {
           label = NULL,
           selected = "free",
           choices = plot_scales
-        )
-      ),
-
-      wrap_selector(
-        label = "Draw MIC lines",
-        label_title = "Include lines to indicate MIC for the x- and y-axis",
-        checkboxGroupInput(
-          inputId = "plot_dot_mic_lines",
-          label = NULL,
-          inline = TRUE,
-          choices = c("X", "Y"),
-          selected = c("X", "Y")
         )
       ),
 
@@ -1117,35 +1141,12 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Axis labels",
-        label_title = paste0(
-          "Across the plot facets, should the x- and y-axis labels vary ",
-          "(Free) or be the same (Fixed)?"
-        ),
-        selectInput(
-          inputId = "plot_line_scales",
-          label = NULL,
-          choices = plot_scales
-        )
-      ),
-
-      wrap_selector(
         label = "Y axis title",
         label_title = "Title for the y-axis; applies to the entire plot",
         textInput(
           inputId = "plot_line_y_text",
           label = NULL,
           value = "% Biofilm"
-        )
-      ),
-
-      wrap_selector(
-        label = "X-axis jitter",
-        label_title = "Nudge values along the x-axis to prevent overlapping lines",
-        input_switch(
-          id = "plot_line_jitter_x",
-          label = "On",
-          value = TRUE
         )
       ),
 
@@ -1158,6 +1159,32 @@ server <- function(input, output) {
           inline = TRUE,
           choices = c("X"),
           selected = c("X")
+        )
+      ),
+
+      br(),
+      HTML("<header class='sidebar-title'>Advanced options</header>"),
+
+      wrap_selector(
+        label = "X-axis jitter",
+        label_title = "Nudge values along the x-axis to prevent overlapping lines",
+        input_switch(
+          id = "plot_line_jitter_x",
+          label = "On",
+          value = TRUE
+        )
+      ),
+
+      wrap_selector(
+        label = "Axis labels",
+        label_title = paste0(
+          "Across the plot facets, should the x- and y-axis labels vary ",
+          "(Free) or be the same (Fixed)?"
+        ),
+        selectInput(
+          inputId = "plot_line_scales",
+          label = NULL,
+          choices = plot_scales
         )
       ),
 
@@ -1185,17 +1212,6 @@ server <- function(input, output) {
   # |- Input updates and observers ----------------------------------------
 
   plot_type <- reactive(input$visualize_tabs)
-
-
-  # |-- Min flagging ------------------------------------------------------
-
-  plot_tile_min_info <- reactive(
-    ifelse(input$plot_tile_min_flag > 0, TRUE, FALSE)
-  )
-
-  plot_tile_split_min_info <- reactive(
-    ifelse(input$plot_tile_split_min_flag > 0, TRUE, FALSE)
-  )
 
 
   # |-- Line include options ----------------------------------------------
@@ -1274,8 +1290,8 @@ server <- function(input, output) {
           y.mic.line = ("Y" %in% isolate(input$plot_tile_mic_lines)),
           mic.threshold = isolate(input$plot_tile_mic_threshold),
           col.mic = "bio_normal",
-          minflag = isolate(plot_tile_min_info()),
-          minflag.value = isolate(input$plot_tile_min_flag),
+          minflag = isolate(input$plot_tile_minflag_toggle),
+          minflag.value = isolate(input$plot_tile_minflag_value),
           colour.palette = isolate(input$plot_tile_colour_palette)
         )
 
@@ -1358,8 +1374,8 @@ server <- function(input, output) {
           y.mic.line = ("Y" %in% isolate(input$plot_tile_split_mic_lines)),
           mic.threshold = isolate(input$plot_tile_split_mic_threshold),
           col.mic = "bio_normal",
-          minflag = isolate(plot_tile_split_min_info()),
-          minflag.value = isolate(input$plot_tile_split_min_flag),
+          minflag = isolate(input$plot_tile_split_minflag_toggle),
+          minflag.value = isolate(input$plot_tile_split_minflag_value),
           colour.palette = isolate(input$plot_tile_split_colour_palette)
         )
       }
