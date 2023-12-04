@@ -980,29 +980,33 @@ server <- function(input, output) {
       ),
 
       br(),
-      HTML("<header class='sidebar-title'>Advanced options</header>"),
+      accordion(
+        open = FALSE,
+        accordion_panel(
+          title = "Advanced options",
+          wrap_selector(
+            label = "Axis labels",
+            label_title = paste0(
+              "Across the plot facets, should the x- and y-axis labels vary ",
+              "(Free) or be the same (Fixed)?"
+            ),
+            selectInput(
+              inputId = "plot_dot_scales",
+              label = NULL,
+              selected = "free",
+              choices = plot_scales
+            )
+          ),
 
-      wrap_selector(
-        label = "Axis labels",
-        label_title = paste0(
-          "Across the plot facets, should the x- and y-axis labels vary ",
-          "(Free) or be the same (Fixed)?"
-        ),
-        selectInput(
-          inputId = "plot_dot_scales",
-          label = NULL,
-          selected = "free",
-          choices = plot_scales
-        )
-      ),
-
-      wrap_selector(
-        label = "MIC cutoff",
-        label_title = "Threshold for calculating MICs; applies to x- and y-axis",
-        numericInput(
-          inputId = "plot_dot_mic_threshold",
-          label = NULL,
-          value = 0.5
+          wrap_selector(
+            label = "MIC cutoff",
+            label_title = "Threshold for calculating MICs; applies to x- and y-axis",
+            numericInput(
+              inputId = "plot_dot_mic_threshold",
+              label = NULL,
+              value = 0.5
+            )
+          )
         )
       )
     )
