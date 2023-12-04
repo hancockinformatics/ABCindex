@@ -366,6 +366,15 @@ ui <- page_fluid(
         title = "Visit our Github to browse the code or submit an issue."
       )
     ),
+
+    # Divider
+    nav_item(
+      HTML(paste0(
+        '<div class="vr d-none d-lg-flex h-100 mx-lg-2 text-white"></div>',
+        '<hr class="d-lg-none my-2 text-white-50">'
+      ))
+    ),
+
     nav_item(app_version, style = "color: var(--bs-nav-link-color)")
   )
 )
