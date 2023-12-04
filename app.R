@@ -2,12 +2,9 @@
 
 #' - Summary and full results tables...?
 #' - Custom container for results table with tool tips on column names
-#' - Swap compound selections to a toggle (x-y or y-x)
 #' - Better description for tile splitting options (strict/loose)
-#' - "Axis labels" ("scales") option should moved to "Advanced", be either
-#'   "all free" or "all fixed". Name: "Restrict each facet to the same labels"?
-#' - Add version of split dot plot
 #' - Add legend text below plots, unique for each type of plot
+#' - Add version of split dot plot
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
 #'     if (effect > 0.9) {
 #'       add * to tile, or border around dot
@@ -592,7 +589,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X compound",
-        label_title = "Compound to plot on the x-axis",
+        label_title = "Compound to plot on the x-axis. The other compound is plotted on the y-axis",
         selectInput(
           inputId = "plot_tile_x_drug",
           label = NULL,
@@ -623,16 +620,16 @@ server <- function(input, output) {
         )
       ),
 
-      wrap_selector(
-        label = "Y compound",
-        label_title = "Compound to plot on the y-axis",
-        selectInput(
-          inputId = "plot_tile_y_drug",
-          label = NULL,
-          choices = conc_columns(),
-          selected = conc_columns()[2]
-        )
-      ),
+      # wrap_selector(
+      #   label = "Y compound",
+      #   label_title = "Compound to plot on the y-axis",
+      #   selectInput(
+      #     inputId = "plot_tile_y_drug",
+      #     label = NULL,
+      #     choices = conc_columns(),
+      #     selected = conc_columns()[2]
+      #   )
+      # ),
 
       wrap_selector(
         label = "Y axis title",
@@ -749,7 +746,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X compound",
-        label_title = "Compound to plot on the x-axis",
+        label_title = "Compound to plot on the x-axis. The other compound is plotted on the y-axis",
         selectInput(
           inputId = "plot_tile_split_x_drug",
           label = NULL,
@@ -777,17 +774,6 @@ server <- function(input, output) {
           min = 1,
           max = 4,
           step = 1
-        )
-      ),
-
-      wrap_selector(
-        label = "Y compound",
-        label_title = "Compound on the y-axis",
-        selectInput(
-          inputId = "plot_tile_split_y_drug",
-          label = NULL,
-          choices = conc_columns(),
-          selected = conc_columns()[2]
         )
       ),
 
@@ -925,7 +911,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X compound",
-        label_title = "Compound on the x-axis",
+        label_title = "Compound to plot on the x-axis. The other compound is plotted on the y-axis",
         selectInput(
           inputId = "plot_dot_x_drug",
           label = NULL,
@@ -953,17 +939,6 @@ server <- function(input, output) {
           min = 1,
           max = 4,
           step = 1
-        )
-      ),
-
-      wrap_selector(
-        label = "Y compound",
-        label_title = "Compound on the y-axis",
-        selectInput(
-          inputId = "plot_dot_y_drug",
-          label = NULL,
-          choices = conc_columns(),
-          selected = conc_columns()[2]
         )
       ),
 
@@ -1054,7 +1029,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X compound",
-        label_title = "Compound on the x-axis",
+        label_title = "Compound to plot on the x-axis. The other compound is plotted as lines.",
         selectInput(
           inputId = "plot_line_x_drug",
           label = NULL,
@@ -1082,17 +1057,6 @@ server <- function(input, output) {
           min = 1,
           max = 4,
           step = 1
-        )
-      ),
-
-      wrap_selector(
-        label = "Line compound",
-        label_title = "Compound mapped to different lines and colours",
-        selectInput(
-          inputId = "plot_line_line_drug",
-          label = NULL,
-          choices = conc_columns(),
-          selected = conc_columns()[2]
         )
       ),
 
@@ -1216,11 +1180,13 @@ server <- function(input, output) {
 
   # |-- Line include options ----------------------------------------------
 
-  observeEvent(input$plot_line_type, {
+  observeEvent(input$plot_line_x_drug, {
     req(abci_plot_data())
 
+    line_column <- conc_columns()[!conc_columns() %in% input$plot_line_x_drug]
+
     unique_conc <- abci_plot_data() %>%
-      pull(input$plot_line_line_drug) %>%
+      pull(line_column) %>%
       unique()
 
     updateSelectInput(
@@ -1276,7 +1242,7 @@ server <- function(input, output) {
         abci_plot_tile(
           data = isolate(abci_plot_data()),
           x.drug = isolate(input$plot_tile_x_drug),
-          y.drug = isolate(input$plot_tile_y_drug),
+          y.drug = conc_columns()[!conc_columns() %in% isolate(input$plot_tile_x_drug)],
           col.fill = "abci_avg",
           col.analysis = "assay",
           n.cols = abci_plot_dims()[[1]],
@@ -1299,7 +1265,7 @@ server <- function(input, output) {
         abci_plot_dot(
           data = isolate(abci_plot_data()),
           x.drug = isolate(input$plot_dot_x_drug),
-          y.drug = isolate(input$plot_dot_y_drug),
+          y.drug = conc_columns()[!conc_columns() %in% isolate(input$plot_dot_x_drug)],
           col.fill = "abci_avg",
           col.size = "effect_avg",
           size.range = c(3, 15),
@@ -1337,7 +1303,7 @@ server <- function(input, output) {
           data = isolate(abci_plot_data()),
           plot.type = isolate(input$plot_line_type),
           x.drug = isolate(input$plot_line_x_drug),
-          line.drug = isolate(input$plot_line_line_drug),
+          line.drug = conc_columns()[!conc_columns() %in% isolate(input$plot_line_x_drug)],
           col.data = "bio_normal",
           col.analysis = "assay",
           line.include = isolate(input$plot_line_line_include),
@@ -1359,7 +1325,7 @@ server <- function(input, output) {
         abci_plot_tile_split(
           data = isolate(abci_plot_data()),
           x.drug = isolate(input$plot_tile_split_x_drug),
-          y.drug = isolate(input$plot_tile_split_y_drug),
+          y.drug = conc_columns()[!conc_columns() %in% isolate(input$plot_tile_split_x_drug)],
           col.fill = "abci_avg",
           col.analysis = "assay",
           strict = isolate(input$plot_tile_split_strict),
