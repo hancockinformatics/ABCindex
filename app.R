@@ -28,6 +28,75 @@ app_version <- gsub(
 app_theme <- bs_theme(version = 5, preset = "cosmo")
 
 
+# |- Results table container ----------------------------------------------
+
+abci_results_display_container <- htmltools::withTags(table(
+  class = "display",
+  thead(tr(
+    class = "table-dark",
+    th(
+      "Cols",
+      title = paste0("Compound found in the plate's columns (1-12).")
+    ),
+    th(
+      "Cols Conc",
+      title = "Concentrations identified for the plate's columns."
+    ),
+    th(
+      "Rows",
+      title = "Compound found in the plate's rows (A-H)."
+    ),
+    th(
+      "Rows Conc",
+      title = "Concentrations identified for the plate's rows."
+    ),
+    th(
+      "Bio Normal Avg",
+      title = paste0(
+        "The measured value from wells in the plate, after any normalization ",
+        "and/or averaging across replicates"
+      )
+    ),
+    th(
+      "Effect Avg",
+      title = "The measured effect, equal to \"1 - 'Bio Normal Avg'\"."
+    ),
+    th(
+      "ABCi Avg",
+      title = paste0(
+        "The Anti-Biofilm Combination Index (ABCi) value, averaged ",
+        "across any replicates."
+      )
+    )
+  ))
+))
+
+
+# |- Fixed plot inputs ----------------------------------------------------
+
+# Define some fixed `selectInput()` choices
+abci_colours <- list(
+  "Three-colour palettes" = list(
+    "Red-yellow-blue" = "BOB",
+    "Orange-yellow-purple" = "SUN",
+    "Magenta-yellow-blue" = "PAN"
+  ),
+  "Two-colour palettes" = list(
+    "Orange-purple" = "OP",
+    "Yellow-purple" = "YP",
+    "Yellow-blue" = "YB",
+    "Red-blue" = "RB"
+  )
+)
+
+line_colours <- purrr::set_names(
+  c("viridis", "magma", "plasma", "inferno", "cividis", "mako", "rocket", "turbo"),
+  stringr::str_to_title
+)
+
+plot_scales <- c("Free" = "free", "Fixed" = "fixed")
+
+
 # Define UI ---------------------------------------------------------------
 
 ui <- page_fluid(
@@ -307,11 +376,6 @@ ui <- page_fluid(
 server <- function(input, output) {
 
   observeEvent(input$notification_test, {
-    # lapply(
-    #   cli::cli_progress_along(c(1, 10), "Testing progress message..."),
-    #   function(i) {
-    #     Sys.sleep(i * 10)
-    # })
     showNotification(
       type = "message",
       duration = NULL,
@@ -463,6 +527,7 @@ server <- function(input, output) {
 
   output$results_table_DT <- DT::renderDataTable(
     expr = abci_results_display()[[input$results_names_selectInput]],
+    container = abci_results_display_container,
     rownames = FALSE,
     class = "table-striped",
     options = list(
@@ -553,29 +618,7 @@ server <- function(input, output) {
   })
 
 
-  # |- Set up inputs ------------------------------------------------------
-
-  # Define some fixed `selectInput()` choices
-  abci_colours <- list(
-    "Three-colour palettes" = list(
-      "Red-yellow-blue" = "BOB",
-      "Orange-yellow-purple" = "SUN",
-      "Magenta-yellow-blue" = "PAN"
-    ),
-    "Two-colour palettes" = list(
-      "Orange-purple" = "OP",
-      "Yellow-purple" = "YP",
-      "Yellow-blue" = "YB",
-      "Red-blue" = "RB"
-    )
-  )
-
-  line_colours <- purrr::set_names(
-    c("viridis", "magma", "plasma", "inferno", "cividis", "mako", "rocket", "turbo"),
-    stringr::str_to_title
-  )
-
-  plot_scales <- c("Free" = "free", "Fixed" = "fixed")
+  # |- Set up reactive inputs ---------------------------------------------
 
   conc_columns <- reactive(
     grep(
