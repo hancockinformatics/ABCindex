@@ -7,8 +7,6 @@
 #' - Move MIC threshold to "Advanced"
 #' - Add version of split dot plot
 #' - Add legend text below plots, unique for each type of plot
-#' - If data is normalized to percentages, but 0-100, divide by 100
-#' - Change default selection for normalization
 #' - "Axis labels" ("scales") option should moved to "Advanced", be either
 #'   "all free" or "all fixed". Name: "Restrict each facet to the same labels"?
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
@@ -165,10 +163,10 @@ ui <- page_fluid(
               inputId = "normalize_radio",
               label = NULL,
               choices = list(
-                "My data is already normalized (range 0 to 1)" = FALSE,
-                "Normalize my data for me" = TRUE
+                "Normalize my data for me" = "run_norm",
+                "My data is normalized to percentages (0 to 1 or 100)" = "no_norm"
               ),
-              selected = FALSE
+              selected = "run_norm"
             ),
 
             disabled(
@@ -428,7 +426,7 @@ server <- function(input, output) {
       col.data = "bio",
       col.analysis = "assay",
       col.reps = "replicate",
-      normalize = input$normalize_radio
+      normalize = ifelse(input$normalize_radio == "run_norm", TRUE, FALSE)
     ) %>%
       abci_results()
   })
