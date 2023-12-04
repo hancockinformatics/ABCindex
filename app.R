@@ -623,17 +623,6 @@ server <- function(input, output) {
         )
       ),
 
-      # wrap_selector(
-      #   label = "Y compound",
-      #   label_title = "Compound to plot on the y-axis",
-      #   selectInput(
-      #     inputId = "plot_tile_y_drug",
-      #     label = NULL,
-      #     choices = conc_columns(),
-      #     selected = conc_columns()[2]
-      #   )
-      # ),
-
       wrap_selector(
         label = "Y axis title",
         label_title = "Title for the y-axis; applies to the entire plot",
@@ -680,43 +669,49 @@ server <- function(input, output) {
       ),
 
       br(),
-      HTML("<header class='sidebar-title'>Advanced options</header>"),
 
-      wrap_selector(
-        label = "Axis labels",
-        label_title = paste0(
-          "Across the plot facets, should the x- and y-axis labels vary ",
-          "(Free) or be the same (Fixed)?"
-        ),
-        selectInput(
-          inputId = "plot_tile_scales",
-          label = NULL,
-          choices = plot_scales
-        )
-      ),
+      accordion(
+        open = FALSE,
+        accordion_panel(
+          title = "Advanced options",
 
-      wrap_selector(
-        label = "MIC cutoff",
-        label_title = "Threshold for calculating MICs; applies to x- and y-axis",
-        numericInput(
-          inputId = "plot_tile_mic_threshold",
-          label = NULL,
-          value = 0.5
-        )
-      ),
+          wrap_selector(
+            label = "Axis labels",
+            label_title = paste0(
+              "Across the plot facets, should the x- and y-axis labels vary ",
+              "(Free) or be the same (Fixed)?"
+            ),
+            selectInput(
+              inputId = "plot_tile_scales",
+              label = NULL,
+              choices = plot_scales
+            )
+          ),
 
-      wrap_selector(
-        label = "Highlight low killing",
-        label_title = paste0(
-          "Draw a symbol on cells which kill less than the indicated ",
-          "percentage. Zero hides the symbols."
-        ),
-        numericInput(
-          inputId = "plot_tile_minflag_value",
-          label = NULL,
-          value = 0.5,
-          min = 0,
-          step = 0.1
+          wrap_selector(
+            label = "MIC cutoff",
+            label_title = "Threshold for calculating MICs; applies to x- and y-axis",
+            numericInput(
+              inputId = "plot_tile_mic_threshold",
+              label = NULL,
+              value = 0.5
+            )
+          ),
+
+          wrap_selector(
+            label = "Highlight low killing",
+            label_title = paste0(
+              "Draw a symbol on cells which kill less than the indicated ",
+              "percentage. Zero hides the symbols."
+            ),
+            numericInput(
+              inputId = "plot_tile_minflag_value",
+              label = NULL,
+              value = 0.5,
+              min = 0,
+              step = 0.1
+            )
+          )
         )
       )
     )
