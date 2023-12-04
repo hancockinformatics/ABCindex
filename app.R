@@ -1,7 +1,6 @@
 # To do -------------------------------------------------------------------
 
 #' - Summary and full results tables...?
-#' - Custom container for results table with tool tips on column names
 #' - Better description for tile splitting options (strict/loose)
 #' - Add version of split dot plot
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
@@ -26,6 +25,41 @@ app_version <- gsub(
 )
 
 app_theme <- bs_theme(version = 5, preset = "cosmo")
+
+
+# |- Input preview container ----------------------------------------------
+
+input_data_preview_container <- htmltools::withTags(table(
+  class = "display",
+  thead(tr(
+    class = "table-dark",
+    th(
+      "Replicate",
+      title = "Unique name for each replicate of an assay"
+    ),
+    th("Wells"),
+    th(
+      "Cols",
+      title = paste0("Compound found in the plate's columns (1-12).")
+    ),
+    th(
+      "Cols Conc",
+      title = "Concentrations identified for the plate's columns."
+    ),
+    th(
+      "Rows",
+      title = "Compound found in the plate's rows (A-H)."
+    ),
+    th(
+      "Rows Conc",
+      title = "Concentrations identified for the plate's rows."
+    ),
+    th(
+      "Bio",
+      title = "The measured value from wells in the plate"
+    )
+  ))
+))
 
 
 # |- Results table container ----------------------------------------------
@@ -439,7 +473,8 @@ server <- function(input, output) {
 
     purrr::map(
       input_data_raw(),
-      ~mutate(.x, across(where(is.numeric), ~signif(.x, digits = 4)))
+      ~mutate(.x, across(where(is.numeric), ~signif(.x, digits = 4))) %>%
+        janitor::clean_names(case = "title")
     )
   })
 
@@ -454,7 +489,9 @@ server <- function(input, output) {
   output$input_data_preview_DT <- DT::renderDataTable(
     input_data_preview()[[input$input_data_sheet_names]],
     rownames = FALSE,
-    class = "table-striped",
+    selection = "none",
+    class = "table-striped cell-border",
+    container = input_data_preview_container,
     options = list(
       dom = "ltip",
       columnDefs = list(list(targets = 0, render = ellipsis_render(60)))
@@ -538,7 +575,8 @@ server <- function(input, output) {
     expr = abci_results_display()[[input$results_names_selectInput]],
     container = abci_results_display_container,
     rownames = FALSE,
-    class = "table-striped",
+    class = "table-striped cell-border",
+    selection = "none",
     options = list(
       dom = "ltip",
       scrollX = TRUE,
