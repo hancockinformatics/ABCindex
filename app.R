@@ -1133,38 +1133,42 @@ server <- function(input, output) {
       ),
 
       br(),
-      HTML("<header class='sidebar-title'>Advanced options</header>"),
+      accordion(
+        open = FALSE,
+        accordion_panel(
+          title = "Advanced options",
+          wrap_selector(
+            label = "X-axis jitter",
+            label_title = "Nudge values along the x-axis to prevent overlapping lines",
+            input_switch(
+              id = "plot_line_jitter_x",
+              label = "On",
+              value = TRUE
+            )
+          ),
 
-      wrap_selector(
-        label = "X-axis jitter",
-        label_title = "Nudge values along the x-axis to prevent overlapping lines",
-        input_switch(
-          id = "plot_line_jitter_x",
-          label = "On",
-          value = TRUE
-        )
-      ),
+          wrap_selector(
+            label = "Axis labels",
+            label_title = paste0(
+              "Across the plot facets, should the x- and y-axis labels vary ",
+              "(Free) or be the same (Fixed)?"
+            ),
+            selectInput(
+              inputId = "plot_line_scales",
+              label = NULL,
+              choices = plot_scales
+            )
+          ),
 
-      wrap_selector(
-        label = "Axis labels",
-        label_title = paste0(
-          "Across the plot facets, should the x- and y-axis labels vary ",
-          "(Free) or be the same (Fixed)?"
-        ),
-        selectInput(
-          inputId = "plot_line_scales",
-          label = NULL,
-          choices = plot_scales
-        )
-      ),
-
-      wrap_selector(
-        label = "MIC cutoff",
-        label_title = "Threshold for calculating MICs; applies to x-axis",
-        numericInput(
-          inputId = "plot_line_mic_threshold",
-          label = NULL,
-          value = 0.5
+          wrap_selector(
+            label = "MIC cutoff",
+            label_title = "Threshold for calculating MICs; applies to x-axis",
+            numericInput(
+              inputId = "plot_line_mic_threshold",
+              label = NULL,
+              value = 0.5
+            )
+          )
         )
       )
     )
