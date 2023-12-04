@@ -43,6 +43,8 @@
 /* Customize shiny notifications */
 #shiny-notification-panel {
   width: 400px;
+  margin-right: 24px;
+  margin-bottom: 24px;
 }
 .shiny-progress-notification .progress-text .progress-message {
   font-size: 110%;
