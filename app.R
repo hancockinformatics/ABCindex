@@ -3,7 +3,6 @@
 #' - Summary and full results tables...?
 #' - Custom container for results table with tool tips on column names
 #' - Better description for tile splitting options (strict/loose)
-#' - Add legend text below plots, unique for each type of plot
 #' - Add version of split dot plot
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
 #'     if (effect > 0.9) {
@@ -1178,6 +1177,19 @@ server <- function(input, output) {
   plot_type <- reactive(input$visualize_tabs)
 
 
+  # |- Plot-specific legends ----------------------------------------------
+
+  plot_legend <- reactive({
+    switch(
+      plot_type(),
+      "tile" = HTML("<p>Tile legend.</p>"),
+      "tile_split" = HTML("<p>Split tile legend.</p>"),
+      "dot" = HTML("<p>Dot legend.</p>"),
+      "line" = HTML("<p>Line legend.</p>"),
+    )
+  })
+
+
   # |-- Line include options ----------------------------------------------
 
   observeEvent(input$plot_line_x_drug, {
@@ -1369,7 +1381,7 @@ server <- function(input, output) {
           height = plot_height,
           width = plot_width
         ) %>% shinycssloaders::withSpinner(),
-        div(p("Here's some legend text."))
+        div(isolate(plot_legend()))
       )
     )
   })
