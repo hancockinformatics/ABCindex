@@ -544,14 +544,18 @@ server <- function(input, output) {
   # |- Set up inputs ------------------------------------------------------
 
   # Define some fixed `selectInput()` choices
-  abci_colours <- c(
-    "Orange-purple (2)" = "OP",
-    "Yellow-purple (2)" = "YP",
-    "Yellow-blue (2)" = "YB",
-    "Red-blue (2)" = "RB",
-    "Orange-yellow-purple (3)" = "SUN",
-    "Magenta-yellow-blue (3)" = "PAN",
-    "Red-yellow-blue (3)" = "BOB"
+  abci_colours <- list(
+    "Three-colour palettes" = list(
+      "Red-yellow-blue" = "BOB",
+      "Orange-yellow-purple" = "SUN",
+      "Magenta-yellow-blue" = "PAN"
+    ),
+    "Two-colour palettes" = list(
+      "Orange-purple" = "OP",
+      "Yellow-purple" = "YP",
+      "Yellow-blue" = "YB",
+      "Red-blue" = "RB"
+    )
   )
 
   line_colours <- purrr::set_names(
