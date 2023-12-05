@@ -153,6 +153,12 @@ abci_analysis_single <- function(
   data_clean <- data %>%
     mutate(across(all_of(c(x.drug, y.drug)), forcats::fct_inseq))
 
+  if (!normalize) {
+    if (max(data_clean[[col.data]]) >= 100) {
+      data_clean[[col.data]] <- data_clean[[col.data]] / 100
+    }
+  }
+
   # For "data_effect", we are doing a few things. When we're normalizing:
   # - Identify the baseline reading, when the concentration of both drugs is 0
   # - "bio_normal" is calculated by dividing each well of data by the baseline,

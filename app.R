@@ -1,16 +1,8 @@
 # To do -------------------------------------------------------------------
 
 #' - Summary and full results tables...?
-#' - Custom container for results table with tool tips on column names
-#' - Swap compound selections to a toggle (x-y or y-x)
-#' - Separate toggle for "Flag low killing", move the cutoff to "Advanced"
-#' - Move MIC threshold to "Advanced"
+#' - Better description for tile splitting options (strict/loose)
 #' - Add version of split dot plot
-#' - Add legend text below plots, unique for each type of plot
-#' - If data is normalized to percentages, but 0-100, divide by 100
-#' - Change default selection for normalization
-#' - "Axis labels" ("scales") option should moved to "Advanced", be either
-#'   "all free" or "all fixed". Name: "Restrict each facet to the same labels"?
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
 #'     if (effect > 0.9) {
 #'       add * to tile, or border around dot
@@ -35,6 +27,113 @@ app_version <- gsub(
 app_theme <- bs_theme(version = 5, preset = "cosmo")
 
 
+# |- Input preview container ----------------------------------------------
+
+input_data_preview_container <- htmltools::withTags(table(
+  class = "display",
+  thead(tr(
+    class = "table-dark",
+    th(
+      "Replicate",
+      title = "Unique name for each replicate of an assay"
+    ),
+    th("Wells"),
+    th(
+      "Cols",
+      title = paste0("Compound found in the plate's columns (1-12).")
+    ),
+    th(
+      "Cols Conc",
+      title = "Concentrations identified for the plate's columns."
+    ),
+    th(
+      "Rows",
+      title = "Compound found in the plate's rows (A-H)."
+    ),
+    th(
+      "Rows Conc",
+      title = "Concentrations identified for the plate's rows."
+    ),
+    th(
+      "Bio",
+      title = "The measured value from wells in the plate"
+    )
+  ))
+))
+
+
+# |- Results table container ----------------------------------------------
+
+abci_results_display_container <- htmltools::withTags(table(
+  class = "display",
+  thead(tr(
+    class = "table-dark",
+    th(
+      "Cols",
+      title = paste0("Compound found in the plate's columns (1-12).")
+    ),
+    th(
+      "Cols Conc",
+      title = "Concentrations identified for the plate's columns."
+    ),
+    th(
+      "Rows",
+      title = "Compound found in the plate's rows (A-H)."
+    ),
+    th(
+      "Rows Conc",
+      title = "Concentrations identified for the plate's rows."
+    ),
+    th(
+      "Bio Normal Avg",
+      title = paste0(
+        "The measured value from wells in the plate, after any normalization ",
+        "and/or averaging across replicates"
+      )
+    ),
+    th(
+      "Effect Avg",
+      title = "The measured effect, equal to 1 - 'Bio Normal Avg'"
+    ),
+    th(
+      "ABCi Avg",
+      title = paste0(
+        "The Anti-Biofilm Combination Index (ABCi) value, averaged ",
+        "across any replicates."
+      )
+    )
+  ))
+))
+
+
+# |- Fixed plot inputs ----------------------------------------------------
+
+# Define some fixed `selectInput()` choices
+abci_colours <- list(
+  "Three-colour palettes" = list(
+    "Red-yellow-blue" = "BOB",
+    "Orange-yellow-purple" = "SUN",
+    "Magenta-yellow-blue" = "PAN"
+  ),
+  "Two-colour palettes" = list(
+    "Orange-purple" = "OP",
+    "Yellow-purple" = "YP",
+    "Yellow-blue" = "YB",
+    "Red-blue" = "RB"
+  )
+)
+
+line_colours <- purrr::set_names(
+  c("viridis", "magma", "plasma", "inferno", "cividis", "mako", "rocket", "turbo"),
+  stringr::str_to_title
+)
+
+plot_scales <- c(
+  "Labels on every facet" = "free",
+  "Only label the outermost axis" = "fixed"
+)
+
+
 # Define UI ---------------------------------------------------------------
 
 ui <- page_fluid(
@@ -42,7 +141,19 @@ ui <- page_fluid(
   HTML("<base target='_blank' rel='noopener noreferrer'>"),
   useShinyjs(),
   tags$head(
-    tags$link(rel = "stylesheet", type = "text/css", href = "css/custom.css")
+    tags$link(rel = "stylesheet", type = "text/css", href = "css/custom.css"),
+    tags$link(
+      rel = "icon",
+      type = "image/svg",
+      href = "hancock_lab_logo_32.svg",
+      sizes = "32x32"
+    ),
+    tags$link(
+      rel = "icon",
+      type = "image/svg",
+      href = "hancock_lab_logo_16.svg",
+      sizes = "16x16"
+    )
   ),
 
 
@@ -74,13 +185,22 @@ ui <- page_fluid(
 
             br(),
 
-            actionButton(
-              inputId = "get_started",
-              class = "btn btn-primary btn-lg",
-              label = div(
-                icon("play"),
-                HTML("&nbsp;"), # Horizontal spacer
-                HTML("Get started")
+            div(
+              actionButton(
+                inputId = "get_started",
+                class = "btn btn-primary btn-lg px-4 me-md-2",
+                label = div(
+                  icon("play"),
+                  HTML("Get started")
+                )
+              ),
+              actionButton(
+                inputId = "learn_more",
+                class = "btn btn-outline-secondary btn-lg px-4",
+                label = div(
+                  icon("circle-info"),
+                  HTML("Learn more")
+                )
               )
             ),
 
@@ -165,10 +285,10 @@ ui <- page_fluid(
               inputId = "normalize_radio",
               label = NULL,
               choices = list(
-                "My data is already normalized (range 0 to 1)" = FALSE,
-                "Normalize my data for me" = TRUE
+                "Normalize my data to percentages (range 0 to 1)" = "run_norm",
+                "My data is already normalized to percentages (0 to 1 or 100)" = "no_norm"
               ),
-              selected = FALSE
+              selected = "run_norm"
             ),
 
             disabled(
@@ -248,34 +368,41 @@ ui <- page_fluid(
     # |- About ----------------------------------------------------------
 
     nav_panel(
+      value = "about",
       title = "About",
-      div(class = "container col-xxl-8 px-4 py-5",
-          div(class = "row flex-lg-row align-items-center g-5 py-5",
-              div(class = "col-lg-6",
-
-                  h1(class = "display-5 fw-bold text-body-emphasis lh-1 mb-3",
-                     "About"
-                  ),
-                  p(class = "lead",
-                    "Here is some About text."
-                  ),
-                  p(class = "lead",
-                    "Blah blah R blah blah Shiny blah blah blah Hancock Lab."
-                  ),
-                  div(class = "d-grid gap-2 d-md-flex justify-content-md-start",
-                      actionButton(
-                        inputId = "about_button_1",
-                        class = "btn btn-primary btn-lg px-4 me-md-2",
-                        label = "A button"
-                      ),
-                      actionButton(
-                        inputId = "about_button_2",
-                        class = "btn btn-outline-secondary btn-lg px-4",
-                        HTML("A <i>second</i> button")
-                      )
-                  )
+      div(
+        class = "container col-xxl-8 px-4 py-5",
+        div(
+          class = "row flex-lg-row align-items-center g-5 py-5",
+          div(
+            class = "col-lg-6",
+            h1(
+              class = "display-5 fw-bold text-body-emphasis lh-1 mb-3",
+              "About"
+            ),
+            p(
+              class = "lead",
+              "Here is some About text."
+            ),
+            p(
+              class = "lead",
+              "Blah blah R blah blah Shiny blah blah blah Hancock Lab."
+            ),
+            div(
+              class = "d-grid gap-2 d-md-flex justify-content-md-start",
+              actionButton(
+                inputId = "about_button_1",
+                class = "btn btn-primary btn-lg px-4 me-md-2",
+                label = "A button"
+              ),
+              actionButton(
+                inputId = "about_button_2",
+                class = "btn btn-outline-secondary btn-lg px-4",
+                HTML("A <i>second</i> button")
               )
+            )
           )
+        )
       )
     ),
 
@@ -292,6 +419,15 @@ ui <- page_fluid(
         title = "Visit our Github to browse the code or submit an issue."
       )
     ),
+
+    # Divider
+    nav_item(
+      HTML(paste0(
+        '<div class="vr d-none d-lg-flex h-100 mx-lg-2 text-white"></div>',
+        '<hr class="d-lg-none my-2 text-white-50">'
+      ))
+    ),
+
     nav_item(app_version, style = "color: var(--bs-nav-link-color)")
   )
 )
@@ -302,11 +438,6 @@ ui <- page_fluid(
 server <- function(input, output) {
 
   observeEvent(input$notification_test, {
-    # lapply(
-    #   cli::cli_progress_along(c(1, 10), "Testing progress message..."),
-    #   function(i) {
-    #     Sys.sleep(i * 10)
-    # })
     showNotification(
       type = "message",
       duration = NULL,
@@ -316,6 +447,11 @@ server <- function(input, output) {
         "notifications look.</p>"
       ))
     )
+  })
+
+  # Learn more action
+  observeEvent(input$learn_more, {
+    updateNavbarPage(inputId = "navbar", selected = "about")
   })
 
 
@@ -361,7 +497,8 @@ server <- function(input, output) {
 
     purrr::map(
       input_data_raw(),
-      ~mutate(.x, across(where(is.numeric), ~signif(.x, digits = 4)))
+      ~mutate(.x, across(where(is.numeric), ~signif(.x, digits = 4))) %>%
+        janitor::clean_names(case = "title")
     )
   })
 
@@ -376,7 +513,9 @@ server <- function(input, output) {
   output$input_data_preview_DT <- DT::renderDataTable(
     input_data_preview()[[input$input_data_sheet_names]],
     rownames = FALSE,
-    class = "table-striped",
+    selection = "none",
+    class = "table-striped cell-border",
+    container = input_data_preview_container,
     options = list(
       dom = "ltip",
       columnDefs = list(list(targets = 0, render = ellipsis_render(60)))
@@ -428,7 +567,7 @@ server <- function(input, output) {
       col.data = "bio",
       col.analysis = "assay",
       col.reps = "replicate",
-      normalize = input$normalize_radio
+      normalize = ifelse(input$normalize_radio == "run_norm", TRUE, FALSE)
     ) %>%
       abci_results()
   })
@@ -458,8 +597,10 @@ server <- function(input, output) {
 
   output$results_table_DT <- DT::renderDataTable(
     expr = abci_results_display()[[input$results_names_selectInput]],
+    container = abci_results_display_container,
     rownames = FALSE,
-    class = "table-striped",
+    class = "table-striped cell-border",
+    selection = "none",
     options = list(
       dom = "ltip",
       scrollX = TRUE,
@@ -548,30 +689,7 @@ server <- function(input, output) {
   })
 
 
-  # |- Set up inputs ------------------------------------------------------
-
-  # Define some fixed `selectInput()` choices
-  abci_colours <- c(
-    "Orange-purple (2)" = "OP",
-    "Yellow-purple (2)" = "YP",
-    "Yellow-blue (2)" = "YB",
-    "Red-blue (2)" = "RB",
-    "Orange-yellow-purple (3)" = "SUN",
-    "Magenta-yellow-blue (3)" = "PAN",
-    "Red-yellow-blue (3)" = "BOB"
-  )
-
-  line_colours <- purrr::set_names(
-    c("viridis", "magma", "plasma", "inferno", "cividis", "mako", "rocket", "turbo"),
-    stringr::str_to_title
-  )
-
-  plot_scales <- c(
-    "Free X and Y" = "free",
-    "Fixed X and Y" = "fixed",
-    "Free X, Fixed Y" = "free_x",
-    "Free Y, Fixed X" = "free_y"
-  )
+  # |- Set up reactive inputs ---------------------------------------------
 
   conc_columns <- reactive(
     grep(
@@ -600,7 +718,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X compound",
-        label_title = "Compound to plot on the x-axis",
+        label_title = "Compound to plot on the x-axis. The other compound is plotted on the y-axis",
         selectInput(
           inputId = "plot_tile_x_drug",
           label = NULL,
@@ -632,17 +750,6 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Y compound",
-        label_title = "Compound to plot on the y-axis",
-        selectInput(
-          inputId = "plot_tile_y_drug",
-          label = NULL,
-          choices = conc_columns(),
-          selected = conc_columns()[2]
-        )
-      ),
-
-      wrap_selector(
         label = "Y axis title",
         label_title = "Title for the y-axis; applies to the entire plot",
         textInput(
@@ -666,19 +773,6 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Axis labels",
-        label_title = paste0(
-          "Across the plot facets, should the x- and y-axis labels vary ",
-          "(Free) or be the same (Fixed)?"
-        ),
-        selectInput(
-          inputId = "plot_tile_scales",
-          label = NULL,
-          choices = plot_scales
-        )
-      ),
-
-      wrap_selector(
         label = "Draw MIC lines",
         label_title = "Include lines to indicate MIC for the x- and y-axis",
         checkboxGroupInput(
@@ -691,45 +785,70 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "MIC cutoff",
-        label_title = "Threshold for calculating MICs; applies to x- and y-axis",
-        numericInput(
-          inputId = "plot_tile_mic_threshold",
-          label = NULL,
-          value = 0.5
-        )
-      ),
-
-      wrap_selector(
         label = "Highlight low killing",
-        label_title = paste0(
-          "Draw a symbol on cells which kill less than the indicated ",
-          "percentage. Zero hides the symbols."
-        ),
-        numericInput(
-          inputId = "plot_tile_min_flag",
-          label = NULL,
-          value = 0,
-          min = 0,
-          step = 0.1
+        label_title = "Option to draw a symbol on tiles with low effect",
+        input_switch(
+          id = "plot_tile_minflag_toggle",
+          label = "Off",
+          value = FALSE
         )
       ),
 
-      div(
-        class = "form-group row",
-        actionLink("plot_tile_advanced", "Advanced options...")
+      br(),
+
+      accordion(
+        open = FALSE,
+        accordion_panel(
+          title = "Advanced options",
+
+          wrap_selector(
+            label = "Axis labels",
+            label_title = paste0(
+              "Across the plot facets, should the x- and y-axis labels vary ",
+              "(Free) or be the same (Fixed)?"
+            ),
+            selectInput(
+              inputId = "plot_tile_scales",
+              label = NULL,
+              choices = plot_scales
+            )
+          ),
+
+          wrap_selector(
+            label = "MIC cutoff",
+            label_title = "Threshold for calculating MICs; applies to x- and y-axis",
+            numericInput(
+              inputId = "plot_tile_mic_threshold",
+              label = NULL,
+              value = 0.5
+            )
+          ),
+
+          wrap_selector(
+            label = "Highlight low killing",
+            label_title = paste0(
+              "Draw a symbol on cells which kill less than the indicated ",
+              "percentage. Zero hides the symbols."
+            ),
+            numericInput(
+              inputId = "plot_tile_minflag_value",
+              label = NULL,
+              value = 0.5,
+              min = 0,
+              step = 0.1
+            )
+          )
+        )
       )
     )
   })
 
-  observeEvent(input$plot_tile_advanced, {
-    showModal(modalDialog(
-      title = "Advanced options",
-      size = "m",
-      easyClose = TRUE,
-      p("Advanced options will go in here."),
-      footer = modalButton("OK")
-    ) %>% tagAppendAttributes(class = "modal-dialog-centered"))
+  observeEvent(input$plot_tile_minflag_toggle, {
+    if (input$plot_tile_minflag_toggle) {
+      update_switch("plot_tile_minflag_toggle", label = "On")
+    } else {
+      update_switch("plot_tile_minflag_toggle", label = "Off")
+    }
   })
 
 
@@ -750,18 +869,8 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Split type", # TODO
-        label_title = "Type of splitting/filtering to apply", # TODO
-        input_switch(
-          id = "plot_tile_split_strict",
-          label = "Strict",
-          value = FALSE
-        )
-      ),
-
-      wrap_selector(
         label = "X compound",
-        label_title = "Compound to plot on the x-axis",
+        label_title = "Compound to plot on the x-axis. The other compound is plotted on the y-axis",
         selectInput(
           inputId = "plot_tile_split_x_drug",
           label = NULL,
@@ -793,17 +902,6 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Y compound",
-        label_title = "Compound on the y-axis",
-        selectInput(
-          inputId = "plot_tile_split_y_drug",
-          label = NULL,
-          choices = conc_columns(),
-          selected = conc_columns()[2]
-        )
-      ),
-
-      wrap_selector(
         label = "Y axis title",
         label_title = "Title for the y-axis; applies to the entire plot",
         textInput(
@@ -827,20 +925,6 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Axis labels",
-        label_title = paste0(
-          "Across the plot facets, should the x- and y-axis labels vary ",
-          "(Free) or be the same (Fixed)?"
-        ),
-        selectInput(
-          inputId = "plot_tile_split_scales",
-          label = NULL,
-          selected = "fixed",
-          choices = plot_scales
-        )
-      ),
-
-      wrap_selector(
         label = "Draw MIC lines",
         label_title = "Include lines to indicate MIC for the x- and y-axis",
         checkboxGroupInput(
@@ -853,27 +937,68 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "MIC cutoff",
-        label_title = "Threshold for calculating MICs; applies to x- and y-axis",
-        numericInput(
-          inputId = "plot_tile_split_mic_threshold",
-          label = NULL,
-          value = 0.5
+        label = "Highlight low killing",
+        label_title = "Option to draw a symbol on tiles with low effect",
+        input_switch(
+          id = "plot_tile_split_minflag_toggle",
+          label = "Off",
+          value = FALSE
         )
       ),
 
-      wrap_selector(
-        label = "Highlight low killing",
-        label_title = paste0(
-          "Draw a symbol on cells which kill less than the indicated ",
-          "percentage. Zero hides the symbols."
-        ),
-        numericInput(
-          inputId = "plot_tile_split_min_flag",
-          label = NULL,
-          value = 0,
-          min = 0,
-          step = 0.1
+      br(),
+      accordion(
+        open = FALSE,
+        accordion_panel(
+          title = "Advanced options",
+          wrap_selector(
+            label = "Split type",
+            label_title = "Type of splitting/filtering to apply",
+            input_switch(
+              id = "plot_tile_split_strict",
+              label = "Strict",
+              value = FALSE
+            )
+          ),
+
+          wrap_selector(
+            label = "Axis labels",
+            label_title = paste0(
+              "Across the plot facets, should the x- and y-axis labels vary ",
+              "(Free) or be the same (Fixed)?"
+            ),
+            selectInput(
+              inputId = "plot_tile_split_scales",
+              label = NULL,
+              selected = "fixed",
+              choices = plot_scales
+            )
+          ),
+
+          wrap_selector(
+            label = "MIC cutoff",
+            label_title = "Threshold for calculating MICs; applies to x- and y-axis",
+            numericInput(
+              inputId = "plot_tile_split_mic_threshold",
+              label = NULL,
+              value = 0.5
+            )
+          ),
+
+          wrap_selector(
+            label = "Highlight low killing",
+            label_title = paste0(
+              "Draw a symbol on cells which kill less than the indicated ",
+              "percentage. Zero hides the symbols."
+            ),
+            numericInput(
+              inputId = "plot_tile_split_minflag_value",
+              label = NULL,
+              value = 0.5,
+              min = 0,
+              step = 0.1
+            )
+          )
         )
       )
     )
@@ -884,6 +1009,14 @@ server <- function(input, output) {
       update_switch("plot_tile_split_strict", label = "Strict")
     } else {
       update_switch("plot_tile_split_strict", label = "Loose")
+    }
+  })
+
+  observeEvent(input$plot_tile_split_minflag_toggle, {
+    if (input$plot_tile_split_minflag_toggle) {
+      update_switch("plot_tile_split_minflag_toggle", label = "On")
+    } else {
+      update_switch("plot_tile_split_minflag_toggle", label = "Off")
     }
   })
 
@@ -906,7 +1039,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X compound",
-        label_title = "Compound on the x-axis",
+        label_title = "Compound to plot on the x-axis. The other compound is plotted on the y-axis",
         selectInput(
           inputId = "plot_dot_x_drug",
           label = NULL,
@@ -938,17 +1071,6 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Y compound",
-        label_title = "Compound on the y-axis",
-        selectInput(
-          inputId = "plot_dot_y_drug",
-          label = NULL,
-          choices = conc_columns(),
-          selected = conc_columns()[2]
-        )
-      ),
-
-      wrap_selector(
         label = "Y axis title",
         label_title = "Title for the y-axis; applies to the entire plot",
         textInput(
@@ -972,20 +1094,6 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Axis labels",
-        label_title = paste0(
-          "Across the plot facets, should the x- and y-axis labels vary ",
-          "(Free) or be the same (Fixed)?"
-        ),
-        selectInput(
-          inputId = "plot_dot_scales",
-          label = NULL,
-          selected = "free",
-          choices = plot_scales
-        )
-      ),
-
-      wrap_selector(
         label = "Draw MIC lines",
         label_title = "Include lines to indicate MIC for the x- and y-axis",
         checkboxGroupInput(
@@ -997,13 +1105,34 @@ server <- function(input, output) {
         )
       ),
 
-      wrap_selector(
-        label = "MIC cutoff",
-        label_title = "Threshold for calculating MICs; applies to x- and y-axis",
-        numericInput(
-          inputId = "plot_dot_mic_threshold",
-          label = NULL,
-          value = 0.5
+      br(),
+      accordion(
+        open = FALSE,
+        accordion_panel(
+          title = "Advanced options",
+          wrap_selector(
+            label = "Axis labels",
+            label_title = paste0(
+              "Across the plot facets, should the x- and y-axis labels vary ",
+              "(Free) or be the same (Fixed)?"
+            ),
+            selectInput(
+              inputId = "plot_dot_scales",
+              label = NULL,
+              selected = "free",
+              choices = plot_scales
+            )
+          ),
+
+          wrap_selector(
+            label = "MIC cutoff",
+            label_title = "Threshold for calculating MICs; applies to x- and y-axis",
+            numericInput(
+              inputId = "plot_dot_mic_threshold",
+              label = NULL,
+              value = 0.5
+            )
+          )
         )
       )
     )
@@ -1032,7 +1161,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X compound",
-        label_title = "Compound on the x-axis",
+        label_title = "Compound to plot on the x-axis. The other compound is plotted as lines.",
         selectInput(
           inputId = "plot_line_x_drug",
           label = NULL,
@@ -1060,17 +1189,6 @@ server <- function(input, output) {
           min = 1,
           max = 4,
           step = 1
-        )
-      ),
-
-      wrap_selector(
-        label = "Line compound",
-        label_title = "Compound mapped to different lines and colours",
-        selectInput(
-          inputId = "plot_line_line_drug",
-          label = NULL,
-          choices = conc_columns(),
-          selected = conc_columns()[2]
         )
       ),
 
@@ -1119,35 +1237,12 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Axis labels",
-        label_title = paste0(
-          "Across the plot facets, should the x- and y-axis labels vary ",
-          "(Free) or be the same (Fixed)?"
-        ),
-        selectInput(
-          inputId = "plot_line_scales",
-          label = NULL,
-          choices = plot_scales
-        )
-      ),
-
-      wrap_selector(
         label = "Y axis title",
         label_title = "Title for the y-axis; applies to the entire plot",
         textInput(
           inputId = "plot_line_y_text",
           label = NULL,
           value = "% Biofilm"
-        )
-      ),
-
-      wrap_selector(
-        label = "X-axis jitter",
-        label_title = "Nudge values along the x-axis to prevent overlapping lines",
-        input_switch(
-          id = "plot_line_jitter_x",
-          label = "On",
-          value = TRUE
         )
       ),
 
@@ -1163,13 +1258,43 @@ server <- function(input, output) {
         )
       ),
 
-      wrap_selector(
-        label = "MIC cutoff",
-        label_title = "Threshold for calculating MICs; applies to x-axis",
-        numericInput(
-          inputId = "plot_line_mic_threshold",
-          label = NULL,
-          value = 0.5
+      br(),
+      accordion(
+        open = FALSE,
+        accordion_panel(
+          title = "Advanced options",
+          wrap_selector(
+            label = "X-axis jitter",
+            label_title = "Nudge values along the x-axis to prevent overlapping lines",
+            input_switch(
+              id = "plot_line_jitter_x",
+              label = "On",
+              value = TRUE
+            )
+          ),
+
+          wrap_selector(
+            label = "Axis labels",
+            label_title = paste0(
+              "Across the plot facets, should the x- and y-axis labels vary ",
+              "(Free) or be the same (Fixed)?"
+            ),
+            selectInput(
+              inputId = "plot_line_scales",
+              label = NULL,
+              choices = plot_scales
+            )
+          ),
+
+          wrap_selector(
+            label = "MIC cutoff",
+            label_title = "Threshold for calculating MICs; applies to x-axis",
+            numericInput(
+              inputId = "plot_line_mic_threshold",
+              label = NULL,
+              value = 0.5
+            )
+          )
         )
       )
     )
@@ -1189,24 +1314,28 @@ server <- function(input, output) {
   plot_type <- reactive(input$visualize_tabs)
 
 
-  # |-- Min flagging ------------------------------------------------------
+  # |- Plot-specific legends ----------------------------------------------
 
-  plot_tile_min_info <- reactive(
-    ifelse(input$plot_tile_min_flag > 0, TRUE, FALSE)
-  )
-
-  plot_tile_split_min_info <- reactive(
-    ifelse(input$plot_tile_split_min_flag > 0, TRUE, FALSE)
-  )
+  plot_legend <- reactive({
+    switch(
+      plot_type(),
+      "tile" = HTML("<p>Tile legend.</p>"),
+      "tile_split" = HTML("<p>Split tile legend.</p>"),
+      "dot" = HTML("<p>Dot legend.</p>"),
+      "line" = HTML("<p>Line legend.</p>"),
+    )
+  })
 
 
   # |-- Line include options ----------------------------------------------
 
-  observeEvent(input$plot_line_type, {
+  observeEvent(input$plot_line_x_drug, {
     req(abci_plot_data())
 
+    line_column <- conc_columns()[!conc_columns() %in% input$plot_line_x_drug]
+
     unique_conc <- abci_plot_data() %>%
-      pull(input$plot_line_line_drug) %>%
+      pull(line_column) %>%
       unique()
 
     updateSelectInput(
@@ -1262,7 +1391,7 @@ server <- function(input, output) {
         abci_plot_tile(
           data = isolate(abci_plot_data()),
           x.drug = isolate(input$plot_tile_x_drug),
-          y.drug = isolate(input$plot_tile_y_drug),
+          y.drug = conc_columns()[!conc_columns() %in% isolate(input$plot_tile_x_drug)],
           col.fill = "abci_avg",
           col.analysis = "assay",
           n.cols = abci_plot_dims()[[1]],
@@ -1276,8 +1405,8 @@ server <- function(input, output) {
           y.mic.line = ("Y" %in% isolate(input$plot_tile_mic_lines)),
           mic.threshold = isolate(input$plot_tile_mic_threshold),
           col.mic = "bio_normal",
-          minflag = isolate(plot_tile_min_info()),
-          minflag.value = isolate(input$plot_tile_min_flag),
+          minflag = isolate(input$plot_tile_minflag_toggle),
+          minflag.value = isolate(input$plot_tile_minflag_value),
           colour.palette = isolate(input$plot_tile_colour_palette)
         )
 
@@ -1285,7 +1414,7 @@ server <- function(input, output) {
         abci_plot_dot(
           data = isolate(abci_plot_data()),
           x.drug = isolate(input$plot_dot_x_drug),
-          y.drug = isolate(input$plot_dot_y_drug),
+          y.drug = conc_columns()[!conc_columns() %in% isolate(input$plot_dot_x_drug)],
           col.fill = "abci_avg",
           col.size = "effect_avg",
           size.range = c(3, 15),
@@ -1323,7 +1452,7 @@ server <- function(input, output) {
           data = isolate(abci_plot_data()),
           plot.type = isolate(input$plot_line_type),
           x.drug = isolate(input$plot_line_x_drug),
-          line.drug = isolate(input$plot_line_line_drug),
+          line.drug = conc_columns()[!conc_columns() %in% isolate(input$plot_line_x_drug)],
           col.data = "bio_normal",
           col.analysis = "assay",
           line.include = isolate(input$plot_line_line_include),
@@ -1345,7 +1474,7 @@ server <- function(input, output) {
         abci_plot_tile_split(
           data = isolate(abci_plot_data()),
           x.drug = isolate(input$plot_tile_split_x_drug),
-          y.drug = isolate(input$plot_tile_split_y_drug),
+          y.drug = conc_columns()[!conc_columns() %in% isolate(input$plot_tile_split_x_drug)],
           col.fill = "abci_avg",
           col.analysis = "assay",
           strict = isolate(input$plot_tile_split_strict),
@@ -1360,8 +1489,8 @@ server <- function(input, output) {
           y.mic.line = ("Y" %in% isolate(input$plot_tile_split_mic_lines)),
           mic.threshold = isolate(input$plot_tile_split_mic_threshold),
           col.mic = "bio_normal",
-          minflag = isolate(plot_tile_split_min_info()),
-          minflag.value = isolate(input$plot_tile_split_min_flag),
+          minflag = isolate(input$plot_tile_split_minflag_toggle),
+          minflag.value = isolate(input$plot_tile_split_minflag_value),
           colour.palette = isolate(input$plot_tile_split_colour_palette)
         )
       }
@@ -1389,7 +1518,7 @@ server <- function(input, output) {
           height = plot_height,
           width = plot_width
         ) %>% shinycssloaders::withSpinner(),
-        div(p("Here's some legend text."))
+        div(isolate(plot_legend()))
       )
     )
   })
@@ -1398,5 +1527,5 @@ server <- function(input, output) {
 
 # Run the application -----------------------------------------------------
 
-message("\n=========================\n")
+message("\n==>")
 shinyApp(ui = ui, server = server)

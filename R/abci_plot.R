@@ -757,6 +757,13 @@ abci_plot_dot <- function(
     }
   }
 
+  proper_labels <- seq(0, 100, 20)
+
+  proper_breaks <- size_mapping %>%
+    filter(reference %in% proper_labels) %>%
+    mutate(new = scales::rescale(N1S2, to = size.range)) %>%
+    pull(new)
+
   ggplot(data, aes(.data[[x.drug]], .data[[y.drug]])) +
 
     geom_point(
@@ -817,8 +824,8 @@ abci_plot_dot <- function(
 
     scale_size_identity(
       name = "Biofilm\nkilled %",
-      breaks = seq.int(from = size.range[1], to = size.range[2], length.out = 6),
-      labels = seq(0, 100, 20),
+      breaks = proper_breaks,
+      labels = proper_labels,
       guide = guide_legend(keyheight = unit(10, "mm"))
     ) +
 
