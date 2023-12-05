@@ -93,7 +93,7 @@ abci_results_display_container <- htmltools::withTags(table(
     ),
     th(
       "Effect Avg",
-      title = "The measured effect, equal to \"1 - 'Bio Normal Avg'\"."
+      title = "The measured effect, equal to 1 - 'Bio Normal Avg'"
     ),
     th(
       "ABCi Avg",
@@ -128,7 +128,10 @@ line_colours <- purrr::set_names(
   stringr::str_to_title
 )
 
-plot_scales <- c("Free" = "free", "Fixed" = "fixed")
+plot_scales <- c(
+  "Labels on every facet" = "free",
+  "Only label the outermost axis" = "fixed"
+)
 
 
 # Define UI ---------------------------------------------------------------
@@ -182,13 +185,22 @@ ui <- page_fluid(
 
             br(),
 
-            actionButton(
-              inputId = "get_started",
-              class = "btn btn-primary btn-lg",
-              label = div(
-                icon("play"),
-                HTML("&nbsp;"), # Horizontal spacer
-                HTML("Get started")
+            div(
+              actionButton(
+                inputId = "get_started",
+                class = "btn btn-primary btn-lg px-4 me-md-2",
+                label = div(
+                  icon("play"),
+                  HTML("Get started")
+                )
+              ),
+              actionButton(
+                inputId = "learn_more",
+                class = "btn btn-outline-secondary btn-lg px-4",
+                label = div(
+                  icon("circle-info"),
+                  HTML("Learn more")
+                )
               )
             ),
 
@@ -273,8 +285,8 @@ ui <- page_fluid(
               inputId = "normalize_radio",
               label = NULL,
               choices = list(
-                "Normalize my data for me" = "run_norm",
-                "My data is normalized to percentages (0 to 1 or 100)" = "no_norm"
+                "Normalize my data to percentages (range 0 to 1)" = "run_norm",
+                "My data is already normalized to percentages (0 to 1 or 100)" = "no_norm"
               ),
               selected = "run_norm"
             ),
@@ -356,34 +368,41 @@ ui <- page_fluid(
     # |- About ----------------------------------------------------------
 
     nav_panel(
+      value = "about",
       title = "About",
-      div(class = "container col-xxl-8 px-4 py-5",
-          div(class = "row flex-lg-row align-items-center g-5 py-5",
-              div(class = "col-lg-6",
-
-                  h1(class = "display-5 fw-bold text-body-emphasis lh-1 mb-3",
-                     "About"
-                  ),
-                  p(class = "lead",
-                    "Here is some About text."
-                  ),
-                  p(class = "lead",
-                    "Blah blah R blah blah Shiny blah blah blah Hancock Lab."
-                  ),
-                  div(class = "d-grid gap-2 d-md-flex justify-content-md-start",
-                      actionButton(
-                        inputId = "about_button_1",
-                        class = "btn btn-primary btn-lg px-4 me-md-2",
-                        label = "A button"
-                      ),
-                      actionButton(
-                        inputId = "about_button_2",
-                        class = "btn btn-outline-secondary btn-lg px-4",
-                        HTML("A <i>second</i> button")
-                      )
-                  )
+      div(
+        class = "container col-xxl-8 px-4 py-5",
+        div(
+          class = "row flex-lg-row align-items-center g-5 py-5",
+          div(
+            class = "col-lg-6",
+            h1(
+              class = "display-5 fw-bold text-body-emphasis lh-1 mb-3",
+              "About"
+            ),
+            p(
+              class = "lead",
+              "Here is some About text."
+            ),
+            p(
+              class = "lead",
+              "Blah blah R blah blah Shiny blah blah blah Hancock Lab."
+            ),
+            div(
+              class = "d-grid gap-2 d-md-flex justify-content-md-start",
+              actionButton(
+                inputId = "about_button_1",
+                class = "btn btn-primary btn-lg px-4 me-md-2",
+                label = "A button"
+              ),
+              actionButton(
+                inputId = "about_button_2",
+                class = "btn btn-outline-secondary btn-lg px-4",
+                HTML("A <i>second</i> button")
               )
+            )
           )
+        )
       )
     ),
 
@@ -428,6 +447,11 @@ server <- function(input, output) {
         "notifications look.</p>"
       ))
     )
+  })
+
+  # Learn more action
+  observeEvent(input$learn_more, {
+    updateNavbarPage(inputId = "navbar", selected = "about")
   })
 
 
