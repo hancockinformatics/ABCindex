@@ -375,7 +375,12 @@ ui <- page_fluid(
               nav_panel(
                 title = "Dot",
                 value = "dot",
-                uiOutput("plot_inputs_tile_dot")
+                uiOutput("plot_inputs_dot")
+              ),
+              nav_panel(
+                title = "Split Dot",
+                value = "dot_split",
+                uiOutput("plot_inputs_dot_split")
               ),
               nav_panel(
                 title = "Line",
@@ -1045,7 +1050,7 @@ server <- function(input, output) {
 
   # |-- Dot ---------------------------------------------------------------
 
-  output$plot_inputs_tile_dot <- renderUI({
+  output$plot_inputs_dot <- renderUI({
     list(
       br(),
       wrap_selector(
@@ -1159,6 +1164,144 @@ server <- function(input, output) {
         )
       )
     )
+  })
+
+
+  # |-- Split dot ---------------------------------------------------------
+
+  output$plot_inputs_dot_split <- renderUI({
+    list(
+      br(),
+
+      wrap_selector(
+        label = actionLink("dot_preview_colours", label = "ABCi colours"),
+        label_title = "Colour palette to use for the ABCi values",
+        selectInput(
+          inputId = "plot_dot_split_colour_palette",
+          label = NULL,
+          selected = "BOB",
+          choices = abci_colours
+        )
+      ),
+
+      wrap_selector(
+        label = "X compound",
+        label_title = "Compound to plot on the x-axis. The other compound is plotted on the y-axis",
+        selectInput(
+          inputId = "plot_dot_split_x_drug",
+          label = NULL,
+          choices = conc_columns()
+        )
+      ),
+
+      wrap_selector(
+        label = "X axis title",
+        label_title = "Title for the x-axis; applies to the entire plot",
+        textInput(
+          inputId = "plot_dot_split_x_text",
+          label = NULL,
+          value = "Concentration (ug/mL)"
+        )
+      ),
+
+      wrap_selector(
+        label = "X axis digits",
+        label_title = "Number of decimal places to show for concentrations the x-axis",
+        numericInput(
+          inputId = "plot_dot_split_x_decimal",
+          label = NULL,
+          value = 2,
+          min = 1,
+          max = 4,
+          step = 1
+        )
+      ),
+
+      wrap_selector(
+        label = "Y axis title",
+        label_title = "Title for the y-axis; applies to the entire plot",
+        textInput(
+          inputId = "plot_dot_split_y_text",
+          label = NULL,
+          value = "Concentration (ug/mL)"
+        )
+      ),
+
+      wrap_selector(
+        label = "Y axis digits",
+        label_title = "Number of decimal places to show for concentrations the y-axis",
+        numericInput(
+          inputId = "plot_dot_split_y_decimal",
+          label = NULL,
+          value = 2,
+          min = 1,
+          max = 4,
+          step = 1
+        )
+      ),
+
+      wrap_selector(
+        label = "Draw MIC lines",
+        label_title = "Include lines to indicate MIC for the x- and y-axis",
+        checkboxGroupInput(
+          inputId = "plot_dot_split_mic_lines",
+          label = NULL,
+          inline = TRUE,
+          choices = c("X", "Y"),
+          selected = c("X", "Y")
+        )
+      ),
+
+      br(),
+      accordion(
+        open = FALSE,
+        accordion_panel(
+          title = "Advanced options",
+
+          wrap_selector(
+            label = "Include marginal values",
+            label_title = "Modify the splitting to include or exclude marginal values",
+            input_switch(
+              id = "plot_dot_split_strict",
+              label = "Showing marginal values",
+              value = FALSE
+            )
+          ),
+
+          wrap_selector(
+            label = "Axis labels",
+            label_title = paste0(
+              "Across the plot facets, should the x- and y-axis labels vary ",
+              "(Free) or be the same (Fixed)?"
+            ),
+            selectInput(
+              inputId = "plot_dot_split_scales",
+              label = NULL,
+              selected = "free",
+              choices = plot_scales
+            )
+          ),
+
+          wrap_selector(
+            label = "MIC cutoff",
+            label_title = "Threshold for calculating MICs; applies to x- and y-axis",
+            numericInput(
+              inputId = "plot_dot_split_mic_threshold",
+              label = NULL,
+              value = 0.5
+            )
+          )
+        )
+      )
+    )
+  })
+
+  observeEvent(input$plot_dot_split_strict, {
+    if (input$plot_dot_split_strict) {
+      update_switch("plot_dot_split_strict", label = "Hiding marginal values")
+    } else {
+      update_switch("plot_dot_split_strict", label = "Showing marginal values")
+    }
   })
 
 
@@ -1345,6 +1488,7 @@ server <- function(input, output) {
       "tile" = HTML("<p>Tile legend.</p>"),
       "tile_split" = HTML("<p>Split tile legend.</p>"),
       "dot" = HTML("<p>Dot legend.</p>"),
+      "dot_split" = HTML("<p>Split dot legend.</p>"),
       "line" = HTML("<p>Line legend.</p>"),
     )
   })
@@ -1483,6 +1627,34 @@ server <- function(input, output) {
             theme(legend.box = "horizontal")
           }}
 
+      } else if (isolate(input$visualize_tabs) == "dot_split") {
+
+        abci_plot_dot_split(
+          data = isolate(abci_plot_data()),
+          x.drug = isolate(input$plot_dot_split_x_drug),
+          y.drug = conc_columns()[!conc_columns() %in% isolate(input$plot_dot_split_x_drug)],
+          col.fill = "abci_avg",
+          col.size = "effect_avg",
+          strict = isolate(input$plot_dot_split_strict),
+          size.range = c(3, 15),
+          col.analysis = "assay",
+          n.cols = abci_plot_dims()[[1]],
+          n.rows = abci_plot_dims()[[2]],
+          scales = isolate(input$plot_dot_split_scales),
+          x.decimal = isolate(input$plot_dot_split_x_decimal),
+          y.decimal = isolate(input$plot_dot_split_y_decimal),
+          x.text = isolate(input$plot_dot_split_x_text),
+          y.text = isolate(input$plot_dot_split_y_text),
+          x.mic.line = ("X" %in% isolate(input$plot_dot_split_mic_lines)),
+          y.mic.line = ("Y" %in% isolate(input$plot_dot_split_mic_lines)),
+          mic.threshold = isolate(input$plot_dot_split_mic_threshold),
+          col.mic = "bio_normal",
+          colour.palette = isolate(input$plot_dot_split_colour_palette)
+        ) +
+          {if (abci_plot_dims()[[2]] == 1) {
+            theme(legend.box = "horizontal")
+          }}
+
       } else if (isolate(input$visualize_tabs) == "line") {
 
         if (max(abci_plot_data()$bio_normal) > 1.5 ) {
@@ -1528,7 +1700,7 @@ server <- function(input, output) {
 
     plot_width <- ifelse(abci_plot_dims()[[1]] == 1, "800px", "1150px")
 
-    if (plot_type() == "tile_split") {
+    if (grepl(x = plot_type(), pattern = "split")) {
       plot_height <- paste0(100 + (600 * abci_plot_dims()[[2]]), "px")
     } else {
       plot_height <- paste0(100 + (300 * abci_plot_dims()[[2]]), "px")

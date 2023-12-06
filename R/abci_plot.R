@@ -20,7 +20,7 @@ theme_set(
 size_mapping_N1S2 <- readRDS("data/size_mapping_N1S2.Rds")
 
 
-#' Create a tile plot of ABCi values
+#' abci_plot_tile
 #'
 #' @param data Data frame, as output by `abci.analysis()`
 #' @param x.drug Character; Column containing concentrations of the first drug
@@ -586,7 +586,7 @@ abci_plot_tile_split <- function(
 }
 
 
-#' col.dot.plot
+#' abci_plot_dot
 #'
 #' @param data Data frame, as output by `abci.analysis()`
 #' @param x.drug Character; Column containing concentrations of the first drug
@@ -855,7 +855,314 @@ abci_plot_dot <- function(
 }
 
 
-#' Plot biofilm percentages over a range of concentrations
+#' abci_plot_dot_split
+#'
+#' @param data
+#' @param x.drug
+#' @param y.drug
+#' @param col.fill
+#' @param col.size
+#' @param col.analysis
+#' @param strict
+#' @param size.range
+#' @param scales
+#' @param n.rows
+#' @param n.cols
+#' @param x.text
+#' @param y.text
+#' @param x.decimal
+#' @param y.decimal
+#' @param x.mic.line
+#' @param y.mic.line
+#' @param col.mic
+#' @param mic.threshold
+#' @param colour.palette
+#' @param colour.na
+#' @param scale.limits
+#' @param scale.breaks
+#' @param add.axis.lines
+#' @param size_mapping
+#'
+#' @return
+#' @export
+#'
+#' @examples
+abci_plot_dot_split <- function(
+    data,
+    x.drug,
+    y.drug,
+    col.fill,
+    col.size,
+    col.analysis = NULL,
+    strict = TRUE,
+    size.range = c(3, 15),
+    scales = "free",
+    n.rows = NULL,
+    n.cols = NULL,
+    x.text = "Drug 1",
+    y.text = "Drug 2",
+    x.decimal = 1,
+    y.decimal = 1,
+    x.mic.line = FALSE,
+    y.mic.line = FALSE,
+    col.mic,
+    mic.threshold = 0.5,
+    colour.palette = "BOB",
+    colour.na = "white",
+    scale.limits = c(-2.0, 2.0),
+    scale.breaks = seq(2, -2, -0.5),
+    add.axis.lines = TRUE,
+    size_mapping = size_mapping_N1S2
+) {
+
+  if (any(c("spec_tbl_df", "tbl_df", "tbl") %in% class(data))) {
+    data <- as.data.frame(data)
+  }
+
+  if (!is.null(col.analysis)) {
+    data[col.analysis] <- droplevels(data[col.analysis])
+  }
+
+
+  # Fix up the variable being mapped to size. Define labels and breaks.
+  data <- data %>%
+    mutate(
+      across(all_of(c(x.drug, y.drug)), forcats::fct_inseq),
+      reference = ceiling(scales::rescale(.data[[col.size]], to = c(0, 100)))
+    ) %>%
+    left_join(size_mapping, by = "reference")
+
+  proper_labels <- seq(0, 100, 20)
+
+  proper_breaks <- size_mapping %>%
+    filter(reference %in% proper_labels) %>%
+    mutate(new = scales::rescale(N1S2, to = size.range)) %>%
+    pull(new)
+
+
+  # Set up proper colour scaling
+  upper <- max(scale.limits)
+  lower <- min(scale.limits)
+
+  plot.palette <- preset_palettes_split[[colour.palette]]
+
+  colour.pointers <- list(
+    "up" = scales::rescale(
+      c(upper, 3 * upper / 4, upper / 2, upper / 4, 0),
+      to = c(0, 1)
+    ),
+    "down" = scales::rescale(
+      c(lower, 3 * lower / 4, lower / 2, lower / 4, 0),
+      to = c(0, 1)
+    )
+  )
+
+
+  # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
+  # concentrations need to be converted to positions on their respective axes,
+  # as the `geom_(x|y)line` functions only work by position.
+  if (any(x.mic.line, y.mic.line)) {
+
+    if (is.null(col.analysis)) {
+      mic.table <- abci_mic(
+        data = data,
+        x.drug = x.drug,
+        y.drug = y.drug,
+        col.data = col.mic,
+        threshold = mic.threshold
+      )
+
+      mic.table$XLAB <-
+        which(levels(droplevels(data[[x.drug]])) == mic.table$XMIC)
+
+      mic.table$YLAB <-
+        which(levels(droplevels(data[[y.drug]])) == mic.table$YMIC)
+
+    } else {
+      data.split <- split(x = data, f = data[col.analysis])
+
+      mic.table.split <- lapply(data.split, function(d) {
+        result.mic <- abci_mic(
+          data = d,
+          x.drug = x.drug,
+          y.drug = y.drug,
+          col.data = col.mic,
+          threshold = mic.threshold
+        )
+
+        result.mic$XLAB <-
+          which(levels(droplevels(d[[x.drug]])) == result.mic$XMIC)
+
+        result.mic$YLAB <-
+          which(levels(droplevels(d[[y.drug]])) == result.mic$YMIC)
+
+        result.mic
+      })
+
+      mic.table <- do.call(rbind, mic.table.split)
+      mic.table[, col.analysis] <- rownames(mic.table)
+      rownames(mic.table) <- NULL
+    }
+  }
+
+  data_split <- if (strict) {
+    list(
+      "up" = mutate(
+        data,
+        col_fill = ifelse(
+          test = .data[[col.fill]] > 0.1,
+          yes = .data[[col.fill]],
+          no = NA
+        )),
+      "down" = mutate(
+        data,
+        col_fill = ifelse(
+          test = .data[[col.fill]] < -0.1,
+          yes = .data[[col.fill]],
+          no = NA
+        )
+      )
+    )
+  } else {
+    list(
+      "up" = mutate(
+        data,
+        col_fill = ifelse(
+          test = .data[[col.fill]] > -0.1,
+          yes = .data[[col.fill]],
+          no = NA
+        )),
+      "down" = mutate(
+        data,
+        col_fill = ifelse(
+          test = .data[[col.fill]] < 0.1,
+          yes = .data[[col.fill]],
+          no = NA
+        )
+      )
+    )
+  }
+
+  data_split_scaled <- lapply(data_split, function(x) {
+    mutate(
+      x,
+      col_size = scales::rescale(N1S2, to = size.range),
+      col_size = ifelse(
+        !is.na(col_fill),
+        col_size,
+        0
+      )
+    )
+  })
+
+  scale.limits.split <- list(
+    "up" = c(0, scale.limits[scale.limits > 0]),
+    "down" = c(scale.limits[scale.limits < 0], 0)
+  )
+
+  dot_plots <- purrr::imap(data_split_scaled, function(d, nm) {
+
+    ggplot(d, aes(.data[[x.drug]], .data[[y.drug]])) +
+
+      geom_point(aes(colour = col_fill, size = col_size)) +
+
+      {if (!is.null(col.analysis)) {
+        facet_wrap(
+          ~.data[[col.analysis]],
+          nrow = n.rows,
+          ncol = n.cols,
+          scales = scales
+        )
+      }} +
+
+      {if (x.mic.line) {
+        geom_vline(data = mic.table, aes(xintercept = XLAB))
+      }} +
+
+      {if (y.mic.line) {
+        geom_hline(data = mic.table, aes(yintercept = YLAB))
+      }} +
+
+      scale_x_discrete(
+        name = x.text,
+        labels = ~sprintf(
+          paste0("%.", x.decimal, "f"),
+          as.numeric(.x)
+        )
+      ) +
+
+      scale_y_discrete(
+        name = y.text,
+        labels = ~sprintf(
+          paste0("%.", y.decimal, "f"),
+          as.numeric(.x)
+        )
+      ) +
+
+      scale_colour_gradientn(
+        name = ifelse(
+          grepl(x = col.fill, pattern = "abci", ignore.case = TRUE),
+          "ABCi",
+          col.fill
+        ),
+        colours = plot.palette[[nm]],
+        values = colour.pointers[[nm]],
+        na.value = colour.na,
+        limits = scale.limits.split[[nm]],
+        breaks = scale.breaks,
+        oob = scales::squish
+      ) +
+
+      {if (nm == "down") {
+        scale_size_identity(
+          name = "Biofilm\nkilled %",
+          limits = c(min(proper_breaks), max(proper_breaks)),
+          breaks = proper_breaks,
+          labels = proper_labels,
+          guide = guide_legend(keyheight = unit(10, "mm"))
+        )
+      } else {
+        scale_size_identity(
+          name = "Biofilm\nkilled %",
+          limits = c(min(proper_breaks), max(proper_breaks)),
+          breaks = proper_breaks,
+          labels = proper_labels
+        )
+      }} +
+
+      {if (add.axis.lines) {
+        annotate(
+          "segment",
+          x = -Inf,
+          xend = Inf,
+          y = -Inf,
+          yend = -Inf,
+          linewidth = 2
+        )
+      }} +
+
+      {if (add.axis.lines) {
+        annotate(
+          "segment",
+          x = -Inf,
+          xend = -Inf,
+          y = -Inf,
+          yend = Inf,
+          linewidth = 2
+        )
+      }} +
+
+      {if (x.decimal > 1) {
+        theme(axis.text.x = element_text(angle = 45, hjust = 1))
+      }} +
+      theme(legend.key.height = unit(7, "mm"))
+  })
+
+  patchwork::wrap_plots(dot_plots, ncol = 1, guides = "collect")
+}
+
+
+#' abci_plot_line
 #'
 #' @param data Data frame containing the measured biofilm (normalized)
 #' @param x.drug Character; Column name containing the concentration of the
