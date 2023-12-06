@@ -227,19 +227,19 @@ ui <- page_fluid(
 
             p("Info about upload."),
 
-            actionButton(
-              inputId = "load_example_data",
-              class = "btn btn-info btn-tooltip",
-              label = "Load example data",
-              title = "Click here to try our example data",
-              width = "180px"
-            ),
-
             fileInput(
               inputId = "load_user_data",
               label = NULL,
               buttonLabel = list(icon("upload"), "Upload plate data..."),
               accept = c("xls", ".xls", "xlsx", ".xlsx")
+            ),
+
+            actionButton(
+              inputId = "load_example_data",
+              class = "btn btn-info btn-tooltip",
+              label = "Load example data",
+              title = "Click here to try our example data",
+              width = "50%"
             ),
 
             uiOutput("upload_input_names_div"),
@@ -533,10 +533,13 @@ server <- function(input, output) {
   })
 
   output$upload_input_names_div <- renderUI(
-    selectInput(
-      inputId = "input_data_sheet_names",
-      label = "Select an uploaded sheet to preview:",
-      choices = names(input_data_preview())
+    tagList(
+      hr(),
+      selectInput(
+        inputId = "input_data_sheet_names",
+        label = strong("Select an uploaded sheet to preview:"),
+        choices = names(input_data_preview())
+      )
     )
   )
 
@@ -1715,9 +1718,9 @@ server <- function(input, output) {
         ) %>% shinycssloaders::withSpinner(),
 
         card(
+          class = "border-0",
           card_body(
             isolate(plot_legend()),
-            class = "card bg-light",
             padding = 8
           )
         )
