@@ -304,7 +304,29 @@ ui <- page_fluid(
             ),
 
             p("Information about interpreting the results."),
-            uiOutput("results_names_buttons")
+
+            uiOutput("results_names"),
+
+            disabled(
+              downloadButton(
+                outputId = "download_handler",
+                label = "Download your results",
+                class = "btn btn-success align-items-center",
+                style = "width: 50%"
+              )
+            ),
+
+            br(),
+            br(),
+            disabled(
+              actionButton(
+                inputId = "visualize_your_results",
+                label = "Visualize your results",
+                class = "btn btn-primary btn-tooltip align-items-center",
+                icon = icon("arrow-right"),
+                width = "100%"
+              )
+            )
           ),
 
           uiOutput("results_table_div")
@@ -330,12 +352,14 @@ ui <- page_fluid(
 
             p("Information about the different visualization available."),
 
-            actionButton(
-              inputId = "create_plot",
-              class = "btn btn-info btn-tooltip",
-              label = "Create or update the plot",
-              icon = icon("chart-bar"),
-              width = "50%"
+            disabled(
+              actionButton(
+                inputId = "create_plot",
+                class = "btn btn-info btn-tooltip",
+                label = "Create or update the plot",
+                icon = icon("chart-bar"),
+                width = "50%"
+              )
             ),
 
             navset_tab(
@@ -540,7 +564,6 @@ server <- function(input, output) {
   observeEvent(input$proceed_abci_calculations, {
     req(input_data_tidy())
     updateNavbarPage(inputId = "navbar", selected = "analysis")
-    enable(id = "perform_abci_calculations")
   })
 
 
@@ -549,6 +572,8 @@ server <- function(input, output) {
   input_data_tidy <- reactiveVal()
 
   observeEvent(input_data_raw(), {
+    enable("perform_abci_calculations")
+
     input_data_raw() %>%
       bind_rows(.id = "assay") %>%
       mutate(across(c(cols_conc, rows_conc), forcats::fct_inseq)) %>%
@@ -646,30 +671,16 @@ server <- function(input, output) {
   observeEvent(input$perform_abci_calculations, {
     req(abci_results(), abci_results_display())
 
-    output$results_names_buttons <- renderUI(
+    enable("download_handler")
+    enable("visualize_your_results")
+
+    output$results_names <- renderUI(
       tagList(
         hr(),
         selectInput(
           inputId = "results_names_selectInput",
           label = strong("Select an uploaded sheet to see the results:"),
           choices = names(abci_results_display())
-        ),
-
-        downloadButton(
-          outputId = "download_handler",
-          label = "Download your results",
-          class = "btn btn-success align-items-center",
-          style = "width: 50%"
-        ),
-
-        br(),
-        br(),
-        actionButton(
-          inputId = "visualize_your_results",
-          label = "Visualize your results",
-          class = "btn btn-primary btn-tooltip align-items-center",
-          icon = icon("arrow-right"),
-          width = "100%"
         )
       )
     )
@@ -680,6 +691,7 @@ server <- function(input, output) {
 
   observeEvent(input$visualize_your_results, {
     updateNavbarPage(inputId  = "navbar", selected = "visualize")
+    enable("create_plot")
   })
 
   abci_plot_data <- reactive(abci_results())
