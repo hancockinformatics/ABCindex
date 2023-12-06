@@ -222,6 +222,8 @@ ui <- page_fluid(
         layout_sidebar(
           sidebar = sidebar(
             title = "Upload your plate data",
+            class = "d-flex",
+            style = "width: inherit",
             width = "33%",
             open = NA,
 
@@ -247,7 +249,7 @@ ui <- page_fluid(
             disabled(
               actionButton(
                 inputId = "proceed_abci_calculations",
-                class = "btn btn-primary btn-tooltip",
+                class = "btn btn-primary btn-tooltip mt-auto",
                 label = "Proceed to ABCi calculations",
                 icon = icon("arrow-right"),
                 title = "Upload your plate data, then click here to analyze"
@@ -273,6 +275,7 @@ ui <- page_fluid(
         layout_sidebar(
           sidebar = sidebar(
             title = "ABCi analysis",
+            class = "d-flex",
             width = "33%",
             open = NA,
 
@@ -309,13 +312,11 @@ ui <- page_fluid(
               downloadButton(
                 outputId = "download_handler",
                 label = "Download your results",
-                class = "btn btn-success align-items-center",
+                class = "btn btn-success align-items-center mt-auto",
                 style = "width: 50%"
               )
             ),
 
-            br(),
-            br(),
             disabled(
               actionButton(
                 inputId = "visualize_your_results",
@@ -533,7 +534,8 @@ server <- function(input, output) {
   })
 
   output$upload_input_names_div <- renderUI(
-    tagList(
+    div(
+      class = "mb-auto",
       hr(),
       selectInput(
         inputId = "input_data_sheet_names",
@@ -681,7 +683,8 @@ server <- function(input, output) {
     enable("visualize_your_results")
 
     output$results_names <- renderUI(
-      tagList(
+      div(
+        class = "mb-auto",
         hr(),
         selectInput(
           inputId = "results_names_selectInput",
