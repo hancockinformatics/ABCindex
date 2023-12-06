@@ -10,10 +10,9 @@
 #'   }
 
 
-# Load packages -----------------------------------------------------------
+# Setup chunk -------------------------------------------------------------
 
 library(dplyr)
-library(ggplot2)
 library(shinyjs)
 library(shiny)
 library(bslib)
@@ -108,7 +107,6 @@ abci_results_display_container <- htmltools::withTags(table(
 
 # |- Fixed plot inputs ----------------------------------------------------
 
-# Define some fixed `selectInput()` choices
 abci_colours <- list(
   "Three-colour palettes" = list(
     "Red-yellow-blue" = "BOB",
@@ -280,8 +278,8 @@ ui <- page_fluid(
 
             p(
               "ShinyABCi expects data to be normalized to percentages, ",
-              "ranging from 0 to 1. If your data doesn't meet this criteria, ",
-              "use the options below to have your data normalized."
+              "ranging from 0 to 1 or 100. If your data doesn't meet this ",
+              " criteria, use the options below to have your data normalized."
             ),
             radioButtons(
               inputId = "normalize_radio",
@@ -706,7 +704,7 @@ server <- function(input, output) {
   })
 
 
-  # |- Set up reactive inputs ---------------------------------------------
+  # |- Set up reactive values and inputs ----------------------------------
 
   conc_columns <- reactive(
     grep(

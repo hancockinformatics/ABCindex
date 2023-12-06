@@ -16,7 +16,7 @@ theme_set(
     )
 )
 
-# Size mapping
+# Load size mapping data
 size_mapping_N1S2 <- readRDS("data/size_mapping_N1S2.Rds")
 
 
@@ -78,7 +78,7 @@ abci_plot_tile <- function(
     y.drug,
     col.fill,
     col.analysis = NULL,
-    scales = "fixed",
+    scales = "free",
     n.rows = NULL,
     n.cols = NULL,
     x.text = "Drug 1",
@@ -218,7 +218,7 @@ abci_plot_tile <- function(
       geom_vline(data = mic.table, aes(xintercept = XLAB))
     }} +
 
-    { if (y.mic.line) {
+    {if (y.mic.line) {
       geom_hline(data = mic.table, aes(yintercept = YLAB))
     }} +
 
@@ -261,7 +261,7 @@ abci_plot_tile <- function(
         xend = Inf,
         y = -Inf,
         yend = -Inf,
-        linewidth = 1
+        linewidth = 2
       )
     }} +
     {if (add.axis.lines) {
@@ -271,7 +271,7 @@ abci_plot_tile <- function(
         xend = -Inf,
         y = -Inf,
         yend = Inf,
-        linewidth = 1
+        linewidth = 2
       )
     }} +
 
@@ -338,7 +338,7 @@ abci_plot_tile_split <- function(
     col.fill,
     col.analysis = NULL,
     strict = TRUE,
-    scales = "fixed",
+    scales = "free",
     n.rows = NULL,
     n.cols = NULL,
     x.text = "Drug 1",
@@ -352,7 +352,7 @@ abci_plot_tile_split <- function(
     col.mic,
     mic.threshold = 0.5,
     delta = FALSE,
-    colour.palette = "YP",
+    colour.palette = "BOB",
     colour.na = "white",
     scale.limits = c(-2, 2),
     scale.breaks = seq(-2, 2, 0.5),
@@ -562,7 +562,7 @@ abci_plot_tile_split <- function(
           xend = Inf,
           y = -Inf,
           yend = -Inf,
-          linewidth = 1
+          linewidth = 2
         )
       }} +
       {if (add.axis.lines) {
@@ -572,7 +572,7 @@ abci_plot_tile_split <- function(
           xend = -Inf,
           y = -Inf,
           yend = Inf,
-          linewidth = 1
+          linewidth = 2
         )
       }} +
 
@@ -608,8 +608,6 @@ abci_plot_tile_split <- function(
 #'   to 1.
 #' @param y.decimal Number of decimal places to show for y-axis labels. Defaults
 #'   to 1.
-#' @param minflag Logical; Should rows previously flagged in `abci.analysis()`
-#'   be labeled? Defaults to FALSE.
 #' @param x.mic.line Logical; Include MIC line for the drug on the x axis?
 #'   Default to FALSE.
 #' @param y.mic.line Logical; Include MIC line for the drug on the y axis?
@@ -647,14 +645,13 @@ abci_plot_dot <- function(
     col.size,
     col.analysis = NULL,
     size.range = c(3, 15),
-    scales = "fixed",
+    scales = "free",
     n.rows = NULL,
     n.cols = NULL,
     x.text = "Drug 1",
     y.text = "Drug 2",
     x.decimal = 1,
     y.decimal = 1,
-    minflag = FALSE,
     x.mic.line = FALSE,
     y.mic.line = FALSE,
     col.mic,
@@ -676,12 +673,22 @@ abci_plot_dot <- function(
     data[col.analysis] <- droplevels(data[col.analysis])
   }
 
-  data <- data %>% mutate(
-    across(all_of(c(x.drug, y.drug)), forcats::fct_inseq),
-    reference = ceiling(scales::rescale(.data[[col.size]], to = c(0, 100)))
-  ) %>%
-    left_join(size_mapping)
+  # Fix up the variable being mapped to size. Define labels and breaks.
+  data <- data %>%
+    mutate(
+      across(all_of(c(x.drug, y.drug)), forcats::fct_inseq),
+      reference = ceiling(scales::rescale(.data[[col.size]], to = c(0, 100)))
+    ) %>%
+    left_join(size_mapping, by = "reference")
 
+  proper_labels <- seq(0, 100, 20)
+
+  proper_breaks <- size_mapping %>%
+    filter(reference %in% proper_labels) %>%
+    mutate(new = scales::rescale(N1S2, to = size.range)) %>%
+    pull(new)
+
+  # Set up proper colour scaling
   upper <- max(scale.limits)
   lower <- min(scale.limits)
 
@@ -757,13 +764,6 @@ abci_plot_dot <- function(
     }
   }
 
-  proper_labels <- seq(0, 100, 20)
-
-  proper_breaks <- size_mapping %>%
-    filter(reference %in% proper_labels) %>%
-    mutate(new = scales::rescale(N1S2, to = size.range)) %>%
-    pull(new)
-
   ggplot(data, aes(.data[[x.drug]], .data[[y.drug]])) +
 
     geom_point(
@@ -781,8 +781,6 @@ abci_plot_dot <- function(
         scales = scales
       )
     }} +
-
-    {if (minflag) geom_text(aes(label = min))} +
 
     {if (x.mic.line) {
       geom_vline(data = mic.table, aes(xintercept = XLAB))
@@ -914,7 +912,7 @@ abci_plot_line <- function(
     mic.threshold = 0.5,
     colour.palette = "viridis",
     col.analysis = NULL,
-    scales = "fixed",
+    scales = "free",
     n.rows = NULL,
     n.cols = NULL,
     x.text = "Drug 1",
@@ -967,7 +965,7 @@ abci_plot_line <- function(
         )
     }
 
-  # MIC
+  # MIC calculation
   if (x.mic.line) {
 
     if (is.null(col.analysis)) {
@@ -1112,7 +1110,7 @@ abci_plot_line <- function(
         xend = Inf,
         y = -Inf,
         yend = -Inf,
-        linewidth = 1
+        linewidth = 2
       )
     }} +
     {if (add.axis.lines) {
@@ -1122,7 +1120,7 @@ abci_plot_line <- function(
         xend = -Inf,
         y = -Inf,
         yend = Inf,
-        linewidth = 1
+        linewidth = 2
       )
     }} +
 
