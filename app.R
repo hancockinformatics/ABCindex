@@ -231,7 +231,7 @@ ui <- page_fluid(
               inputId = "load_user_data",
               label = NULL,
               buttonLabel = list(icon("upload"), "Upload plate data..."),
-              accept = c("xls", ".xls", "xlsx", ".xlsx")
+              accept = c("xls", ".xls", "xlsx", ".xlsx", "ods", ".ods")
             ),
 
             actionButton(
@@ -1704,7 +1704,7 @@ server <- function(input, output) {
     plot_width <- ifelse(abci_plot_dims()[[1]] == 1, "800px", "1150px")
 
     if (grepl(x = plot_type(), pattern = "split")) {
-      plot_height <- paste0(100 + (600 * abci_plot_dims()[[2]]), "px")
+      plot_height <- paste0(200 + (600 * abci_plot_dims()[[2]]), "px")
     } else {
       plot_height <- paste0(100 + (300 * abci_plot_dims()[[2]]), "px")
     }

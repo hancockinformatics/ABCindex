@@ -869,6 +869,23 @@
       ],
       "Hash": "5e3c5dc0b071b21fa128676560dbe94d"
     },
+    "readODS": {
+      "Package": "readODS",
+      "Version": "2.1.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "cellranger",
+        "cpp11",
+        "readr",
+        "stringi",
+        "tibble",
+        "vctrs",
+        "zip"
+      ],
+      "Hash": "927ef629204f2067c0a84f48166e651b"
+    },
     "readr": {
       "Package": "readr",
       "Version": "2.1.4",
@@ -1334,6 +1351,13 @@
       "Source": "Repository",
       "Repository": "RSPM",
       "Hash": "0d0056cc5383fbc240ccd0cb584bf436"
+    },
+    "zip": {
+      "Package": "zip",
+      "Version": "2.3.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "d98c94dacb7e0efcf83b0a133a705504"
     }
   }
 }
