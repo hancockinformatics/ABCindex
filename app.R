@@ -225,6 +225,7 @@ ui <- page_fluid(
           sidebar = sidebar(
             title = "Upload your plate data",
             width = "33%",
+            open = NA,
 
             p("Info about upload."),
 
@@ -275,6 +276,7 @@ ui <- page_fluid(
           sidebar = sidebar(
             title = "ABCi analysis",
             width = "33%",
+            open = NA,
 
             p(
               "ShinyABCi expects data to be normalized to percentages, ",
@@ -324,6 +326,7 @@ ui <- page_fluid(
           sidebar = sidebar(
             title = "Visualize ABCi results",
             width = "33%",
+            open = NA,
 
             p("Information about the different visualization available."),
 
@@ -645,26 +648,28 @@ server <- function(input, output) {
 
     output$results_names_buttons <- renderUI(
       tagList(
+        hr(),
         selectInput(
           inputId = "results_names_selectInput",
-          label = "Select an uploaded sheet to see the results:",
+          label = strong("Select an uploaded sheet to see the results:"),
           choices = names(abci_results_display())
         ),
-        div(
-          class = "d-flex gap-2 justify-content-center py-2",
-          downloadButton(
-            outputId = "download_handler",
-            label = "Download your results",
-            class = "btn btn-success align-items-center",
-            style = "width: 50%"
-          ),
-          actionButton(
-            inputId = "visualize_your_results",
-            label = "Visualize your results",
-            class = "btn btn-primary btn-tooltip align-items-center",
-            icon = icon("arrow-right"),
-            width = "50%"
-          )
+
+        downloadButton(
+          outputId = "download_handler",
+          label = "Download your results",
+          class = "btn btn-success align-items-center",
+          style = "width: 50%"
+        ),
+
+        br(),
+        br(),
+        actionButton(
+          inputId = "visualize_your_results",
+          label = "Visualize your results",
+          class = "btn btn-primary btn-tooltip align-items-center",
+          icon = icon("arrow-right"),
+          width = "100%"
         )
       )
     )
@@ -1410,6 +1415,30 @@ server <- function(input, output) {
           colour.palette = isolate(input$plot_tile_colour_palette)
         )
 
+      }  else if (isolate(input$visualize_tabs) == "tile_split") {
+        abci_plot_tile_split(
+          data = isolate(abci_plot_data()),
+          x.drug = isolate(input$plot_tile_split_x_drug),
+          y.drug = conc_columns()[!conc_columns() %in% isolate(input$plot_tile_split_x_drug)],
+          col.fill = "abci_avg",
+          col.analysis = "assay",
+          strict = isolate(input$plot_tile_split_strict),
+          n.cols = 2,
+          n.rows = 2,
+          scales = isolate(input$plot_tile_split_scales),
+          x.decimal = isolate(input$plot_tile_split_x_decimal),
+          y.decimal = isolate(input$plot_tile_split_y_decimal),
+          x.text = isolate(input$plot_tile_split_x_text),
+          y.text = isolate(input$plot_tile_split_y_text),
+          x.mic.line = ("X" %in% isolate(input$plot_tile_split_mic_lines)),
+          y.mic.line = ("Y" %in% isolate(input$plot_tile_split_mic_lines)),
+          mic.threshold = isolate(input$plot_tile_split_mic_threshold),
+          col.mic = "bio_normal",
+          minflag = isolate(input$plot_tile_split_minflag_toggle),
+          minflag.value = isolate(input$plot_tile_split_minflag_value),
+          colour.palette = isolate(input$plot_tile_split_colour_palette)
+        )
+
       } else if (isolate(input$visualize_tabs) == "dot") {
         abci_plot_dot(
           data = isolate(abci_plot_data()),
@@ -1469,30 +1498,6 @@ server <- function(input, output) {
           jitter.x = isolate(input$plot_line_jitter_x),
           colour.palette = isolate(input$plot_line_colour_palette)
         )
-
-      } else if (isolate(input$visualize_tabs) == "tile_split") {
-        abci_plot_tile_split(
-          data = isolate(abci_plot_data()),
-          x.drug = isolate(input$plot_tile_split_x_drug),
-          y.drug = conc_columns()[!conc_columns() %in% isolate(input$plot_tile_split_x_drug)],
-          col.fill = "abci_avg",
-          col.analysis = "assay",
-          strict = isolate(input$plot_tile_split_strict),
-          n.cols = 2,
-          n.rows = 2,
-          scales = isolate(input$plot_tile_split_scales),
-          x.decimal = isolate(input$plot_tile_split_x_decimal),
-          y.decimal = isolate(input$plot_tile_split_y_decimal),
-          x.text = isolate(input$plot_tile_split_x_text),
-          y.text = isolate(input$plot_tile_split_y_text),
-          x.mic.line = ("X" %in% isolate(input$plot_tile_split_mic_lines)),
-          y.mic.line = ("Y" %in% isolate(input$plot_tile_split_mic_lines)),
-          mic.threshold = isolate(input$plot_tile_split_mic_threshold),
-          col.mic = "bio_normal",
-          minflag = isolate(input$plot_tile_split_minflag_toggle),
-          minflag.value = isolate(input$plot_tile_split_minflag_value),
-          colour.palette = isolate(input$plot_tile_split_colour_palette)
-        )
       }
     )
   })
@@ -1518,7 +1523,14 @@ server <- function(input, output) {
           height = plot_height,
           width = plot_width
         ) %>% shinycssloaders::withSpinner(),
-        div(isolate(plot_legend()))
+
+        card(
+          card_body(
+            isolate(plot_legend()),
+            class = "card bg-light",
+            padding = 8
+          )
+        )
       )
     )
   })
@@ -1527,5 +1539,5 @@ server <- function(input, output) {
 
 # Run the application -----------------------------------------------------
 
-message("\n==>")
+message("\n==> Start...")
 shinyApp(ui = ui, server = server)
