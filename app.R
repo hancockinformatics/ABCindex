@@ -803,7 +803,10 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Highlight low killing",
-        label_title = "Option to draw a symbol on tiles with low effect",
+        label_title = paste0(
+          "Draw a symbol on cells which kill less than a certain percentag of ",
+          "the biofilm."
+        ),
         input_switch(
           id = "plot_tile_minflag_toggle",
           label = "Off",
@@ -842,10 +845,10 @@ server <- function(input, output) {
           ),
 
           wrap_selector(
-            label = "Highlight low killing",
+            label = "Low killing cuttoff",
             label_title = paste0(
-              "Draw a symbol on cells which kill less than the indicated ",
-              "percentage. Zero hides the symbols."
+              "Threshold for determining whether a low-killing cell is ",
+              "hightlighted (0 to 1)."
             ),
             numericInput(
               inputId = "plot_tile_minflag_value",
@@ -955,7 +958,10 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Highlight low killing",
-        label_title = "Option to draw a symbol on tiles with low effect",
+        label_title = paste0(
+          "Draw a symbol on cells which kill less than a certain percentag of ",
+          "the biofilm."
+        ),
         input_switch(
           id = "plot_tile_split_minflag_toggle",
           label = "Off",
@@ -968,12 +974,13 @@ server <- function(input, output) {
         open = FALSE,
         accordion_panel(
           title = "Advanced options",
+
           wrap_selector(
-            label = "Split type",
-            label_title = "Type of splitting/filtering to apply",
+            label = "Include marginal values",
+            label_title = "Modify the splitting to include or exclude marginal values",
             input_switch(
               id = "plot_tile_split_strict",
-              label = "Strict",
+              label = "Showing marginal values",
               value = FALSE
             )
           ),
@@ -1003,10 +1010,10 @@ server <- function(input, output) {
           ),
 
           wrap_selector(
-            label = "Highlight low killing",
+            label = "Low killing cuttoff",
             label_title = paste0(
-              "Draw a symbol on cells which kill less than the indicated ",
-              "percentage. Zero hides the symbols."
+              "Threshold for determining whether a low-killing cell is ",
+              "hightlighted (0 to 1)."
             ),
             numericInput(
               inputId = "plot_tile_split_minflag_value",
@@ -1023,9 +1030,9 @@ server <- function(input, output) {
 
   observeEvent(input$plot_tile_split_strict, {
     if (input$plot_tile_split_strict) {
-      update_switch("plot_tile_split_strict", label = "Strict")
+      update_switch("plot_tile_split_strict", label = "Hiding marginal values")
     } else {
-      update_switch("plot_tile_split_strict", label = "Loose")
+      update_switch("plot_tile_split_strict", label = "Showing marginal values")
     }
   })
 
@@ -1127,6 +1134,7 @@ server <- function(input, output) {
         open = FALSE,
         accordion_panel(
           title = "Advanced options",
+
           wrap_selector(
             label = "Axis labels",
             label_title = paste0(
