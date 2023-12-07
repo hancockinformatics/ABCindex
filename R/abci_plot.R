@@ -648,6 +648,7 @@ abci_plot_dot <- function(
     scales = "free",
     n.rows = NULL,
     n.cols = NULL,
+    size.text = "Biofilm killed %",
     x.text = "Drug 1",
     y.text = "Drug 2",
     x.decimal = 1,
@@ -821,7 +822,7 @@ abci_plot_dot <- function(
     ) +
 
     scale_size_identity(
-      name = "Biofilm\nkilled %",
+      name = paste(strwrap(size.text, width = 12), collapse = "\n"),
       breaks = proper_breaks,
       labels = proper_labels,
       guide = guide_legend(keyheight = unit(10, "mm"))
@@ -899,6 +900,7 @@ abci_plot_dot_split <- function(
     scales = "free",
     n.rows = NULL,
     n.cols = NULL,
+    size.text = "Biofilm killed %",
     x.text = "Drug 1",
     y.text = "Drug 2",
     x.decimal = 1,
@@ -1115,7 +1117,7 @@ abci_plot_dot_split <- function(
 
       {if (nm == "down") {
         scale_size_identity(
-          name = "Biofilm\nkilled %",
+          name = paste(strwrap(size.text, width = 12), collapse = "\n"),
           limits = c(min(proper_breaks), max(proper_breaks)),
           breaks = proper_breaks,
           labels = proper_labels,
@@ -1123,7 +1125,7 @@ abci_plot_dot_split <- function(
         )
       } else {
         scale_size_identity(
-          name = "Biofilm\nkilled %",
+          name = paste(strwrap(size.text, width = 12), collapse = "\n"),
           limits = c(min(proper_breaks), max(proper_breaks)),
           breaks = proper_breaks,
           labels = proper_labels

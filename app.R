@@ -1129,6 +1129,16 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
+        label = "Size legend title",
+        label_title = "Title of the size legend",
+        textInput(
+          inputId = "plot_dot_size_text",
+          label = NULL,
+          value = "Biofilm killed %"
+        )
+      ),
+
+      wrap_selector(
         label = "Draw MIC lines",
         label_title = "Include lines to indicate MIC for the x- and y-axis",
         checkboxGroupInput(
@@ -1245,6 +1255,16 @@ server <- function(input, output) {
           min = 1,
           max = 4,
           step = 1
+        )
+      ),
+
+      wrap_selector(
+        label = "Size legend title",
+        label_title = "Title of the size legend",
+        textInput(
+          inputId = "plot_dot_split_size_text",
+          label = NULL,
+          value = "Biofilm killed %"
         )
       ),
 
@@ -1620,6 +1640,7 @@ server <- function(input, output) {
           col.analysis = "assay",
           n.cols = abci_plot_dims()[[1]],
           n.rows = abci_plot_dims()[[2]],
+          size.text = isolate(input$plot_dot_size_text),
           scales = isolate(input$plot_dot_scales),
           x.decimal = isolate(input$plot_dot_x_decimal),
           y.decimal = isolate(input$plot_dot_y_decimal),
@@ -1648,6 +1669,7 @@ server <- function(input, output) {
           col.analysis = "assay",
           n.cols = abci_plot_dims()[[1]],
           n.rows = abci_plot_dims()[[2]],
+          size.text = isolate(input$plot_dot_split_size_text),
           scales = isolate(input$plot_dot_split_scales),
           x.decimal = isolate(input$plot_dot_split_x_decimal),
           y.decimal = isolate(input$plot_dot_split_y_decimal),
