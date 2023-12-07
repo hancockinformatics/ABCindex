@@ -2,7 +2,6 @@
 
 #' - Summary and full results tables...?
 #' - Better description for tile splitting options (strict/loose)
-#' - Add version of split dot plot
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
 #'     if (effect > 0.9) {
 #'       add * to tile, or border around dot
@@ -533,18 +532,6 @@ server <- function(input, output) {
     )
   })
 
-  output$upload_input_names_div <- renderUI(
-    div(
-      class = "mb-auto",
-      hr(),
-      selectInput(
-        inputId = "input_data_sheet_names",
-        label = strong("Select an uploaded sheet to preview:"),
-        choices = names(input_data_preview())
-      )
-    )
-  )
-
   output$input_data_preview_DT <- DT::renderDataTable(
     input_data_preview()[[input$input_data_sheet_names]],
     rownames = FALSE,
@@ -565,6 +552,21 @@ server <- function(input, output) {
       DT::dataTableOutput("input_data_preview_DT")
     )
   })
+
+
+  # |- Update the sidebar -------------------------------------------------
+
+  output$upload_input_names_div <- renderUI(
+    div(
+      class = "mb-auto",
+      hr(),
+      selectInput(
+        inputId = "input_data_sheet_names",
+        label = strong("Select an uploaded sheet to preview:"),
+        choices = names(input_data_preview())
+      )
+    )
+  )
 
 
   # Analysis --------------------------------------------------------------
