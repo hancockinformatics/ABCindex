@@ -333,18 +333,18 @@ ui <- page_fluid(
     ),
 
 
-    # |- Visualize ------------------------------------------------------
+    # |- Visualization ----------------------------------------------------
 
     nav_panel(
-      value = "visualize",
-      title = "Visualize",
+      value = "visualization",
+      title = "Visualization",
 
       card(
         min_height = "90vh",
 
         layout_sidebar(
           sidebar = sidebar(
-            title = "Visualize ABCi results",
+            title = "Visualization of ABCi results",
             width = "580px",
             open = NA,
 
@@ -698,10 +698,10 @@ server <- function(input, output) {
   })
 
 
-  # Visualize -------------------------------------------------------------
+  # Visualization ---------------------------------------------------------
 
   observeEvent(input$visualize_your_results, {
-    updateNavbarPage(inputId  = "navbar", selected = "visualize")
+    updateNavbarPage(inputId  = "navbar", selected = "visualization")
     enable("create_plot")
   })
 
