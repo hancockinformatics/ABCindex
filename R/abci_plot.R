@@ -1358,7 +1358,7 @@ abci_plot_line <- function(
       ) +
         geom_point(
           position = position_dodge(width = ifelse(jitter.x, 0.5, 0)),
-          size = 2
+          size = 4
         ) +
 
         geom_line(
@@ -1398,8 +1398,8 @@ abci_plot_line <- function(
 
     {if (max(data_avg[col.data]) > 1.5) {
       scale_y_continuous(
-        limits = c(0, 1.5),
-        breaks = seq(0, 1.5, 0.5),
+        # limits = c(0, 1.5),
+        # breaks = seq(0, 1.5, 0.5),
         oob = scales::squish
       )
     }} +

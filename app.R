@@ -121,7 +121,7 @@ abci_colours <- list(
 )
 
 line_colours <- purrr::set_names(
-  c("viridis", "magma", "plasma", "inferno", "cividis", "mako", "rocket", "turbo"),
+  c("turbo", "viridis", "magma", "plasma", "inferno", "cividis", "mako", "rocket"),
   stringr::str_to_title
 )
 
