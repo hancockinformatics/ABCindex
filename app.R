@@ -222,8 +222,8 @@ ui <- page_fluid(
           sidebar = sidebar(
             title = "Upload your plate data",
             class = "d-flex",
+            width = "580px",
             style = "width: inherit",
-            width = "33%",
             open = NA,
 
             p("Info about upload."),
@@ -275,7 +275,7 @@ ui <- page_fluid(
           sidebar = sidebar(
             title = "ABCi analysis",
             class = "d-flex",
-            width = "33%",
+            width = "580px",
             open = NA,
 
             p(
@@ -345,7 +345,7 @@ ui <- page_fluid(
         layout_sidebar(
           sidebar = sidebar(
             title = "Visualize ABCi results",
-            width = "33%",
+            width = "580px",
             open = NA,
 
             p("Information about the different visualization available."),
