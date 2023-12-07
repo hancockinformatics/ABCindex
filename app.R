@@ -820,8 +820,8 @@ server <- function(input, output) {
         ),
         input_switch(
           id = "plot_tile_minflag_toggle",
-          label = "Off",
-          value = FALSE
+          label = "On",
+          value = TRUE
         )
       ),
 
@@ -975,8 +975,8 @@ server <- function(input, output) {
         ),
         input_switch(
           id = "plot_tile_split_minflag_toggle",
-          label = "Off",
-          value = FALSE
+          label = "On",
+          value = TRUE
         )
       ),
 
