@@ -1,7 +1,6 @@
 # To do -------------------------------------------------------------------
 
 #' - Summary and full results tables...?
-#' - Better description for tile splitting options (strict/loose)
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
 #'     if (effect > 0.9) {
 #'       add * to tile, or border around dot
@@ -174,11 +173,40 @@ ui <- page_fluid(
         class = "container my-5",
         div(
           class = "row p-4 pb-lg-5 pe-lg-0 pt-lg-5 rounded-3 border shadow-lg text-center",
-          h1(class = "display-5 fw-bold text-body-emphasis", "Welcome"),
+
+          h1(class = "display-4 fw-bold text-body-emphasis", "ShinyABCi"),
+
+          h1(
+            class = "display-6",
+            "Anti-Biofilm Combination Index calculation and visualization"
+          ),
+
           div(
             class = "col-lg-6 mx-auto",
-            p(class = "lead mb-4", "Here is some welcome text."),
-            p(class = "lead mb-4", "Blah blah blah ABCi blah blah biofilm blah blah blah."),
+
+            HTML(paste0(
+                "<p class='lead mb-4'>Welcome to ShinyABCi, a tool to quantify and visualize the ",
+                "<i>in vitro</i> effects of drug combinations. The Anti-Biofilm ",
+                "Combination Index (ABCI) is a metric designed to assess drug ",
+                "combination therapy in checkerboard assays without relying on ",
+                "activity thresholds (MIC/MBIC/MBEC), which present ",
+                "significant challenges when evaluating antibiofilm activity.</p>"
+            )),
+
+            HTML(paste0(
+              "<p class='lead mb-4'>Here, you can calculate ABCIs for your ",
+              "checkerboard data, as well as visualize it with different plots ",
+              "designed to quickly identify promising interactions and ",
+              "favourable drug ratios.</p>"
+            )),
+
+            HTML(paste0(
+              "<p class='lead mb-4'>Click the Get Started button to upload ",
+              "your data! If you’d like to learn more about how the ABCI is ",
+              "calculated or how to use ShinyABCi, check the respective ",
+              "tutorials below. For more information, including how to cite ",
+              "ShinyABCi, please refer to the About page.</p>"
+            )),
 
             br(),
 
