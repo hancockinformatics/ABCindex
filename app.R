@@ -332,7 +332,7 @@ ui <- page_fluid(
         div(
           class = "row p-4 pb-lg-5 pe-lg-0 pt-lg-5 rounded-3 border shadow-lg text-center",
 
-          h1(class = "display-4 fw-bold text-body-emphasis", "ShinyABCi"),
+          h1(class = "display-3 fw-bold text-body-emphasis", "ShinyABCi"),
 
           h1(
             class = "display-6",
@@ -340,15 +340,16 @@ ui <- page_fluid(
           ),
 
           div(
-            class = "col-lg-6 mx-auto",
+            class = "col-lg-9 mx-auto",
 
             HTML(paste0(
-              "<p class='lead mb-4'>Welcome to ShinyABCi, a tool to quantify and visualize the ",
-              "<i>in vitro</i> effects of drug combinations. The Anti-Biofilm ",
-              "Combination Index (ABCI) is a metric designed to assess drug ",
-              "combination therapy in checkerboard assays without relying on ",
-              "activity thresholds (MIC/MBIC/MBEC), which present ",
-              "significant challenges when evaluating antibiofilm activity.</p>"
+              "<p class='lead mb-4'>Welcome to ShinyABCi, a tool to quantify ",
+              "and visualize the <i>in vitro</i> effects of drug combinations. ",
+              "The Anti-Biofilm Combination Index (ABCI) is a metric designed ",
+              "to assess drug combination therapy in checkerboard assays ",
+              "without relying on activity thresholds (MIC/MBIC/MBEC), which ",
+              "present significant challenges when evaluating antibiofilm ",
+              "activity.</p>"
             )),
 
             HTML(paste0(
@@ -626,30 +627,74 @@ ui <- page_fluid(
         div(
           class = "row flex-lg-row align-items-center g-5 py-5",
           div(
-            class = "col-lg-6",
+            class = "col-lg-10",
             h1(
-              class = "display-5 fw-bold text-body-emphasis lh-1 mb-3",
+              class = "display-3 fw-bold text-body-emphasis lh-1 mb-3",
               "About"
             ),
             p(
               class = "lead",
-              "Here is some About text."
+              "ShinyABCi is an R Shiny app that facilitates the calculation ",
+              "of the Anti-Biofilm Combination Index (ABCI). The metric was ",
+              "created by Lucas Pedraz, and the app was developed by Travis ",
+              "Blimkie, all at the CMDR Hancock Lab at the University of ",
+              "British Columbia."
+            ),
+            h1(
+              class = "display-6 fw-bold text-body-emphasis lh-1 mb-3",
+              "Tutorial"
             ),
             p(
               class = "lead",
-              "Blah blah R blah blah Shiny blah blah blah Hancock Lab."
+              "A tutorial explaining the calculation of ABCI values, usage of ",
+              "the app, and interpretation of results can be found ",
+              actionLink("about_tutorial", "here"), "."
+            ),
+
+            h1(
+              class = "display-6 fw-bold text-body-emphasis lh-1 mb-3",
+              "Reporting problems"
+            ),
+            p(
+              class = "lead",
+              "If you encounter any bugs or experience any issues, you can let ",
+              "us know by submitting an issue at our ",
+              a(
+                href = "https://github.com/hancockinformatics/ShinyABCi",
+                "Github page"
+              ), "."
+            ),
+
+            h1(
+              class = "display-6 fw-bold text-body-emphasis lh-1 mb-3",
+              "References & resources"
+            ),
+            p(
+              class = "lead",
+              "ShinyABCi is written in R, and utilizes the following packages:"
             ),
             div(
-              class = "d-grid gap-2 d-md-flex justify-content-md-start",
-              actionButton(
-                inputId = "about_button_1",
-                class = "btn btn-primary btn-lg px-4 me-md-2",
-                label = "A button"
-              ),
-              actionButton(
-                inputId = "about_button_2",
-                class = "btn btn-outline-secondary btn-lg px-4",
-                HTML("A <i>second</i> button")
+              class = "container",
+              div(
+                class = "row align-items-start",
+                div(
+                  class = "col",
+                  tags$dl(
+                    tags$dt(a(href = "https://rstudio.github.io/bslib/index.html", "bslib")),
+                    tags$dd("Better support for modern Bootstrap in Shiny apps"),
+                    tags$dt(a(href = "https://shiny.posit.co/", "shiny")),
+                    tags$dd("Easily create and deploy web apps from R"),
+                  )
+                ),
+                div(
+                  class = "col",
+                  tags$dl(
+                    tags$dt(a(href = "https://deanattali.com/shinyjs/", "shinyjs")),
+                    tags$dd("Extend Shiny functionality with Javascript"),
+                    tags$dt(a(href = "https://www.tidyverse.org/", "tidyverse")),
+                    tags$dd("Packages for data manipulation and visualization"),
+                  )
+                )
               )
             )
           )
@@ -1016,7 +1061,8 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis digits",
-        label_title = "Number of decimal places to show for concentrations on the x-axis",
+        label_title =
+          "Number of decimal places to show for concentrations on the x-axis",
         numericInput(
           inputId = "plot_tile_x_decimal",
           label = NULL,
@@ -1039,7 +1085,8 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y axis digits",
-        label_title = "Number of decimal places to show for concentrations on the y-axis",
+        label_title =
+          "Number of decimal places to show for concentrations on the y-axis",
         numericInput(
           inputId = "plot_tile_y_decimal",
           label = NULL,
@@ -1183,7 +1230,8 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis digits",
-        label_title = "Number of decimal places to show for concentrations the x-axis",
+        label_title =
+          "Number of decimal places to show for concentrations the x-axis",
         numericInput(
           inputId = "plot_tile_split_x_decimal",
           label = NULL,
@@ -1206,7 +1254,8 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y axis digits",
-        label_title = "Number of decimal places to show for concentrations the y-axis",
+        label_title =
+          "Number of decimal places to show for concentrations the y-axis",
         numericInput(
           inputId = "plot_tile_split_y_decimal",
           label = NULL,
@@ -1370,7 +1419,8 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis digits",
-        label_title = "Number of decimal places to show for concentrations the x-axis",
+        label_title =
+          "Number of decimal places to show for concentrations the x-axis",
         numericInput(
           inputId = "plot_dot_x_decimal",
           label = NULL,
@@ -1393,7 +1443,8 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y axis digits",
-        label_title = "Number of decimal places to show for concentrations the y-axis",
+        label_title =
+          "Number of decimal places to show for concentrations the y-axis",
         numericInput(
           inputId = "plot_dot_y_decimal",
           label = NULL,
@@ -1512,7 +1563,8 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis digits",
-        label_title = "Number of decimal places to show for concentrations the x-axis",
+        label_title =
+          "Number of decimal places to show for concentrations the x-axis",
         numericInput(
           inputId = "plot_dot_split_x_decimal",
           label = NULL,
@@ -1535,7 +1587,8 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y axis digits",
-        label_title = "Number of decimal places to show for concentrations the y-axis",
+        label_title =
+          "Number of decimal places to show for concentrations the y-axis",
         numericInput(
           inputId = "plot_dot_split_y_decimal",
           label = NULL,
@@ -1675,7 +1728,8 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis digits",
-        label_title = "Number of decimal places to show for concentrations the x-axis",
+        label_title =
+          "Number of decimal places to show for concentrations the x-axis",
         numericInput(
           inputId = "plot_line_x_decimal",
           label = NULL,
@@ -1771,7 +1825,8 @@ server <- function(input, output) {
           title = "Advanced options",
           wrap_selector(
             label = "X-axis jitter",
-            label_title = "Nudge values along the x-axis to prevent overlapping lines",
+            label_title =
+              "Nudge values along the x-axis to prevent overlapping lines",
             input_switch(
               id = "plot_line_jitter_x",
               label = "On",
