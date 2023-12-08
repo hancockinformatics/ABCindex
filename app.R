@@ -322,16 +322,16 @@ ui <- page_fluid(
             open = NA,
 
             p(
-              "ShinyABCi expects data to be normalized to percentages, ",
-              "ranging from 0 to 1 or 100. If your data doesn't meet this ",
-              " criteria, use the options below to have your data normalized."
+              "ShinyABCi expects data to be normalized to percentages (either ",
+              "0-1 or 0-100). If your data does not meet these criteria, use ",
+              "the options below to have it normalized."
             ),
             radioButtons(
               inputId = "normalize_radio",
               label = NULL,
               choices = list(
-                "Normalize my data to percentages (range 0 to 1)" = "run_norm",
-                "My data is already normalized to percentages (0 to 1 or 100)" = "no_norm"
+                "Normalize my data (becoming range 0-1)" = "run_norm",
+                "My data is already normalized (0-1 or 0-100)" = "no_norm"
               ),
               selected = "run_norm"
             ),
@@ -346,7 +346,20 @@ ui <- page_fluid(
               )
             ),
 
-            p("Information about interpreting the results."),
+            p(class = "mt-3", style = "font-size: 1.25em", "Data interpretation"),
+            p(
+              "ABCI values are calculated for every combination of ",
+              "concentrations in your experiments. A positive ABCI always ",
+              "indicates that the combination is more effective than any ",
+              "individual drug on its own. Please refer to the ",
+              actionLink("abci_info", "ABCI information"),
+              " page to learn more."
+            ),
+            HTML(paste0(
+              "<p>You can preview the results of your experiments using the ",
+              "table to the right, download the results, or continue to ",
+              "<b>Visualization</b> using the buttons below.</p>"
+            )),
 
             uiOutput("results_names"),
 
