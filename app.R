@@ -254,12 +254,21 @@ ui <- page_fluid(
             style = "width: inherit",
             open = NA,
 
-            p("Info about upload."),
+            p(
+              "Select an '.xlsx' or '.ods' spreadsheet containing any number ",
+              "of checkerboard experiments, each a sheet within the document. ",
+              "Each experiment may include  multiple replicates. Click the ",
+              "following link to ",
+              downloadLink("download_template", label = "download a template"),
+              " of the required input format. Please subtract the blank ",
+              "before uploading, if required. Different experiments will ",
+              "become multiple panels in the final plots."
+            ),
 
             p(
-              "Use the link to ",
-              downloadLink("download_template", label = "download a template"),
-              " of the input data format."
+              "You can learn more about the data we support in the ShinyABCi ",
+              actionLink("tutorial_link", "tutorial"),
+              ". You can also try our example data by clicking the button below."
             ),
 
             fileInput(
