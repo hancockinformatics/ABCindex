@@ -28,7 +28,12 @@ abci_reader <- function(file, sheet = "all") {
 
   if (sheet == "all") {
 
-    all_sheets <- readxl::excel_sheets(file)
+    all_sheets <-
+      if (grepl(x = file, pattern = "xls", ignore.case = TRUE)) {
+        readxl::excel_sheets(file)
+      } else if (grepl(x = file, pattern = "ods", ignore.case = TRUE)) {
+        readODS::ods_sheets(file)
+      }
 
     all_data <- lapply(
       cli::cli_progress_along(all_sheets, "Loading plate data"),
@@ -76,12 +81,21 @@ abci_reader_single <- function(file, sheet) {
   # Read in the sheet, which can contain one or more plates separated by empty
   # rows
   suppressMessages(
-    d1 <- readxl::read_excel(
-      file,
-      sheet = sheet,
-      col_names = FALSE
-    ) %>%
-      janitor::clean_names()
+    if (grepl(x = file, pattern = "xls", ignore.case = TRUE)) {
+      d1 <- readxl::read_excel(
+        file,
+        sheet = sheet,
+        col_names = FALSE
+      ) %>%
+        janitor::clean_names()
+    } else if (grepl(x = file, pattern = "ods", ignore.case = TRUE)) {
+      d1 <- readODS::read_ods(
+        file,
+        sheet = sheet,
+        col_names = FALSE
+      ) %>%
+        janitor::clean_names()
+    }
   )
 
   # The "tbl_id" column defines groups of rows, each group being one plate, by

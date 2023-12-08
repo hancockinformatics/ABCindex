@@ -3,12 +3,17 @@ wrap_selector <- function(label, label_title, selector) {
     class = "form-group row",
     style = "margin-bottom: 0.25rem;",
     tags$label(
-      class = "col-sm-4 col-form-label",
-      label,
-      title = label_title
+      class = "col-sm-5 col-form-label",
+      div(
+        label,
+        icon(
+          "circle-question",
+          title = label_title
+        )
+      )
     ),
     div(
-      class = "col-sm-8",
+      class = "col-sm-7",
       selector
     )
   )

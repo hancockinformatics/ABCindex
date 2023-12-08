@@ -1,8 +1,6 @@
 # To do -------------------------------------------------------------------
 
 #' - Summary and full results tables...?
-#' - Better description for tile splitting options (strict/loose)
-#' - Add version of split dot plot
 #' - if (ref_x < 0.9 & ref_y < 0.9) {
 #'     if (effect > 0.9) {
 #'       add * to tile, or border around dot
@@ -10,10 +8,9 @@
 #'   }
 
 
-# Load packages -----------------------------------------------------------
+# Setup chunk -------------------------------------------------------------
 
 library(dplyr)
-library(ggplot2)
 library(shinyjs)
 library(shiny)
 library(bslib)
@@ -96,9 +93,9 @@ abci_results_display_container <- htmltools::withTags(table(
       title = "The measured effect, equal to 1 - 'Bio Normal Avg'"
     ),
     th(
-      "ABCi Avg",
+      "ABCI Avg",
       title = paste0(
-        "The Anti-Biofilm Combination Index (ABCi) value, averaged ",
+        "The Anti-Biofilm Combination Index (ABCI) value, averaged ",
         "across any replicates."
       )
     )
@@ -108,7 +105,6 @@ abci_results_display_container <- htmltools::withTags(table(
 
 # |- Fixed plot inputs ----------------------------------------------------
 
-# Define some fixed `selectInput()` choices
 abci_colours <- list(
   "Three-colour palettes" = list(
     "Red-yellow-blue" = "BOB",
@@ -124,13 +120,171 @@ abci_colours <- list(
 )
 
 line_colours <- purrr::set_names(
-  c("viridis", "magma", "plasma", "inferno", "cividis", "mako", "rocket", "turbo"),
+  c("turbo", "viridis", "magma", "plasma", "inferno", "cividis", "mako", "rocket"),
   stringr::str_to_title
 )
 
 plot_scales <- c(
   "Labels on every facet" = "free",
   "Only label the outermost axis" = "fixed"
+)
+
+
+# |- Plot legends ---------------------------------------------------------
+
+plot_legends <- list(
+
+  tile = div(
+    p("The colour of the tiles indicates ABCI: Positive ABCI values indicate ",
+      "that the combination is more effective than any individual drug on its ",
+      "own; negative values indicate that the combination is less effective ",
+      "than at least the most active individual drug. Vertical and horizontal ",
+      "lines can be added to illustrate the activity thresholds of the ",
+      "individual drugs (e.g., MIC). Activity (% killing) is not depicted: it ",
+      "is recommended to combine this with a line plot for interesting ",
+      "concentrations."
+    ),
+
+    p(
+      "You can learn more about how to interpret your data here. The text ",
+      "below can be used as a template for a figure legend:"
+    ),
+
+    p(
+      style = "font-size:0.75em",
+      "Anti-Biofilm Combination Index (ABCI) [Citation] for combinations of ",
+      "[Drug A] and [Drug B]. Results are the average of [X] replicates. ",
+      "Positive ABCI values indicate a combination more effective than each ",
+      "individual drug, while negative values indicate a combination less ",
+      "effective than at least the most active individual drug; see materials ",
+      "and methods for ABCI calculation. Vertical and horizontal lines ",
+      "indicate the [MBIC50] of individual drugs. Tiles labelled ‘<’ indicate ",
+      "less than [50% biofilm inhibition]. Created with ShinyABCi [Citation]."
+    )
+  ),
+
+  tile_split = div(
+    p(
+      "The colour of the tiles indicates ABCI: Positive ABCI values (top) ",
+      "indicate that the combination is more effective than any individual ",
+      "drug on its own; negative values (bottom) indicate that the ",
+      "combination is less effective than at least the most active individual ",
+      "drug. They have been split into two different plots for visually ",
+      "simplified illustrations of only positive or negative interactions. ",
+      "Vertical and horizontal lines can be added to illustrate the activity ",
+      "thresholds of the individual drugs (e.g., MIC). Activity (% killing) ",
+      "is not depicted: it is recommended to combine this with a line plot ",
+      "for interesting concentrations."
+    ),
+
+    p(
+      "You can learn more about how to interpret your data here. The text ",
+      "below can be used as a template for a figure legend:"
+    ),
+
+    p(
+      style = "font-size:0.75em",
+      "Anti-Biofilm Combination Index (ABCI) [Citation] for combinations of ",
+      "[Drug A] and [Drug B]. Results are the average of [X] replicates. ",
+      "Positive ABCI values (top) indicate a combination more effective than ",
+      "each individual drug, while negative values (bottom) indicate a ",
+      "combination less effective than at least the most active individual ",
+      "drug; see materials and methods for ABCI calculation. Vertical and ",
+      "horizontal lines indicate the [MBIC50] of individual drugs. Tiles ",
+      "labelled ‘<’ indicate less than [50% biofilm inhibition]. Created with ",
+      "ShinyABCi [Citation]."
+    )
+  ),
+
+  dot = div(
+    p(
+      "This graph combines ABCI (drug interaction) and activity (% killed). ",
+      "The colour of the tiles indicates ABCI: Positive ABCI values indicate ",
+      "that the combination is more effective than any individual drug on its ",
+      "own; negative values indicate that the combination is less effective ",
+      "than at least the most active individual drug. The size of the dots ",
+      "indicates the percentage of biomass killed. Vertical and horizontal ",
+      "lines can be added to illustrate the activity thresholds of the ",
+      "individual drugs (e.g., MIC)."
+    ),
+
+    p(
+      "You can learn more about how to interpret your data here. The text ",
+      "below can be used as a template for a figure legend:"
+    ),
+
+    p(
+      style = "font-size:0.75em",
+      "Effects of different combinations of [Drug A] and [Drug B], evaluated ",
+      "using the Anti-Biofilm Combination Index (ABCI, colour scale) and ",
+      "percentage of [biofilm inhibition], relative to the average of the ",
+      "untreated control. Results are the average of [X] replicates. Positive ",
+      "ABCI values indicate a combination more effective than each individual ",
+      "drug, while negative values indicate a combination less effective than ",
+      "at least the most active individual drug; see materials and methods ",
+      "for ABCI calculation. Vertical and horizontal lines indicate the ",
+      "[MBIC50] of individual drugs. Created with ShinyABCi [Citation]."
+    )
+  ),
+
+  dot_split = div(
+    p(
+      "This graph combines ABCI (drug interaction) and activity (% killed). ",
+      "The colour of the tiles indicates ABCI: Positive ABCI values (top) ",
+      "indicate that the combination is more effective than any individual ",
+      "drug on its own; negative values (bottom) indicate that the ",
+      "combination is less effective than at least the most active individual ",
+      "drug. They have been split into two different plots for visually ",
+      "simplified illustrations of only positive or negative interactions. ",
+      "The size of the dots indicates the percentage of biomass killed. ",
+      "Vertical and horizontal lines can be added to illustrate the activity ",
+      "thresholds of the individual drugs (e.g., MIC)."
+    ),
+
+    p(
+      "You can learn more about how to interpret your data here. The text ",
+      "below can be used as a template for a figure legend:"
+    ),
+
+    p(
+      style = "font-size:0.75em",
+      "Effects of different combinations of [Drug A] and [Drug B], evaluated ",
+      "using the Anti-Biofilm Combination Index (ABCI, colour scale) and ",
+      "percentage of [biofilm inhibition], relative to the average of the ",
+      "untreated controls. Results are the average of [X] replicates. ",
+      "Positive ABCI values (top) indicate a combination more effective than ",
+      "each individual drug, while negative values (bottom) indicate a ",
+      "combination less effective than at least the most active individual ",
+      "drug; see materials and methods for ABCI calculation. Vertical and ",
+      "horizontal lines indicate the [MBIC50] of individual drugs. Created ",
+      "with ShinyABCi [Citation]."
+    )
+  ),
+
+  line = div(
+    p(
+      "This is a simple representation of the percentage of biomass killed ",
+      "by the drug combinations in your assay. We recommend using the ABCI ",
+      "plots to identify which concentrations are the most relevant or ",
+      "representative and choosing a maximum of six for the treatment ",
+      "represented as lines. A vertical line can be added to illustrate the ",
+      "activity threshold (e.g., MIC) of the drug represented on the X-axis."
+    ),
+
+    p(
+      "You can learn more about how to interpret your data here. The text ",
+      "below can be used as a template for a figure legend:"
+    ),
+
+    p(
+      style = "font-size:0.75em",
+      "Percentage of [biofilm inhibition] of different combinations of [Drug ",
+      "A] and [Drug B], relative to the average of the untreated controls. ",
+      "Results are representative of X replicates; [error bars represent ",
+      "standard deviation]. Vertical lines indicate the [MBIC50] of [Drug A]. ",
+      "Created with ShinyABCi [Citation]."
+    )
+  )
 )
 
 
@@ -177,11 +331,41 @@ ui <- page_fluid(
         class = "container my-5",
         div(
           class = "row p-4 pb-lg-5 pe-lg-0 pt-lg-5 rounded-3 border shadow-lg text-center",
-          h1(class = "display-5 fw-bold text-body-emphasis", "Welcome"),
+
+          h1(class = "display-3 fw-bold text-body-emphasis", "ShinyABCi"),
+
+          h1(
+            class = "display-6",
+            "Anti-Biofilm Combination Index calculation and visualization"
+          ),
+
           div(
-            class = "col-lg-6 mx-auto",
-            p(class = "lead mb-4", "Here is some welcome text."),
-            p(class = "lead mb-4", "Blah blah blah ABCi blah blah biofilm blah blah blah."),
+            class = "col-lg-9 mx-auto",
+
+            HTML(paste0(
+              "<p class='lead mb-4'>Welcome to ShinyABCi, a tool to quantify ",
+              "and visualize the <i>in vitro</i> effects of drug combinations. ",
+              "The Anti-Biofilm Combination Index (ABCI) is a metric designed ",
+              "to assess drug combination therapy in checkerboard assays ",
+              "without relying on activity thresholds (MIC/MBIC/MBEC), which ",
+              "present significant challenges when evaluating antibiofilm ",
+              "activity.</p>"
+            )),
+
+            HTML(paste0(
+              "<p class='lead mb-4'>Here, you can calculate ABCIs for your ",
+              "checkerboard data, as well as visualize it with different plots ",
+              "designed to quickly identify promising interactions and ",
+              "favourable drug ratios.</p>"
+            )),
+
+            HTML(paste0(
+              "<p class='lead mb-4'>Click the Get Started button to upload ",
+              "your data! If you’d like to learn more about how the ABCI is ",
+              "calculated or how to use ShinyABCi, check the respective ",
+              "tutorials below. For more information, including how to cite ",
+              "ShinyABCi, please refer to the About page.</p>"
+            )),
 
             br(),
 
@@ -202,10 +386,7 @@ ui <- page_fluid(
                   HTML("Learn more")
                 )
               )
-            ),
-
-            hr(),
-            actionButton("notification_test", label = "Notification test")
+            )
           )
         )
       )
@@ -224,23 +405,41 @@ ui <- page_fluid(
         layout_sidebar(
           sidebar = sidebar(
             title = "Upload your plate data",
-            width = "33%",
+            class = "d-flex",
+            width = "580px",
+            style = "width: inherit",
+            open = NA,
 
-            p("Info about upload."),
+            p(
+              "Select an '.xlsx' or '.ods' spreadsheet containing any number ",
+              "of checkerboard experiments, each a sheet within the document. ",
+              "Each experiment may include  multiple replicates. Click the ",
+              "following link to ",
+              downloadLink("download_template", label = "download a template"),
+              " of the required input format. Please subtract the blank ",
+              "before uploading, if required. Different experiments will ",
+              "become multiple panels in the final plots."
+            ),
 
-            actionButton(
-              inputId = "load_example_data",
-              class = "btn btn-info btn-tooltip",
-              label = "Load example data",
-              title = "Click here to try our example data",
-              width = "180px"
+            p(
+              "You can learn more about the data we support in the ShinyABCi ",
+              actionLink("tutorial_link", "tutorial"),
+              ". You can also try our example data by clicking the button below."
             ),
 
             fileInput(
               inputId = "load_user_data",
               label = NULL,
               buttonLabel = list(icon("upload"), "Upload plate data..."),
-              accept = c("xls", ".xls", "xlsx", ".xlsx")
+              accept = c("xls", ".xls", "xlsx", ".xlsx", "ods", ".ods")
+            ),
+
+            actionButton(
+              inputId = "load_example_data",
+              class = "btn btn-info btn-tooltip",
+              label = "Load example data",
+              title = "Click here to try our example data",
+              width = "50%"
             ),
 
             uiOutput("upload_input_names_div"),
@@ -248,8 +447,8 @@ ui <- page_fluid(
             disabled(
               actionButton(
                 inputId = "proceed_abci_calculations",
-                class = "btn btn-primary btn-tooltip",
-                label = "Proceed to ABCi calculations",
+                class = "btn btn-primary btn-tooltip mt-auto",
+                label = "Proceed to ABCI calculations",
                 icon = icon("arrow-right"),
                 title = "Upload your plate data, then click here to analyze"
               )
@@ -273,20 +472,22 @@ ui <- page_fluid(
 
         layout_sidebar(
           sidebar = sidebar(
-            title = "ABCi analysis",
-            width = "33%",
+            title = "ABCI analysis",
+            class = "d-flex",
+            width = "580px",
+            open = NA,
 
             p(
-              "ShinyABCi expects data to be normalized to percentages, ",
-              "ranging from 0 to 1. If your data doesn't meet this criteria, ",
-              "use the options below to have your data normalized."
+              "ShinyABCi expects data to be normalized to percentages (either ",
+              "0-1 or 0-100). If your data does not meet these criteria, use ",
+              "the options below to have it normalized."
             ),
             radioButtons(
               inputId = "normalize_radio",
               label = NULL,
               choices = list(
-                "Normalize my data to percentages (range 0 to 1)" = "run_norm",
-                "My data is already normalized to percentages (0 to 1 or 100)" = "no_norm"
+                "Normalize my data (becoming range 0-1)" = "run_norm",
+                "My data is already normalized (0-1 or 0-100)" = "no_norm"
               ),
               selected = "run_norm"
             ),
@@ -295,14 +496,47 @@ ui <- page_fluid(
               actionButton(
                 inputId = "perform_abci_calculations",
                 class = "btn btn-info btn-tooltip",
-                label = "Perform ABCi calculations",
+                label = "Perform ABCI calculations",
                 icon = icon("calculator"),
                 width = "50%"
               )
             ),
 
-            p("Information about interpreting the results."),
-            uiOutput("results_names_buttons")
+            p(class = "mt-3", style = "font-size: 1.25em", "Data interpretation"),
+            p(
+              "ABCI values are calculated for every combination of ",
+              "concentrations in your experiments. A positive ABCI always ",
+              "indicates that the combination is more effective than any ",
+              "individual drug on its own. Please refer to the ",
+              actionLink("abci_info", "ABCI information"),
+              " page to learn more."
+            ),
+            HTML(paste0(
+              "<p>You can preview the results of your experiments using the ",
+              "table to the right, download the results, or continue to ",
+              "<b>Visualization</b> using the buttons below.</p>"
+            )),
+
+            uiOutput("results_names"),
+
+            disabled(
+              downloadButton(
+                outputId = "download_handler",
+                label = "Download your results",
+                class = "btn btn-success align-items-center mt-auto",
+                style = "width: 50%"
+              )
+            ),
+
+            disabled(
+              actionButton(
+                inputId = "visualize_your_results",
+                label = "Visualize your results",
+                class = "btn btn-primary btn-tooltip align-items-center",
+                icon = icon("arrow-right"),
+                width = "100%"
+              )
+            )
           ),
 
           uiOutput("results_table_div")
@@ -311,28 +545,41 @@ ui <- page_fluid(
     ),
 
 
-    # |- Visualize ------------------------------------------------------
+    # |- Visualization ----------------------------------------------------
 
     nav_panel(
-      value = "visualize",
-      title = "Visualize",
+      value = "visualization",
+      title = "Visualization",
 
       card(
         min_height = "90vh",
 
         layout_sidebar(
           sidebar = sidebar(
-            title = "Visualize ABCi results",
-            width = "33%",
+            title = "Visualization of ABCI results",
+            width = "580px",
+            open = NA,
 
-            p("Information about the different visualization available."),
+            HTML(paste0(
+              "<p>Visualize the ABCI results using <b>tile</b> or <b>dot</b> ",
+              "plots. The <b>split tile</b> and <b>split dot</b> options ",
+              "split the positive and negative ABCI values into two different ",
+              "plots, for visual simplicity.</p>"
+            )),
 
-            actionButton(
-              inputId = "create_plot",
-              class = "btn btn-info btn-tooltip",
-              label = "Create or update the plot",
-              icon = icon("chart-bar"),
-              width = "50%"
+            HTML(paste0(
+              "<p>Use the <b>line</b> plot to visualize antimicrobial ",
+              "activity for any subset of concentrations.</p>"
+            )),
+
+            disabled(
+              actionButton(
+                inputId = "create_plot",
+                class = "btn btn-info btn-tooltip",
+                label = "Create or update the plot",
+                icon = icon("chart-bar"),
+                width = "50%"
+              )
             ),
 
             navset_tab(
@@ -350,7 +597,12 @@ ui <- page_fluid(
               nav_panel(
                 title = "Dot",
                 value = "dot",
-                uiOutput("plot_inputs_tile_dot")
+                uiOutput("plot_inputs_dot")
+              ),
+              nav_panel(
+                title = "Split Dot",
+                value = "dot_split",
+                uiOutput("plot_inputs_dot_split")
               ),
               nav_panel(
                 title = "Line",
@@ -375,30 +627,74 @@ ui <- page_fluid(
         div(
           class = "row flex-lg-row align-items-center g-5 py-5",
           div(
-            class = "col-lg-6",
+            class = "col-lg-10",
             h1(
-              class = "display-5 fw-bold text-body-emphasis lh-1 mb-3",
+              class = "display-3 fw-bold text-body-emphasis lh-1 mb-3",
               "About"
             ),
             p(
               class = "lead",
-              "Here is some About text."
+              "ShinyABCi is an R Shiny app that facilitates the calculation ",
+              "of the Anti-Biofilm Combination Index (ABCI). The metric was ",
+              "created by Lucas Pedraz, and the app was developed by Travis ",
+              "Blimkie, all at the CMDR Hancock Lab at the University of ",
+              "British Columbia."
+            ),
+            h1(
+              class = "display-6 fw-bold text-body-emphasis lh-1 mb-3",
+              "Tutorial"
             ),
             p(
               class = "lead",
-              "Blah blah R blah blah Shiny blah blah blah Hancock Lab."
+              "A tutorial explaining the calculation of ABCI values, usage of ",
+              "the app, and interpretation of results can be found ",
+              actionLink("about_tutorial", "here"), "."
+            ),
+
+            h1(
+              class = "display-6 fw-bold text-body-emphasis lh-1 mb-3",
+              "Reporting problems"
+            ),
+            p(
+              class = "lead",
+              "If you encounter any bugs or experience any issues, you can let ",
+              "us know by submitting an issue at our ",
+              a(
+                href = "https://github.com/hancockinformatics/ShinyABCi",
+                "Github page"
+              ), "."
+            ),
+
+            h1(
+              class = "display-6 fw-bold text-body-emphasis lh-1 mb-3",
+              "References & resources"
+            ),
+            p(
+              class = "lead",
+              "ShinyABCi is written in R, and utilizes the following packages:"
             ),
             div(
-              class = "d-grid gap-2 d-md-flex justify-content-md-start",
-              actionButton(
-                inputId = "about_button_1",
-                class = "btn btn-primary btn-lg px-4 me-md-2",
-                label = "A button"
-              ),
-              actionButton(
-                inputId = "about_button_2",
-                class = "btn btn-outline-secondary btn-lg px-4",
-                HTML("A <i>second</i> button")
+              class = "container",
+              div(
+                class = "row align-items-start",
+                div(
+                  class = "col",
+                  tags$dl(
+                    tags$dt(a(href = "https://rstudio.github.io/bslib/index.html", "bslib")),
+                    tags$dd("Better support for modern Bootstrap in Shiny apps"),
+                    tags$dt(a(href = "https://shiny.posit.co/", "shiny")),
+                    tags$dd("Easily create and deploy web apps from R"),
+                  )
+                ),
+                div(
+                  class = "col",
+                  tags$dl(
+                    tags$dt(a(href = "https://deanattali.com/shinyjs/", "shinyjs")),
+                    tags$dd("Extend Shiny functionality with Javascript"),
+                    tags$dt(a(href = "https://www.tidyverse.org/", "tidyverse")),
+                    tags$dd("Packages for data manipulation and visualization"),
+                  )
+                )
               )
             )
           )
@@ -461,6 +757,14 @@ server <- function(input, output) {
     updateNavbarPage(inputId = "navbar", selected = "upload")
   })
 
+  # Download the template
+  output$download_template <- downloadHandler(
+    filename = "ShinyABCi_data_template.xlsx",
+    content = function(file) {
+      file.copy("example_data/ShinyABCi_data_template.xlsx", file)
+    }
+  )
+
 
   # |- Example data -------------------------------------------------------
 
@@ -485,7 +789,22 @@ server <- function(input, output) {
   # |- User data ----------------------------------------------------------
 
   observeEvent(input$load_user_data, {
-    input_data_raw(abci_reader(input$load_user_data$datapath))
+    input_file <- input$load_user_data$datapath
+    input_ext <- tolower(tools::file_ext(input_file))
+
+    if (input_ext %in% c("xls", "xlsx", "ods")) {
+      input_data_raw(abci_reader(input_file))
+    } else {
+      showNotification(
+        type = "error",
+        duration = 10,
+        ui = HTML(paste0(
+          "<h4 class='alert-heading'>Error!</h4>",
+          "<p class='mb-0'>Input data must be '.xls/xlsx' or '.ods'. Please ",
+          "try again with another file.</p>"
+        ))
+      )
+    }
   })
 
 
@@ -501,14 +820,6 @@ server <- function(input, output) {
         janitor::clean_names(case = "title")
     )
   })
-
-  output$upload_input_names_div <- renderUI(
-    selectInput(
-      inputId = "input_data_sheet_names",
-      label = "Select an uploaded sheet to preview:",
-      choices = names(input_data_preview())
-    )
-  )
 
   output$input_data_preview_DT <- DT::renderDataTable(
     input_data_preview()[[input$input_data_sheet_names]],
@@ -532,12 +843,26 @@ server <- function(input, output) {
   })
 
 
+  # |- Update the sidebar -------------------------------------------------
+
+  output$upload_input_names_div <- renderUI(
+    div(
+      class = "mb-auto",
+      hr(),
+      selectInput(
+        inputId = "input_data_sheet_names",
+        label = strong("Select an uploaded sheet to preview:"),
+        choices = names(input_data_preview())
+      )
+    )
+  )
+
+
   # Analysis --------------------------------------------------------------
 
   observeEvent(input$proceed_abci_calculations, {
     req(input_data_tidy())
     updateNavbarPage(inputId = "navbar", selected = "analysis")
-    enable(id = "perform_abci_calculations")
   })
 
 
@@ -546,6 +871,8 @@ server <- function(input, output) {
   input_data_tidy <- reactiveVal()
 
   observeEvent(input_data_raw(), {
+    enable("perform_abci_calculations")
+
     input_data_raw() %>%
       bind_rows(.id = "assay") %>%
       mutate(across(c(cols_conc, rows_conc), forcats::fct_inseq)) %>%
@@ -590,7 +917,7 @@ server <- function(input, output) {
       purrr::map(
         ~select(.x, -assay) %>%
           janitor::clean_names(case = "title") %>%
-          rename("ABCi Avg" = `Abci Avg`) %>%
+          rename("ABCI Avg" = `Abci Avg`) %>%
           distinct(`Cols Conc`, `Rows Conc`, .keep_all = TRUE)
       )
   })
@@ -611,7 +938,7 @@ server <- function(input, output) {
   output$results_table_div <- renderUI({
     abci_results_display()
     tagList(
-      h2("ABCi results summary"),
+      h2("ABCI results summary"),
       br(),
       DT::dataTableOutput("results_table_DT")
     )
@@ -643,38 +970,28 @@ server <- function(input, output) {
   observeEvent(input$perform_abci_calculations, {
     req(abci_results(), abci_results_display())
 
-    output$results_names_buttons <- renderUI(
-      tagList(
+    enable("download_handler")
+    enable("visualize_your_results")
+
+    output$results_names <- renderUI(
+      div(
+        class = "mb-auto",
+        hr(),
         selectInput(
           inputId = "results_names_selectInput",
-          label = "Select an uploaded sheet to see the results:",
+          label = strong("Select an uploaded sheet to see the results:"),
           choices = names(abci_results_display())
-        ),
-        div(
-          class = "d-flex gap-2 justify-content-center py-2",
-          downloadButton(
-            outputId = "download_handler",
-            label = "Download your results",
-            class = "btn btn-success align-items-center",
-            style = "width: 50%"
-          ),
-          actionButton(
-            inputId = "visualize_your_results",
-            label = "Visualize your results",
-            class = "btn btn-primary btn-tooltip align-items-center",
-            icon = icon("arrow-right"),
-            width = "50%"
-          )
         )
       )
     )
   })
 
 
-  # Visualize -------------------------------------------------------------
+  # Visualization ---------------------------------------------------------
 
   observeEvent(input$visualize_your_results, {
-    updateNavbarPage(inputId  = "navbar", selected = "visualize")
+    updateNavbarPage(inputId  = "navbar", selected = "visualization")
+    enable("create_plot")
   })
 
   abci_plot_data <- reactive(abci_results())
@@ -689,7 +1006,7 @@ server <- function(input, output) {
   })
 
 
-  # |- Set up reactive inputs ---------------------------------------------
+  # |- Set up reactive values and inputs ----------------------------------
 
   conc_columns <- reactive(
     grep(
@@ -706,8 +1023,11 @@ server <- function(input, output) {
     list(
       br(),
       wrap_selector(
-        label = actionLink("tile_preview_colours", label = "ABCi colours"),
-        label_title = "Colour palette to use for the ABCi values",
+        label = actionLink("tile_preview_colours", label = "ABCI colours"),
+        label_title = paste0(
+          "Colour palette for the ABCI values, designed to highlight the most ",
+          "relevant differences. Click to see the options."
+        ),
         selectInput(
           inputId = "plot_tile_colour_palette",
           label = NULL,
@@ -717,8 +1037,11 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "X compound",
-        label_title = "Compound to plot on the x-axis. The other compound is plotted on the y-axis",
+        label = "Plot X axis",
+        label_title = paste0(
+          "Treatment to plot on the X-axis. The other treatment is plotted on ",
+          "the Y-axis."
+        ),
         selectInput(
           inputId = "plot_tile_x_drug",
           label = NULL,
@@ -738,7 +1061,8 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis digits",
-        label_title = "Number of decimal places to show for concentrations on the x-axis",
+        label_title =
+          "Number of decimal places to show for concentrations on the x-axis",
         numericInput(
           inputId = "plot_tile_x_decimal",
           label = NULL,
@@ -761,7 +1085,8 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y axis digits",
-        label_title = "Number of decimal places to show for concentrations on the y-axis",
+        label_title =
+          "Number of decimal places to show for concentrations on the y-axis",
         numericInput(
           inputId = "plot_tile_y_decimal",
           label = NULL,
@@ -773,8 +1098,11 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Draw MIC lines",
-        label_title = "Include lines to indicate MIC for the x- and y-axis",
+        label = "Draw activity threshold",
+        label_title = paste0(
+          "Include lines to indicate activity thresholds for individual ",
+          "treatments (e.g., MIC, MBIC, MBEC). Defaults to ≥50% killing."
+        ),
         checkboxGroupInput(
           inputId = "plot_tile_mic_lines",
           label = NULL,
@@ -785,12 +1113,15 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Highlight low killing",
-        label_title = "Option to draw a symbol on tiles with low effect",
+        label = "Highlight low effect",
+        label_title = paste0(
+          "Draw a symbol on tiles with low effect when treatments are ",
+          "combined. Defaults to <50% killing."
+        ),
         input_switch(
           id = "plot_tile_minflag_toggle",
-          label = "Off",
-          value = FALSE
+          label = "On",
+          value = TRUE
         )
       ),
 
@@ -804,8 +1135,8 @@ server <- function(input, output) {
           wrap_selector(
             label = "Axis labels",
             label_title = paste0(
-              "Across the plot facets, should the x- and y-axis labels vary ",
-              "(Free) or be the same (Fixed)?"
+              "Across the plot panels, should the X- and Y-axis labels vary ",
+              "or be the same?"
             ),
             selectInput(
               inputId = "plot_tile_scales",
@@ -815,8 +1146,11 @@ server <- function(input, output) {
           ),
 
           wrap_selector(
-            label = "MIC cutoff",
-            label_title = "Threshold for calculating MICs; applies to x- and y-axis",
+            label = "Activity threshold",
+            label_title = paste0(
+              "Draw a line when individual treatments reach the indicated ",
+              "percentage (0.5 = 50% killing). Applies to X- and Y-axis."
+            ),
             numericInput(
               inputId = "plot_tile_mic_threshold",
               label = NULL,
@@ -825,10 +1159,10 @@ server <- function(input, output) {
           ),
 
           wrap_selector(
-            label = "Highlight low killing",
+            label = "Low effect threshold",
             label_title = paste0(
-              "Draw a symbol on cells which kill less than the indicated ",
-              "percentage. Zero hides the symbols."
+              "Draw a symbol on combined treatment cells that kill less than ",
+              "the indicated percentage (0.5 = 50% killing)."
             ),
             numericInput(
               inputId = "plot_tile_minflag_value",
@@ -858,8 +1192,11 @@ server <- function(input, output) {
     list(
       br(),
       wrap_selector(
-        label = actionLink("tile_split_preview_colours", label = "ABCi colours"),
-        label_title = "Colour palette to use for the ABCi values",
+        label = actionLink("tile_split_preview_colours", label = "ABCI colours"),
+        label_title = paste0(
+          "Colour palette for the ABCI values, designed to highlight the most ",
+          "relevant differences. Click to see the options."
+        ),
         selectInput(
           inputId = "plot_tile_split_colour_palette",
           label = NULL,
@@ -869,8 +1206,11 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "X compound",
-        label_title = "Compound to plot on the x-axis. The other compound is plotted on the y-axis",
+        label = "Plot X axis",
+        label_title = paste0(
+          "Treatment to plot on the X-axis. The other treatment is plotted on ",
+          "the Y-axis."
+        ),
         selectInput(
           inputId = "plot_tile_split_x_drug",
           label = NULL,
@@ -890,7 +1230,8 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis digits",
-        label_title = "Number of decimal places to show for concentrations the x-axis",
+        label_title =
+          "Number of decimal places to show for concentrations the x-axis",
         numericInput(
           inputId = "plot_tile_split_x_decimal",
           label = NULL,
@@ -913,7 +1254,8 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y axis digits",
-        label_title = "Number of decimal places to show for concentrations the y-axis",
+        label_title =
+          "Number of decimal places to show for concentrations the y-axis",
         numericInput(
           inputId = "plot_tile_split_y_decimal",
           label = NULL,
@@ -925,8 +1267,11 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Draw MIC lines",
-        label_title = "Include lines to indicate MIC for the x- and y-axis",
+        label = "Draw activity threshold",
+        label_title = paste0(
+          "Include lines to indicate activity thresholds for individual ",
+          "treatments (e.g., MIC, MBIC, MBEC). Defaults to ≥50% killing."
+        ),
         checkboxGroupInput(
           inputId = "plot_tile_split_mic_lines",
           label = NULL,
@@ -937,12 +1282,15 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Highlight low killing",
-        label_title = "Option to draw a symbol on tiles with low effect",
+        label = "Highlight low effect",
+        label_title = paste0(
+          "Draw a symbol on tiles with low effect when treatments are ",
+          "combined. Defaults to <50% killing."
+        ),
         input_switch(
           id = "plot_tile_split_minflag_toggle",
-          label = "Off",
-          value = FALSE
+          label = "On",
+          value = TRUE
         )
       ),
 
@@ -951,33 +1299,39 @@ server <- function(input, output) {
         open = FALSE,
         accordion_panel(
           title = "Advanced options",
+
           wrap_selector(
-            label = "Split type",
-            label_title = "Type of splitting/filtering to apply",
+            label = "Filter stringency",
+            label_title = paste0(
+              "Choose whether to include ABCI values close to 0 (Loose) or ",
+              "hide them (Strict)."
+            ),
             input_switch(
               id = "plot_tile_split_strict",
               label = "Strict",
-              value = FALSE
+              value = TRUE
             )
           ),
 
           wrap_selector(
             label = "Axis labels",
             label_title = paste0(
-              "Across the plot facets, should the x- and y-axis labels vary ",
-              "(Free) or be the same (Fixed)?"
+              "Across the plot panels, should the X- and Y-axis labels vary ",
+              "or be the same?"
             ),
             selectInput(
               inputId = "plot_tile_split_scales",
               label = NULL,
-              selected = "fixed",
               choices = plot_scales
             )
           ),
 
           wrap_selector(
-            label = "MIC cutoff",
-            label_title = "Threshold for calculating MICs; applies to x- and y-axis",
+            label = "Activity threshold",
+            label_title = paste0(
+              "Draw a line when individual treatments reach the indicated ",
+              "percentage (0.5 = 50% killing). Applies to X- and Y-axis."
+            ),
             numericInput(
               inputId = "plot_tile_split_mic_threshold",
               label = NULL,
@@ -986,10 +1340,10 @@ server <- function(input, output) {
           ),
 
           wrap_selector(
-            label = "Highlight low killing",
+            label = "Low effect threshold",
             label_title = paste0(
-              "Draw a symbol on cells which kill less than the indicated ",
-              "percentage. Zero hides the symbols."
+              "Draw a symbol on combined treatment cells that kill less than ",
+              "the indicated percentage (0.5 = 50% killing)."
             ),
             numericInput(
               inputId = "plot_tile_split_minflag_value",
@@ -1023,12 +1377,15 @@ server <- function(input, output) {
 
   # |-- Dot ---------------------------------------------------------------
 
-  output$plot_inputs_tile_dot <- renderUI({
+  output$plot_inputs_dot <- renderUI({
     list(
       br(),
       wrap_selector(
-        label = actionLink("dot_preview_colours", label = "ABCi colours"),
-        label_title = "Colour palette to use for the ABCi values",
+        label = actionLink("dot_preview_colours", label = "ABCI colours"),
+        label_title = paste0(
+          "Colour palette for the ABCI values, designed to highlight the most ",
+          "relevant differences. Click to see the options."
+        ),
         selectInput(
           inputId = "plot_dot_colour_palette",
           label = NULL,
@@ -1038,8 +1395,11 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "X compound",
-        label_title = "Compound to plot on the x-axis. The other compound is plotted on the y-axis",
+        label = "Plot X axis",
+        label_title = paste0(
+          "Treatment to plot on the X-axis. The other treatment is plotted on ",
+          "the Y-axis."
+        ),
         selectInput(
           inputId = "plot_dot_x_drug",
           label = NULL,
@@ -1059,7 +1419,8 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis digits",
-        label_title = "Number of decimal places to show for concentrations the x-axis",
+        label_title =
+          "Number of decimal places to show for concentrations the x-axis",
         numericInput(
           inputId = "plot_dot_x_decimal",
           label = NULL,
@@ -1082,7 +1443,8 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y axis digits",
-        label_title = "Number of decimal places to show for concentrations the y-axis",
+        label_title =
+          "Number of decimal places to show for concentrations the y-axis",
         numericInput(
           inputId = "plot_dot_y_decimal",
           label = NULL,
@@ -1094,8 +1456,21 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Draw MIC lines",
-        label_title = "Include lines to indicate MIC for the x- and y-axis",
+        label = "Size legend title",
+        label_title = "Title of the size legend in dot plots",
+        textInput(
+          inputId = "plot_dot_size_text",
+          label = NULL,
+          value = "Biofilm killed %"
+        )
+      ),
+
+      wrap_selector(
+        label = "Draw activity threshold",
+        label_title = paste0(
+          "Include lines to indicate activity thresholds for individual ",
+          "treatments (e.g., MIC, MBIC, MBEC). Defaults to ≥50% killing."
+        ),
         checkboxGroupInput(
           inputId = "plot_dot_mic_lines",
           label = NULL,
@@ -1110,11 +1485,12 @@ server <- function(input, output) {
         open = FALSE,
         accordion_panel(
           title = "Advanced options",
+
           wrap_selector(
             label = "Axis labels",
             label_title = paste0(
-              "Across the plot facets, should the x- and y-axis labels vary ",
-              "(Free) or be the same (Fixed)?"
+              "Across the plot panels, should the X- and Y-axis labels vary ",
+              "or be the same?"
             ),
             selectInput(
               inputId = "plot_dot_scales",
@@ -1125,8 +1501,11 @@ server <- function(input, output) {
           ),
 
           wrap_selector(
-            label = "MIC cutoff",
-            label_title = "Threshold for calculating MICs; applies to x- and y-axis",
+            label = "Activity threshold",
+            label_title = paste0(
+              "Draw a line when individual treatments reach the indicated ",
+              "percentage (0.5 = 50% killing). Applies to X- and Y-axis."
+            ),
             numericInput(
               inputId = "plot_dot_mic_threshold",
               label = NULL,
@@ -1139,14 +1518,179 @@ server <- function(input, output) {
   })
 
 
+  # |-- Split dot ---------------------------------------------------------
+
+  output$plot_inputs_dot_split <- renderUI({
+    list(
+      br(),
+
+      wrap_selector(
+        label = actionLink("dot_preview_colours", label = "ABCI colours"),
+        label_title = paste0(
+          "Colour palette for the ABCI values, designed to highlight the most ",
+          "relevant differences. Click to see the options."
+        ),
+        selectInput(
+          inputId = "plot_dot_split_colour_palette",
+          label = NULL,
+          selected = "BOB",
+          choices = abci_colours
+        )
+      ),
+
+      wrap_selector(
+        label = "Plot X axis",
+        label_title = paste0(
+          "Treatment to plot on the X-axis. The other treatment is plotted on ",
+          "the Y-axis."
+        ),
+        selectInput(
+          inputId = "plot_dot_split_x_drug",
+          label = NULL,
+          choices = conc_columns()
+        )
+      ),
+
+      wrap_selector(
+        label = "X axis title",
+        label_title = "Title for the x-axis; applies to the entire plot",
+        textInput(
+          inputId = "plot_dot_split_x_text",
+          label = NULL,
+          value = "Concentration (ug/mL)"
+        )
+      ),
+
+      wrap_selector(
+        label = "X axis digits",
+        label_title =
+          "Number of decimal places to show for concentrations the x-axis",
+        numericInput(
+          inputId = "plot_dot_split_x_decimal",
+          label = NULL,
+          value = 2,
+          min = 1,
+          max = 4,
+          step = 1
+        )
+      ),
+
+      wrap_selector(
+        label = "Y axis title",
+        label_title = "Title for the y-axis; applies to the entire plot",
+        textInput(
+          inputId = "plot_dot_split_y_text",
+          label = NULL,
+          value = "Concentration (ug/mL)"
+        )
+      ),
+
+      wrap_selector(
+        label = "Y axis digits",
+        label_title =
+          "Number of decimal places to show for concentrations the y-axis",
+        numericInput(
+          inputId = "plot_dot_split_y_decimal",
+          label = NULL,
+          value = 2,
+          min = 1,
+          max = 4,
+          step = 1
+        )
+      ),
+
+      wrap_selector(
+        label = "Size legend title",
+        label_title = "Title of the size legend in dot plots",
+        textInput(
+          inputId = "plot_dot_split_size_text",
+          label = NULL,
+          value = "Biofilm killed %"
+        )
+      ),
+
+      wrap_selector(
+        label = "Draw activity threshold",
+        label_title = paste0(
+          "Include lines to indicate activity thresholds for individual ",
+          "treatments (e.g., MIC, MBIC, MBEC). Defaults to ≥50% killing."
+        ),
+        checkboxGroupInput(
+          inputId = "plot_dot_split_mic_lines",
+          label = NULL,
+          inline = TRUE,
+          choices = c("X", "Y"),
+          selected = c("X", "Y")
+        )
+      ),
+
+      br(),
+      accordion(
+        open = FALSE,
+        accordion_panel(
+          title = "Advanced options",
+
+          wrap_selector(
+            label = "Filter stringency",
+            label_title = paste0(
+              "Choose whether to include ABCI values close to 0 (Loose) or ",
+              "hide them (Strict)."
+            ),
+            input_switch(
+              id = "plot_dot_split_strict",
+              label = "Strict",
+              value = TRUE
+            )
+          ),
+
+          wrap_selector(
+            label = "Axis labels",
+            label_title = paste0(
+              "Across the plot panels, should the X- and Y-axis labels vary ",
+              "or be the same?"
+            ),
+            selectInput(
+              inputId = "plot_dot_split_scales",
+              label = NULL,
+              selected = "free",
+              choices = plot_scales
+            )
+          ),
+
+          wrap_selector(
+            label = "Activity threshold",
+            label_title = paste0(
+              "Draw a line when individual treatments reach the indicated ",
+              "percentage (0.5 = 50% killing). Applies to X- and Y-axis."
+            ),
+            numericInput(
+              inputId = "plot_dot_split_mic_threshold",
+              label = NULL,
+              value = 0.5
+            )
+          )
+        )
+      )
+    )
+  })
+
+  observeEvent(input$plot_dot_split_strict, {
+    if (input$plot_dot_split_strict) {
+      update_switch("plot_dot_split_strict", label = "Strict")
+    } else {
+      update_switch("plot_dot_split_strict", label = "Loose")
+    }
+  })
+
+
   # |-- Line --------------------------------------------------------------
 
   output$plot_inputs_line <- renderUI({
     list(
       br(),
       wrap_selector(
-        label = "Line type",
-        label_title = "Type of line plot to draw",
+        label = "Graph type",
+        label_title = "Determine how replicates are plotted",
         radioButtons(
           inputId = "plot_line_type",
           label = NULL,
@@ -1160,8 +1704,11 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "X compound",
-        label_title = "Compound to plot on the x-axis. The other compound is plotted as lines.",
+        label = "Plot X axis",
+        label_title = paste0(
+          "Treatment to plot on the X-axis. The other treatment is plotted on ",
+          "the Y-axis."
+        ),
         selectInput(
           inputId = "plot_line_x_drug",
           label = NULL,
@@ -1181,7 +1728,8 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis digits",
-        label_title = "Number of decimal places to show for concentrations the x-axis",
+        label_title =
+          "Number of decimal places to show for concentrations the x-axis",
         numericInput(
           inputId = "plot_line_x_decimal",
           label = NULL,
@@ -1193,8 +1741,11 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Included concentrations",
-        label_title = "Concentrations to include in the plot as lines",
+        label = "Included values",
+        label_title = paste0(
+          "Concentrations to include in the plot as lines. Six or fewer is ",
+          "recommended."
+        ),
         selectInput(
           inputId = "plot_line_line_include",
           label = NULL,
@@ -1215,7 +1766,10 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Line digits",
-        label_title = "Number of decimal places to show for the compound plotted as lines",
+        label_title = paste0(
+          "Number of decimal places to show for concentrations of the ",
+          "treatment plotted as different lines."
+        ),
         numericInput(
           inputId = "plot_line_line_decimal",
           label = NULL,
@@ -1228,7 +1782,10 @@ server <- function(input, output) {
 
       wrap_selector(
         label = actionLink("line_preview_colours", label = "Line colours"),
-        label_title = "Colour palette to map to concentrations, each as a separate line",
+        label_title = paste0(
+          "Colour palette to map to concentrations, each as a separate line. ",
+          "Click the preview the options."
+        ),
         selectInput(
           inputId = "plot_line_colour_palette",
           label = NULL,
@@ -1247,8 +1804,11 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Draw MIC lines",
-        label_title = "Include lines to indicate MIC for the x-axis",
+        label = "Draw activity threshold",
+        label_title = paste0(
+          "Include lines to indicate activity thresholds for individual ",
+          "treatments (e.g., MIC, MBIC, MBEC). Defaults to ≥50% killing."
+        ),
         checkboxGroupInput(
           inputId = "plot_line_mic_lines",
           label = NULL,
@@ -1265,7 +1825,8 @@ server <- function(input, output) {
           title = "Advanced options",
           wrap_selector(
             label = "X-axis jitter",
-            label_title = "Nudge values along the x-axis to prevent overlapping lines",
+            label_title =
+              "Nudge values along the x-axis to prevent overlapping lines",
             input_switch(
               id = "plot_line_jitter_x",
               label = "On",
@@ -1276,8 +1837,8 @@ server <- function(input, output) {
           wrap_selector(
             label = "Axis labels",
             label_title = paste0(
-              "Across the plot facets, should the x- and y-axis labels vary ",
-              "(Free) or be the same (Fixed)?"
+              "Across the plot panels, should the X- and Y-axis labels vary ",
+              "or be the same?"
             ),
             selectInput(
               inputId = "plot_line_scales",
@@ -1287,8 +1848,11 @@ server <- function(input, output) {
           ),
 
           wrap_selector(
-            label = "MIC cutoff",
-            label_title = "Threshold for calculating MICs; applies to x-axis",
+            label = "Activity threshold",
+            label_title = paste0(
+              "Draw a line when individual treatments reach the indicated ",
+              "percentage (0.5 = 50% killing). Applies to X-axis."
+            ),
             numericInput(
               inputId = "plot_line_mic_threshold",
               label = NULL,
@@ -1316,15 +1880,9 @@ server <- function(input, output) {
 
   # |- Plot-specific legends ----------------------------------------------
 
-  plot_legend <- reactive({
-    switch(
-      plot_type(),
-      "tile" = HTML("<p>Tile legend.</p>"),
-      "tile_split" = HTML("<p>Split tile legend.</p>"),
-      "dot" = HTML("<p>Dot legend.</p>"),
-      "line" = HTML("<p>Line legend.</p>"),
-    )
-  })
+  plot_legend_ui <- reactive(
+    plot_legends[[plot_type()]]
+  )
 
 
   # |-- Line include options ----------------------------------------------
@@ -1351,7 +1909,7 @@ server <- function(input, output) {
   modal_colours <- lapply(
     list(
       "abci" = modalDialog(
-        title = "ABCi colour palettes",
+        title = "ABCI colour palettes",
         easyClose = TRUE,
         size = "l",
         HTML("<img src='abci_palettes.png' class='center'>")
@@ -1410,6 +1968,30 @@ server <- function(input, output) {
           colour.palette = isolate(input$plot_tile_colour_palette)
         )
 
+      }  else if (isolate(input$visualize_tabs) == "tile_split") {
+        abci_plot_tile_split(
+          data = isolate(abci_plot_data()),
+          x.drug = isolate(input$plot_tile_split_x_drug),
+          y.drug = conc_columns()[!conc_columns() %in% isolate(input$plot_tile_split_x_drug)],
+          col.fill = "abci_avg",
+          col.analysis = "assay",
+          strict = isolate(input$plot_tile_split_strict),
+          n.cols = 2,
+          n.rows = 2,
+          scales = isolate(input$plot_tile_split_scales),
+          x.decimal = isolate(input$plot_tile_split_x_decimal),
+          y.decimal = isolate(input$plot_tile_split_y_decimal),
+          x.text = isolate(input$plot_tile_split_x_text),
+          y.text = isolate(input$plot_tile_split_y_text),
+          x.mic.line = ("X" %in% isolate(input$plot_tile_split_mic_lines)),
+          y.mic.line = ("Y" %in% isolate(input$plot_tile_split_mic_lines)),
+          mic.threshold = isolate(input$plot_tile_split_mic_threshold),
+          col.mic = "bio_normal",
+          minflag = isolate(input$plot_tile_split_minflag_toggle),
+          minflag.value = isolate(input$plot_tile_split_minflag_value),
+          colour.palette = isolate(input$plot_tile_split_colour_palette)
+        )
+
       } else if (isolate(input$visualize_tabs) == "dot") {
         abci_plot_dot(
           data = isolate(abci_plot_data()),
@@ -1421,6 +2003,7 @@ server <- function(input, output) {
           col.analysis = "assay",
           n.cols = abci_plot_dims()[[1]],
           n.rows = abci_plot_dims()[[2]],
+          size.text = isolate(input$plot_dot_size_text),
           scales = isolate(input$plot_dot_scales),
           x.decimal = isolate(input$plot_dot_x_decimal),
           y.decimal = isolate(input$plot_dot_y_decimal),
@@ -1431,6 +2014,35 @@ server <- function(input, output) {
           mic.threshold = isolate(input$plot_dot_mic_threshold),
           col.mic = "bio_normal",
           colour.palette = isolate(input$plot_dot_colour_palette)
+        ) +
+          {if (abci_plot_dims()[[2]] == 1) {
+            theme(legend.box = "horizontal")
+          }}
+
+      } else if (isolate(input$visualize_tabs) == "dot_split") {
+
+        abci_plot_dot_split(
+          data = isolate(abci_plot_data()),
+          x.drug = isolate(input$plot_dot_split_x_drug),
+          y.drug = conc_columns()[!conc_columns() %in% isolate(input$plot_dot_split_x_drug)],
+          col.fill = "abci_avg",
+          col.size = "effect_avg",
+          strict = isolate(input$plot_dot_split_strict),
+          size.range = c(3, 15),
+          col.analysis = "assay",
+          n.cols = abci_plot_dims()[[1]],
+          n.rows = abci_plot_dims()[[2]],
+          size.text = isolate(input$plot_dot_split_size_text),
+          scales = isolate(input$plot_dot_split_scales),
+          x.decimal = isolate(input$plot_dot_split_x_decimal),
+          y.decimal = isolate(input$plot_dot_split_y_decimal),
+          x.text = isolate(input$plot_dot_split_x_text),
+          y.text = isolate(input$plot_dot_split_y_text),
+          x.mic.line = ("X" %in% isolate(input$plot_dot_split_mic_lines)),
+          y.mic.line = ("Y" %in% isolate(input$plot_dot_split_mic_lines)),
+          mic.threshold = isolate(input$plot_dot_split_mic_threshold),
+          col.mic = "bio_normal",
+          colour.palette = isolate(input$plot_dot_split_colour_palette)
         ) +
           {if (abci_plot_dims()[[2]] == 1) {
             theme(legend.box = "horizontal")
@@ -1469,30 +2081,6 @@ server <- function(input, output) {
           jitter.x = isolate(input$plot_line_jitter_x),
           colour.palette = isolate(input$plot_line_colour_palette)
         )
-
-      } else if (isolate(input$visualize_tabs) == "tile_split") {
-        abci_plot_tile_split(
-          data = isolate(abci_plot_data()),
-          x.drug = isolate(input$plot_tile_split_x_drug),
-          y.drug = conc_columns()[!conc_columns() %in% isolate(input$plot_tile_split_x_drug)],
-          col.fill = "abci_avg",
-          col.analysis = "assay",
-          strict = isolate(input$plot_tile_split_strict),
-          n.cols = 2,
-          n.rows = 2,
-          scales = isolate(input$plot_tile_split_scales),
-          x.decimal = isolate(input$plot_tile_split_x_decimal),
-          y.decimal = isolate(input$plot_tile_split_y_decimal),
-          x.text = isolate(input$plot_tile_split_x_text),
-          y.text = isolate(input$plot_tile_split_y_text),
-          x.mic.line = ("X" %in% isolate(input$plot_tile_split_mic_lines)),
-          y.mic.line = ("Y" %in% isolate(input$plot_tile_split_mic_lines)),
-          mic.threshold = isolate(input$plot_tile_split_mic_threshold),
-          col.mic = "bio_normal",
-          minflag = isolate(input$plot_tile_split_minflag_toggle),
-          minflag.value = isolate(input$plot_tile_split_minflag_value),
-          colour.palette = isolate(input$plot_tile_split_colour_palette)
-        )
       }
     )
   })
@@ -1505,8 +2093,8 @@ server <- function(input, output) {
 
     plot_width <- ifelse(abci_plot_dims()[[1]] == 1, "800px", "1150px")
 
-    if (plot_type() == "tile_split") {
-      plot_height <- paste0(100 + (600 * abci_plot_dims()[[2]]), "px")
+    if (grepl(x = plot_type(), pattern = "split")) {
+      plot_height <- paste0(200 + (600 * abci_plot_dims()[[2]]), "px")
     } else {
       plot_height <- paste0(100 + (300 * abci_plot_dims()[[2]]), "px")
     }
@@ -1518,7 +2106,14 @@ server <- function(input, output) {
           height = plot_height,
           width = plot_width
         ) %>% shinycssloaders::withSpinner(),
-        div(isolate(plot_legend()))
+
+        card(
+          class = "border-0",
+          card_body(
+            isolate(plot_legend_ui()),
+            padding = 8
+          )
+        )
       )
     )
   })
@@ -1527,5 +2122,5 @@ server <- function(input, output) {
 
 # Run the application -----------------------------------------------------
 
-message("\n==>")
+message("\n==> Start...")
 shinyApp(ui = ui, server = server)
