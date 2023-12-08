@@ -228,6 +228,12 @@ ui <- page_fluid(
 
             p("Info about upload."),
 
+            p(
+              "Use the link to ",
+              downloadLink("download_template", label = "download a template"),
+              " of the input data format."
+            ),
+
             fileInput(
               inputId = "load_user_data",
               label = NULL,
@@ -490,6 +496,14 @@ server <- function(input, output) {
   observeEvent(input$get_started, {
     updateNavbarPage(inputId = "navbar", selected = "upload")
   })
+
+  # Download the template
+  output$download_template <- downloadHandler(
+    filename = "ShinyABCi_data_template.xlsx",
+    content = function(file) {
+      file.copy("example_data/ShinyABCi_data_template.xlsx", file)
+    }
+  )
 
 
   # |- Example data -------------------------------------------------------
