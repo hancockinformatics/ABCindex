@@ -1097,7 +1097,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_tile_x_text",
           label = NULL,
-          value = "Concentration (ug/mL)"
+          value = "[Columns]"
         )
       ),
 
@@ -1121,7 +1121,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_tile_y_text",
           label = NULL,
-          value = "Concentration (ug/mL)"
+          value = "[Rows]"
         )
       ),
 
@@ -1266,7 +1266,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_tile_split_x_text",
           label = NULL,
-          value = "Concentration (ug/mL)"
+          value = "[Columns]"
         )
       ),
 
@@ -1290,7 +1290,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_tile_split_y_text",
           label = NULL,
-          value = "Concentration (ug/mL)"
+          value = "[Rows]"
         )
       ),
 
@@ -1455,7 +1455,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_dot_x_text",
           label = NULL,
-          value = "Concentration (ug/mL)"
+          value = "[Columns]"
         )
       ),
 
@@ -1479,7 +1479,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_dot_y_text",
           label = NULL,
-          value = "Concentration (ug/mL)"
+          value = "[Rows]"
         )
       ),
 
@@ -1599,7 +1599,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_dot_split_x_text",
           label = NULL,
-          value = "Concentration (ug/mL)"
+          value = "[Columns]"
         )
       ),
 
@@ -1623,7 +1623,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_dot_split_y_text",
           label = NULL,
-          value = "Concentration (ug/mL)"
+          value = "[Rows]"
         )
       ),
 
@@ -1764,7 +1764,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_line_x_text",
           label = NULL,
-          value = "Concentration (ug/mL)"
+          value = "[Columns]"
         )
       ),
 
@@ -1802,7 +1802,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_line_line_text",
           label = NULL,
-          value = "Concentration (ug/mL)"
+          value = "[Rows]"
         )
       ),
 
