@@ -335,12 +335,12 @@ ui <- page_fluid(
           h1(class = "display-3 fw-bold text-body-emphasis", "ShinyABCi"),
 
           h1(
-            class = "display-6",
+            class = "display-6 mb-4",
             "Anti-Biofilm Combination Index calculation and visualization"
           ),
 
           div(
-            class = "col-lg-9 mx-auto",
+            class = "col-lg-12 mx-auto",
 
             HTML(paste0(
               "<p class='lead mb-4'>Welcome to ShinyABCi, a tool to quantify ",
@@ -412,13 +412,13 @@ ui <- page_fluid(
 
             p(
               "Select an '.xlsx' or '.ods' spreadsheet containing any number ",
-              "of checkerboard experiments, each a sheet within the document. ",
-              "Each experiment may include  multiple replicates. Click the ",
-              "following link to ",
+              "of checkerboard experiments, each with one or more replicates. ",
+              "Each sheet/experiment will be analyzed independently, becoming ",
+              "separate panels in the final plots, while replicates within an ",
+              "experiment will be averaged. You can use the following link to ",
               downloadLink("download_template", label = "download a template"),
-              " of the required input format. Please subtract the blank ",
-              "before uploading, if required. Different experiments will ",
-              "become multiple panels in the final plots."
+              "of the required input format. If required, subtract any 'blank' ",
+              "wells before uploading."
             ),
 
             p(
@@ -479,7 +479,7 @@ ui <- page_fluid(
 
             p(
               "ShinyABCi expects data to be normalized to percentages (either ",
-              "0-1 or 0-100). If your data does not meet these criteria, use ",
+              "0-1 or 0-100). If your data does not meet this criteria, use ",
               "the options below to have it normalized."
             ),
             radioButtons(
@@ -505,9 +505,9 @@ ui <- page_fluid(
             p(class = "mt-3", style = "font-size: 1.25em", "Data interpretation"),
             p(
               "ABCI values are calculated for every combination of ",
-              "concentrations in your experiments. A positive ABCI always ",
-              "indicates that the combination is more effective than any ",
-              "individual drug on its own. Please refer to the ",
+              "concentrations in your experiments. A positive ABCI indicates ",
+              "the combination is more effective than any individual drug on ",
+              "its own. Please refer to the ",
               actionLink("abci_info", "ABCI information"),
               " page to learn more."
             ),
@@ -851,7 +851,7 @@ server <- function(input, output) {
       hr(),
       selectInput(
         inputId = "input_data_sheet_names",
-        label = strong("Select an uploaded sheet to preview:"),
+        label = strong("Select an uploaded experiment to preview:"),
         choices = names(input_data_preview())
       )
     )
@@ -979,7 +979,7 @@ server <- function(input, output) {
         hr(),
         selectInput(
           inputId = "results_names_selectInput",
-          label = strong("Select an uploaded sheet to see the results:"),
+          label = strong("Select an uploaded experiment to see the results:"),
           choices = names(abci_results_display())
         )
       )
