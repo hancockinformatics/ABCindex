@@ -2131,20 +2131,18 @@ server <- function(input, output) {
   observeEvent(input$create_plot, {
     req(abci_plot_data())
 
-    plot_width <- ifelse(abci_plot_dims()[[1]] == 1, "800px", "1150px")
-
-    if (grepl(x = plot_type(), pattern = "split")) {
-      plot_height <- paste0(200 + (600 * abci_plot_dims()[[2]]), "px")
-    } else {
-      plot_height <- paste0(100 + (300 * abci_plot_dims()[[2]]), "px")
-    }
+    output_dims <- get_dims(
+      abci_plot_dims()[[1]],
+      abci_plot_dims()[[2]],
+      plot_type()
+    )
 
     output$abci_plot_ui <- renderUI(
       tagList(
         plotOutput(
           outputId = "abci_plot",
-          height = plot_height,
-          width = plot_width
+          width = output_dims[1],
+          height = output_dims[2]
         ) %>% shinycssloaders::withSpinner(),
 
         card(
