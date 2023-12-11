@@ -573,13 +573,34 @@ ui <- page_fluid(
               "activity for any subset of concentrations.</p>"
             )),
 
-            disabled(
-              actionButton(
-                inputId = "create_plot",
-                class = "btn btn-info btn-tooltip",
-                label = "Create or update the plot",
-                icon = icon("chart-bar"),
-                width = "50%"
+            div(
+              class = "container",
+              div(
+                class = "row align-items-center",
+                div(
+                  class = "col",
+                  disabled(
+                    actionButton(
+                      inputId = "create_plot",
+                      class = "btn btn-info btn-tooltip",
+                      label = "Create or update the plot",
+                      icon = icon("chart-bar"),
+                      width = "inherit"
+                    )
+                  )
+                ),
+                div(
+                  class = "col",
+                  disabled(
+                    actionButton(
+                      inputId = "reset",
+                      class = "btn btn-warning",
+                      label = strong("Reset"),
+                      icon = icon("arrow-rotate-left"),
+                      width = "inherit"
+                    )
+                  )
+                )
               )
             ),
 
@@ -610,13 +631,6 @@ ui <- page_fluid(
                 value = "line",
                 uiOutput("plot_inputs_line")
               )
-            ),
-
-            actionButton(
-              inputId = "reset",
-              class = "btn btn-warning mt-4",
-              label = strong("Reset"),
-              icon = icon("arrow-rotate-left")
             )
           ),
           uiOutput("abci_plot_ui")
@@ -1034,6 +1048,7 @@ server <- function(input, output) {
   observeEvent(input$visualize_your_results, {
     updateNavbarPage(inputId  = "navbar", selected = "visualization")
     enable("create_plot")
+    enable("reset")
   })
 
   abci_plot_data <- reactive(abci_results())
@@ -1045,6 +1060,14 @@ server <- function(input, output) {
     n_rows <- ceiling(n_assay / 2)
     n_cols <- ifelse(n_assay == 1, 1, 2)
     list(n_cols, n_rows)
+  })
+
+  observeEvent({
+    input$visualize_tabs
+    abci_plot_data()
+  }, {
+    enable("create_plot")
+    enable("reset")
   })
 
 
