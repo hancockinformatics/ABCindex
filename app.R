@@ -36,20 +36,20 @@ input_data_preview_container <- htmltools::withTags(table(
     ),
     th("Wells"),
     th(
-      "Cols",
-      title = paste0("Compound found in the plate's columns (1-12).")
+      "Plate columns",
+      title = paste0("Compound found in the plate's columns (1-12)")
     ),
     th(
-      "Cols Conc",
-      title = "Concentrations identified for the plate's columns."
+      "[Plate columns]",
+      title = "Concentrations identified for the plate's columns"
     ),
     th(
-      "Rows",
-      title = "Compound found in the plate's rows (A-H)."
+      "Plate rows",
+      title = "Compound found in the plate's rows (A-H)"
     ),
     th(
-      "Rows Conc",
-      title = "Concentrations identified for the plate's rows."
+      "[Plate rows]",
+      title = "Concentrations identified for the plate's rows"
     ),
     th(
       "Bio",
@@ -66,34 +66,34 @@ abci_results_display_container <- htmltools::withTags(table(
   thead(tr(
     class = "table-dark",
     th(
-      "Cols",
-      title = paste0("Compound found in the plate's columns (1-12).")
+      "Plate columns",
+      title = paste0("Compound found in the plate's columns (1-12)")
     ),
     th(
-      "Cols Conc",
-      title = "Concentrations identified for the plate's columns."
+      "[Plate columns]",
+      title = "Concentrations identified for the plate's columns"
     ),
     th(
-      "Rows",
-      title = "Compound found in the plate's rows (A-H)."
+      "Plate rows",
+      title = "Compound found in the plate's rows (A-H)"
     ),
     th(
-      "Rows Conc",
-      title = "Concentrations identified for the plate's rows."
+      "[Plate rows]",
+      title = "Concentrations identified for the plate's rows"
     ),
     th(
-      "Bio Normal Avg",
+      "Average bio",
       title = paste0(
         "The measured value from wells in the plate, after any normalization ",
         "and/or averaging across replicates"
       )
     ),
     th(
-      "Effect Avg",
-      title = "The measured effect, equal to 1 - 'Bio Normal Avg'"
+      "Average effect",
+      title = "The measured effect, equal to 1 - 'Average bio'"
     ),
     th(
-      "ABCI Avg",
+      "Average ABCI",
       title = paste0(
         "The Anti-Biofilm Combination Index (ABCI) value, averaged ",
         "across any replicates."
@@ -813,7 +813,15 @@ server <- function(input, output) {
     purrr::map(
       input_data_raw(),
       ~mutate(.x, across(where(is.numeric), ~signif(.x, digits = 4))) %>%
-        janitor::clean_names(case = "title")
+        rename(
+          "Replicate" = replicate,
+          "Wells" = well,
+          "Plate columns" = cols,
+          "[Plate columns]" = cols_conc,
+          "Plate rows" = rows,
+          "[Plate rows]" = rows_conc,
+          "Bio" = bio
+        )
     )
   })
 
@@ -912,9 +920,16 @@ server <- function(input, output) {
       split(x = ., f = .$assay) %>%
       purrr::map(
         ~select(.x, -assay) %>%
-          janitor::clean_names(case = "title") %>%
-          rename("ABCI Avg" = `Abci Avg`) %>%
-          distinct(`Cols Conc`, `Rows Conc`, .keep_all = TRUE)
+          distinct(cols_conc, rows_conc, .keep_all = TRUE) %>%
+          rename(
+            "Plate columns" = cols,
+            "[Plate columns]" = cols_conc,
+            "Plate rows" = rows,
+            "[Plate rows]" = rows_conc,
+            "Normalized Bio" = bio_normal_avg,
+            "Average effect" = effect_avg,
+            "Average ABCI" = abci_avg
+          )
       )
   })
 
@@ -990,7 +1005,7 @@ server <- function(input, output) {
 
   observeEvent(input$reset, {
     shinyjs::reset("visualization_sidebar", asis = FALSE)
-    updateNavbarPage(inputId  = "navbar", selected = "upload")
+    updateNavbarPage(inputId = "navbar", selected = "upload")
     input_data_raw(NULL)
     input_data_tidy(NULL)
     abci_results(NULL)
