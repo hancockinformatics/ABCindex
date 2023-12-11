@@ -557,6 +557,7 @@ ui <- page_fluid(
         layout_sidebar(
           sidebar = sidebar(
             title = "Visualization of ABCI results",
+            id = "visualization_sidebar",
             width = "580px",
             open = NA,
 
@@ -609,6 +610,13 @@ ui <- page_fluid(
                 value = "line",
                 uiOutput("plot_inputs_line")
               )
+            ),
+
+            actionButton(
+              inputId = "reset",
+              class = "btn btn-warning mt-4",
+              label = strong("Reset"),
+              icon = icon("arrow-rotate-left")
             )
           ),
           uiOutput("abci_plot_ui")
@@ -732,18 +740,6 @@ ui <- page_fluid(
 # Define Server -----------------------------------------------------------
 
 server <- function(input, output) {
-
-  observeEvent(input$notification_test, {
-    showNotification(
-      type = "message",
-      duration = NULL,
-      ui = HTML(paste0(
-        "<h4 class='alert-heading'>Hello!</h4>",
-        "<p class='mb-0'> This is a test notification, designed to see how ",
-        "notifications look.</p>"
-      ))
-    )
-  })
 
   # Learn more action
   observeEvent(input$learn_more, {
@@ -988,6 +984,37 @@ server <- function(input, output) {
 
 
   # Visualization ---------------------------------------------------------
+
+
+  # |- Reset --------------------------------------------------------------
+
+  observeEvent(input$reset, {
+    shinyjs::reset("visualization_sidebar", asis = FALSE)
+    updateNavbarPage(inputId  = "navbar", selected = "upload")
+    input_data_raw(NULL)
+    input_data_tidy(NULL)
+    abci_results(NULL)
+    output$abci_plot <- NULL
+    output$abci_plot_ui <- NULL
+
+    disable("proceed_abci_calculations")
+    disable("download_handler")
+    disable("visualize_your_results")
+    disable("create_plot")
+
+    showNotification(
+      type = "message",
+      duration = NULL,
+      ui = HTML(paste0(
+        "<h4 class='alert-heading'>Reset successful!</h4>",
+        "<p class='mb-0'>All inputs and results have been reset to their ",
+        "original state. Upload another data set to get started.</p>"
+      ))
+    )
+  })
+
+
+  # |- Setup --------------------------------------------------------------
 
   observeEvent(input$visualize_your_results, {
     updateNavbarPage(inputId  = "navbar", selected = "visualization")
@@ -1880,9 +1907,7 @@ server <- function(input, output) {
 
   # |- Plot-specific legends ----------------------------------------------
 
-  plot_legend_ui <- reactive(
-    plot_legends[[plot_type()]]
-  )
+  plot_legend_ui <- reactive(plot_legends[[plot_type()]])
 
 
   # |-- Line include options ----------------------------------------------
