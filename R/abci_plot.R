@@ -20,572 +20,6 @@ theme_set(
 size_mapping_N1S2 <- readRDS("data/size_mapping_N1S2.Rds")
 
 
-#' abci_plot_tile
-#'
-#' @param data Data frame, as output by `abci.analysis()`
-#' @param x.drug Character; Column containing concentrations of the first drug
-#' @param y.drug Character; Column containing concentrations of the second drug
-#' @param col.fill Character; Column containing the values to plot
-#' @param col.analysis Character; Optional column denoting different analyses,
-#'   by which to facet the plot.
-#' @param scales Should the scales be "fixed" (default), "free", "free_x", or
-#'   "free_y"? See `?facet_wrap` for more details.
-#' @param n.rows Number of rows when faceting. Defaults to NULL (let's ggplot2
-#'   choose.)
-#' @param n.cols Number of columns when faceting. Defaults to NULL (let's
-#'   ggplot2 choose.)
-#' @param x.text Character; Label for the x-axis
-#' @param y.text Character; Label for the y-axis
-#' @param x.decimal Number of decimal places to show for x-axis labels. Defaults
-#'   to 1.
-#' @param y.decimal Number of decimal places to show for y axis labels. Defaults
-#'   to 1.
-#' @param minflag Logical; Should rows previously flagged by `abci.analysis()`
-#'   be labeled? Defaults to FALSE.
-#' @param minflag.value Minimum value, below which effects will be flagged to
-#'   indicate lack of effect. Defaults to 0.5
-#' @param x.mic.line Logical; Include MIC line for the drug on the x-axis?
-#'   Defaults to FALSE.
-#' @param y.mic.line Logical; Include MIC line for the drug on the y-axis?
-#'   Defaults to FALSE.
-#' @param col.mic Character; Column name to use for calculating MICs
-#' @param mic.threshold Threshold to use when calculating MICs. Defaults to 0.5.
-#' @param delta Logical; Are plotted values the simple "delta" as calculated by
-#'   `abci.analysis()`? Defaults to FALSE.
-#' @param colour.palette One of the pre-made palettes.
-#' @param colour.na Colour assigned to any NA values. Defaults to "white".
-#' @param scale.limits Limits for the colour scale. Defaults to
-#'   `c(-2, 2)`.
-#' @param scale.breaks Breaks for the colour scale. Defaults to
-#'   `seq(2, -2, -0.5)`.
-#' @param add.axis.lines Should lines be drawn for the x- and y-axis when
-#'   faceting? Defaults to TRUE.
-#'
-#' @return A ggplot object
-#' @export
-#'
-#' @description The main graphic function. It takes the data produced by
-#'   `abci.analysis()`, and uses `ggplot2` to produce a standard ABCi graph. If
-#'   requested, this function will calculate the MICs for the individual drugs
-#'   (to make reference lines). The axes are formatted as needed for ggplot2,
-#'   without zero values and with the right significant digits. The
-#'   `col.analysis` argument can be used to create facets to compare different
-#'   assays.
-#'
-abci_plot_tile <- function(
-    data,
-    x.drug,
-    y.drug,
-    col.fill,
-    col.analysis = NULL,
-    scales = "free",
-    n.rows = NULL,
-    n.cols = NULL,
-    x.text = "Drug 1",
-    y.text = "Drug 2",
-    x.decimal = 1,
-    y.decimal = 1,
-    minflag = FALSE,
-    minflag.value = 0.5,
-    x.mic.line = FALSE,
-    y.mic.line = FALSE,
-    col.mic,
-    mic.threshold = 0.5,
-    delta = FALSE,
-    colour.palette = "YP",
-    colour.na = "white",
-    scale.limits = c(-2.0, 2.0),
-    scale.breaks = seq(2, -2, -0.5),
-    add.axis.lines = TRUE
-) {
-
-  if (any(c("spec_tbl_df", "tbl_df", "tbl") %in% class(data))) {
-    data <- as.data.frame(data)
-  }
-
-  if (!is.null(col.analysis)) {
-    data[col.analysis] <- droplevels(data[col.analysis])
-  }
-
-  data <- data %>%
-    mutate(across(all_of(c(x.drug, y.drug)), forcats::fct_inseq))
-
-  if (minflag) {
-    data <- data %>%
-      mutate(min = ifelse(effect_avg < minflag.value, "<", NA))
-  }
-
-  upper <- max(scale.limits)
-  lower <- min(scale.limits)
-
-  plot.palette <- preset_palettes[[colour.palette]]
-
-  colour.pointers <-
-    if (colour.palette %in% c("PAN", "SUN", "BOB")) {
-      scales::rescale(
-        c(upper, upper / 2, upper / 4, upper / 8, 0, lower / 4, lower / 2, lower),
-        to = c(0, 1)
-      )
-    } else {
-      scales::rescale(
-        c(upper, 3 * upper / 4, upper / 2, upper / 4, 0, lower / 4, 3 * lower / 4, lower),
-        to = c(0, 1)
-      )
-    }
-
-  if (delta) {
-    scale.limits <- c(-100, 100)
-    scale.breaks <- seq(100, -100, -25)
-    colour.pointers <- scales::rescale(
-      c(100, 50, 25, 0, -25, -50, -100),
-      to = c(0, 1)
-    )
-  }
-
-  # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
-  # concentrations need to be converted to positions on their respective axes,
-  # as the `geom_(x|y)line` functions only work by position. And since we don't
-  # plot zero concentrations, we need to subtract one from the level to end up
-  # in the right spot.
-  if (any(x.mic.line, y.mic.line)) {
-
-    if (is.null(col.analysis)) {
-      mic.table <- abci_mic(
-        data = data,
-        x.drug = x.drug,
-        y.drug = y.drug,
-        col.data = col.mic,
-        threshold = mic.threshold
-      )
-
-      mic.table$XLAB <-
-        which(levels(droplevels(data[[x.drug]])) == mic.table$XMIC) - 1
-
-      mic.table$YLAB <-
-        which(levels(droplevels(data[[y.drug]])) == mic.table$YMIC) - 1
-    } else {
-
-      data.split <- split(x = data, f = data[col.analysis])
-
-      mic.table.split <- lapply(data.split, function(d) {
-        result.mic <- abci_mic(
-          data = d,
-          x.drug = x.drug,
-          y.drug = y.drug,
-          col.data = col.mic,
-          threshold = mic.threshold
-        )
-
-        result.mic$XLAB <-
-          which(levels(droplevels(d[[x.drug]])) == result.mic$XMIC) - 1
-
-        result.mic$YLAB <-
-          which(levels(droplevels(d[[y.drug]])) == result.mic$YMIC) - 1
-
-        result.mic
-      })
-
-      mic.table <- do.call(rbind, mic.table.split)
-      mic.table[, col.analysis] <- rownames(mic.table)
-      rownames(mic.table) <- NULL
-    }
-  }
-
-
-  # Zero concentrations are removed before plotting
-  data_nozero <- data[!data[, x.drug] == 0, ]
-  data_nozero <- data_nozero[!data_nozero[, y.drug] == 0, ]
-
-
-  # The graph uses `geom_raster()` as the main geometry (faster than
-  # `geom_tile()`), and all cells are the same size.
-  ggplot(data_nozero, aes(.data[[x.drug]], .data[[y.drug]])) +
-
-    geom_raster(aes(fill = .data[[col.fill]])) +
-
-    {if (!is.null(col.analysis)) {
-      facet_wrap(
-        ~.data[[col.analysis]],
-        nrow = n.rows,
-        ncol = n.cols,
-        scales = scales
-      )
-    }} +
-
-    {if (minflag) geom_text(aes(label = min), size = 6)} +
-
-    {if (x.mic.line) {
-      geom_vline(data = mic.table, aes(xintercept = XLAB))
-    }} +
-
-    {if (y.mic.line) {
-      geom_hline(data = mic.table, aes(yintercept = YLAB))
-    }} +
-
-    scale_x_discrete(
-      name = x.text,
-      expand = c(0, 0),
-      labels = ~sprintf(
-        paste0("%.", x.decimal, "f"),
-        as.numeric(.x)
-      )
-    ) +
-
-    scale_y_discrete(
-      name = y.text,
-      expand = c(0, 0),
-      labels = ~sprintf(
-        paste0("%.", y.decimal, "f"),
-        as.numeric(.x)
-      )
-    ) +
-
-    scale_fill_gradientn(
-      name = ifelse(
-        grepl(x = col.fill, pattern = "abci", ignore.case = TRUE),
-        "ABCi",
-        col.fill
-      ),
-      colours = plot.palette,
-      values = colour.pointers,
-      na.value = colour.na,
-      limits = scale.limits,
-      breaks = scale.breaks,
-      oob = scales::squish
-    ) +
-
-    {if (add.axis.lines) {
-      annotate(
-        "segment",
-        x = -Inf,
-        xend = Inf,
-        y = -Inf,
-        yend = -Inf,
-        linewidth = 2
-      )
-    }} +
-    {if (add.axis.lines) {
-      annotate(
-        "segment",
-        x = -Inf,
-        xend = -Inf,
-        y = -Inf,
-        yend = Inf,
-        linewidth = 2
-      )
-    }} +
-
-    {if (x.decimal > 1) {
-      theme(axis.text.x = element_text(angle = 45, hjust = 1))
-    }}
-}
-
-
-#' abci_plot_tile_split
-#'
-#' @param data Data frame, as output by `abci.analysis()`
-#' @param x.drug Character; Column containing concentrations of the first drug
-#' @param y.drug Character; Column containing concentrations of the second drug
-#' @param col.fill Character; Column containing the values to plot
-#' @param col.analysis Character; Optional column denoting different analyses,
-#'   by which to facet the plot.
-#' @param strict Logical; How should splitting/filtering be done? Defaults to
-#'   TRUE.
-#' @param scales Should the scales be "fixed" (default), "free", "free_x", or
-#'   "free_y"? See `?facet_wrap` for more details.
-#' @param n.rows Number of rows when faceting. Defaults to NULL (let's ggplot2
-#'   choose.)
-#' @param n.cols Number of columns when faceting. Defaults to NULL (let's
-#'   ggplot2 choose.)
-#' @param x.text Character; Label for the x-axis
-#' @param y.text Character; Label for the y-axis
-#' @param x.decimal Number of decimal places to show for x-axis labels. Defaults
-#'   to 1.
-#' @param y.decimal Number of decimal places to show for y axis labels. Defaults
-#'   to 1.
-#' @param minflag Logical; Should rows previously flagged by `abci.analysis()`
-#'   be labeled? Defaults to FALSE.
-#' @param minflag.value Minimum value, below which effects will be flagged to
-#'   indicate lack of effect. Defaults to 0.5
-#' @param x.mic.line Logical; Include MIC line for the drug on the x-axis?
-#'   Defaults to FALSE.
-#' @param y.mic.line Logical; Include MIC line for the drug on the y-axis?
-#'   Defaults to FALSE.
-#' @param col.mic Character; Column name to use for calculating MICs
-#' @param mic.threshold Threshold to use when calculating MICs. Defaults to 0.5.
-#' @param delta Logical; Are plotted values the simple "delta" as calculated by
-#'   `abci.analysis()`? Defaults to FALSE.
-#' @param colour.palette One of the pre-made palettes.
-#' @param colour.na Colour assigned to any NA values. Defaults to "white".
-#' @param scale.limits Limits for the colour scale. Defaults to
-#'   `c(-2, 2)`.
-#' @param scale.breaks Breaks for the colour scale. Defaults to
-#'   `seq(-2, 2, 0.5)`.
-#' @param add.axis.lines Should lines be drawn for the x- and y-axis when
-#'   faceting? Defaults to TRUE.
-#'
-#' @return
-#' @export
-#'
-#' @description A version of the tile plot which separates negative and positive
-#' ABCi values, producing two plots instead of one. How the splitting/filtering
-#' is done is controlled via the `strict` argument.
-#'
-abci_plot_tile_split <- function(
-    data,
-    x.drug,
-    y.drug,
-    col.fill,
-    col.analysis = NULL,
-    strict = TRUE,
-    scales = "free",
-    n.rows = NULL,
-    n.cols = NULL,
-    x.text = "Drug 1",
-    y.text = "Drug 2",
-    x.decimal = 1,
-    y.decimal = 1,
-    minflag = FALSE,
-    minflag.value = 0.5,
-    x.mic.line = FALSE,
-    y.mic.line = FALSE,
-    col.mic,
-    mic.threshold = 0.5,
-    delta = FALSE,
-    colour.palette = "BOB",
-    colour.na = "white",
-    scale.limits = c(-2, 2),
-    scale.breaks = seq(-2, 2, 0.5),
-    add.axis.lines = TRUE
-) {
-
-  if (any(c("spec_tbl_df", "tbl_df", "tbl") %in% class(data))) {
-    data <- as.data.frame(data)
-  }
-
-  if (!is.null(col.analysis)) {
-    data[col.analysis] <- droplevels(data[col.analysis])
-  }
-
-  data <- data %>%
-    mutate(across(all_of(c(x.drug, y.drug)), forcats::fct_inseq))
-
-  if (minflag) {
-    data <- data %>%
-      mutate(min = ifelse(effect_avg < minflag.value, "<", NA))
-  }
-
-  upper <- max(scale.limits)
-  lower <- min(scale.limits)
-
-  plot.palette <- preset_palettes_split[[colour.palette]]
-
-  colour.pointers <- list(
-    "up" = scales::rescale(
-      c(upper, 3 * upper / 4, upper / 2, upper / 4, 0),
-      to = c(0, 1)
-    ),
-    "down" = scales::rescale(
-      c(lower, 3 * lower / 4, lower / 2, lower / 4, 0),
-      to = c(0, 1)
-    )
-  )
-
-  if (delta) {
-    scale.limits <- c(-100, 100)
-    scale.breaks <- seq(100, -100, -25)
-    colour.pointers <- scales::rescale(
-      c(100, 50, 25, 0, -25, -50, -100),
-      to = c(0, 1)
-    )
-  }
-
-  # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
-  # concentrations need to be converted to positions on their respective axes,
-  # as the `geom_(x|y)line` functions only work by position. And since we don't
-  # plot zero concentrations, we need to subtract one from the level to end up
-  # in the right spot.
-  if (any(x.mic.line, y.mic.line)) {
-
-    if (is.null(col.analysis)) {
-      mic.table <- abci_mic(
-        data = data,
-        x.drug = x.drug,
-        y.drug = y.drug,
-        col.data = col.mic,
-        threshold = mic.threshold
-      )
-
-      mic.table$XLAB <-
-        which(levels(droplevels(data[[x.drug]])) == mic.table$XMIC) - 1
-
-      mic.table$YLAB <-
-        which(levels(droplevels(data[[y.drug]])) == mic.table$YMIC) - 1
-    } else {
-
-      data.split <- split(x = data, f = data[col.analysis])
-
-      mic.table.split <- lapply(data.split, function(d) {
-        result.mic <- abci_mic(
-          data = d,
-          x.drug = x.drug,
-          y.drug = y.drug,
-          col.data = col.mic,
-          threshold = mic.threshold
-        )
-
-        result.mic$XLAB <-
-          which(levels(droplevels(d[[x.drug]])) == result.mic$XMIC) - 1
-
-        result.mic$YLAB <-
-          which(levels(droplevels(d[[y.drug]])) == result.mic$YMIC) - 1
-
-        result.mic
-      })
-
-      mic.table <- do.call(rbind, mic.table.split)
-      mic.table[, col.analysis] <- rownames(mic.table)
-      rownames(mic.table) <- NULL
-    }
-  }
-
-  # Zero concentrations are removed before plotting
-  data_nozero <- data[!data[, x.drug] == 0, ]
-  data_nozero <- data_nozero[!data_nozero[, y.drug] == 0, ]
-
-  data_split <- if (strict) {
-    list(
-      "up" = mutate(
-        data_nozero,
-        col_fill = ifelse(
-          test = .data[[col.fill]] > 0.1,
-          yes = .data[[col.fill]],
-          no = NA
-        )),
-      "down" = mutate(
-        data_nozero,
-        col_fill = ifelse(
-          test = .data[[col.fill]] < -0.1,
-          yes = .data[[col.fill]],
-          no = NA
-        )
-      )
-    )
-  } else {
-    list(
-      "up" = mutate(
-        data_nozero,
-        col_fill = ifelse(
-          test = .data[[col.fill]] > -0.1,
-          yes = .data[[col.fill]],
-          no = NA
-        )),
-      "down" = mutate(
-        data_nozero,
-        col_fill = ifelse(
-          test = .data[[col.fill]] < 0.1,
-          yes = .data[[col.fill]],
-          no = NA
-        )
-      )
-    )
-  }
-
-  scale.limits.split <- list(
-    "up" = c(0, scale.limits[scale.limits > 0]),
-    "down" = c(scale.limits[scale.limits < 0], 0)
-  )
-
-  tile_plots <- purrr::imap(data_split, function(d, nm) {
-
-    # The graph uses `geom_raster()` as the main geometry (faster than
-    # `geom_tile()`), and all cells are the same size.
-    ggplot(d, aes(.data[[x.drug]], .data[[y.drug]])) +
-
-      geom_raster(aes(fill = col_fill)) +
-
-      {if (!is.null(col.analysis)) {
-        facet_wrap(
-          ~.data[[col.analysis]],
-          nrow = n.rows,
-          ncol = n.cols,
-          scales = scales
-        )
-      }} +
-
-      {if (minflag) geom_text(aes(label = min), size = 8)} +
-
-      {if (x.mic.line) {
-        geom_vline(data = mic.table, aes(xintercept = XLAB))
-      }} +
-
-      { if (y.mic.line) {
-        geom_hline(data = mic.table, aes(yintercept = YLAB))
-      }} +
-
-      scale_x_discrete(
-        name = x.text,
-        expand = c(0, 0),
-        labels = ~sprintf(
-          paste0("%.", x.decimal, "f"),
-          as.numeric(.x)
-        )
-      ) +
-
-      scale_y_discrete(
-        name = y.text,
-        expand = c(0, 0),
-        labels = ~sprintf(
-          paste0("%.", y.decimal, "f"),
-          as.numeric(.x)
-        )
-      ) +
-
-      scale_fill_gradientn(
-        name = ifelse(
-          grepl(x = col.fill, pattern = "abci", ignore.case = TRUE),
-          "ABCi",
-          col.fill
-        ),
-        colours = plot.palette[[nm]],
-        values = colour.pointers[[nm]],
-        na.value = colour.na,
-        limits = scale.limits.split[[nm]],
-        breaks = scale.breaks,
-        oob = scales::squish
-      ) +
-
-      {if (add.axis.lines) {
-        annotate(
-          "segment",
-          x = -Inf,
-          xend = Inf,
-          y = -Inf,
-          yend = -Inf,
-          linewidth = 2
-        )
-      }} +
-      {if (add.axis.lines) {
-        annotate(
-          "segment",
-          x = -Inf,
-          xend = -Inf,
-          y = -Inf,
-          yend = Inf,
-          linewidth = 2
-        )
-      }} +
-
-      {if (x.decimal > 1) {
-        theme(axis.text.x = element_text(angle = 45, hjust = 1))
-      }} +
-      theme(legend.key.height = unit(7, "mm"))
-  })
-
-  patchwork::wrap_plots(tile_plots, ncol = 1)
-}
-
-
 #' abci_plot_dot
 #'
 #' @param data Data frame, as output by `abci.analysis()`
@@ -1438,4 +872,592 @@ abci_plot_line <- function(
     {if (x.decimal > 1) {
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
     }}
+}
+
+
+#' abci_plot_tile
+#'
+#' @param data Data frame, as output by `abci.analysis()`
+#' @param x.drug Character; Column containing concentrations of the first drug
+#' @param y.drug Character; Column containing concentrations of the second drug
+#' @param col.fill Character; Column containing the values to plot
+#' @param col.analysis Character; Optional column denoting different analyses,
+#'   by which to facet the plot.
+#' @param scales Should the scales be "fixed" (default), "free", "free_x", or
+#'   "free_y"? See `?facet_wrap` for more details.
+#' @param n.rows Number of rows when faceting. Defaults to NULL (let's ggplot2
+#'   choose.)
+#' @param n.cols Number of columns when faceting. Defaults to NULL (let's
+#'   ggplot2 choose.)
+#' @param x.text Character; Label for the x-axis
+#' @param y.text Character; Label for the y-axis
+#' @param x.decimal Number of decimal places to show for x-axis labels. Defaults
+#'   to 1.
+#' @param y.decimal Number of decimal places to show for y axis labels. Defaults
+#'   to 1.
+#' @param minflag Logical; Should rows previously flagged by `abci.analysis()`
+#'   be labeled? Defaults to FALSE.
+#' @param minflag.value Minimum value, below which effects will be flagged to
+#'   indicate lack of effect. Defaults to 0.5
+#' @param x.mic.line Logical; Include MIC line for the drug on the x-axis?
+#'   Defaults to FALSE.
+#' @param y.mic.line Logical; Include MIC line for the drug on the y-axis?
+#'   Defaults to FALSE.
+#' @param col.mic Character; Column name to use for calculating MICs
+#' @param mic.threshold Threshold to use when calculating MICs. Defaults to 0.5.
+#' @param delta Logical; Are plotted values the simple "delta" as calculated by
+#'   `abci.analysis()`? Defaults to FALSE.
+#' @param colour.palette One of the pre-made palettes.
+#' @param colour.na Colour assigned to any NA values. Defaults to "white".
+#' @param scale.limits Limits for the colour scale. Defaults to
+#'   `c(-2, 2)`.
+#' @param scale.breaks Breaks for the colour scale. Defaults to
+#'   `seq(2, -2, -0.5)`.
+#' @param add.axis.lines Should lines be drawn for the x- and y-axis when
+#'   faceting? Defaults to TRUE.
+#'
+#' @return A ggplot object
+#' @export
+#'
+#' @description The main graphic function. It takes the data produced by
+#'   `abci.analysis()`, and uses `ggplot2` to produce a standard ABCi graph. If
+#'   requested, this function will calculate the MICs for the individual drugs
+#'   (to make reference lines). The axes are formatted as needed for ggplot2,
+#'   without zero values and with the right significant digits. The
+#'   `col.analysis` argument can be used to create facets to compare different
+#'   assays.
+#'
+abci_plot_tile <- function(
+    data,
+    x.drug,
+    y.drug,
+    col.fill,
+    col.analysis = NULL,
+    scales = "free",
+    n.rows = NULL,
+    n.cols = NULL,
+    x.text = "Drug 1",
+    y.text = "Drug 2",
+    x.decimal = 1,
+    y.decimal = 1,
+    minflag = FALSE,
+    minflag.value = 0.5,
+    x.mic.line = FALSE,
+    y.mic.line = FALSE,
+    col.mic,
+    mic.threshold = 0.5,
+    delta = FALSE,
+    colour.palette = "YP",
+    colour.na = "white",
+    scale.limits = c(-2.0, 2.0),
+    scale.breaks = seq(2, -2, -0.5),
+    add.axis.lines = TRUE
+) {
+
+  if (any(c("spec_tbl_df", "tbl_df", "tbl") %in% class(data))) {
+    data <- as.data.frame(data)
+  }
+
+  if (!is.null(col.analysis)) {
+    data[col.analysis] <- droplevels(data[col.analysis])
+  }
+
+  data <- data %>%
+    mutate(across(all_of(c(x.drug, y.drug)), forcats::fct_inseq))
+
+  if (minflag) {
+    data <- data %>%
+      mutate(min = ifelse(effect_avg < minflag.value, "<", NA))
+  }
+
+  upper <- max(scale.limits)
+  lower <- min(scale.limits)
+
+  plot.palette <- preset_palettes[[colour.palette]]
+
+  colour.pointers <-
+    if (colour.palette %in% c("PAN", "SUN", "BOB")) {
+      scales::rescale(
+        c(upper, upper / 2, upper / 4, upper / 8, 0, lower / 4, lower / 2, lower),
+        to = c(0, 1)
+      )
+    } else {
+      scales::rescale(
+        c(upper, 3 * upper / 4, upper / 2, upper / 4, 0, lower / 4, 3 * lower / 4, lower),
+        to = c(0, 1)
+      )
+    }
+
+  if (delta) {
+    scale.limits <- c(-100, 100)
+    scale.breaks <- seq(100, -100, -25)
+    colour.pointers <- scales::rescale(
+      c(100, 50, 25, 0, -25, -50, -100),
+      to = c(0, 1)
+    )
+  }
+
+  # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
+  # concentrations need to be converted to positions on their respective axes,
+  # as the `geom_(x|y)line` functions only work by position. And since we don't
+  # plot zero concentrations, we need to subtract one from the level to end up
+  # in the right spot.
+  if (any(x.mic.line, y.mic.line)) {
+
+    if (is.null(col.analysis)) {
+      mic.table <- abci_mic(
+        data = data,
+        x.drug = x.drug,
+        y.drug = y.drug,
+        col.data = col.mic,
+        threshold = mic.threshold
+      )
+
+      mic.table$XLAB <-
+        which(levels(droplevels(data[[x.drug]])) == mic.table$XMIC) - 1
+
+      mic.table$YLAB <-
+        which(levels(droplevels(data[[y.drug]])) == mic.table$YMIC) - 1
+    } else {
+
+      data.split <- split(x = data, f = data[col.analysis])
+
+      mic.table.split <- lapply(data.split, function(d) {
+        result.mic <- abci_mic(
+          data = d,
+          x.drug = x.drug,
+          y.drug = y.drug,
+          col.data = col.mic,
+          threshold = mic.threshold
+        )
+
+        result.mic$XLAB <-
+          which(levels(droplevels(d[[x.drug]])) == result.mic$XMIC) - 1
+
+        result.mic$YLAB <-
+          which(levels(droplevels(d[[y.drug]])) == result.mic$YMIC) - 1
+
+        result.mic
+      })
+
+      mic.table <- do.call(rbind, mic.table.split)
+      mic.table[, col.analysis] <- rownames(mic.table)
+      rownames(mic.table) <- NULL
+    }
+  }
+
+
+  # Zero concentrations are removed before plotting
+  data_nozero <- data[!data[, x.drug] == 0, ]
+  data_nozero <- data_nozero[!data_nozero[, y.drug] == 0, ]
+
+
+  # The graph uses `geom_raster()` as the main geometry (faster than
+  # `geom_tile()`), and all cells are the same size.
+  ggplot(data_nozero, aes(.data[[x.drug]], .data[[y.drug]])) +
+
+    geom_raster(aes(fill = .data[[col.fill]])) +
+
+    {if (!is.null(col.analysis)) {
+      facet_wrap(
+        ~.data[[col.analysis]],
+        nrow = n.rows,
+        ncol = n.cols,
+        scales = scales
+      )
+    }} +
+
+    {if (minflag) geom_text(aes(label = min), size = 6)} +
+
+    {if (x.mic.line) {
+      geom_vline(data = mic.table, aes(xintercept = XLAB))
+    }} +
+
+    {if (y.mic.line) {
+      geom_hline(data = mic.table, aes(yintercept = YLAB))
+    }} +
+
+    scale_x_discrete(
+      name = x.text,
+      expand = c(0, 0),
+      labels = ~sprintf(
+        paste0("%.", x.decimal, "f"),
+        as.numeric(.x)
+      )
+    ) +
+
+    scale_y_discrete(
+      name = y.text,
+      expand = c(0, 0),
+      labels = ~sprintf(
+        paste0("%.", y.decimal, "f"),
+        as.numeric(.x)
+      )
+    ) +
+
+    scale_fill_gradientn(
+      name = ifelse(
+        grepl(x = col.fill, pattern = "abci", ignore.case = TRUE),
+        "ABCi",
+        col.fill
+      ),
+      colours = plot.palette,
+      values = colour.pointers,
+      na.value = colour.na,
+      limits = scale.limits,
+      breaks = scale.breaks,
+      oob = scales::squish
+    ) +
+
+    {if (add.axis.lines) {
+      annotate(
+        "segment",
+        x = -Inf,
+        xend = Inf,
+        y = -Inf,
+        yend = -Inf,
+        linewidth = 2
+      )
+    }} +
+    {if (add.axis.lines) {
+      annotate(
+        "segment",
+        x = -Inf,
+        xend = -Inf,
+        y = -Inf,
+        yend = Inf,
+        linewidth = 2
+      )
+    }} +
+
+    {if (x.decimal > 1) {
+      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    }}
+}
+
+
+#' abci_plot_tile_split
+#'
+#' @param data Data frame, as output by `abci.analysis()`
+#' @param x.drug Character; Column containing concentrations of the first drug
+#' @param y.drug Character; Column containing concentrations of the second drug
+#' @param col.fill Character; Column containing the values to plot
+#' @param col.analysis Character; Optional column denoting different analyses,
+#'   by which to facet the plot.
+#' @param strict Logical; How should splitting/filtering be done? Defaults to
+#'   TRUE.
+#' @param scales Should the scales be "fixed" (default), "free", "free_x", or
+#'   "free_y"? See `?facet_wrap` for more details.
+#' @param n.rows Number of rows when faceting. Defaults to NULL (let's ggplot2
+#'   choose.)
+#' @param n.cols Number of columns when faceting. Defaults to NULL (let's
+#'   ggplot2 choose.)
+#' @param x.text Character; Label for the x-axis
+#' @param y.text Character; Label for the y-axis
+#' @param x.decimal Number of decimal places to show for x-axis labels. Defaults
+#'   to 1.
+#' @param y.decimal Number of decimal places to show for y axis labels. Defaults
+#'   to 1.
+#' @param minflag Logical; Should rows previously flagged by `abci.analysis()`
+#'   be labeled? Defaults to FALSE.
+#' @param minflag.value Minimum value, below which effects will be flagged to
+#'   indicate lack of effect. Defaults to 0.5
+#' @param x.mic.line Logical; Include MIC line for the drug on the x-axis?
+#'   Defaults to FALSE.
+#' @param y.mic.line Logical; Include MIC line for the drug on the y-axis?
+#'   Defaults to FALSE.
+#' @param col.mic Character; Column name to use for calculating MICs
+#' @param mic.threshold Threshold to use when calculating MICs. Defaults to 0.5.
+#' @param delta Logical; Are plotted values the simple "delta" as calculated by
+#'   `abci.analysis()`? Defaults to FALSE.
+#' @param colour.palette One of the pre-made palettes.
+#' @param colour.na Colour assigned to any NA values. Defaults to "white".
+#' @param scale.limits Limits for the colour scale. Defaults to
+#'   `c(-2, 2)`.
+#' @param scale.breaks Breaks for the colour scale. Defaults to
+#'   `seq(-2, 2, 0.5)`.
+#' @param add.axis.lines Should lines be drawn for the x- and y-axis when
+#'   faceting? Defaults to TRUE.
+#'
+#' @return
+#' @export
+#'
+#' @description A version of the tile plot which separates negative and positive
+#' ABCi values, producing two plots instead of one. How the splitting/filtering
+#' is done is controlled via the `strict` argument.
+#'
+abci_plot_tile_split <- function(
+    data,
+    x.drug,
+    y.drug,
+    col.fill,
+    col.analysis = NULL,
+    strict = TRUE,
+    scales = "free",
+    n.rows = NULL,
+    n.cols = NULL,
+    x.text = "Drug 1",
+    y.text = "Drug 2",
+    x.decimal = 1,
+    y.decimal = 1,
+    minflag = FALSE,
+    minflag.value = 0.5,
+    x.mic.line = FALSE,
+    y.mic.line = FALSE,
+    col.mic,
+    mic.threshold = 0.5,
+    delta = FALSE,
+    colour.palette = "BOB",
+    colour.na = "white",
+    scale.limits = c(-2, 2),
+    scale.breaks = seq(-2, 2, 0.5),
+    add.axis.lines = TRUE
+) {
+
+  if (any(c("spec_tbl_df", "tbl_df", "tbl") %in% class(data))) {
+    data <- as.data.frame(data)
+  }
+
+  if (!is.null(col.analysis)) {
+    data[col.analysis] <- droplevels(data[col.analysis])
+  }
+
+  data <- data %>%
+    mutate(across(all_of(c(x.drug, y.drug)), forcats::fct_inseq))
+
+  if (minflag) {
+    data <- data %>%
+      mutate(min = ifelse(effect_avg < minflag.value, "<", NA))
+  }
+
+  upper <- max(scale.limits)
+  lower <- min(scale.limits)
+
+  plot.palette <- preset_palettes_split[[colour.palette]]
+
+  colour.pointers <- list(
+    "up" = scales::rescale(
+      c(upper, 3 * upper / 4, upper / 2, upper / 4, 0),
+      to = c(0, 1)
+    ),
+    "down" = scales::rescale(
+      c(lower, 3 * lower / 4, lower / 2, lower / 4, 0),
+      to = c(0, 1)
+    )
+  )
+
+  if (delta) {
+    scale.limits <- c(-100, 100)
+    scale.breaks <- seq(100, -100, -25)
+    colour.pointers <- scales::rescale(
+      c(100, 50, 25, 0, -25, -50, -100),
+      to = c(0, 1)
+    )
+  }
+
+  # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
+  # concentrations need to be converted to positions on their respective axes,
+  # as the `geom_(x|y)line` functions only work by position. And since we don't
+  # plot zero concentrations, we need to subtract one from the level to end up
+  # in the right spot.
+  if (any(x.mic.line, y.mic.line)) {
+
+    if (is.null(col.analysis)) {
+      mic.table <- abci_mic(
+        data = data,
+        x.drug = x.drug,
+        y.drug = y.drug,
+        col.data = col.mic,
+        threshold = mic.threshold
+      )
+
+      mic.table$XLAB <-
+        which(levels(droplevels(data[[x.drug]])) == mic.table$XMIC) - 1
+
+      mic.table$YLAB <-
+        which(levels(droplevels(data[[y.drug]])) == mic.table$YMIC) - 1
+    } else {
+
+      data.split <- split(x = data, f = data[col.analysis])
+
+      mic.table.split <- lapply(data.split, function(d) {
+        result.mic <- abci_mic(
+          data = d,
+          x.drug = x.drug,
+          y.drug = y.drug,
+          col.data = col.mic,
+          threshold = mic.threshold
+        )
+
+        result.mic$XLAB <-
+          which(levels(droplevels(d[[x.drug]])) == result.mic$XMIC) - 1
+
+        result.mic$YLAB <-
+          which(levels(droplevels(d[[y.drug]])) == result.mic$YMIC) - 1
+
+        result.mic
+      })
+
+      mic.table <- do.call(rbind, mic.table.split)
+      mic.table[, col.analysis] <- rownames(mic.table)
+      rownames(mic.table) <- NULL
+    }
+  }
+
+  # Zero concentrations are removed before plotting
+  data_nozero <- data[!data[, x.drug] == 0, ]
+  data_nozero <- data_nozero[!data_nozero[, y.drug] == 0, ]
+
+  data_split <- if (strict) {
+    list(
+      "up" = mutate(
+        data_nozero,
+        col_fill = ifelse(
+          test = .data[[col.fill]] > 0.1,
+          yes = .data[[col.fill]],
+          no = NA
+        ),
+        min_sym = ifelse(
+          test = !is.na(col_fill),
+          yes = min,
+          no = NA
+        )
+      ),
+      "down" = mutate(
+        data_nozero,
+        col_fill = ifelse(
+          test = .data[[col.fill]] < -0.1,
+          yes = .data[[col.fill]],
+          no = NA
+        ),
+        min_sym = ifelse(
+          test = !is.na(col_fill),
+          yes = min,
+          no = NA
+        )
+      )
+    )
+  } else {
+    list(
+      "up" = mutate(
+        data_nozero,
+        col_fill = ifelse(
+          test = .data[[col.fill]] > -0.1,
+          yes = .data[[col.fill]],
+          no = NA
+        ),
+        min_sym = ifelse(
+          test = !is.na(col_fill),
+          yes = min,
+          no = NA
+        )
+      ),
+      "down" = mutate(
+        data_nozero,
+        col_fill = ifelse(
+          test = .data[[col.fill]] < 0.1,
+          yes = .data[[col.fill]],
+          no = NA
+        ),
+        min_sym = ifelse(
+          test = !is.na(col_fill),
+          yes = min,
+          no = NA
+        )
+      )
+    )
+  }
+
+  scale.limits.split <- list(
+    "up" = c(0, scale.limits[scale.limits > 0]),
+    "down" = c(scale.limits[scale.limits < 0], 0)
+  )
+
+  tile_plots <- purrr::imap(data_split, function(d, nm) {
+
+    # The graph uses `geom_raster()` as the main geometry (faster than
+    # `geom_tile()`), and all cells are the same size.
+    ggplot(d, aes(.data[[x.drug]], .data[[y.drug]])) +
+
+      geom_raster(aes(fill = col_fill)) +
+
+      {if (!is.null(col.analysis)) {
+        facet_wrap(
+          ~.data[[col.analysis]],
+          nrow = n.rows,
+          ncol = n.cols,
+          scales = scales
+        )
+      }} +
+
+      {if (minflag) geom_text(aes(label = min_sym), size = 8)} +
+
+      {if (x.mic.line) {
+        geom_vline(data = mic.table, aes(xintercept = XLAB))
+      }} +
+
+      { if (y.mic.line) {
+        geom_hline(data = mic.table, aes(yintercept = YLAB))
+      }} +
+
+      scale_x_discrete(
+        name = x.text,
+        expand = c(0, 0),
+        labels = ~sprintf(
+          paste0("%.", x.decimal, "f"),
+          as.numeric(.x)
+        )
+      ) +
+
+      scale_y_discrete(
+        name = y.text,
+        expand = c(0, 0),
+        labels = ~sprintf(
+          paste0("%.", y.decimal, "f"),
+          as.numeric(.x)
+        )
+      ) +
+
+      scale_fill_gradientn(
+        name = ifelse(
+          grepl(x = col.fill, pattern = "abci", ignore.case = TRUE),
+          "ABCi",
+          col.fill
+        ),
+        colours = plot.palette[[nm]],
+        values = colour.pointers[[nm]],
+        na.value = colour.na,
+        limits = scale.limits.split[[nm]],
+        breaks = scale.breaks,
+        oob = scales::squish
+      ) +
+
+      {if (add.axis.lines) {
+        annotate(
+          "segment",
+          x = -Inf,
+          xend = Inf,
+          y = -Inf,
+          yend = -Inf,
+          linewidth = 2
+        )
+      }} +
+      {if (add.axis.lines) {
+        annotate(
+          "segment",
+          x = -Inf,
+          xend = -Inf,
+          y = -Inf,
+          yend = Inf,
+          linewidth = 2
+        )
+      }} +
+
+      {if (x.decimal > 1) {
+        theme(axis.text.x = element_text(angle = 45, hjust = 1))
+      }} +
+      theme(legend.key.height = unit(7, "mm"))
+  })
+
+  patchwork::wrap_plots(tile_plots, ncol = 1)
 }
