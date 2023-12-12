@@ -443,8 +443,8 @@ ui <- page_fluid(
               inputId = "load_example_data",
               class = "btn btn-info btn-tooltip",
               label = "Load example data",
-              title = "Click here to try our example data",
-              width = "50%"
+              width = "50%",
+              title = "Click here to try our example data"
             ),
 
             uiOutput("upload_input_names_div"),
@@ -452,10 +452,13 @@ ui <- page_fluid(
             disabled(
               actionButton(
                 inputId = "proceed_abci_calculations",
-                class = "btn btn-primary btn-tooltip mt-auto",
+                class = "mt-auto btn btn-primary btn-tooltip",
                 label = "Proceed to ABCI calculations",
                 icon = icon("arrow-right"),
-                title = "Upload your plate data, then click here to analyze"
+                title = paste0(
+                  "Upload your plate data, or load our example data, then ",
+                  "click here to analyze"
+                )
               )
             )
           ),
@@ -513,8 +516,8 @@ ui <- page_fluid(
               "concentrations in your experiments. A positive ABCI indicates ",
               "the combination is more effective than any individual drug on ",
               "its own. Please refer to the ",
-              actionLink("abci_info", "ABCI information"),
-              " page to learn more."
+              actionLink("tutorial_link", "ABCI tutorial"),
+              " pages to learn more."
             ),
             HTML(paste0(
               "<p>You can preview the results of your experiments using the ",
@@ -529,7 +532,8 @@ ui <- page_fluid(
                 outputId = "download_handler",
                 label = "Download your results",
                 class = "btn btn-success align-items-center mt-auto",
-                style = "width: 50%"
+                style = "width: 50%",
+                title = "Once your data is analyzed, you can download the results here"
               )
             ),
 
@@ -539,7 +543,8 @@ ui <- page_fluid(
                 label = "Visualize your results",
                 class = "btn btn-primary btn-tooltip align-items-center",
                 icon = icon("arrow-right"),
-                width = "100%"
+                width = "100%",
+                title = "Once your data is analyzed, you can proceed to the Visualization page"
               )
             )
           ),
@@ -590,7 +595,8 @@ ui <- page_fluid(
                       class = "btn btn-info btn-tooltip",
                       label = "Create or update the plot",
                       icon = icon("chart-bar"),
-                      width = "inherit"
+                      width = "inherit",
+                      title = "Upload and analyze some data to enable visualization"
                     )
                   )
                 ),
@@ -602,7 +608,8 @@ ui <- page_fluid(
                       class = "btn btn-warning",
                       label = "Reset",
                       icon = icon("arrow-rotate-left"),
-                      width = "inherit"
+                      width = "inherit",
+                      title = "Reset all inputs, results, and plots"
                     )
                   )
                 )
@@ -705,6 +712,7 @@ ui <- page_fluid(
               class = "container",
               div(
                 class = "row align-items-start",
+                style = "font-size: 1.1em",
                 div(
                   class = "col",
                   tags$dl(
@@ -828,7 +836,10 @@ server <- function(input, output) {
 
   input_data_preview <- reactive({
     req(input_data_raw())
-    enable("proceed_abci_calculations")
+    enable_button(
+      "proceed_abci_calculations",
+      "Click here to proceed to the next step"
+    )
 
     purrr::map(
       input_data_raw(),
@@ -898,7 +909,7 @@ server <- function(input, output) {
   input_data_tidy <- reactiveVal()
 
   observeEvent(input_data_raw(), {
-    enable("perform_abci_calculations")
+    enable_button("perform_abci_calculations")
 
     input_data_raw() %>%
       bind_rows(.id = "assay") %>%
@@ -1004,8 +1015,14 @@ server <- function(input, output) {
   observeEvent(input$perform_abci_calculations, {
     req(abci_results(), abci_results_display())
 
-    enable("download_handler")
-    enable("visualize_your_results")
+    enable_button(
+      "download_handler",
+      "Click here to download your results as a CSV file"
+    )
+    enable_button(
+      "visualize_your_results",
+      "Click here to proceed to the Visualization page"
+    )
 
     output$results_names <- renderUI(
       div(
@@ -1056,8 +1073,15 @@ server <- function(input, output) {
 
   observeEvent(input$visualize_your_results, {
     updateNavbarPage(inputId  = "navbar", selected = "visualization")
-    enable("create_plot")
+
     enable("reset")
+    enable_button(
+      "create_plot",
+      paste0(
+        "Click to generate a new plot, or to update an existing plot after ",
+        "changing the inputs"
+      )
+    )
   })
 
   abci_plot_data <- reactive(abci_results())
@@ -1075,8 +1099,15 @@ server <- function(input, output) {
     input$visualize_tabs
     abci_plot_data()
   }, {
-    enable("create_plot")
+
     enable("reset")
+    enable_button(
+      "create_plot",
+      paste0(
+        "Click to generate a new plot, or to update an existing plot after ",
+        "changing the inputs"
+      )
+    )
   })
 
 

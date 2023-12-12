@@ -8,6 +8,11 @@
   font-size: 22px;
 }
 
+/* Allow disabled buttons to have tooltips */
+.btn:disabled, .btn.disabled, fieldset:disabled .btn {
+  pointer-events: auto;
+}
+
 /* Allow for centering of images */
 .center {
   display: block;
