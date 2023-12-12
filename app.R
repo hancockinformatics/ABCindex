@@ -268,7 +268,7 @@ plot_legends <- list(
       "plots to identify which concentrations are the most relevant or ",
       "representative and choosing a maximum of six for the treatment ",
       "represented as lines. A vertical line can be added to illustrate the ",
-      "activity threshold (e.g., MIC) of the drug represented on the X-axis."
+      "activity threshold (e.g., MIC) of the drug represented on the X axis."
     ),
 
     p(
@@ -595,7 +595,7 @@ ui <- page_fluid(
                     actionButton(
                       inputId = "reset",
                       class = "btn btn-warning",
-                      label = strong("Reset"),
+                      label = "Reset",
                       icon = icon("arrow-rotate-left"),
                       width = "inherit"
                     )
@@ -1116,7 +1116,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis title",
-        label_title = "Title for the x-axis; applies to the entire plot",
+        label_title = "Title for the X axis; applies to the entire plot",
         textInput(
           inputId = "plot_tile_x_text",
           label = NULL,
@@ -1127,7 +1127,7 @@ server <- function(input, output) {
       wrap_selector(
         label = "X axis digits",
         label_title =
-          "Number of decimal places to show for concentrations on the x-axis",
+          "Number of decimal places to show for concentrations on the X axis",
         numericInput(
           inputId = "plot_tile_x_decimal",
           label = NULL,
@@ -1140,7 +1140,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y axis title",
-        label_title = "Title for the y-axis; applies to the entire plot",
+        label_title = "Title for the Y axis; applies to the entire plot",
         textInput(
           inputId = "plot_tile_y_text",
           label = NULL,
@@ -1151,7 +1151,7 @@ server <- function(input, output) {
       wrap_selector(
         label = "Y axis digits",
         label_title =
-          "Number of decimal places to show for concentrations on the y-axis",
+          "Number of decimal places to show for concentrations on the Y axis",
         numericInput(
           inputId = "plot_tile_y_decimal",
           label = NULL,
@@ -1200,7 +1200,7 @@ server <- function(input, output) {
           wrap_selector(
             label = "Axis labels",
             label_title = paste0(
-              "Across the plot panels, should the X- and Y-axis labels vary ",
+              "Across the plot panels, should the X and Y axis labels vary ",
               "or be the same?"
             ),
             selectInput(
@@ -1214,7 +1214,7 @@ server <- function(input, output) {
             label = "Activity threshold",
             label_title = paste0(
               "Draw a line when individual treatments reach the indicated ",
-              "percentage (0.5 = 50% killing). Applies to X- and Y-axis."
+              "percentage (0.5 = 50% killing). Applies to X and Y axis."
             ),
             numericInput(
               inputId = "plot_tile_mic_threshold",
@@ -1285,7 +1285,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis title",
-        label_title = "Title for the x-axis; applies to the entire plot",
+        label_title = "Title for the X axis; applies to the entire plot",
         textInput(
           inputId = "plot_tile_split_x_text",
           label = NULL,
@@ -1296,7 +1296,7 @@ server <- function(input, output) {
       wrap_selector(
         label = "X axis digits",
         label_title =
-          "Number of decimal places to show for concentrations the x-axis",
+          "Number of decimal places to show for concentrations the X axis",
         numericInput(
           inputId = "plot_tile_split_x_decimal",
           label = NULL,
@@ -1309,7 +1309,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y axis title",
-        label_title = "Title for the y-axis; applies to the entire plot",
+        label_title = "Title for the Y axis; applies to the entire plot",
         textInput(
           inputId = "plot_tile_split_y_text",
           label = NULL,
@@ -1320,7 +1320,7 @@ server <- function(input, output) {
       wrap_selector(
         label = "Y axis digits",
         label_title =
-          "Number of decimal places to show for concentrations the y-axis",
+          "Number of decimal places to show for concentrations the Y axis",
         numericInput(
           inputId = "plot_tile_split_y_decimal",
           label = NULL,
@@ -1381,7 +1381,7 @@ server <- function(input, output) {
           wrap_selector(
             label = "Axis labels",
             label_title = paste0(
-              "Across the plot panels, should the X- and Y-axis labels vary ",
+              "Across the plot panels, should the X and Y axis labels vary ",
               "or be the same?"
             ),
             selectInput(
@@ -1395,7 +1395,7 @@ server <- function(input, output) {
             label = "Activity threshold",
             label_title = paste0(
               "Draw a line when individual treatments reach the indicated ",
-              "percentage (0.5 = 50% killing). Applies to X- and Y-axis."
+              "percentage (0.5 = 50% killing). Applies to X and Y axis."
             ),
             numericInput(
               inputId = "plot_tile_split_mic_threshold",
@@ -1474,7 +1474,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis title",
-        label_title = "Title for the x-axis; applies to the entire plot",
+        label_title = "Title for the X axis; applies to the entire plot",
         textInput(
           inputId = "plot_dot_x_text",
           label = NULL,
@@ -1485,7 +1485,7 @@ server <- function(input, output) {
       wrap_selector(
         label = "X axis digits",
         label_title =
-          "Number of decimal places to show for concentrations the x-axis",
+          "Number of decimal places to show for concentrations the X axis",
         numericInput(
           inputId = "plot_dot_x_decimal",
           label = NULL,
@@ -1498,7 +1498,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y axis title",
-        label_title = "Title for the y-axis; applies to the entire plot",
+        label_title = "Title for the Y axis; applies to the entire plot",
         textInput(
           inputId = "plot_dot_y_text",
           label = NULL,
@@ -1509,7 +1509,7 @@ server <- function(input, output) {
       wrap_selector(
         label = "Y axis digits",
         label_title =
-          "Number of decimal places to show for concentrations the y-axis",
+          "Number of decimal places to show for concentrations the Y axis",
         numericInput(
           inputId = "plot_dot_y_decimal",
           label = NULL,
@@ -1554,7 +1554,7 @@ server <- function(input, output) {
           wrap_selector(
             label = "Axis labels",
             label_title = paste0(
-              "Across the plot panels, should the X- and Y-axis labels vary ",
+              "Across the plot panels, should the X and Y axis labels vary ",
               "or be the same?"
             ),
             selectInput(
@@ -1569,7 +1569,7 @@ server <- function(input, output) {
             label = "Activity threshold",
             label_title = paste0(
               "Draw a line when individual treatments reach the indicated ",
-              "percentage (0.5 = 50% killing). Applies to X- and Y-axis."
+              "percentage (0.5 = 50% killing). Applies to X and Y axis."
             ),
             numericInput(
               inputId = "plot_dot_mic_threshold",
@@ -1618,7 +1618,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis title",
-        label_title = "Title for the x-axis; applies to the entire plot",
+        label_title = "Title for the X axis; applies to the entire plot",
         textInput(
           inputId = "plot_dot_split_x_text",
           label = NULL,
@@ -1629,7 +1629,7 @@ server <- function(input, output) {
       wrap_selector(
         label = "X axis digits",
         label_title =
-          "Number of decimal places to show for concentrations the x-axis",
+          "Number of decimal places to show for concentrations the X axis",
         numericInput(
           inputId = "plot_dot_split_x_decimal",
           label = NULL,
@@ -1642,7 +1642,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y axis title",
-        label_title = "Title for the y-axis; applies to the entire plot",
+        label_title = "Title for the Y axis; applies to the entire plot",
         textInput(
           inputId = "plot_dot_split_y_text",
           label = NULL,
@@ -1653,7 +1653,7 @@ server <- function(input, output) {
       wrap_selector(
         label = "Y axis digits",
         label_title =
-          "Number of decimal places to show for concentrations the y-axis",
+          "Number of decimal places to show for concentrations the Y axis",
         numericInput(
           inputId = "plot_dot_split_y_decimal",
           label = NULL,
@@ -1711,7 +1711,7 @@ server <- function(input, output) {
           wrap_selector(
             label = "Axis labels",
             label_title = paste0(
-              "Across the plot panels, should the X- and Y-axis labels vary ",
+              "Across the plot panels, should the X and Y axis labels vary ",
               "or be the same?"
             ),
             selectInput(
@@ -1726,7 +1726,7 @@ server <- function(input, output) {
             label = "Activity threshold",
             label_title = paste0(
               "Draw a line when individual treatments reach the indicated ",
-              "percentage (0.5 = 50% killing). Applies to X- and Y-axis."
+              "percentage (0.5 = 50% killing). Applies to X and Y axis."
             ),
             numericInput(
               inputId = "plot_dot_split_mic_threshold",
@@ -1783,7 +1783,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis title",
-        label_title = "Title for the x-axis; applies to the entire plot",
+        label_title = "Title for the X axis; applies to the entire plot",
         textInput(
           inputId = "plot_line_x_text",
           label = NULL,
@@ -1794,7 +1794,7 @@ server <- function(input, output) {
       wrap_selector(
         label = "X axis digits",
         label_title =
-          "Number of decimal places to show for concentrations the x-axis",
+          "Number of decimal places to show for concentrations the X axis",
         numericInput(
           inputId = "plot_line_x_decimal",
           label = NULL,
@@ -1860,7 +1860,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y axis title",
-        label_title = "Title for the y-axis; applies to the entire plot",
+        label_title = "Title for the Y axis; applies to the entire plot",
         textInput(
           inputId = "plot_line_y_text",
           label = NULL,
@@ -1889,9 +1889,9 @@ server <- function(input, output) {
         accordion_panel(
           title = "Advanced options",
           wrap_selector(
-            label = "X-axis jitter",
+            label = "X axis jitter",
             label_title =
-              "Nudge values along the x-axis to prevent overlapping lines",
+              "Nudge values along the X axis to prevent overlapping lines",
             input_switch(
               id = "plot_line_jitter_x",
               label = "On",
@@ -1902,7 +1902,7 @@ server <- function(input, output) {
           wrap_selector(
             label = "Axis labels",
             label_title = paste0(
-              "Across the plot panels, should the X- and Y-axis labels vary ",
+              "Across the plot panels, should the X and Y axis labels vary ",
               "or be the same?"
             ),
             selectInput(
@@ -1916,7 +1916,7 @@ server <- function(input, output) {
             label = "Activity threshold",
             label_title = paste0(
               "Draw a line when individual treatments reach the indicated ",
-              "percentage (0.5 = 50% killing). Applies to X-axis."
+              "percentage (0.5 = 50% killing). Applies to X axis."
             ),
             numericInput(
               inputId = "plot_line_mic_threshold",
