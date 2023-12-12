@@ -619,16 +619,6 @@ ui <- page_fluid(
             navset_tab(
               id = "visualize_tabs",
               nav_panel(
-                title = "Tile",
-                value = "tile",
-                uiOutput("plot_inputs_tile")
-              ),
-              nav_panel(
-                title = "Split tile",
-                value = "tile_split",
-                uiOutput("plot_inputs_tile_split")
-              ),
-              nav_panel(
                 title = "Dot",
                 value = "dot",
                 uiOutput("plot_inputs_dot")
@@ -637,6 +627,16 @@ ui <- page_fluid(
                 title = "Split Dot",
                 value = "dot_split",
                 uiOutput("plot_inputs_dot_split")
+              ),
+              nav_panel(
+                title = "Tile",
+                value = "tile",
+                uiOutput("plot_inputs_tile")
+              ),
+              nav_panel(
+                title = "Split tile",
+                value = "tile_split",
+                uiOutput("plot_inputs_tile_split")
               ),
               nav_panel(
                 title = "Line",
@@ -1122,6 +1122,323 @@ server <- function(input, output) {
   )
 
 
+  # |-- Dot ---------------------------------------------------------------
+
+  output$plot_inputs_dot <- renderUI({
+    list(
+      br(),
+      wrap_selector(
+        label = "Swap X and Y",
+        label_title = "Turn on to swap the values plotted on the X and Y axis",
+        input_switch(
+          id = "plot_dot_swap",
+          label = "Off",
+          value = FALSE
+        )
+      ),
+
+      wrap_selector(
+        label = actionLink("dot_preview_colours", label = "ABCI colours"),
+        label_title = paste0(
+          "Colour palette for the ABCI values, designed to highlight the most ",
+          "relevant differences. Click to see the options."
+        ),
+        selectInput(
+          inputId = "plot_dot_colour_palette",
+          label = NULL,
+          selected = "BOB",
+          choices = abci_colours
+        )
+      ),
+
+      wrap_selector(
+        label = "X axis title",
+        label_title = "Title for the X axis; applies to the entire plot",
+        textInput(
+          inputId = "plot_dot_x_text",
+          label = NULL,
+          value = "[Columns]"
+        )
+      ),
+
+      wrap_selector(
+        label = "X axis digits",
+        label_title =
+          "Number of decimal places to show for concentrations the X axis",
+        numericInput(
+          inputId = "plot_dot_x_decimal",
+          label = NULL,
+          value = 2,
+          min = 1,
+          max = 4,
+          step = 1
+        )
+      ),
+
+      wrap_selector(
+        label = "Y axis title",
+        label_title = "Title for the Y axis; applies to the entire plot",
+        textInput(
+          inputId = "plot_dot_y_text",
+          label = NULL,
+          value = "[Rows]"
+        )
+      ),
+
+      wrap_selector(
+        label = "Y axis digits",
+        label_title =
+          "Number of decimal places to show for concentrations the Y axis",
+        numericInput(
+          inputId = "plot_dot_y_decimal",
+          label = NULL,
+          value = 2,
+          min = 1,
+          max = 4,
+          step = 1
+        )
+      ),
+
+      wrap_selector(
+        label = "Size legend title",
+        label_title = "Title of the size legend in dot plots",
+        textInput(
+          inputId = "plot_dot_size_text",
+          label = NULL,
+          value = "Biofilm killed %"
+        )
+      ),
+
+      wrap_selector(
+        label = "Draw activity threshold",
+        label_title = paste0(
+          "Include lines to indicate activity thresholds for individual ",
+          "treatments (e.g., MIC, MBIC, MBEC). Defaults to ≥50% killing."
+        ),
+        checkboxGroupInput(
+          inputId = "plot_dot_mic_lines",
+          label = NULL,
+          inline = TRUE,
+          choices = c("X", "Y"),
+          selected = c("X", "Y")
+        )
+      ),
+
+      br(),
+      accordion(
+        open = FALSE,
+        accordion_panel(
+          title = "Advanced options",
+
+          wrap_selector(
+            label = "Axis labels",
+            label_title = paste0(
+              "Across the plot panels, should the X and Y axis labels vary ",
+              "or be the same?"
+            ),
+            selectInput(
+              inputId = "plot_dot_scales",
+              label = NULL,
+              selected = "free",
+              choices = plot_scales
+            )
+          ),
+
+          wrap_selector(
+            label = "Activity threshold",
+            label_title = paste0(
+              "Draw a line when individual treatments reach the indicated ",
+              "percentage (0.5 = 50% killing). Applies to X and Y axis."
+            ),
+            numericInput(
+              inputId = "plot_dot_mic_threshold",
+              label = NULL,
+              value = 0.5
+            )
+          )
+        )
+      )
+    )
+  })
+
+  observeEvent(input$plot_dot_swap, {
+    if (input$plot_dot_swap) {
+      update_switch("plot_dot_swap", label = "On")
+    } else {
+      update_switch("plot_dot_swap", label = "Off")
+    }
+  })
+
+
+  # |-- Split dot ---------------------------------------------------------
+
+  output$plot_inputs_dot_split <- renderUI({
+    list(
+      br(),
+      wrap_selector(
+        label = "Swap X and Y",
+        label_title = "Turn on to swap the values plotted on the X and Y axis",
+        input_switch(
+          id = "plot_dot_split_swap",
+          label = "Off",
+          value = FALSE
+        )
+      ),
+
+      wrap_selector(
+        label = actionLink("dot_split_preview_colours", label = "ABCI colours"),
+        label_title = paste0(
+          "Colour palette for the ABCI values, designed to highlight the most ",
+          "relevant differences. Click to see the options."
+        ),
+        selectInput(
+          inputId = "plot_dot_split_colour_palette",
+          label = NULL,
+          selected = "BOB",
+          choices = abci_colours
+        )
+      ),
+
+      wrap_selector(
+        label = "X axis title",
+        label_title = "Title for the X axis; applies to the entire plot",
+        textInput(
+          inputId = "plot_dot_split_x_text",
+          label = NULL,
+          value = "[Columns]"
+        )
+      ),
+
+      wrap_selector(
+        label = "X axis digits",
+        label_title =
+          "Number of decimal places to show for concentrations the X axis",
+        numericInput(
+          inputId = "plot_dot_split_x_decimal",
+          label = NULL,
+          value = 2,
+          min = 1,
+          max = 4,
+          step = 1
+        )
+      ),
+
+      wrap_selector(
+        label = "Y axis title",
+        label_title = "Title for the Y axis; applies to the entire plot",
+        textInput(
+          inputId = "plot_dot_split_y_text",
+          label = NULL,
+          value = "[Rows]"
+        )
+      ),
+
+      wrap_selector(
+        label = "Y axis digits",
+        label_title =
+          "Number of decimal places to show for concentrations the Y axis",
+        numericInput(
+          inputId = "plot_dot_split_y_decimal",
+          label = NULL,
+          value = 2,
+          min = 1,
+          max = 4,
+          step = 1
+        )
+      ),
+
+      wrap_selector(
+        label = "Size legend title",
+        label_title = "Title of the size legend in dot plots",
+        textInput(
+          inputId = "plot_dot_split_size_text",
+          label = NULL,
+          value = "Biofilm killed %"
+        )
+      ),
+
+      wrap_selector(
+        label = "Draw activity threshold",
+        label_title = paste0(
+          "Include lines to indicate activity thresholds for individual ",
+          "treatments (e.g., MIC, MBIC, MBEC). Defaults to ≥50% killing."
+        ),
+        checkboxGroupInput(
+          inputId = "plot_dot_split_mic_lines",
+          label = NULL,
+          inline = TRUE,
+          choices = c("X", "Y"),
+          selected = c("X", "Y")
+        )
+      ),
+
+      br(),
+      accordion(
+        open = FALSE,
+        accordion_panel(
+          title = "Advanced options",
+
+          wrap_selector(
+            label = "Filter stringency",
+            label_title = paste0(
+              "Choose whether to include ABCI values close to 0 (Loose) or ",
+              "hide them (Strict)."
+            ),
+            input_switch(
+              id = "plot_dot_split_strict",
+              label = "Strict",
+              value = TRUE
+            )
+          ),
+
+          wrap_selector(
+            label = "Axis labels",
+            label_title = paste0(
+              "Across the plot panels, should the X and Y axis labels vary ",
+              "or be the same?"
+            ),
+            selectInput(
+              inputId = "plot_dot_split_scales",
+              label = NULL,
+              selected = "free",
+              choices = plot_scales
+            )
+          ),
+
+          wrap_selector(
+            label = "Activity threshold",
+            label_title = paste0(
+              "Draw a line when individual treatments reach the indicated ",
+              "percentage (0.5 = 50% killing). Applies to X and Y axis."
+            ),
+            numericInput(
+              inputId = "plot_dot_split_mic_threshold",
+              label = NULL,
+              value = 0.5
+            )
+          )
+        )
+      )
+    )
+  })
+
+  observeEvent(input$plot_dot_split_swap, {
+    if (input$plot_dot_split_swap) {
+      update_switch("plot_dot_split_swap", label = "On")
+    } else {
+      update_switch("plot_dot_split_swap", label = "Off")
+    }
+  })
+
+  observeEvent(input$plot_dot_split_strict, {
+    if (input$plot_dot_split_strict) {
+      update_switch("plot_dot_split_strict", label = "Strict")
+    } else {
+      update_switch("plot_dot_split_strict", label = "Loose")
+    }
+  })
+
+
   # |-- Tile --------------------------------------------------------------
 
   output$plot_inputs_tile <- renderUI({
@@ -1490,323 +1807,6 @@ server <- function(input, output) {
   })
 
 
-  # |-- Dot ---------------------------------------------------------------
-
-  output$plot_inputs_dot <- renderUI({
-    list(
-      br(),
-      wrap_selector(
-        label = "Swap X and Y",
-        label_title = "Turn on to swap the values plotted on the X and Y axis",
-        input_switch(
-          id = "plot_dot_swap",
-          label = "Off",
-          value = FALSE
-        )
-      ),
-
-      wrap_selector(
-        label = actionLink("dot_preview_colours", label = "ABCI colours"),
-        label_title = paste0(
-          "Colour palette for the ABCI values, designed to highlight the most ",
-          "relevant differences. Click to see the options."
-        ),
-        selectInput(
-          inputId = "plot_dot_colour_palette",
-          label = NULL,
-          selected = "BOB",
-          choices = abci_colours
-        )
-      ),
-
-      wrap_selector(
-        label = "X axis title",
-        label_title = "Title for the X axis; applies to the entire plot",
-        textInput(
-          inputId = "plot_dot_x_text",
-          label = NULL,
-          value = "[Columns]"
-        )
-      ),
-
-      wrap_selector(
-        label = "X axis digits",
-        label_title =
-          "Number of decimal places to show for concentrations the X axis",
-        numericInput(
-          inputId = "plot_dot_x_decimal",
-          label = NULL,
-          value = 2,
-          min = 1,
-          max = 4,
-          step = 1
-        )
-      ),
-
-      wrap_selector(
-        label = "Y axis title",
-        label_title = "Title for the Y axis; applies to the entire plot",
-        textInput(
-          inputId = "plot_dot_y_text",
-          label = NULL,
-          value = "[Rows]"
-        )
-      ),
-
-      wrap_selector(
-        label = "Y axis digits",
-        label_title =
-          "Number of decimal places to show for concentrations the Y axis",
-        numericInput(
-          inputId = "plot_dot_y_decimal",
-          label = NULL,
-          value = 2,
-          min = 1,
-          max = 4,
-          step = 1
-        )
-      ),
-
-      wrap_selector(
-        label = "Size legend title",
-        label_title = "Title of the size legend in dot plots",
-        textInput(
-          inputId = "plot_dot_size_text",
-          label = NULL,
-          value = "Biofilm killed %"
-        )
-      ),
-
-      wrap_selector(
-        label = "Draw activity threshold",
-        label_title = paste0(
-          "Include lines to indicate activity thresholds for individual ",
-          "treatments (e.g., MIC, MBIC, MBEC). Defaults to ≥50% killing."
-        ),
-        checkboxGroupInput(
-          inputId = "plot_dot_mic_lines",
-          label = NULL,
-          inline = TRUE,
-          choices = c("X", "Y"),
-          selected = c("X", "Y")
-        )
-      ),
-
-      br(),
-      accordion(
-        open = FALSE,
-        accordion_panel(
-          title = "Advanced options",
-
-          wrap_selector(
-            label = "Axis labels",
-            label_title = paste0(
-              "Across the plot panels, should the X and Y axis labels vary ",
-              "or be the same?"
-            ),
-            selectInput(
-              inputId = "plot_dot_scales",
-              label = NULL,
-              selected = "free",
-              choices = plot_scales
-            )
-          ),
-
-          wrap_selector(
-            label = "Activity threshold",
-            label_title = paste0(
-              "Draw a line when individual treatments reach the indicated ",
-              "percentage (0.5 = 50% killing). Applies to X and Y axis."
-            ),
-            numericInput(
-              inputId = "plot_dot_mic_threshold",
-              label = NULL,
-              value = 0.5
-            )
-          )
-        )
-      )
-    )
-  })
-
-  observeEvent(input$plot_dot_swap, {
-    if (input$plot_dot_swap) {
-      update_switch("plot_dot_swap", label = "On")
-    } else {
-      update_switch("plot_dot_swap", label = "Off")
-    }
-  })
-
-
-  # |-- Split dot ---------------------------------------------------------
-
-  output$plot_inputs_dot_split <- renderUI({
-    list(
-      br(),
-      wrap_selector(
-        label = "Swap X and Y",
-        label_title = "Turn on to swap the values plotted on the X and Y axis",
-        input_switch(
-          id = "plot_dot_split_swap",
-          label = "Off",
-          value = FALSE
-        )
-      ),
-
-      wrap_selector(
-        label = actionLink("dot_split_preview_colours", label = "ABCI colours"),
-        label_title = paste0(
-          "Colour palette for the ABCI values, designed to highlight the most ",
-          "relevant differences. Click to see the options."
-        ),
-        selectInput(
-          inputId = "plot_dot_split_colour_palette",
-          label = NULL,
-          selected = "BOB",
-          choices = abci_colours
-        )
-      ),
-
-      wrap_selector(
-        label = "X axis title",
-        label_title = "Title for the X axis; applies to the entire plot",
-        textInput(
-          inputId = "plot_dot_split_x_text",
-          label = NULL,
-          value = "[Columns]"
-        )
-      ),
-
-      wrap_selector(
-        label = "X axis digits",
-        label_title =
-          "Number of decimal places to show for concentrations the X axis",
-        numericInput(
-          inputId = "plot_dot_split_x_decimal",
-          label = NULL,
-          value = 2,
-          min = 1,
-          max = 4,
-          step = 1
-        )
-      ),
-
-      wrap_selector(
-        label = "Y axis title",
-        label_title = "Title for the Y axis; applies to the entire plot",
-        textInput(
-          inputId = "plot_dot_split_y_text",
-          label = NULL,
-          value = "[Rows]"
-        )
-      ),
-
-      wrap_selector(
-        label = "Y axis digits",
-        label_title =
-          "Number of decimal places to show for concentrations the Y axis",
-        numericInput(
-          inputId = "plot_dot_split_y_decimal",
-          label = NULL,
-          value = 2,
-          min = 1,
-          max = 4,
-          step = 1
-        )
-      ),
-
-      wrap_selector(
-        label = "Size legend title",
-        label_title = "Title of the size legend in dot plots",
-        textInput(
-          inputId = "plot_dot_split_size_text",
-          label = NULL,
-          value = "Biofilm killed %"
-        )
-      ),
-
-      wrap_selector(
-        label = "Draw activity threshold",
-        label_title = paste0(
-          "Include lines to indicate activity thresholds for individual ",
-          "treatments (e.g., MIC, MBIC, MBEC). Defaults to ≥50% killing."
-        ),
-        checkboxGroupInput(
-          inputId = "plot_dot_split_mic_lines",
-          label = NULL,
-          inline = TRUE,
-          choices = c("X", "Y"),
-          selected = c("X", "Y")
-        )
-      ),
-
-      br(),
-      accordion(
-        open = FALSE,
-        accordion_panel(
-          title = "Advanced options",
-
-          wrap_selector(
-            label = "Filter stringency",
-            label_title = paste0(
-              "Choose whether to include ABCI values close to 0 (Loose) or ",
-              "hide them (Strict)."
-            ),
-            input_switch(
-              id = "plot_dot_split_strict",
-              label = "Strict",
-              value = TRUE
-            )
-          ),
-
-          wrap_selector(
-            label = "Axis labels",
-            label_title = paste0(
-              "Across the plot panels, should the X and Y axis labels vary ",
-              "or be the same?"
-            ),
-            selectInput(
-              inputId = "plot_dot_split_scales",
-              label = NULL,
-              selected = "free",
-              choices = plot_scales
-            )
-          ),
-
-          wrap_selector(
-            label = "Activity threshold",
-            label_title = paste0(
-              "Draw a line when individual treatments reach the indicated ",
-              "percentage (0.5 = 50% killing). Applies to X and Y axis."
-            ),
-            numericInput(
-              inputId = "plot_dot_split_mic_threshold",
-              label = NULL,
-              value = 0.5
-            )
-          )
-        )
-      )
-    )
-  })
-
-  observeEvent(input$plot_dot_split_swap, {
-    if (input$plot_dot_split_swap) {
-      update_switch("plot_dot_split_swap", label = "On")
-    } else {
-      update_switch("plot_dot_split_swap", label = "Off")
-    }
-  })
-
-  observeEvent(input$plot_dot_split_strict, {
-    if (input$plot_dot_split_strict) {
-      update_switch("plot_dot_split_strict", label = "Strict")
-    } else {
-      update_switch("plot_dot_split_strict", label = "Loose")
-    }
-  })
-
-
   # |-- Line --------------------------------------------------------------
 
   output$plot_inputs_line <- renderUI({
@@ -2090,70 +2090,8 @@ server <- function(input, output) {
     req(abci_plot_data())
 
     output$abci_plot <- renderPlot(
-      if (isolate(input$visualize_tabs) == "tile") {
-        abci_plot_tile(
-          data = isolate(abci_plot_data()),
-          x.drug = ifelse(
-            isolate(input$plot_tile_swap),
-            conc_columns()[2],
-            conc_columns()[1]
-          ),
-          y.drug = ifelse(
-            isolate(input$plot_tile_swap),
-            conc_columns()[1],
-            conc_columns()[2]
-          ),
-          col.fill = "abci_avg",
-          col.analysis = "assay",
-          n.cols = abci_plot_dims()[[1]],
-          n.rows = abci_plot_dims()[[2]],
-          scales = isolate(input$plot_tile_scales),
-          x.decimal = isolate(input$plot_tile_x_decimal),
-          y.decimal = isolate(input$plot_tile_y_decimal),
-          x.text = isolate(input$plot_tile_x_text),
-          y.text = isolate(input$plot_tile_y_text),
-          x.mic.line = ("X" %in% isolate(input$plot_tile_mic_lines)),
-          y.mic.line = ("Y" %in% isolate(input$plot_tile_mic_lines)),
-          mic.threshold = isolate(input$plot_tile_mic_threshold),
-          col.mic = "bio_normal",
-          minflag = isolate(input$plot_tile_minflag_toggle),
-          minflag.value = isolate(input$plot_tile_minflag_value),
-          colour.palette = isolate(input$plot_tile_colour_palette)
-        )
 
-      }  else if (isolate(input$visualize_tabs) == "tile_split") {
-        abci_plot_tile_split(
-          data = isolate(abci_plot_data()),
-          x.drug = ifelse(
-            isolate(input$plot_tile_split_swap),
-            conc_columns()[2],
-            conc_columns()[1]
-          ),
-          y.drug = ifelse(
-            isolate(input$plot_tile_split_swap),
-            conc_columns()[1],
-            conc_columns()[2]
-          ),
-          col.fill = "abci_avg",
-          col.analysis = "assay",
-          strict = isolate(input$plot_tile_split_strict),
-          n.cols = 2,
-          n.rows = 2,
-          scales = isolate(input$plot_tile_split_scales),
-          x.decimal = isolate(input$plot_tile_split_x_decimal),
-          y.decimal = isolate(input$plot_tile_split_y_decimal),
-          x.text = isolate(input$plot_tile_split_x_text),
-          y.text = isolate(input$plot_tile_split_y_text),
-          x.mic.line = ("X" %in% isolate(input$plot_tile_split_mic_lines)),
-          y.mic.line = ("Y" %in% isolate(input$plot_tile_split_mic_lines)),
-          mic.threshold = isolate(input$plot_tile_split_mic_threshold),
-          col.mic = "bio_normal",
-          minflag = isolate(input$plot_tile_split_minflag_toggle),
-          minflag.value = isolate(input$plot_tile_split_minflag_value),
-          colour.palette = isolate(input$plot_tile_split_colour_palette)
-        )
-
-      } else if (isolate(input$visualize_tabs) == "dot") {
+      if (isolate(input$visualize_tabs) == "dot") {
         abci_plot_dot(
           data = isolate(abci_plot_data()),
           x.drug = ifelse(
@@ -2224,6 +2162,69 @@ server <- function(input, output) {
           {if (abci_plot_dims()[[2]] == 1) {
             theme(legend.box = "horizontal")
           }}
+
+      } else if (isolate(input$visualize_tabs) == "tile") {
+        abci_plot_tile(
+          data = isolate(abci_plot_data()),
+          x.drug = ifelse(
+            isolate(input$plot_tile_swap),
+            conc_columns()[2],
+            conc_columns()[1]
+          ),
+          y.drug = ifelse(
+            isolate(input$plot_tile_swap),
+            conc_columns()[1],
+            conc_columns()[2]
+          ),
+          col.fill = "abci_avg",
+          col.analysis = "assay",
+          n.cols = abci_plot_dims()[[1]],
+          n.rows = abci_plot_dims()[[2]],
+          scales = isolate(input$plot_tile_scales),
+          x.decimal = isolate(input$plot_tile_x_decimal),
+          y.decimal = isolate(input$plot_tile_y_decimal),
+          x.text = isolate(input$plot_tile_x_text),
+          y.text = isolate(input$plot_tile_y_text),
+          x.mic.line = ("X" %in% isolate(input$plot_tile_mic_lines)),
+          y.mic.line = ("Y" %in% isolate(input$plot_tile_mic_lines)),
+          mic.threshold = isolate(input$plot_tile_mic_threshold),
+          col.mic = "bio_normal",
+          minflag = isolate(input$plot_tile_minflag_toggle),
+          minflag.value = isolate(input$plot_tile_minflag_value),
+          colour.palette = isolate(input$plot_tile_colour_palette)
+        )
+
+      }  else if (isolate(input$visualize_tabs) == "tile_split") {
+        abci_plot_tile_split(
+          data = isolate(abci_plot_data()),
+          x.drug = ifelse(
+            isolate(input$plot_tile_split_swap),
+            conc_columns()[2],
+            conc_columns()[1]
+          ),
+          y.drug = ifelse(
+            isolate(input$plot_tile_split_swap),
+            conc_columns()[1],
+            conc_columns()[2]
+          ),
+          col.fill = "abci_avg",
+          col.analysis = "assay",
+          strict = isolate(input$plot_tile_split_strict),
+          n.cols = 2,
+          n.rows = 2,
+          scales = isolate(input$plot_tile_split_scales),
+          x.decimal = isolate(input$plot_tile_split_x_decimal),
+          y.decimal = isolate(input$plot_tile_split_y_decimal),
+          x.text = isolate(input$plot_tile_split_x_text),
+          y.text = isolate(input$plot_tile_split_y_text),
+          x.mic.line = ("X" %in% isolate(input$plot_tile_split_mic_lines)),
+          y.mic.line = ("Y" %in% isolate(input$plot_tile_split_mic_lines)),
+          mic.threshold = isolate(input$plot_tile_split_mic_threshold),
+          col.mic = "bio_normal",
+          minflag = isolate(input$plot_tile_split_minflag_toggle),
+          minflag.value = isolate(input$plot_tile_split_minflag_value),
+          colour.palette = isolate(input$plot_tile_split_colour_palette)
+        )
 
       } else if (isolate(input$visualize_tabs) == "line") {
 
