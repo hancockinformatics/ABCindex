@@ -1623,7 +1623,7 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = actionLink("dot_preview_colours", label = "ABCI colours"),
+        label = actionLink("dot_split_preview_colours", label = "ABCI colours"),
         label_title = paste0(
           "Colour palette for the ABCI values, designed to highlight the most ",
           "relevant differences. Click to see the options."
@@ -2043,6 +2043,9 @@ server <- function(input, output) {
     showModal(modal_colours$abci)
   })
   observeEvent(input$dot_preview_colours, {
+    showModal(modal_colours$abci)
+  })
+  observeEvent(input$dot_split_preview_colours, {
     showModal(modal_colours$abci)
   })
   observeEvent(input$line_preview_colours, {
