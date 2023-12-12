@@ -1,25 +1,3 @@
-# Set our preferred theme for all plots
-library(ggplot2)
-
-theme_set(
-  theme_classic(base_size = 24) +
-    theme(
-      text = element_text(family = "Helvetica"),
-      axis.title = element_text(face = "bold"),
-      axis.text = element_text(colour = "black", face = "bold"),
-      panel.spacing = unit(5, "mm"),
-      strip.background = element_blank(),
-      strip.text = element_text(face = "bold", size = 24),
-      legend.title = element_text(face = "bold"),
-      legend.key.height = unit(15, "mm"),
-      legend.text.align = 1
-    )
-)
-
-# Load size mapping data
-size_mapping_N1S2 <- readRDS("data/size_mapping_N1S2.Rds")
-
-
 #' abci_plot_dot
 #'
 #' @param data Data frame, as output by `abci.analysis()`

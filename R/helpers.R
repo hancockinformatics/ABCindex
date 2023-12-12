@@ -1,3 +1,7 @@
+# Load size mapping data
+size_mapping_N1S2 <- readRDS("data/size_mapping_N1S2.Rds")
+
+
 enable_button <- function(id, x = NULL) {
   shinyjs::enable(id)
 
@@ -101,6 +105,24 @@ preset_palettes_split <- list(
     down = c("#B935B9", "#D46AD4", "#6FC0FF", "#A9D5FD", "#E3E3E3")
   )
 )
+
+
+set_theme <- function() {
+  theme_set(
+    theme_classic(base_size = 24) +
+      theme(
+        text = element_text(family = "Helvetica"),
+        axis.title = element_text(face = "bold"),
+        axis.text = element_text(colour = "black", face = "bold"),
+        panel.spacing = unit(5, "mm"),
+        strip.background = element_blank(),
+        strip.text = element_text(face = "bold", size = 24),
+        legend.title = element_text(face = "bold"),
+        legend.key.height = unit(15, "mm"),
+        legend.text.align = 1
+      )
+  )
+}
 
 
 wrap_selector <- function(label, label_title, selector) {

@@ -1,6 +1,7 @@
 # Setup chunk -------------------------------------------------------------
 
 library(dplyr)
+library(ggplot2)
 library(shinyjs)
 library(shiny)
 library(bslib)
@@ -12,6 +13,8 @@ app_version <- gsub(
 )
 
 app_theme <- bs_theme(version = 5, preset = "cosmo")
+
+set_theme()
 
 
 # |- Input preview container ----------------------------------------------
