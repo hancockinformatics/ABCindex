@@ -1,13 +1,3 @@
-# To do -------------------------------------------------------------------
-
-#' - Summary and full results tables...?
-#' - if (ref_x < 0.9 & ref_y < 0.9) {
-#'     if (effect > 0.9) {
-#'       add * to tile, or border around dot
-#'     }
-#'   }
-
-
 # Setup chunk -------------------------------------------------------------
 
 library(dplyr)
@@ -40,7 +30,7 @@ input_data_preview_container <- htmltools::withTags(table(
       title = paste0("Compound found in the plate's columns (1-12)")
     ),
     th(
-      "[Plate columns]",
+      "Column concentrations",
       title = "Concentrations identified for the plate's columns"
     ),
     th(
@@ -48,7 +38,7 @@ input_data_preview_container <- htmltools::withTags(table(
       title = "Compound found in the plate's rows (A-H)"
     ),
     th(
-      "[Plate rows]",
+      "Row concentrations",
       title = "Concentrations identified for the plate's rows"
     ),
     th(
@@ -70,7 +60,7 @@ abci_results_display_container <- htmltools::withTags(table(
       title = paste0("Compound found in the plate's columns (1-12)")
     ),
     th(
-      "[Plate columns]",
+      "Column concentrations",
       title = "Concentrations identified for the plate's columns"
     ),
     th(
@@ -78,7 +68,7 @@ abci_results_display_container <- htmltools::withTags(table(
       title = "Compound found in the plate's rows (A-H)"
     ),
     th(
-      "[Plate rows]",
+      "Row concentrations",
       title = "Concentrations identified for the plate's rows"
     ),
     th(
@@ -835,9 +825,9 @@ server <- function(input, output) {
           "Replicate" = replicate,
           "Wells" = well,
           "Plate columns" = cols,
-          "[Plate columns]" = cols_conc,
+          "Column concentrations" = cols_conc,
           "Plate rows" = rows,
-          "[Plate rows]" = rows_conc,
+          "Row concentrations" = rows_conc,
           "Bio" = bio
         )
     )
@@ -944,9 +934,9 @@ server <- function(input, output) {
           distinct(cols_conc, rows_conc, .keep_all = TRUE) %>%
           rename(
             "Plate columns" = cols,
-            "[Plate columns]" = cols_conc,
+            "Column concentrations" = cols_conc,
             "Plate rows" = rows,
-            "[Plate rows]" = rows_conc,
+            "Row concentrations" = rows_conc,
             "Normalized Bio" = bio_normal_avg,
             "Average effect" = effect_avg,
             "Average ABCI" = abci_avg
@@ -1151,7 +1141,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_dot_x_text",
           label = NULL,
-          value = "[Columns]"
+          value = "Column concentrations"
         )
       ),
 
@@ -1175,7 +1165,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_dot_y_text",
           label = NULL,
-          value = "[Rows]"
+          value = "Row concentrations"
         )
       ),
 
@@ -1299,7 +1289,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_dot_split_x_text",
           label = NULL,
-          value = "[Columns]"
+          value = "Column concentrations"
         )
       ),
 
@@ -1323,7 +1313,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_dot_split_y_text",
           label = NULL,
-          value = "[Rows]"
+          value = "Row concentrations"
         )
       ),
 
@@ -1467,7 +1457,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_tile_x_text",
           label = NULL,
-          value = "[Columns]"
+          value = "Column concentrations"
         )
       ),
 
@@ -1491,7 +1481,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_tile_y_text",
           label = NULL,
-          value = "[Rows]"
+          value = "Row concentrations"
         )
       ),
 
@@ -1641,7 +1631,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_tile_split_x_text",
           label = NULL,
-          value = "[Columns]"
+          value = "Column concentrations"
         )
       ),
 
@@ -1665,7 +1655,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_tile_split_y_text",
           label = NULL,
-          value = "[Rows]"
+          value = "Row concentrations"
         )
       ),
 
@@ -1836,7 +1826,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_line_x_text",
           label = NULL,
-          value = "[Columns]"
+          value = "Column concentrations"
         )
       ),
 
@@ -1874,7 +1864,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_line_line_text",
           label = NULL,
-          value = "[Rows]"
+          value = "Row concentrations"
         )
       ),
 
