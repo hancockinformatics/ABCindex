@@ -146,8 +146,9 @@ plot_legends <- list(
     ),
 
     p(
-      "You can learn more about how to interpret your data here. The text ",
-      "below can be used as a template for a figure legend:"
+      "You can learn more about how to interpret your data ",
+      actionLink("legend_tile_here", "here", .noWS = "after"),
+      ". The text below can be used as a template for a figure legend:"
     ),
 
     p(
@@ -178,8 +179,9 @@ plot_legends <- list(
     ),
 
     p(
-      "You can learn more about how to interpret your data here. The text ",
-      "below can be used as a template for a figure legend:"
+      "You can learn more about how to interpret your data ",
+      actionLink("legend_tile_split_here", "here", .noWS = "after"),
+      ". The text below can be used as a template for a figure legend:"
     ),
 
     p(
@@ -209,8 +211,9 @@ plot_legends <- list(
     ),
 
     p(
-      "You can learn more about how to interpret your data here. The text ",
-      "below can be used as a template for a figure legend:"
+      "You can learn more about how to interpret your data ",
+      actionLink("legend_dot_here", "here", .noWS = "after"),
+      ". The text below can be used as a template for a figure legend:"
     ),
 
     p(
@@ -242,8 +245,9 @@ plot_legends <- list(
     ),
 
     p(
-      "You can learn more about how to interpret your data here. The text ",
-      "below can be used as a template for a figure legend:"
+      "You can learn more about how to interpret your data ",
+      actionLink("legend_dot_split_here", "here", .noWS = "after"),
+      ". The text below can be used as a template for a figure legend:"
     ),
 
     p(
@@ -272,8 +276,9 @@ plot_legends <- list(
     ),
 
     p(
-      "You can learn more about how to interpret your data here. The text ",
-      "below can be used as a template for a figure legend:"
+      "You can learn more about how to interpret your data ",
+      actionLink("legend_line_here", "here", .noWS = "after"),
+      ". The text below can be used as a template for a figure legend:"
     ),
 
     p(
@@ -423,7 +428,7 @@ ui <- page_fluid(
 
             p(
               "You can learn more about the data we support in the ShinyABCi ",
-              actionLink("tutorial_link", "tutorial"),
+              actionLink("tutorial_link", "tutorial", .noWS = "after"),
               ". You can also try our example data by clicking the button below."
             ),
 
@@ -670,7 +675,7 @@ ui <- page_fluid(
               class = "lead",
               "A tutorial explaining the calculation of ABCI values, usage of ",
               "the app, and interpretation of results can be found ",
-              actionLink("about_tutorial", "here"), "."
+              actionLink("about_tutorial", "here", .noWS = "after"), "."
             ),
 
             h1(
@@ -683,7 +688,8 @@ ui <- page_fluid(
               "us know by submitting an issue at our ",
               a(
                 href = "https://github.com/hancockinformatics/ShinyABCi",
-                "Github page"
+                "Github page",
+                .noWS = "after"
               ), "."
             ),
 
@@ -703,7 +709,7 @@ ui <- page_fluid(
                   class = "col",
                   tags$dl(
                     tags$dt(a(href = "https://rstudio.github.io/bslib/index.html", "bslib")),
-                    tags$dd("Better support for modern Bootstrap in Shiny apps"),
+                    tags$dd("Provides a modern UI toolkit for Shiny based on Bootstrap."),
                     tags$dt(a(href = "https://shiny.posit.co/", "shiny")),
                     tags$dd("Easily create and deploy web apps from R"),
                   )
@@ -855,7 +861,10 @@ server <- function(input, output) {
     input_data_preview()
     tagList(
       h2("Input data preview"),
-      br(),
+      p(
+        class = "lead y-2",
+        "Please ensure your data has been uploaded and parsed correctly before proceeding."
+      ),
       DT::dataTableOutput("input_data_preview_DT")
     )
   })
