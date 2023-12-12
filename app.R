@@ -1219,8 +1219,7 @@ server <- function(input, output) {
           inputId = "plot_dot_mic_lines",
           label = NULL,
           inline = TRUE,
-          choices = c("X", "Y"),
-          selected = c("X", "Y")
+          choices = c("X", "Y")
         )
       ),
 
@@ -1367,8 +1366,7 @@ server <- function(input, output) {
           inputId = "plot_dot_split_mic_lines",
           label = NULL,
           inline = TRUE,
-          choices = c("X", "Y"),
-          selected = c("X", "Y")
+          choices = c("X", "Y")
         )
       ),
 
