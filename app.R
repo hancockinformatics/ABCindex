@@ -583,36 +583,13 @@ ui <- page_fluid(
               "activity for any subset of concentrations.</p>"
             )),
 
-            div(
-              class = "container",
-              div(
-                class = "row align-items-center",
-                div(
-                  class = "col",
-                  disabled(
-                    actionButton(
-                      inputId = "create_plot",
-                      class = "btn btn-info btn-tooltip",
-                      label = "Create or update the plot",
-                      icon = icon("chart-bar"),
-                      width = "inherit",
-                      title = "Upload and analyze some data to enable visualization"
-                    )
-                  )
-                ),
-                div(
-                  class = "col",
-                  disabled(
-                    actionButton(
-                      inputId = "reset",
-                      class = "btn btn-warning",
-                      label = "Reset",
-                      icon = icon("arrow-rotate-left"),
-                      width = "inherit",
-                      title = "Reset all inputs, results, and plots"
-                    )
-                  )
-                )
+            disabled(
+              actionButton(
+                inputId = "create_plot",
+                class = "btn btn-info btn-tooltip",
+                label = "Create or update the plot",
+                icon = icon("chart-bar"),
+                title = "Upload and analyze some data to enable visualization"
               )
             ),
 
@@ -642,6 +619,16 @@ ui <- page_fluid(
                 title = "Line",
                 value = "line",
                 uiOutput("plot_inputs_line")
+              )
+            ),
+
+            disabled(
+              actionButton(
+                inputId = "reset",
+                class = "mt-4 btn btn-warning",
+                label = "Reset",
+                icon = icon("arrow-rotate-left"),
+                title = "Reset all inputs, results, and plots"
               )
             )
           ),
@@ -1044,6 +1031,21 @@ server <- function(input, output) {
   # |- Reset --------------------------------------------------------------
 
   observeEvent(input$reset, {
+    showModal(
+      modalDialog(
+        "Are you sure you want to reset the app? All results and plots will be lost!",
+        title = "Reset ShinyABCi",
+        footer = tagList(
+          actionButton("cancel_reset", "Cancel"),
+          actionButton("confirm_reset", "Reset", class = "btn btn-danger")
+        )
+      )
+    )
+  })
+
+  observeEvent(input$cancel_reset, removeModal())
+
+  observeEvent(input$confirm_reset, {
     shinyjs::reset("visualization_sidebar", asis = FALSE)
     updateNavbarPage(inputId = "navbar", selected = "upload")
     input_data_raw(NULL)
@@ -1056,6 +1058,8 @@ server <- function(input, output) {
     disable("download_handler")
     disable("visualize_your_results")
     disable("create_plot")
+
+    removeModal()
 
     showNotification(
       type = "message",
