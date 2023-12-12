@@ -549,22 +549,13 @@ abci_plot_dot_split <- function(
         oob = scales::squish
       ) +
 
-      {if (nm == "down") {
-        scale_size_identity(
-          name = paste(strwrap(size.text, width = 12), collapse = "\n"),
-          limits = c(min(proper_breaks), max(proper_breaks)),
-          breaks = proper_breaks,
-          labels = proper_labels,
-          guide = guide_legend(keyheight = unit(10, "mm"))
-        )
-      } else {
-        scale_size_identity(
-          name = paste(strwrap(size.text, width = 12), collapse = "\n"),
-          limits = c(min(proper_breaks), max(proper_breaks)),
-          breaks = proper_breaks,
-          labels = proper_labels
-        )
-      }} +
+      scale_size_identity(
+        name = paste(strwrap(size.text, width = 12), collapse = "\n"),
+        limits = c(min(proper_breaks), max(proper_breaks)),
+        breaks = proper_breaks,
+        labels = proper_labels,
+        guide = guide_legend(keyheight = unit(10, "mm"))
+      ) +
 
       {if (add.axis.lines) {
         annotate(
@@ -594,7 +585,7 @@ abci_plot_dot_split <- function(
       theme(legend.key.height = unit(7, "mm"))
   })
 
-  patchwork::wrap_plots(dot_plots, ncol = 1, guides = "collect")
+  patchwork::wrap_plots(dot_plots, ncol = 1)
 }
 
 
