@@ -50,6 +50,11 @@
   line-height: 18px;
 }
 
+/* Adding padding to radio-inline elements */
+.radio-inline {
+  padding-right: 0.5em;
+}
+
 /* Customize shiny notifications */
 #shiny-notification-panel {
   width: 400px;

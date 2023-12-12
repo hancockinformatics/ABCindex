@@ -2225,13 +2225,13 @@ server <- function(input, output) {
 
       } else if (isolate(input$visualize_tabs) == "line") {
 
-        if (max(abci_plot_data()$bio_normal) > 1.5 ) {
+        if (max(abci_plot_data()$bio_normal) > 1.5) {
           showNotification(
             type = "warning",
-            duration = 10,
             ui = HTML(paste0(
               "<h4 class='alert-heading'>Warning!</h4>",
-              "<p class='mb-0'>Values above 1.5 have been squished.</p>"
+              "<p class='mb-0'>Values on the Y axis greater than 1.5 have ",
+              "been reduced.</p>"
             ))
           )
         }

@@ -667,15 +667,25 @@ abci_plot_line <- function(
       data_clean %>%
         group_by(.data[[x.drug]], .data[[line.drug]]) %>%
         mutate(
-          mean = mean(.data[[col.data]]),
-          sd = sd(.data[[col.data]])
+          col_data_squish = ifelse(
+            test = .data[[col.data]] <= 1.5,
+            yes = .data[[col.data]],
+            no = 1.5
+          ),
+          mean = mean(col_data_squish),
+          sd = sd(col_data_squish)
         )
     } else {
       data_clean %>%
         group_by(.data[[col.analysis]], .data[[x.drug]], .data[[line.drug]]) %>%
         mutate(
-          mean = mean(.data[[col.data]]),
-          sd = sd(.data[[col.data]])
+          col_data_squish = ifelse(
+            test = .data[[col.data]] <= 1.5,
+            yes = .data[[col.data]],
+            no = 1.5
+          ),
+          mean = mean(col_data_squish),
+          sd = sd(col_data_squish)
         )
     }
 
@@ -758,7 +768,7 @@ abci_plot_line <- function(
         data_avg,
         aes(
           x = .data[[x.drug]],
-          y = .data[[col.data]],
+          y = col_data_squish,
           group = .data[[line.drug]],
           colour = .data[[line.drug]]
         )
@@ -802,14 +812,6 @@ abci_plot_line <- function(
       paste0("%.", x.decimal, "f"),
       as.numeric(.x)
     )) +
-
-    {if (max(data_avg[col.data]) > 1.5) {
-      scale_y_continuous(
-        # limits = c(0, 1.5),
-        # breaks = seq(0, 1.5, 0.5),
-        oob = scales::squish
-      )
-    }} +
 
     labs(
       x = x.text,
