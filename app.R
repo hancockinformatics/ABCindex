@@ -1088,6 +1088,16 @@ server <- function(input, output) {
     list(
       br(),
       wrap_selector(
+        label = "Swap X and Y",
+        label_title = "Turn on to swap the values plotted on the X and Y axis",
+        input_switch(
+          id = "plot_tile_swap",
+          label = "Off",
+          value = FALSE
+        )
+      ),
+
+      wrap_selector(
         label = actionLink("tile_preview_colours", label = "ABCI colours"),
         label_title = paste0(
           "Colour palette for the ABCI values, designed to highlight the most ",
@@ -1098,19 +1108,6 @@ server <- function(input, output) {
           label = NULL,
           selected = "BOB",
           choices = abci_colours
-        )
-      ),
-
-      wrap_selector(
-        label = "Plot X axis",
-        label_title = paste0(
-          "Treatment to plot on the X-axis. The other treatment is plotted on ",
-          "the Y-axis."
-        ),
-        selectInput(
-          inputId = "plot_tile_x_drug",
-          label = NULL,
-          choices = conc_columns()
         )
       ),
 
@@ -1250,12 +1247,30 @@ server <- function(input, output) {
     }
   })
 
+  observeEvent(input$plot_tile_swap, {
+    if (input$plot_tile_swap) {
+      update_switch("plot_tile_swap", label = "On")
+    } else {
+      update_switch("plot_tile_swap", label = "Off")
+    }
+  })
+
 
   # |-- Split tile --------------------------------------------------------
 
   output$plot_inputs_tile_split <- renderUI({
     list(
       br(),
+      wrap_selector(
+        label = "Swap X and Y",
+        label_title = "Turn on to swap the values plotted on the X and Y axis",
+        input_switch(
+          id = "plot_tile_split_swap",
+          label = "Off",
+          value = FALSE
+        )
+      ),
+
       wrap_selector(
         label = actionLink("tile_split_preview_colours", label = "ABCI colours"),
         label_title = paste0(
@@ -1267,19 +1282,6 @@ server <- function(input, output) {
           label = NULL,
           selected = "BOB",
           choices = abci_colours
-        )
-      ),
-
-      wrap_selector(
-        label = "Plot X axis",
-        label_title = paste0(
-          "Treatment to plot on the X-axis. The other treatment is plotted on ",
-          "the Y-axis."
-        ),
-        selectInput(
-          inputId = "plot_tile_split_x_drug",
-          label = NULL,
-          choices = conc_columns()
         )
       ),
 
@@ -1423,6 +1425,14 @@ server <- function(input, output) {
     )
   })
 
+  observeEvent(input$plot_tile_split_swap, {
+    if (input$plot_tile_split_swap) {
+      update_switch("plot_tile_split_swap", label = "On")
+    } else {
+      update_switch("plot_tile_split_swap", label = "Off")
+    }
+  })
+
   observeEvent(input$plot_tile_split_strict, {
     if (input$plot_tile_split_strict) {
       update_switch("plot_tile_split_strict", label = "Strict")
@@ -1446,6 +1456,16 @@ server <- function(input, output) {
     list(
       br(),
       wrap_selector(
+        label = "Swap X and Y",
+        label_title = "Turn on to swap the values plotted on the X and Y axis",
+        input_switch(
+          id = "plot_dot_swap",
+          label = "Off",
+          value = FALSE
+        )
+      ),
+
+      wrap_selector(
         label = actionLink("dot_preview_colours", label = "ABCI colours"),
         label_title = paste0(
           "Colour palette for the ABCI values, designed to highlight the most ",
@@ -1456,19 +1476,6 @@ server <- function(input, output) {
           label = NULL,
           selected = "BOB",
           choices = abci_colours
-        )
-      ),
-
-      wrap_selector(
-        label = "Plot X axis",
-        label_title = paste0(
-          "Treatment to plot on the X-axis. The other treatment is plotted on ",
-          "the Y-axis."
-        ),
-        selectInput(
-          inputId = "plot_dot_x_drug",
-          label = NULL,
-          choices = conc_columns()
         )
       ),
 
@@ -1582,12 +1589,29 @@ server <- function(input, output) {
     )
   })
 
+  observeEvent(input$plot_dot_swap, {
+    if (input$plot_dot_swap) {
+      update_switch("plot_dot_swap", label = "On")
+    } else {
+      update_switch("plot_dot_swap", label = "Off")
+    }
+  })
+
 
   # |-- Split dot ---------------------------------------------------------
 
   output$plot_inputs_dot_split <- renderUI({
     list(
       br(),
+      wrap_selector(
+        label = "Swap X and Y",
+        label_title = "Turn on to swap the values plotted on the X and Y axis",
+        input_switch(
+          id = "plot_dot_split_swap",
+          label = "Off",
+          value = FALSE
+        )
+      ),
 
       wrap_selector(
         label = actionLink("dot_preview_colours", label = "ABCI colours"),
@@ -1600,19 +1624,6 @@ server <- function(input, output) {
           label = NULL,
           selected = "BOB",
           choices = abci_colours
-        )
-      ),
-
-      wrap_selector(
-        label = "Plot X axis",
-        label_title = paste0(
-          "Treatment to plot on the X-axis. The other treatment is plotted on ",
-          "the Y-axis."
-        ),
-        selectInput(
-          inputId = "plot_dot_split_x_drug",
-          label = NULL,
-          choices = conc_columns()
         )
       ),
 
@@ -1739,6 +1750,14 @@ server <- function(input, output) {
     )
   })
 
+  observeEvent(input$plot_dot_split_swap, {
+    if (input$plot_dot_split_swap) {
+      update_switch("plot_dot_split_swap", label = "On")
+    } else {
+      update_switch("plot_dot_split_swap", label = "Off")
+    }
+  })
+
   observeEvent(input$plot_dot_split_strict, {
     if (input$plot_dot_split_strict) {
       update_switch("plot_dot_split_strict", label = "Strict")
@@ -1769,15 +1788,12 @@ server <- function(input, output) {
       ),
 
       wrap_selector(
-        label = "Plot X axis",
-        label_title = paste0(
-          "Treatment to plot on the X-axis. The other treatment is plotted on ",
-          "the Y-axis."
-        ),
-        selectInput(
-          inputId = "plot_line_x_drug",
-          label = NULL,
-          choices = conc_columns()
+        label = "Swap X and lines",
+        label_title = "Turn on to swap the values plotted on the X axis and as lines",
+        input_switch(
+          id = "plot_line_swap",
+          label = "Off",
+          value = FALSE
         )
       ),
 
@@ -1929,6 +1945,14 @@ server <- function(input, output) {
     )
   })
 
+  observeEvent(input$plot_line_swap, {
+    if (input$plot_line_swap) {
+      update_switch("plot_line_swap", label = "On")
+    } else {
+      update_switch("plot_line_swap", label = "Off")
+    }
+  })
+
   observeEvent(input$plot_line_jitter_x, {
     if (input$plot_line_jitter_x) {
       update_switch("plot_line_jitter_x", label = "On")
@@ -1950,10 +1974,14 @@ server <- function(input, output) {
 
   # |-- Line include options ----------------------------------------------
 
-  observeEvent(input$plot_line_x_drug, {
+  observeEvent(input$plot_line_swap, {
     req(abci_plot_data())
 
-    line_column <- conc_columns()[!conc_columns() %in% input$plot_line_x_drug]
+    line_column <- ifelse(
+      input$plot_line_swap,
+      conc_columns()[1],
+      conc_columns()[2]
+    )
 
     unique_conc <- abci_plot_data() %>%
       pull(line_column) %>%
@@ -2011,8 +2039,16 @@ server <- function(input, output) {
       if (isolate(input$visualize_tabs) == "tile") {
         abci_plot_tile(
           data = isolate(abci_plot_data()),
-          x.drug = isolate(input$plot_tile_x_drug),
-          y.drug = conc_columns()[!conc_columns() %in% isolate(input$plot_tile_x_drug)],
+          x.drug = ifelse(
+            isolate(input$plot_tile_swap),
+            conc_columns()[2],
+            conc_columns()[1]
+          ),
+          y.drug = ifelse(
+            isolate(input$plot_tile_swap),
+            conc_columns()[1],
+            conc_columns()[2]
+          ),
           col.fill = "abci_avg",
           col.analysis = "assay",
           n.cols = abci_plot_dims()[[1]],
@@ -2034,8 +2070,16 @@ server <- function(input, output) {
       }  else if (isolate(input$visualize_tabs) == "tile_split") {
         abci_plot_tile_split(
           data = isolate(abci_plot_data()),
-          x.drug = isolate(input$plot_tile_split_x_drug),
-          y.drug = conc_columns()[!conc_columns() %in% isolate(input$plot_tile_split_x_drug)],
+          x.drug = ifelse(
+            isolate(input$plot_tile_split_swap),
+            conc_columns()[2],
+            conc_columns()[1]
+          ),
+          y.drug = ifelse(
+            isolate(input$plot_tile_split_swap),
+            conc_columns()[1],
+            conc_columns()[2]
+          ),
           col.fill = "abci_avg",
           col.analysis = "assay",
           strict = isolate(input$plot_tile_split_strict),
@@ -2058,8 +2102,16 @@ server <- function(input, output) {
       } else if (isolate(input$visualize_tabs) == "dot") {
         abci_plot_dot(
           data = isolate(abci_plot_data()),
-          x.drug = isolate(input$plot_dot_x_drug),
-          y.drug = conc_columns()[!conc_columns() %in% isolate(input$plot_dot_x_drug)],
+          x.drug = ifelse(
+            isolate(input$plot_dot_swap),
+            conc_columns()[2],
+            conc_columns()[1]
+          ),
+          y.drug = ifelse(
+            isolate(input$plot_dot_swap),
+            conc_columns()[1],
+            conc_columns()[2]
+          ),
           col.fill = "abci_avg",
           col.size = "effect_avg",
           size.range = c(3, 15),
@@ -2086,8 +2138,16 @@ server <- function(input, output) {
 
         abci_plot_dot_split(
           data = isolate(abci_plot_data()),
-          x.drug = isolate(input$plot_dot_split_x_drug),
-          y.drug = conc_columns()[!conc_columns() %in% isolate(input$plot_dot_split_x_drug)],
+          x.drug = ifelse(
+            isolate(input$plot_dot_split_swap),
+            conc_columns()[2],
+            conc_columns()[1]
+          ),
+          y.drug = ifelse(
+            isolate(input$plot_dot_split_swap),
+            conc_columns()[1],
+            conc_columns()[2]
+          ),
           col.fill = "abci_avg",
           col.size = "effect_avg",
           strict = isolate(input$plot_dot_split_strict),
@@ -2126,8 +2186,16 @@ server <- function(input, output) {
         abci_plot_line(
           data = isolate(abci_plot_data()),
           plot.type = isolate(input$plot_line_type),
-          x.drug = isolate(input$plot_line_x_drug),
-          line.drug = conc_columns()[!conc_columns() %in% isolate(input$plot_line_x_drug)],
+          x.drug = ifelse(
+            isolate(input$plot_line_swap),
+            conc_columns()[2],
+            conc_columns()[1]
+          ),
+          line.drug = ifelse(
+            isolate(input$plot_line_swap),
+            conc_columns()[1],
+            conc_columns()[2]
+          ),
           col.data = "bio_normal",
           col.analysis = "assay",
           line.include = isolate(input$plot_line_line_include),
