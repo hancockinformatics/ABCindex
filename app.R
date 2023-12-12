@@ -1132,16 +1132,6 @@ server <- function(input, output) {
     list(
       br(),
       wrap_selector(
-        label = "Swap X and Y",
-        label_title = "Turn on to swap the values plotted on the X and Y axis",
-        input_switch(
-          id = "plot_dot_swap",
-          label = "Off",
-          value = FALSE
-        )
-      ),
-
-      wrap_selector(
         label = actionLink("dot_preview_colours", label = "ABCI colours"),
         label_title = paste0(
           "Colour palette for the ABCI values, designed to highlight the most ",
@@ -1234,6 +1224,17 @@ server <- function(input, output) {
           title = "Advanced options",
 
           wrap_selector(
+            label = "Swap X and Y",
+            label_title = "Turn on to swap the values plotted on the X and Y axis",
+            input_switch(
+              id = "plot_dot_swap",
+              label = "Off",
+              value = FALSE
+            )
+          ),
+
+
+          wrap_selector(
             label = "Axis labels",
             label_title = paste0(
               "Across the plot panels, should the X and Y axis labels vary ",
@@ -1278,16 +1279,6 @@ server <- function(input, output) {
   output$plot_inputs_dot_split <- renderUI({
     list(
       br(),
-      wrap_selector(
-        label = "Swap X and Y",
-        label_title = "Turn on to swap the values plotted on the X and Y axis",
-        input_switch(
-          id = "plot_dot_split_swap",
-          label = "Off",
-          value = FALSE
-        )
-      ),
-
       wrap_selector(
         label = actionLink("dot_split_preview_colours", label = "ABCI colours"),
         label_title = paste0(
@@ -1381,6 +1372,16 @@ server <- function(input, output) {
           title = "Advanced options",
 
           wrap_selector(
+            label = "Swap X and Y",
+            label_title = "Turn on to swap the values plotted on the X and Y axis",
+            input_switch(
+              id = "plot_dot_split_swap",
+              label = "Off",
+              value = FALSE
+            )
+          ),
+
+          wrap_selector(
             label = "Filter stringency",
             label_title = paste0(
               "Choose whether to include ABCI values close to 0 (Loose) or ",
@@ -1446,16 +1447,6 @@ server <- function(input, output) {
   output$plot_inputs_tile <- renderUI({
     list(
       br(),
-      wrap_selector(
-        label = "Swap X and Y",
-        label_title = "Turn on to swap the values plotted on the X and Y axis",
-        input_switch(
-          id = "plot_tile_swap",
-          label = "Off",
-          value = FALSE
-        )
-      ),
-
       wrap_selector(
         label = actionLink("tile_preview_colours", label = "ABCI colours"),
         label_title = paste0(
@@ -1554,6 +1545,16 @@ server <- function(input, output) {
           title = "Advanced options",
 
           wrap_selector(
+            label = "Swap X and Y",
+            label_title = "Turn on to swap the values plotted on the X and Y axis",
+            input_switch(
+              id = "plot_tile_swap",
+              label = "Off",
+              value = FALSE
+            )
+          ),
+
+          wrap_selector(
             label = "Axis labels",
             label_title = paste0(
               "Across the plot panels, should the X and Y axis labels vary ",
@@ -1620,16 +1621,6 @@ server <- function(input, output) {
   output$plot_inputs_tile_split <- renderUI({
     list(
       br(),
-      wrap_selector(
-        label = "Swap X and Y",
-        label_title = "Turn on to swap the values plotted on the X and Y axis",
-        input_switch(
-          id = "plot_tile_split_swap",
-          label = "Off",
-          value = FALSE
-        )
-      ),
-
       wrap_selector(
         label = actionLink("tile_split_preview_colours", label = "ABCI colours"),
         label_title = paste0(
@@ -1725,6 +1716,16 @@ server <- function(input, output) {
         open = FALSE,
         accordion_panel(
           title = "Advanced options",
+
+          wrap_selector(
+            label = "Swap X and Y",
+            label_title = "Turn on to swap the values plotted on the X and Y axis",
+            input_switch(
+              id = "plot_tile_split_swap",
+              label = "Off",
+              value = FALSE
+            )
+          ),
 
           wrap_selector(
             label = "Filter stringency",
@@ -1826,16 +1827,6 @@ server <- function(input, output) {
             "Mean" = "mean",
             "Mean±SD" = "mean_sd"
           )
-        )
-      ),
-
-      wrap_selector(
-        label = "Swap X and lines",
-        label_title = "Turn on to swap the values plotted on the X axis and as lines",
-        input_switch(
-          id = "plot_line_swap",
-          label = "Off",
-          value = FALSE
         )
       ),
 
@@ -1946,6 +1937,17 @@ server <- function(input, output) {
         open = FALSE,
         accordion_panel(
           title = "Advanced options",
+
+          wrap_selector(
+            label = "Swap X and lines",
+            label_title = "Turn on to swap the values plotted on the X axis and as lines",
+            input_switch(
+              id = "plot_line_swap",
+              label = "Off",
+              value = FALSE
+            )
+          ),
+
           wrap_selector(
             label = "X axis jitter",
             label_title =
