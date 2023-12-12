@@ -423,17 +423,18 @@ abci_plot_dot_split <- function(
     list(
       "up" = mutate(
         data,
-        col_fill = ifelse(
-          test = .data[[col.fill]] > 0.1,
-          yes = .data[[col.fill]],
-          no = NA
-        )),
+        col_fill = case_when(
+          (.data[[x.drug]] == "0" | .data[[y.drug]] == "0") ~ .data[[col.fill]],
+          .data[[col.fill]] > 0.1 ~ .data[[col.fill]],
+          TRUE ~ NA
+        )
+      ),
       "down" = mutate(
         data,
-        col_fill = ifelse(
-          test = .data[[col.fill]] < -0.1,
-          yes = .data[[col.fill]],
-          no = NA
+        col_fill = case_when(
+          (.data[[x.drug]] == "0" | .data[[y.drug]] == "0") ~ .data[[col.fill]],
+          .data[[col.fill]] < -0.1 ~ .data[[col.fill]],
+          TRUE ~ NA
         )
       )
     )
@@ -441,17 +442,18 @@ abci_plot_dot_split <- function(
     list(
       "up" = mutate(
         data,
-        col_fill = ifelse(
-          test = .data[[col.fill]] > -0.1,
-          yes = .data[[col.fill]],
-          no = NA
-        )),
+        col_fill = case_when(
+          (.data[[x.drug]] == "0" | .data[[y.drug]] == "0") ~ .data[[col.fill]],
+          .data[[col.fill]] > -0.1 ~ .data[[col.fill]],
+          TRUE ~ NA
+        )
+      ),
       "down" = mutate(
         data,
-        col_fill = ifelse(
-          test = .data[[col.fill]] < 0.1,
-          yes = .data[[col.fill]],
-          no = NA
+        col_fill = case_when(
+          (.data[[x.drug]] == "0" | .data[[y.drug]] == "0") ~ .data[[col.fill]],
+          .data[[col.fill]] < 0.1 ~ .data[[col.fill]],
+          TRUE ~ NA
         )
       )
     )
