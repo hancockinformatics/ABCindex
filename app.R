@@ -212,7 +212,7 @@ plot_legends <- list(
 
     p(
       "You can learn more about how to interpret your data ",
-      actionLink("legend_dot_here", "here", .noWS = "after"),
+      actionLink("legend_here", "here", .noWS = "after"),
       ". The text below can be used as a template for a figure legend:"
     ),
 
@@ -246,7 +246,7 @@ plot_legends <- list(
 
     p(
       "You can learn more about how to interpret your data ",
-      actionLink("legend_dot_split_here", "here", .noWS = "after"),
+      actionLink("legend_here", "here", .noWS = "after"),
       ". The text below can be used as a template for a figure legend:"
     ),
 
@@ -277,7 +277,7 @@ plot_legends <- list(
 
     p(
       "You can learn more about how to interpret your data ",
-      actionLink("legend_line_here", "here", .noWS = "after"),
+      actionLink("legend_here", "here", .noWS = "after"),
       ". The text below can be used as a template for a figure legend:"
     ),
 
