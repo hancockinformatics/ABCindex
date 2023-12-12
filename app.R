@@ -147,7 +147,7 @@ plot_legends <- list(
 
     p(
       "You can learn more about how to interpret your data ",
-      actionLink("legend_tile_here", "here", .noWS = "after"),
+      actionLink("legend_here", "here", .noWS = "after"),
       ". The text below can be used as a template for a figure legend:"
     ),
 
@@ -180,7 +180,7 @@ plot_legends <- list(
 
     p(
       "You can learn more about how to interpret your data ",
-      actionLink("legend_tile_split_here", "here", .noWS = "after"),
+      actionLink("legend_here", "here", .noWS = "after"),
       ". The text below can be used as a template for a figure legend:"
     ),
 
@@ -1976,9 +1976,20 @@ server <- function(input, output) {
   plot_type <- reactive(input$visualize_tabs)
 
 
-  # |- Plot-specific legends ----------------------------------------------
+  # |-- Plot-specific legends ---------------------------------------------
 
   plot_legend_ui <- reactive(plot_legends[[plot_type()]])
+
+  observeEvent(input$legend_here, {
+    showNotification(
+      type = "default",
+      duration = 10,
+      ui = HTML(paste0(
+        "<h4 class='alert-heading'>Whoa!</h4>",
+        "<p class='mb-0'>Sorry, that link doesn't lead anywhere... yet...</p>"
+      ))
+    )
+  })
 
 
   # |-- Line include options ----------------------------------------------
