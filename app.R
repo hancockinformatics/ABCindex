@@ -811,6 +811,32 @@ server <- function(input, output) {
   })
 
 
+  # |- Uploaded info ------------------------------------------------------
+
+  drug_names <- reactive({
+    lapply(input_data_raw(), function(experiment) {
+
+      cols_unique <- unique(experiment$cols)
+      rows_unique <- unique(experiment$rows)
+
+      list(
+        "cols" = ifelse(length(cols_unique) == 1, cols_unique, "Drug A"),
+        "rows" = ifelse(length(rows_unique) == 1, rows_unique, "Drug B")
+      )
+    })
+  })
+
+  drug_ranges <- reactive({
+    lapply(input_data_raw(), function(experiment) {
+
+      cols_unique <- levels(experiment$cols_conc)
+      rows_unique <- levels(experiment$rows_conc)
+
+      list("cols" = cols_unique, "rows" = rows_unique)
+    })
+  })
+
+
   # |- Create input preview -----------------------------------------------
 
   input_data_preview <- reactive({
