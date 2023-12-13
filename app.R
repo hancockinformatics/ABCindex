@@ -1028,14 +1028,12 @@ server <- function(input, output) {
         "Are you sure you want to reset the app? All results and plots will be lost!",
         title = "Reset ShinyABCi",
         footer = tagList(
-          actionButton("cancel_reset", "Cancel"),
+          modalButton(label = "Cancel"),
           actionButton("confirm_reset", "Reset", class = "btn btn-danger")
         )
       )
     )
   })
-
-  observeEvent(input$cancel_reset, removeModal())
 
   observeEvent(input$confirm_reset, {
     shinyjs::reset("visualization_sidebar", asis = FALSE)
