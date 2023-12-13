@@ -813,26 +813,21 @@ server <- function(input, output) {
 
   # |- Uploaded info ------------------------------------------------------
 
-  drug_names <- reactive({
+  drug_cols <- reactive({
     lapply(input_data_raw(), function(experiment) {
-
-      cols_unique <- unique(experiment$cols)
-      rows_unique <- unique(experiment$rows)
-
       list(
-        "cols" = ifelse(length(cols_unique) == 1, cols_unique, "Drug A"),
-        "rows" = ifelse(length(rows_unique) == 1, rows_unique, "Drug B")
+        "name" = unique(experiment$cols),
+        "concentrations" = levels(experiment$cols_conc)
       )
     })
   })
 
-  drug_ranges <- reactive({
+  drug_rows <- reactive({
     lapply(input_data_raw(), function(experiment) {
-
-      cols_unique <- levels(experiment$cols_conc)
-      rows_unique <- levels(experiment$rows_conc)
-
-      list("cols" = cols_unique, "rows" = rows_unique)
+      list(
+        "name" = unique(experiment$rows),
+        "concentrations" = levels(experiment$rows_conc)
+      )
     })
   })
 
@@ -873,14 +868,45 @@ server <- function(input, output) {
     )
   )
 
+  # TODO An error is briefly shown because we're using `[[` to get the sheet
+  # name - since that input takes a second to instantiate, we get a quick error
+  # when because it starts as NULL...Fix?
   output$upload_preview_div <- renderUI({
     input_data_preview()
+    input$input_data_sheet_names
+
     tagList(
-      h2("Input data preview"),
-      p(
-        class = "lead y-2",
-        "Please ensure your data has been uploaded correctly before proceeding."
+      layout_column_wrap(
+        card(
+          card_header("Columns", class = "text-white bg-dark"),
+          card_body(
+            paste0("Name: ", drug_cols()[[input$input_data_sheet_names]]$name),
+            br(),
+            paste0(
+              "Concentrations: ",
+              paste(
+                drug_cols()[[input$input_data_sheet_names]]$concentrations,
+                collapse = ", "
+              )
+            )
+          )
+        ),
+        card(
+          card_header("Rows", class = "text-white bg-dark"),
+          card_body(
+            paste0("Name: ", drug_rows()[[input$input_data_sheet_names]]$name),
+            br(),
+            paste0(
+              "Concentrations: ",
+              paste(
+                drug_rows()[[input$input_data_sheet_names]]$concentrations,
+                collapse = ", "
+              )
+            )
+          )
+        )
       ),
+      br(),
       DT::dataTableOutput("input_data_preview_DT")
     )
   })
