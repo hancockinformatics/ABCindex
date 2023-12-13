@@ -126,71 +126,6 @@ plot_scales <- c(
 # |- Plot legends ---------------------------------------------------------
 
 plot_legends <- list(
-
-  tile = div(
-    p("The colour of the tiles indicates ABCI: Positive ABCI values indicate ",
-      "that the combination is more effective than any individual drug on its ",
-      "own; negative values indicate that the combination is less effective ",
-      "than at least the most active individual drug. Vertical and horizontal ",
-      "lines can be added to illustrate the activity thresholds of the ",
-      "individual drugs (e.g., MIC). Activity (% killing) is not depicted: it ",
-      "is recommended to combine this with a line plot for interesting ",
-      "concentrations."
-    ),
-
-    p(
-      "You can learn more about how to interpret your data ",
-      actionLink("legend_here", "here", .noWS = "after"),
-      ". The text below can be used as a template for a figure legend:"
-    ),
-
-    p(
-      style = "font-size:0.75em",
-      "Anti-Biofilm Combination Index (ABCI) [Citation] for combinations of ",
-      "[Drug A] and [Drug B]. Results are the average of [X] replicates. ",
-      "Positive ABCI values indicate a combination more effective than each ",
-      "individual drug, while negative values indicate a combination less ",
-      "effective than at least the most active individual drug; see materials ",
-      "and methods for ABCI calculation. Vertical and horizontal lines ",
-      "indicate the [MBIC50] of individual drugs. Tiles labelled ‘<’ indicate ",
-      "less than [50% biofilm inhibition]. Created with ShinyABCi [Citation]."
-    )
-  ),
-
-  tile_split = div(
-    p(
-      "The colour of the tiles indicates ABCI: Positive ABCI values (top) ",
-      "indicate that the combination is more effective than any individual ",
-      "drug on its own; negative values (bottom) indicate that the ",
-      "combination is less effective than at least the most active individual ",
-      "drug. They have been split into two different plots for visually ",
-      "simplified illustrations of only positive or negative interactions. ",
-      "Vertical and horizontal lines can be added to illustrate the activity ",
-      "thresholds of the individual drugs (e.g., MIC). Activity (% killing) ",
-      "is not depicted: it is recommended to combine this with a line plot ",
-      "for interesting concentrations."
-    ),
-
-    p(
-      "You can learn more about how to interpret your data ",
-      actionLink("legend_here", "here", .noWS = "after"),
-      ". The text below can be used as a template for a figure legend:"
-    ),
-
-    p(
-      style = "font-size:0.75em",
-      "Anti-Biofilm Combination Index (ABCI) [Citation] for combinations of ",
-      "[Drug A] and [Drug B]. Results are the average of [X] replicates. ",
-      "Positive ABCI values (top) indicate a combination more effective than ",
-      "each individual drug, while negative values (bottom) indicate a ",
-      "combination less effective than at least the most active individual ",
-      "drug; see materials and methods for ABCI calculation. Vertical and ",
-      "horizontal lines indicate the [MBIC50] of individual drugs. Tiles ",
-      "labelled ‘<’ indicate less than [50% biofilm inhibition]. Created with ",
-      "ShinyABCi [Citation]."
-    )
-  ),
-
   dot = div(
     p(
       "This graph combines ABCI (drug interaction) and activity (% killed). ",
@@ -255,6 +190,70 @@ plot_legends <- list(
       "drug; see materials and methods for ABCI calculation. Vertical and ",
       "horizontal lines indicate the [MBIC50] of individual drugs. Created ",
       "with ShinyABCi [Citation]."
+    )
+  ),
+
+  tile = div(
+    p("The colour of the tiles indicates ABCI: Positive ABCI values indicate ",
+      "that the combination is more effective than any individual drug on its ",
+      "own; negative values indicate that the combination is less effective ",
+      "than at least the most active individual drug. Vertical and horizontal ",
+      "lines can be added to illustrate the activity thresholds of the ",
+      "individual drugs (e.g., MIC). Activity (% killing) is not depicted: it ",
+      "is recommended to combine this with a line plot for interesting ",
+      "concentrations."
+    ),
+
+    p(
+      "You can learn more about how to interpret your data ",
+      actionLink("legend_here", "here", .noWS = "after"),
+      ". The text below can be used as a template for a figure legend:"
+    ),
+
+    p(
+      style = "font-size:0.75em",
+      "Anti-Biofilm Combination Index (ABCI) [Citation] for combinations of ",
+      "[Drug A] and [Drug B]. Results are the average of [X] replicates. ",
+      "Positive ABCI values indicate a combination more effective than each ",
+      "individual drug, while negative values indicate a combination less ",
+      "effective than at least the most active individual drug; see materials ",
+      "and methods for ABCI calculation. Vertical and horizontal lines ",
+      "indicate the [MBIC50] of individual drugs. Tiles labelled ‘<’ indicate ",
+      "less than [50% biofilm inhibition]. Created with ShinyABCi [Citation]."
+    )
+  ),
+
+  tile_split = div(
+    p(
+      "The colour of the tiles indicates ABCI: Positive ABCI values (top) ",
+      "indicate that the combination is more effective than any individual ",
+      "drug on its own; negative values (bottom) indicate that the ",
+      "combination is less effective than at least the most active individual ",
+      "drug. They have been split into two different plots for visually ",
+      "simplified illustrations of only positive or negative interactions. ",
+      "Vertical and horizontal lines can be added to illustrate the activity ",
+      "thresholds of the individual drugs (e.g., MIC). Activity (% killing) ",
+      "is not depicted: it is recommended to combine this with a line plot ",
+      "for interesting concentrations."
+    ),
+
+    p(
+      "You can learn more about how to interpret your data ",
+      actionLink("legend_here", "here", .noWS = "after"),
+      ". The text below can be used as a template for a figure legend:"
+    ),
+
+    p(
+      style = "font-size:0.75em",
+      "Anti-Biofilm Combination Index (ABCI) [Citation] for combinations of ",
+      "[Drug A] and [Drug B]. Results are the average of [X] replicates. ",
+      "Positive ABCI values (top) indicate a combination more effective than ",
+      "each individual drug, while negative values (bottom) indicate a ",
+      "combination less effective than at least the most active individual ",
+      "drug; see materials and methods for ABCI calculation. Vertical and ",
+      "horizontal lines indicate the [MBIC50] of individual drugs. Tiles ",
+      "labelled ‘<’ indicate less than [50% biofilm inhibition]. Created with ",
+      "ShinyABCi [Citation]."
     )
   ),
 
@@ -854,7 +853,7 @@ server <- function(input, output) {
       h2("Input data preview"),
       p(
         class = "lead y-2",
-        "Please ensure your data has been uploaded and parsed correctly before proceeding."
+        "Please ensure your data has been uploaded correctly before proceeding."
       ),
       DT::dataTableOutput("input_data_preview_DT")
     )
@@ -1047,16 +1046,27 @@ server <- function(input, output) {
     output$abci_plot <- NULL
     output$abci_plot_ui <- NULL
 
-    disable("proceed_abci_calculations")
-    disable("download_handler")
-    disable("visualize_your_results")
-    disable("create_plot")
+    disable_button(
+      "proceed_abci_calculations",
+      "Upload your plate data, or load our example data, then click here to analyze"
+    )
+    disable_button(
+      "download_handler",
+      "Once your data is analyzed, you can download the results here"
+    )
+    disable_button(
+      "visualize_your_results",
+      "Once your data is analyzed, you can proceed to the Visualization page"
+    )
+    disable_button(
+      "create_plot",
+      "Upload and analyze some data to enable visualization"
+    )
 
     removeModal()
 
     showNotification(
       type = "message",
-      duration = NULL,
       ui = HTML(paste0(
         "<h4 class='alert-heading'>Reset successful!</h4>",
         "<p class='mb-0'>All inputs and results have been reset to their ",

@@ -2,6 +2,21 @@
 size_mapping_N1S2 <- readRDS("data/size_mapping_N1S2.Rds")
 
 
+disable_button <- function(id, x = NULL) {
+  shinyjs::disable(id)
+
+  if (!is.null(x)) {
+    shinyjs::runjs(paste0(
+      "document.getElementById('",
+      id,
+      "').setAttribute('title', '",
+      x,
+      "');"
+    ))
+  }
+}
+
+
 enable_button <- function(id, x = NULL) {
   shinyjs::enable(id)
 
