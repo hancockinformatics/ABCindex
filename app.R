@@ -868,20 +868,21 @@ server <- function(input, output) {
     )
   )
 
-  # TODO An error is briefly shown because we're using `[[` to get the sheet
-  # name - since that input takes a second to instantiate, we get a quick error
-  # when because it starts as NULL...Fix?
   output$upload_preview_div <- renderUI({
-    input_data_preview()
-    input$input_data_sheet_names
+    req(input_data_preview())
+    req(input$input_data_sheet_names)
 
     tagList(
       layout_column_wrap(
         card(
-          card_header("Columns", class = "text-white bg-dark"),
+          card_header(
+            class = "bg-dark",
+            HTML(paste0(
+              "<b>Columns:</b> ",
+              drug_cols()[[input$input_data_sheet_names]]$name
+            ))
+          ),
           card_body(
-            paste0("Name: ", drug_cols()[[input$input_data_sheet_names]]$name),
-            br(),
             paste0(
               "Concentrations: ",
               paste(
@@ -892,10 +893,14 @@ server <- function(input, output) {
           )
         ),
         card(
-          card_header("Rows", class = "text-white bg-dark"),
+          card_header(
+            class = "bg-dark",
+            HTML(paste0(
+              "<b>Rows:</b> ",
+              drug_rows()[[input$input_data_sheet_names]]$name
+            ))
+          ),
           card_body(
-            paste0("Name: ", drug_rows()[[input$input_data_sheet_names]]$name),
-            br(),
             paste0(
               "Concentrations: ",
               paste(
