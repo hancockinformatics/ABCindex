@@ -17,41 +17,6 @@ app_theme <- bs_theme(version = 5, preset = "cosmo")
 set_theme()
 
 
-# |- Input preview container ----------------------------------------------
-
-input_data_preview_container <- htmltools::withTags(table(
-  class = "display",
-  thead(tr(
-    class = "table-dark",
-    th(
-      "Replicate",
-      title = "Unique name for each replicate of an assay"
-    ),
-    th("Wells"),
-    th(
-      "Plate columns",
-      title = paste0("Compound found in the plate's columns (1-12)")
-    ),
-    th(
-      "Column concentrations",
-      title = "Concentrations identified for the plate's columns"
-    ),
-    th(
-      "Plate rows",
-      title = "Compound found in the plate's rows (A-H)"
-    ),
-    th(
-      "Row concentrations",
-      title = "Concentrations identified for the plate's rows"
-    ),
-    th(
-      "Bio",
-      title = "The measured value from wells in the plate"
-    )
-  ))
-))
-
-
 # |- Results table container ----------------------------------------------
 
 abci_results_display_container <- htmltools::withTags(table(
@@ -841,31 +806,29 @@ server <- function(input, output) {
       "Click here to proceed to the next step"
     )
 
-    purrr::map(
-      input_data_raw(),
-      ~mutate(.x, across(where(is.numeric), ~signif(.x, digits = 4))) %>%
-        rename(
-          "Replicate" = replicate,
-          "Wells" = well,
-          "Plate columns" = cols,
-          "Column concentrations" = cols_conc,
-          "Plate rows" = rows,
-          "Row concentrations" = rows_conc,
-          "Bio" = bio
-        )
-    )
+    # For now, just show the first replicate in the preview...
+    lapply(input_data_raw(), function(experiment) {
+      experiment %>%
+        mutate(across(where(is.numeric), ~signif(.x, digits = 4))) %>%
+        filter(str_detect(replicate, "_p1$")) %>%
+        select(cols_conc, rows_conc, bio) %>%
+        pivot_wider(
+          names_from = cols_conc,
+          values_from = bio
+        ) %>%
+        column_to_rownames("rows_conc")
+    })
   })
 
   output$input_data_preview_DT <- DT::renderDataTable(
-    input_data_preview()[[input$input_data_sheet_names]],
-    rownames = FALSE,
-    selection = "none",
-    class = "table-striped cell-border",
-    container = input_data_preview_container,
-    options = list(
-      dom = "ltip",
-      columnDefs = list(list(targets = 0, render = ellipsis_render(60)))
-    )
+    input_data_preview()[[input$input_data_sheet_names]] %>%
+      DT::datatable(
+        rownames = TRUE,
+        selection = "none",
+        class = "table-striped cell-border",
+        options = list(dom = "t")
+      ) %>%
+      DT::formatStyle(0, fontWeight = "bold", `text-align` = "right")
   )
 
   output$upload_preview_div <- renderUI({
@@ -923,11 +886,15 @@ server <- function(input, output) {
     div(
       class = "mb-auto",
       hr(),
-      selectInput(
-        inputId = "input_data_sheet_names",
-        label = strong("Select an uploaded experiment to preview:"),
-        choices = names(input_data_preview())
-      )
+      div(
+        class = "mb-3",
+        selectInput(
+          inputId = "input_data_sheet_names",
+          label = strong("Select an uploaded experiment to preview:"),
+          choices = names(input_data_preview())
+        )
+      ),
+      p("Note that only the first plate/replicate is previewed.")
     )
   )
 
