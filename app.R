@@ -360,8 +360,6 @@ ui <- page_fluid(
               title = "Click here to try our example data"
             ),
 
-            uiOutput("upload_input_names_div"),
-
             disabled(
               actionButton(
                 inputId = "proceed_abci_calculations",
@@ -376,6 +374,11 @@ ui <- page_fluid(
             )
           ),
 
+          layout_column_wrap(
+            width = 1/2,
+            uiOutput("upload_input_names_div"),
+            uiOutput("upload_drug_card_UI")
+          ),
           uiOutput("upload_preview_div")
         )
       )
@@ -793,6 +796,7 @@ server <- function(input, output) {
   upload_drug_card <- reactive({
     experiment_drugs <- drug_info()[[input$input_data_sheet_names]]
     card(
+      height = 350,
       card_header(
         class = "bg-dark",
         "Information on plate rows and columns"
@@ -815,33 +819,42 @@ server <- function(input, output) {
     )
   })
 
+  output$upload_drug_card_UI <- renderUI({
+    req(input_data_preview())
+    req(input$input_data_sheet_names)
+    upload_drug_card()
+  })
+
   output$upload_preview_div <- renderUI({
     req(input_data_preview())
     req(input$input_data_sheet_names)
-
-    tagList(
-      upload_drug_card(),
-      br(),
-      DT::dataTableOutput("input_data_preview_DT")
-    )
+    DT::dataTableOutput("input_data_preview_DT")
   })
 
 
   # |- Update the sidebar -------------------------------------------------
 
   output$upload_input_names_div <- renderUI(
-    div(
-      class = "mb-auto",
-      hr(),
-      div(
-        class = "mb-3",
+    card(
+      height = 350,
+      card_header(
+        class = "bg-dark",
+        "Select an experiment to preview"
+      ),
+      card_body(
+        p(
+          "Use the dropdown to choose an uploaded experiment to preview. The ",
+          "card to the right displays some information, while the table below ",
+          "shows the loaded data. Make sure everything looks OK before ",
+          "proceeding."
+        ),
         selectInput(
           inputId = "input_data_sheet_names",
-          label = strong("Select an uploaded experiment to preview:"),
-          choices = names(input_data_preview())
+          label = NULL,
+          choices = names(input_data_preview()),
+          width = "inherit"
         )
-      ),
-      p("Note that only the first plate/replicate is previewed.")
+      )
     )
   )
 
