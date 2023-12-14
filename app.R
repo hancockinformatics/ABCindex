@@ -17,50 +17,6 @@ app_theme <- bs_theme(version = 5, preset = "cosmo")
 set_theme()
 
 
-# |- Results table container ----------------------------------------------
-
-abci_results_display_container <- htmltools::withTags(table(
-  class = "display",
-  thead(tr(
-    class = "table-dark",
-    th(
-      "Plate columns",
-      title = paste0("Compound found in the plate's columns (1-12)")
-    ),
-    th(
-      "Column concentrations",
-      title = "Concentrations identified for the plate's columns"
-    ),
-    th(
-      "Plate rows",
-      title = "Compound found in the plate's rows (A-H)"
-    ),
-    th(
-      "Row concentrations",
-      title = "Concentrations identified for the plate's rows"
-    ),
-    th(
-      "Average bio",
-      title = paste0(
-        "The measured value from wells in the plate, after any normalization ",
-        "and/or averaging across replicates"
-      )
-    ),
-    th(
-      "Average effect",
-      title = "The measured effect, equal to 1 - 'Average bio'"
-    ),
-    th(
-      "Average ABCI",
-      title = paste0(
-        "The Anti-Biofilm Combination Index (ABCI) value, averaged ",
-        "across any replicates."
-      )
-    )
-  ))
-))
-
-
 # |- Fixed plot inputs ----------------------------------------------------
 
 abci_colours <- list(
@@ -810,26 +766,64 @@ server <- function(input, output) {
     lapply(input_data_raw(), function(experiment) {
       experiment %>%
         mutate(across(where(is.numeric), ~signif(.x, digits = 4))) %>%
-        filter(str_detect(replicate, "_p1$")) %>%
+        filter(grepl(x = replicate, pattern = "_p1$")) %>%
         select(cols_conc, rows_conc, bio) %>%
-        pivot_wider(
+        tidyr::pivot_wider(
           names_from = cols_conc,
           values_from = bio
         ) %>%
-        column_to_rownames("rows_conc")
+        tibble::column_to_rownames("rows_conc")
     })
   })
 
-  output$input_data_preview_DT <- DT::renderDataTable(
+  output$input_data_preview_DT <-
     input_data_preview()[[input$input_data_sheet_names]] %>%
-      DT::datatable(
-        rownames = TRUE,
-        selection = "none",
-        class = "table-striped cell-border",
-        options = list(dom = "t")
-      ) %>%
-      DT::formatStyle(0, fontWeight = "bold", `text-align` = "right")
-  )
+    DT::datatable(
+      rownames = TRUE,
+      selection = "none",
+      class = "table-striped cell-border",
+      options = list(dom = "t")
+    ) %>%
+    DT::formatStyle(0, fontWeight = "bold", `text-align` = "right") %>%
+    DT::renderDataTable()
+
+  card_drug_cols <- reactive(card(
+    card_header(
+      class = "bg-dark",
+      HTML(paste0(
+        "<b>Columns:</b> ",
+        drug_cols()[[input$input_data_sheet_names]]$name
+      ))
+    ),
+    card_body(
+      paste0(
+        "Concentrations: ",
+        paste(
+          drug_cols()[[input$input_data_sheet_names]]$concentrations,
+          collapse = ", "
+        )
+      )
+    )
+  ))
+
+  card_drug_rows <- reactive(card(
+    card_header(
+      class = "bg-dark",
+      HTML(paste0(
+        "<b>Rows:</b> ",
+        drug_rows()[[input$input_data_sheet_names]]$name
+      ))
+    ),
+    card_body(
+      paste0(
+        "Concentrations: ",
+        paste(
+          drug_rows()[[input$input_data_sheet_names]]$concentrations,
+          collapse = ", "
+        )
+      )
+    )
+  ))
 
   output$upload_preview_div <- renderUI({
     req(input_data_preview())
@@ -837,42 +831,8 @@ server <- function(input, output) {
 
     tagList(
       layout_column_wrap(
-        card(
-          card_header(
-            class = "bg-dark",
-            HTML(paste0(
-              "<b>Columns:</b> ",
-              drug_cols()[[input$input_data_sheet_names]]$name
-            ))
-          ),
-          card_body(
-            paste0(
-              "Concentrations: ",
-              paste(
-                drug_cols()[[input$input_data_sheet_names]]$concentrations,
-                collapse = ", "
-              )
-            )
-          )
-        ),
-        card(
-          card_header(
-            class = "bg-dark",
-            HTML(paste0(
-              "<b>Rows:</b> ",
-              drug_rows()[[input$input_data_sheet_names]]$name
-            ))
-          ),
-          card_body(
-            paste0(
-              "Concentrations: ",
-              paste(
-                drug_rows()[[input$input_data_sheet_names]]$concentrations,
-                collapse = ", "
-              )
-            )
-          )
-        )
+        card_drug_cols(),
+        card_drug_rows()
       ),
       br(),
       DT::dataTableOutput("input_data_preview_DT")
@@ -946,47 +906,40 @@ server <- function(input, output) {
   abci_results_display <- reactive({
     req(abci_results())
 
-    abci_results() %>%
-      select(
-        assay,
-        starts_with("cols"),
-        starts_with("rows"),
-        ends_with("avg")
-      ) %>%
+    slim_results <- abci_results() %>%
+      select(assay, cols_conc, rows_conc, abci_avg) %>%
       mutate(across(where(is.numeric), ~signif(.x, digits = 4))) %>%
-      split(x = ., f = .$assay) %>%
-      purrr::map(
-        ~select(.x, -assay) %>%
-          distinct(cols_conc, rows_conc, .keep_all = TRUE) %>%
-          rename(
-            "Plate columns" = cols,
-            "Column concentrations" = cols_conc,
-            "Plate rows" = rows,
-            "Row concentrations" = rows_conc,
-            "Normalized Bio" = bio_normal_avg,
-            "Average effect" = effect_avg,
-            "Average ABCI" = abci_avg
-          )
-      )
+      split(x = ., f = .$assay)
+
+    lapply(slim_results, function(experiment) {
+      experiment %>%
+        select(-assay) %>%
+        distinct(cols_conc, rows_conc, .keep_all = TRUE) %>%
+        tidyr::pivot_wider(
+          names_from = "cols_conc",
+          values_from = "abci_avg"
+        ) %>%
+        tibble::column_to_rownames("rows_conc")
+    })
   })
 
-  output$results_table_DT <- DT::renderDataTable(
-    expr = abci_results_display()[[input$results_names_selectInput]],
-    container = abci_results_display_container,
-    rownames = FALSE,
-    class = "table-striped cell-border",
-    selection = "none",
-    options = list(
-      dom = "ltip",
-      scrollX = TRUE,
-      columnDefs = list(list(targets = 0, render = ellipsis_render(30)))
-    )
-  )
+  output$results_table_DT <-
+    abci_results_display()[[input$results_names_selectInput]] %>%
+    DT::datatable(
+      class = "table-striped cell-border",
+      selection = "none",
+      options = list(dom = "t")
+    ) %>%
+    DT::formatStyle(columns = 0, fontWeight = "bold", `text-align` = "right") %>%
+    DT::renderDataTable()
 
   output$results_table_div <- renderUI({
     abci_results_display()
     tagList(
-      h2("ABCI results summary"),
+      layout_column_wrap(
+        card_drug_cols(),
+        card_drug_rows()
+      ),
       br(),
       DT::dataTableOutput("results_table_DT")
     )
@@ -1031,11 +984,15 @@ server <- function(input, output) {
       div(
         class = "mb-auto",
         hr(),
-        selectInput(
-          inputId = "results_names_selectInput",
-          label = strong("Select an uploaded experiment to see the results:"),
-          choices = names(abci_results_display())
-        )
+        div(
+          class = "mb-3",
+          selectInput(
+            inputId = "results_names_selectInput",
+            label = strong("Select an uploaded experiment to see the results:"),
+            choices = names(abci_results_display())
+          )
+        ),
+        p("Note that only the first plate/replicate is previewed.")
       )
     )
   })
