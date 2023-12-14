@@ -376,10 +376,10 @@ ui <- page_fluid(
 
           layout_column_wrap(
             width = 1/2,
-            uiOutput("upload_input_names_div"),
+            uiOutput("upload_input_names_card"),
             uiOutput("upload_drug_card_UI")
           ),
-          uiOutput("upload_preview_div")
+          uiOutput("upload_input_preview")
         )
       )
     ),
@@ -735,7 +735,7 @@ server <- function(input, output) {
   })
 
 
-  # |- Uploaded info ------------------------------------------------------
+  # |- Gather input info --------------------------------------------------
 
   # drug_info()[[experiment]][[cols]][[name]]
   drug_info <- reactive(
@@ -781,7 +781,7 @@ server <- function(input, output) {
   output$input_data_preview_DT <- DT::renderDataTable(
     DT::formatStyle(
       table = DT::datatable(
-        data = input_data_preview()[[input$input_data_sheet_names]],
+        data = input_data_preview()[[input$upload_input_names_selector]],
         rownames = TRUE,
         selection = "none",
         class = "table-striped cell-border",
@@ -793,8 +793,34 @@ server <- function(input, output) {
     )
   )
 
+  # |- Create and render cards --------------------------------------------
+
+  output$upload_input_names_card <- renderUI(
+    card(
+      height = 350,
+      card_header(
+        class = "bg-dark",
+        "Select an experiment to preview"
+      ),
+      card_body(
+        p(
+          "Use the dropdown to choose an uploaded experiment to preview. The ",
+          "card to the right displays some information, while the table below ",
+          "shows the loaded data. Make sure everything looks OK before ",
+          "proceeding."
+        ),
+        selectInput(
+          inputId = "upload_input_names_selector",
+          label = NULL,
+          choices = names(input_data_preview()),
+          width = "inherit"
+        )
+      )
+    )
+  )
+
   upload_drug_card <- reactive({
-    experiment_drugs <- drug_info()[[input$input_data_sheet_names]]
+    experiment_drugs <- drug_info()[[input$upload_input_names_selector]]
     card(
       height = 350,
       card_header(
@@ -821,42 +847,15 @@ server <- function(input, output) {
 
   output$upload_drug_card_UI <- renderUI({
     req(input_data_preview())
-    req(input$input_data_sheet_names)
+    req(input$upload_input_names_selector)
     upload_drug_card()
   })
 
-  output$upload_preview_div <- renderUI({
+  output$upload_input_preview <- renderUI({
     req(input_data_preview())
-    req(input$input_data_sheet_names)
+    req(input$upload_input_names_selector)
     DT::dataTableOutput("input_data_preview_DT")
   })
-
-
-  # |- Update the sidebar -------------------------------------------------
-
-  output$upload_input_names_div <- renderUI(
-    card(
-      height = 350,
-      card_header(
-        class = "bg-dark",
-        "Select an experiment to preview"
-      ),
-      card_body(
-        p(
-          "Use the dropdown to choose an uploaded experiment to preview. The ",
-          "card to the right displays some information, while the table below ",
-          "shows the loaded data. Make sure everything looks OK before ",
-          "proceeding."
-        ),
-        selectInput(
-          inputId = "input_data_sheet_names",
-          label = NULL,
-          choices = names(input_data_preview()),
-          width = "inherit"
-        )
-      )
-    )
-  )
 
 
   # Analysis --------------------------------------------------------------
