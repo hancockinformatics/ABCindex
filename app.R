@@ -734,23 +734,22 @@ server <- function(input, output) {
 
   # |- Uploaded info ------------------------------------------------------
 
-  drug_cols <- reactive({
+  # drug_info()[[experiment]][[cols]][[name]]
+  drug_info <- reactive(
     lapply(input_data_raw(), function(experiment) {
       list(
-        "name" = unique(experiment$cols),
-        "concentrations" = levels(experiment$cols_conc)
-      )
-    })
-  })
+        "cols" = list(
+          "name" = unique(experiment$cols),
+          "concentrations" = levels(experiment$cols_conc)
+        ),
 
-  drug_rows <- reactive({
-    lapply(input_data_raw(), function(experiment) {
-      list(
-        "name" = unique(experiment$rows),
-        "concentrations" = levels(experiment$rows_conc)
+        "rows" = list(
+          "name" = unique(experiment$rows),
+          "concentrations" = levels(experiment$rows_conc)
+        )
       )
     })
-  })
+  )
 
 
   # |- Create input preview -----------------------------------------------
@@ -776,64 +775,52 @@ server <- function(input, output) {
     })
   })
 
-  output$input_data_preview_DT <-
-    input_data_preview()[[input$input_data_sheet_names]] %>%
-    DT::datatable(
-      rownames = TRUE,
-      selection = "none",
-      class = "table-striped cell-border",
-      options = list(dom = "t")
-    ) %>%
-    DT::formatStyle(0, fontWeight = "bold", `text-align` = "right") %>%
-    DT::renderDataTable()
+  output$input_data_preview_DT <- DT::renderDataTable(
+    DT::formatStyle(
+      table = DT::datatable(
+        data = input_data_preview()[[input$input_data_sheet_names]],
+        rownames = TRUE,
+        selection = "none",
+        class = "table-striped cell-border",
+        options = list(dom = "t")
+      ),
+      columns = 0,
+      fontWeight = "bold",
+      `text-align` = "right"
+    )
+  )
 
-  card_drug_cols <- reactive(card(
-    card_header(
-      class = "bg-dark",
-      HTML(paste0(
-        "<b>Columns:</b> ",
-        drug_cols()[[input$input_data_sheet_names]]$name
-      ))
-    ),
-    card_body(
-      paste0(
-        "Concentrations: ",
-        paste(
-          drug_cols()[[input$input_data_sheet_names]]$concentrations,
-          collapse = ", "
+  upload_drug_card <- reactive({
+    experiment_drugs <- drug_info()[[input$input_data_sheet_names]]
+    card(
+      card_header(
+        class = "bg-dark",
+        "Information on plate rows and columns"
+      ),
+      card_body(
+        p("Drug in columns: ", experiment_drugs[["cols"]][["name"]]),
+        p(
+          "Concentrations: ",
+          paste(experiment_drugs[["cols"]][["concentrations"]], collapse = ", ")
+        ),
+
+        hr(),
+
+        p("Drug in rows: ", experiment_drugs[["rows"]][["name"]]),
+        p(
+          "Concentrations: ",
+          paste(experiment_drugs[["rows"]][["concentrations"]], collapse = ", ")
         )
       )
     )
-  ))
-
-  card_drug_rows <- reactive(card(
-    card_header(
-      class = "bg-dark",
-      HTML(paste0(
-        "<b>Rows:</b> ",
-        drug_rows()[[input$input_data_sheet_names]]$name
-      ))
-    ),
-    card_body(
-      paste0(
-        "Concentrations: ",
-        paste(
-          drug_rows()[[input$input_data_sheet_names]]$concentrations,
-          collapse = ", "
-        )
-      )
-    )
-  ))
+  })
 
   output$upload_preview_div <- renderUI({
     req(input_data_preview())
     req(input$input_data_sheet_names)
 
     tagList(
-      layout_column_wrap(
-        card_drug_cols(),
-        card_drug_rows()
-      ),
+      upload_drug_card(),
       br(),
       DT::dataTableOutput("input_data_preview_DT")
     )
@@ -923,23 +910,49 @@ server <- function(input, output) {
     })
   })
 
-  output$results_table_DT <-
-    abci_results_display()[[input$results_names_selectInput]] %>%
-    DT::datatable(
-      class = "table-striped cell-border",
-      selection = "none",
-      options = list(dom = "t")
-    ) %>%
-    DT::formatStyle(columns = 0, fontWeight = "bold", `text-align` = "right") %>%
-    DT::renderDataTable()
+  output$results_table_DT <- DT::renderDataTable(
+    DT::formatStyle(
+      table = DT::datatable(
+        data = abci_results_display()[[input$results_names_selectInput]],
+        class = "table-striped cell-border",
+        selection = "none",
+        options = list(dom = "t")
+      ),
+      columns = 0,
+      fontWeight = "bold",
+      `text-align` = "right"
+    )
+  )
+
+  analysis_drug_card <- reactive({
+    experiment_drugs <- drug_info()[[input$results_names_selectInput]]
+    card(
+      card_header(
+        class = "bg-dark",
+        "Information on plate rows and columns"
+      ),
+      card_body(
+        p("Drug in columns: ", experiment_drugs[["cols"]][["name"]]),
+        p(
+          "Concentrations: ",
+          paste(experiment_drugs[["cols"]][["concentrations"]], collapse = ", ")
+        ),
+
+        hr(),
+
+        p("Drug in rows: ", experiment_drugs[["rows"]][["name"]]),
+        p(
+          "Concentrations: ",
+          paste(experiment_drugs[["rows"]][["concentrations"]], collapse = ", ")
+        )
+      )
+    )
+  })
 
   output$results_table_div <- renderUI({
     abci_results_display()
     tagList(
-      layout_column_wrap(
-        card_drug_cols(),
-        card_drug_rows()
-      ),
+      analysis_drug_card(),
       br(),
       DT::dataTableOutput("results_table_DT")
     )
