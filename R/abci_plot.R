@@ -179,6 +179,9 @@ abci_plot_dot <- function(
 
   ggplot(data, aes(.data[[x.drug]], .data[[y.drug]])) +
 
+    geom_vline(xintercept = 1.5, linetype = "dashed") +
+    geom_hline(yintercept = 1.5, linetype = "dashed") +
+
     geom_point(
       aes(
         colour = .data[[col.fill]],
@@ -479,6 +482,9 @@ abci_plot_dot_split <- function(
   dot_plots <- purrr::imap(data_split_scaled, function(d, nm) {
 
     ggplot(d, aes(.data[[x.drug]], .data[[y.drug]])) +
+
+      geom_vline(xintercept = 1.5, linetype = "dashed") +
+      geom_hline(yintercept = 1.5, linetype = "dashed") +
 
       geom_point(aes(colour = col_fill, size = col_size)) +
 
