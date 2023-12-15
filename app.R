@@ -437,9 +437,10 @@ ui <- page_fluid(
               " pages to learn more."
             ),
             HTML(paste0(
-              "<p class='mb-auto'>You can preview the results of your experiments using the ",
-              "table to the right, download the results, or continue to ",
-              "<b>Visualization</b> using the buttons below.</p>"
+              "<p class='mb-auto'>You can preview the results of your ",
+              "experiments using the table to the right, download the ",
+              "results, or continue to <b>Visualization</b> using the buttons ",
+              "below.</p>"
             )),
 
             disabled(
@@ -499,15 +500,15 @@ ui <- page_fluid(
             open = NA,
 
             HTML(paste0(
-              "<p>Visualize the ABCI results using <b>tile</b> or <b>dot</b> ",
-              "plots. The <b>split tile</b> and <b>split dot</b> options ",
-              "split the positive and negative ABCI values into two different ",
-              "plots, for visual simplicity.</p>"
+              "<p>Visualize the ABCI results using <b>dot</b> or <b>tile</b> ",
+              "plots. The <b>split</b> versions separate the positive and ",
+              "negative ABCI values into two different plots, for visual ",
+              "simplicity.</p>"
             )),
 
             HTML(paste0(
-              "<p>Use the <b>line</b> plot to visualize antimicrobial ",
-              "activity for any subset of concentrations.</p>"
+              "<p>Alternatively one can use the <b>line</b> plot to visualize ",
+              "antimicrobial activity for any subset of concentrations.</p>"
             )),
 
             disabled(
@@ -605,8 +606,8 @@ ui <- page_fluid(
             ),
             p(
               class = "lead",
-              "If you encounter any bugs or experience any issues, you can let ",
-              "us know by submitting an issue at our ",
+              "If you encounter any bugs or experience any issues, you can ",
+              "let us know by submitting an issue at our ",
               a(
                 href = "https://github.com/hancockinformatics/ShinyABCi",
                 "Github page",
@@ -1047,7 +1048,34 @@ server <- function(input, output) {
   # Visualization ---------------------------------------------------------
 
 
-  # |- Reset --------------------------------------------------------------
+  # |- Buttons ------------------------------------------------------------
+
+  observeEvent(input$visualize_your_results, {
+    updateNavbarPage(inputId  = "navbar", selected = "visualization")
+
+    enable("reset")
+    enable_button(
+      "create_plot",
+      paste0(
+        "Click to generate a new plot, or to update an existing plot after ",
+        "changing the inputs"
+      )
+    )
+  })
+
+  observeEvent({
+    input$visualize_tabs
+    abci_plot_data()
+  }, {
+    enable("reset")
+    enable_button(
+      "create_plot",
+      paste0(
+        "Click to generate a new plot, or to update an existing plot after ",
+        "changing the inputs"
+      )
+    )
+  })
 
   observeEvent(input$reset, {
     showModal(
@@ -1104,20 +1132,9 @@ server <- function(input, output) {
   })
 
 
-  # |- Setup --------------------------------------------------------------
+  # |- Reactive values/inputs ---------------------------------------------
 
-  observeEvent(input$visualize_your_results, {
-    updateNavbarPage(inputId  = "navbar", selected = "visualization")
-
-    enable("reset")
-    enable_button(
-      "create_plot",
-      paste0(
-        "Click to generate a new plot, or to update an existing plot after ",
-        "changing the inputs"
-      )
-    )
-  })
+  plot_type <- reactive(input$visualize_tabs)
 
   abci_plot_data <- reactive(abci_results())
 
@@ -1130,31 +1147,97 @@ server <- function(input, output) {
     list(n_cols, n_rows)
   })
 
-  observeEvent({
-    input$visualize_tabs
-    abci_plot_data()
-  }, {
-
-    enable("reset")
-    enable_button(
-      "create_plot",
-      paste0(
-        "Click to generate a new plot, or to update an existing plot after ",
-        "changing the inputs"
+  axis_titles <- reactive(
+    list(
+      "cols" = ifelse(
+        length(unique(abci_plot_data()$cols)) == 1,
+        unique(abci_plot_data()$cols),
+        "Drug A"
+      ),
+      "rows" = ifelse(
+        length(unique(abci_plot_data()$rows)) == 1,
+        unique(abci_plot_data()$rows),
+        "Drug B"
       )
+    )
+  )
+
+  plot_legend_ui <- reactive(plot_legends[[plot_type()]])
+
+  observeEvent(input$legend_here, {
+    showNotification(
+      type = "default",
+      duration = 10,
+      ui = HTML(paste0(
+        "<h4 class='alert-heading'>Whoa!</h4>",
+        "<p class='mb-0'>Sorry, that link doesn't lead anywhere... yet...</p>"
+      ))
     )
   })
 
 
-  # |- Reactive inputs ----------------------------------------------------
+  # |-- Line include options ----------------------------------------------
 
-  conc_columns <- reactive(
-    grep(
-      x = colnames(abci_plot_data()),
-      pattern = "conc",
-      value = TRUE
+  observeEvent(input$plot_line_swap, {
+    req(abci_plot_data())
+
+    line_column <- ifelse(
+      input$plot_line_swap,
+      "cols_conc",
+      "rows_conc"
     )
+
+    unique_conc <- abci_plot_data() %>%
+      pull(line_column) %>%
+      unique()
+
+    updateSelectInput(
+      inputId = "plot_line_line_include",
+      choices = unique_conc,
+      selected = unique_conc
+    )
+  })
+
+
+  # |-- Preview colours ---------------------------------------------------
+
+  modal_colours <- lapply(
+    list(
+      "abci" = modalDialog(
+        title = "ABCI colour palettes",
+        easyClose = TRUE,
+        size = "l",
+        HTML("<img src='abci_palettes.png' class='center'>")
+      ),
+      "viridis" = modalDialog(
+        title = "Line colour palettes",
+        easyClose = TRUE,
+        size = "l",
+        HTML("<img src='viridis_palettes.png' class='center'>")
+      )
+    ),
+    tagAppendAttributes,
+    class = "modal-dialog-centered"
   )
+
+  observeEvent(input$tile_preview_colours, {
+    showModal(modal_colours$abci)
+  })
+  observeEvent(input$tile_split_preview_colours, {
+    showModal(modal_colours$abci)
+  })
+  observeEvent(input$dot_preview_colours, {
+    showModal(modal_colours$abci)
+  })
+  observeEvent(input$dot_split_preview_colours, {
+    showModal(modal_colours$abci)
+  })
+  observeEvent(input$line_preview_colours, {
+    showModal(modal_colours$viridis)
+  })
+
+
+  # |- Plot inputs UI -----------------------------------------------------
 
 
   # |-- Dot ---------------------------------------------------------------
@@ -1182,7 +1265,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_dot_x_text",
           label = NULL,
-          value = "Drug A"
+          value = axis_titles()[["cols"]]
         )
       ),
 
@@ -1206,7 +1289,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_dot_y_text",
           label = NULL,
-          value = "Drug B"
+          value = axis_titles()[["rows"]]
         )
       ),
 
@@ -1299,8 +1382,25 @@ server <- function(input, output) {
   observeEvent(input$plot_dot_swap, {
     if (input$plot_dot_swap) {
       update_switch("plot_dot_swap", label = "On")
+      updateTextInput(
+        inputId = "plot_dot_x_text",
+        value = axis_titles()[["rows"]]
+      )
+      updateTextInput(
+        inputId = "plot_dot_y_text",
+        value = axis_titles()[["cols"]]
+      )
+
     } else {
       update_switch("plot_dot_swap", label = "Off")
+      updateTextInput(
+        inputId = "plot_dot_x_text",
+        value = axis_titles()[["cols"]]
+      )
+      updateTextInput(
+        inputId = "plot_dot_y_text",
+        value = axis_titles()[["rows"]]
+      )
     }
   })
 
@@ -1330,7 +1430,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_dot_split_x_text",
           label = NULL,
-          value = "Drug A"
+          value = axis_titles()[["cols"]]
         )
       ),
 
@@ -1354,7 +1454,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_dot_split_y_text",
           label = NULL,
-          value = "Drug B"
+          value = axis_titles()[["rows"]]
         )
       ),
 
@@ -1459,8 +1559,25 @@ server <- function(input, output) {
   observeEvent(input$plot_dot_split_swap, {
     if (input$plot_dot_split_swap) {
       update_switch("plot_dot_split_swap", label = "On")
+      updateTextInput(
+        inputId = "plot_dot_split_x_text",
+        value = axis_titles()[["rows"]]
+      )
+      updateTextInput(
+        inputId = "plot_dot_split_y_text",
+        value = axis_titles()[["cols"]]
+      )
+
     } else {
       update_switch("plot_dot_split_swap", label = "Off")
+      updateTextInput(
+        inputId = "plot_dot_split_x_text",
+        value = axis_titles()[["cols"]]
+      )
+      updateTextInput(
+        inputId = "plot_dot_split_y_text",
+        value = axis_titles()[["rows"]]
+      )
     }
   })
 
@@ -1498,7 +1615,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_tile_x_text",
           label = NULL,
-          value = "Drug A"
+          value = axis_titles()[["cols"]]
         )
       ),
 
@@ -1522,7 +1639,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_tile_y_text",
           label = NULL,
-          value = "Drug B"
+          value = axis_titles()[["rows"]]
         )
       ),
 
@@ -1641,8 +1758,25 @@ server <- function(input, output) {
   observeEvent(input$plot_tile_swap, {
     if (input$plot_tile_swap) {
       update_switch("plot_tile_swap", label = "On")
+      updateTextInput(
+        inputId = "plot_tile_x_text",
+        value = axis_titles()[["rows"]]
+      )
+      updateTextInput(
+        inputId = "plot_tile_y_text",
+        value = axis_titles()[["cols"]]
+      )
+
     } else {
       update_switch("plot_tile_swap", label = "Off")
+      updateTextInput(
+        inputId = "plot_tile_x_text",
+        value = axis_titles()[["cols"]]
+      )
+      updateTextInput(
+        inputId = "plot_tile_y_text",
+        value = axis_titles()[["rows"]]
+      )
     }
   })
 
@@ -1672,7 +1806,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_tile_split_x_text",
           label = NULL,
-          value = "Drug A"
+          value = axis_titles()[["cols"]]
         )
       ),
 
@@ -1696,7 +1830,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_tile_split_y_text",
           label = NULL,
-          value = "Drug B"
+          value = axis_titles()[["rows"]]
         )
       ),
 
@@ -1819,8 +1953,25 @@ server <- function(input, output) {
   observeEvent(input$plot_tile_split_swap, {
     if (input$plot_tile_split_swap) {
       update_switch("plot_tile_split_swap", label = "On")
+      updateTextInput(
+        inputId = "plot_tile_split_x_text",
+        value = axis_titles()[["rows"]]
+      )
+      updateTextInput(
+        inputId = "plot_tile_split_y_text",
+        value = axis_titles()[["cols"]]
+      )
+
     } else {
       update_switch("plot_tile_split_swap", label = "Off")
+      updateTextInput(
+        inputId = "plot_tile_split_x_text",
+        value = axis_titles()[["cols"]]
+      )
+      updateTextInput(
+        inputId = "plot_tile_split_y_text",
+        value = axis_titles()[["rows"]]
+      )
     }
   })
 
@@ -1867,7 +2018,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_line_x_text",
           label = NULL,
-          value = "Drug A"
+          value = axis_titles()[["cols"]]
         )
       ),
 
@@ -1905,7 +2056,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_line_line_text",
           label = NULL,
-          value = "Drug B"
+          value = axis_titles()[["rows"]]
         )
       ),
 
@@ -2023,8 +2174,25 @@ server <- function(input, output) {
   observeEvent(input$plot_line_swap, {
     if (input$plot_line_swap) {
       update_switch("plot_line_swap", label = "On")
+      updateTextInput(
+        inputId = "plot_line_x_text",
+        value = axis_titles()[["rows"]]
+      )
+      updateTextInput(
+        inputId = "plot_line_line_text",
+        value = axis_titles()[["cols"]]
+      )
+
     } else {
       update_switch("plot_line_swap", label = "Off")
+      updateTextInput(
+        inputId = "plot_line_x_text",
+        value = axis_titles()[["cols"]]
+      )
+      updateTextInput(
+        inputId = "plot_line_line_text",
+        value = axis_titles()[["rows"]]
+      )
     }
   })
 
@@ -2034,88 +2202,6 @@ server <- function(input, output) {
     } else {
       update_switch("plot_line_jitter_x", label = "Off")
     }
-  })
-
-
-  # |- Input updates and observers ----------------------------------------
-
-  plot_type <- reactive(input$visualize_tabs)
-
-
-  # |-- Plot-specific legends ---------------------------------------------
-
-  plot_legend_ui <- reactive(plot_legends[[plot_type()]])
-
-  observeEvent(input$legend_here, {
-    showNotification(
-      type = "default",
-      duration = 10,
-      ui = HTML(paste0(
-        "<h4 class='alert-heading'>Whoa!</h4>",
-        "<p class='mb-0'>Sorry, that link doesn't lead anywhere... yet...</p>"
-      ))
-    )
-  })
-
-
-  # |-- Line include options ----------------------------------------------
-
-  observeEvent(input$plot_line_swap, {
-    req(abci_plot_data())
-
-    line_column <- ifelse(
-      input$plot_line_swap,
-      conc_columns()[1],
-      conc_columns()[2]
-    )
-
-    unique_conc <- abci_plot_data() %>%
-      pull(line_column) %>%
-      unique()
-
-    updateSelectInput(
-      inputId = "plot_line_line_include",
-      choices = unique_conc,
-      selected = unique_conc
-    )
-  })
-
-
-  # |-- Preview colours ---------------------------------------------------
-
-  modal_colours <- lapply(
-    list(
-      "abci" = modalDialog(
-        title = "ABCI colour palettes",
-        easyClose = TRUE,
-        size = "l",
-        HTML("<img src='abci_palettes.png' class='center'>")
-      ),
-      "viridis" = modalDialog(
-        title = "Line colour palettes",
-        easyClose = TRUE,
-        size = "l",
-        HTML("<img src='viridis_palettes.png' class='center'>")
-      )
-    ),
-    tagAppendAttributes,
-    class = "modal-dialog-centered"
-  )
-
-  observeEvent(input$tile_preview_colours, {
-    showModal(modal_colours$abci)
-  })
-  observeEvent(input$tile_split_preview_colours, {
-    showModal(modal_colours$abci)
-  })
-  observeEvent(input$dot_preview_colours, {
-    showModal(modal_colours$abci)
-  })
-  observeEvent(input$dot_split_preview_colours, {
-    showModal(modal_colours$abci)
-  })
-  observeEvent(input$line_preview_colours, {
-    showModal(modal_colours$viridis)
   })
 
 
@@ -2131,13 +2217,13 @@ server <- function(input, output) {
           data = isolate(abci_plot_data()),
           x.drug = ifelse(
             isolate(input$plot_dot_swap),
-            conc_columns()[2],
-            conc_columns()[1]
+            "rows_conc",
+            "cols_conc"
           ),
           y.drug = ifelse(
             isolate(input$plot_dot_swap),
-            conc_columns()[1],
-            conc_columns()[2]
+            "cols_conc",
+            "rows_conc"
           ),
           col.fill = "abci_avg",
           col.size = "effect_avg",
@@ -2167,13 +2253,13 @@ server <- function(input, output) {
           data = isolate(abci_plot_data()),
           x.drug = ifelse(
             isolate(input$plot_dot_split_swap),
-            conc_columns()[2],
-            conc_columns()[1]
+            "rows_conc",
+            "cols_conc"
           ),
           y.drug = ifelse(
             isolate(input$plot_dot_split_swap),
-            conc_columns()[1],
-            conc_columns()[2]
+            "cols_conc",
+            "rows_conc"
           ),
           col.fill = "abci_avg",
           col.size = "effect_avg",
@@ -2203,13 +2289,13 @@ server <- function(input, output) {
           data = isolate(abci_plot_data()),
           x.drug = ifelse(
             isolate(input$plot_tile_swap),
-            conc_columns()[2],
-            conc_columns()[1]
+            "rows_conc",
+            "cols_conc"
           ),
           y.drug = ifelse(
             isolate(input$plot_tile_swap),
-            conc_columns()[1],
-            conc_columns()[2]
+            "cols_conc",
+            "rows_conc"
           ),
           col.fill = "abci_avg",
           col.analysis = "assay",
@@ -2234,13 +2320,13 @@ server <- function(input, output) {
           data = isolate(abci_plot_data()),
           x.drug = ifelse(
             isolate(input$plot_tile_split_swap),
-            conc_columns()[2],
-            conc_columns()[1]
+            "rows_conc",
+            "cols_conc"
           ),
           y.drug = ifelse(
             isolate(input$plot_tile_split_swap),
-            conc_columns()[1],
-            conc_columns()[2]
+            "cols_conc",
+            "rows_conc"
           ),
           col.fill = "abci_avg",
           col.analysis = "assay",
@@ -2278,13 +2364,13 @@ server <- function(input, output) {
           plot.type = isolate(input$plot_line_type),
           x.drug = ifelse(
             isolate(input$plot_line_swap),
-            conc_columns()[2],
-            conc_columns()[1]
+            "rows_conc",
+            "cols_conc"
           ),
           line.drug = ifelse(
             isolate(input$plot_line_swap),
-            conc_columns()[1],
-            conc_columns()[2]
+            "cols_conc",
+            "rows_conc"
           ),
           col.data = "bio_normal",
           col.analysis = "assay",
