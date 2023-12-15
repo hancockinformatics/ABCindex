@@ -354,7 +354,7 @@ ui <- page_fluid(
 
             actionButton(
               inputId = "load_example_data",
-              class = "btn btn-info btn-tooltip",
+              class = "btn btn-info btn-tooltip mb-auto",
               label = "Load example data",
               width = "50%",
               title = "Click here to try our example data"
@@ -363,7 +363,7 @@ ui <- page_fluid(
             disabled(
               actionButton(
                 inputId = "proceed_abci_calculations",
-                class = "mt-auto btn btn-primary btn-tooltip",
+                class = "btn btn-primary btn-tooltip mt-auto",
                 label = "Proceed to ABCI calculations",
                 icon = icon("arrow-right"),
                 title = paste0(
@@ -376,6 +376,7 @@ ui <- page_fluid(
 
           layout_column_wrap(
             width = 1/2,
+            fill = FALSE,
             uiOutput("upload_input_names_card"),
             uiOutput("upload_drug_card_UI")
           ),
@@ -436,7 +437,7 @@ ui <- page_fluid(
               " pages to learn more."
             ),
             HTML(paste0(
-              "<p>You can preview the results of your experiments using the ",
+              "<p class='mb-auto'>You can preview the results of your experiments using the ",
               "table to the right, download the results, or continue to ",
               "<b>Visualization</b> using the buttons below.</p>"
             )),
@@ -471,6 +472,7 @@ ui <- page_fluid(
 
           layout_column_wrap(
             width = 1/2,
+            fill = FALSE,
             uiOutput("results_names_card"),
             uiOutput("analysis_drug_card_UI")
           ),
@@ -855,14 +857,12 @@ server <- function(input, output) {
   })
 
   output$upload_drug_card_UI <- renderUI({
-    req(input_data_preview())
-    req(input$upload_input_names_selector)
+    req(input_data_preview(), input$upload_input_names_selector)
     upload_drug_card()
   })
 
   output$upload_input_preview <- renderUI({
-    req(input_data_preview())
-    req(input$upload_input_names_selector)
+    req(input_data_preview(), input$upload_input_names_selector)
     DT::dataTableOutput("input_data_preview_DT")
   })
 
@@ -1011,12 +1011,12 @@ server <- function(input, output) {
   })
 
   output$analysis_drug_card_UI <- renderUI({
-    abci_results_display()
+    req(abci_results_display(), input$results_names_selector)
     analysis_drug_card()
   })
 
   output$results_table_div <- renderUI({
-    abci_results_display()
+    req(abci_results_display(), input$results_names_selector)
     DT::dataTableOutput("results_table_DT")
   })
 
@@ -1146,7 +1146,7 @@ server <- function(input, output) {
   })
 
 
-  # |- Set up reactive values and inputs ----------------------------------
+  # |- Reactive inputs ----------------------------------------------------
 
   conc_columns <- reactive(
     grep(
@@ -1182,7 +1182,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_dot_x_text",
           label = NULL,
-          value = "Column concentrations"
+          value = "Drug A"
         )
       ),
 
@@ -1206,7 +1206,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_dot_y_text",
           label = NULL,
-          value = "Row concentrations"
+          value = "Drug B"
         )
       ),
 
@@ -1330,7 +1330,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_dot_split_x_text",
           label = NULL,
-          value = "Column concentrations"
+          value = "Drug A"
         )
       ),
 
@@ -1354,7 +1354,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_dot_split_y_text",
           label = NULL,
-          value = "Row concentrations"
+          value = "Drug B"
         )
       ),
 
@@ -1498,7 +1498,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_tile_x_text",
           label = NULL,
-          value = "Column concentrations"
+          value = "Drug A"
         )
       ),
 
@@ -1522,7 +1522,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_tile_y_text",
           label = NULL,
-          value = "Row concentrations"
+          value = "Drug B"
         )
       ),
 
@@ -1672,7 +1672,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_tile_split_x_text",
           label = NULL,
-          value = "Column concentrations"
+          value = "Drug A"
         )
       ),
 
@@ -1696,7 +1696,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_tile_split_y_text",
           label = NULL,
-          value = "Row concentrations"
+          value = "Drug B"
         )
       ),
 
@@ -1867,7 +1867,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_line_x_text",
           label = NULL,
-          value = "Column concentrations"
+          value = "Drug A"
         )
       ),
 
@@ -1905,7 +1905,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_line_line_text",
           label = NULL,
-          value = "Row concentrations"
+          value = "Drug B"
         )
       ),
 
