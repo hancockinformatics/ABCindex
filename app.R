@@ -335,8 +335,8 @@ ui <- page_fluid(
               "separate panels in the final plots, while replicates within an ",
               "experiment will be averaged. You can use the following link to ",
               downloadLink("download_template", label = "download a template"),
-              "of the required input format. If required, subtract any 'blank' ",
-              "wells before uploading."
+              "of the required input format. If required, subtract any ",
+              "'blank' wells before uploading."
             ),
 
             p(
@@ -441,15 +441,16 @@ ui <- page_fluid(
               "<b>Visualization</b> using the buttons below.</p>"
             )),
 
-            uiOutput("results_names"),
-
             disabled(
               downloadButton(
                 outputId = "download_handler",
                 label = "Download your results",
                 class = "btn btn-success align-items-center mt-auto",
                 style = "width: 50%",
-                title = "Once your data is analyzed, you can download the results here"
+                title = paste0(
+                  "Once your data is analyzed, you can download the results ",
+                  "here"
+                )
               )
             ),
 
@@ -460,11 +461,19 @@ ui <- page_fluid(
                 class = "btn btn-primary btn-tooltip align-items-center",
                 icon = icon("arrow-right"),
                 width = "100%",
-                title = "Once your data is analyzed, you can proceed to the Visualization page"
+                title = paste0(
+                  "Once your data is analyzed, you can proceed to the ",
+                  "Visualization page"
+                )
               )
             )
           ),
 
+          layout_column_wrap(
+            width = 1/2,
+            uiOutput("results_names_card"),
+            uiOutput("analysis_drug_card_UI")
+          ),
           uiOutput("results_table_div")
         )
       )
@@ -805,9 +814,9 @@ server <- function(input, output) {
       card_body(
         p(
           "Use the dropdown to choose an uploaded experiment to preview. The ",
-          "card to the right displays some information, while the table below ",
-          "shows the loaded data. Make sure everything looks OK before ",
-          "proceeding."
+          "card to the right displays some information gathered from the ",
+          "experiment, while the table below shows the loaded data. Make sure ",
+          "everything looks OK before proceeding."
         ),
         selectInput(
           inputId = "upload_input_names_selector",
@@ -900,7 +909,7 @@ server <- function(input, output) {
   })
 
 
-  # |- Display results table ----------------------------------------------
+  # |- Create results table -----------------------------------------------
 
   abci_results_display <- reactive({
     req(abci_results())
@@ -925,7 +934,7 @@ server <- function(input, output) {
   output$results_table_DT <- DT::renderDataTable(
     DT::formatStyle(
       table = DT::datatable(
-        data = abci_results_display()[[input$results_names_selectInput]],
+        data = abci_results_display()[[input$results_names_selector]],
         class = "table-striped cell-border",
         selection = "none",
         options = list(dom = "t")
@@ -936,9 +945,49 @@ server <- function(input, output) {
     )
   )
 
+
+  # |- Create and render cards --------------------------------------------
+
+  observeEvent(input$perform_abci_calculations, {
+    req(abci_results(), abci_results_display())
+
+    enable_button(
+      "download_handler",
+      "Click here to download your results as a CSV file"
+    )
+    enable_button(
+      "visualize_your_results",
+      "Click here to proceed to the Visualization page"
+    )
+
+    output$results_names_card <- renderUI(
+      card(
+        height = 350,
+        card_header(
+          class = "bg-dark",
+          "Preview ABCI results by experiment"
+        ),
+        card_body(
+          p(
+            "Use the dropdown to see the calculated ABCI values for each ",
+            "uploaded experiment. The card to the right shows information ",
+            "about the chosen experiment."
+          ),
+          selectInput(
+            inputId = "results_names_selector",
+            label = NULL,
+            choices = names(abci_results_display()),
+            width = "inherit"
+          )
+        )
+      )
+    )
+  })
+
   analysis_drug_card <- reactive({
-    experiment_drugs <- drug_info()[[input$results_names_selectInput]]
+    experiment_drugs <- drug_info()[[input$results_names_selector]]
     card(
+      height = 350,
       card_header(
         class = "bg-dark",
         "Information on plate rows and columns"
@@ -961,17 +1010,18 @@ server <- function(input, output) {
     )
   })
 
+  output$analysis_drug_card_UI <- renderUI({
+    abci_results_display()
+    analysis_drug_card()
+  })
+
   output$results_table_div <- renderUI({
     abci_results_display()
-    tagList(
-      analysis_drug_card(),
-      br(),
-      DT::dataTableOutput("results_table_DT")
-    )
+    DT::dataTableOutput("results_table_DT")
   })
 
 
-  # |- Update the sidebar -------------------------------------------------
+  # |- Enable results download --------------------------------------------
 
   output$download_handler <- downloadHandler(
     filename = function() {
@@ -993,35 +1043,6 @@ server <- function(input, output) {
     }
   )
 
-  observeEvent(input$perform_abci_calculations, {
-    req(abci_results(), abci_results_display())
-
-    enable_button(
-      "download_handler",
-      "Click here to download your results as a CSV file"
-    )
-    enable_button(
-      "visualize_your_results",
-      "Click here to proceed to the Visualization page"
-    )
-
-    output$results_names <- renderUI(
-      div(
-        class = "mb-auto",
-        hr(),
-        div(
-          class = "mb-3",
-          selectInput(
-            inputId = "results_names_selectInput",
-            label = strong("Select an uploaded experiment to see the results:"),
-            choices = names(abci_results_display())
-          )
-        ),
-        p("Note that only the first plate/replicate is previewed.")
-      )
-    )
-  })
-
 
   # Visualization ---------------------------------------------------------
 
@@ -1031,7 +1052,10 @@ server <- function(input, output) {
   observeEvent(input$reset, {
     showModal(
       modalDialog(
-        "Are you sure you want to reset the app? All results and plots will be lost!",
+        paste0(
+          "Are you sure you want to reset the app? All results and plots will ",
+          "be lost!"
+        ),
         title = "Reset ShinyABCi",
         footer = tagList(
           modalButton(label = "Cancel"),
@@ -1052,7 +1076,7 @@ server <- function(input, output) {
 
     disable_button(
       "proceed_abci_calculations",
-      "Upload your plate data, or load our example data, then click here to analyze"
+      "Load your plate data, or our example data, then click here to analyze"
     )
     disable_button(
       "download_handler",
