@@ -8,6 +8,11 @@
   font-size: 22px;
 }
 
+/* Allow disabled buttons to have tooltips */
+.btn:disabled, .btn.disabled, fieldset:disabled .btn {
+  pointer-events: auto;
+}
+
 /* Allow for centering of images */
 .center {
   display: block;
@@ -43,6 +48,11 @@
 .progress .progress-bar {
   font-size: 15px;
   line-height: 18px;
+}
+
+/* Adding padding to radio-inline elements */
+.radio-inline {
+  padding-right: 0.5em;
 }
 
 /* Customize shiny notifications */
