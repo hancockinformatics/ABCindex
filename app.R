@@ -43,6 +43,43 @@ plot_scales <- c(
   "Only label the outermost axis" = "fixed"
 )
 
+tooltips <- list(
+  abci_colours = paste0(
+    "Colour palette for the ABCI values, designed to highlight the most ",
+    "relevant differences. Click to see the options."
+  ),
+  x_axis_title = "Title for the X axis; applies to the entire plot",
+  x_axis_digits =
+    "Number of decimal places to show for concentrations on the X axis",
+  y_axis_title = "Title for the Y axis; applies to the entire plot",
+  y_axis_digits =
+    "Number of decimal places to show for concentrations on the Y axis",
+  size_legend = "Title of the size legend in dot plots",
+  draw_activity = paste0(
+    "Include line(s) to indicate activity thresholds for individual ",
+    "treatments (e.g., MIC, MBIC, MBEC). Defaults to ≥50% killing."
+  ),
+  highlight = paste0(
+    "Draw a symbol on tiles with low effect when treatments are combined. ",
+    "Defaults to <50% killing."
+  ),
+  swap_x_y = "Turn on to swap the values plotted on the X and Y axis",
+  filter = paste0(
+    "Choose whether to include ABCI values close to 0 (Loose) or hide them ",
+    "(Strict)"
+  ),
+  axis_labels =
+    "Across the plot panels, should the X and Y axis labels vary or be the same?",
+  activity_val = paste0(
+    "Draw a line(s) when individual treatments reach the indicated ",
+    "percentage (0.5 = 50% killing). Applies to X and Y axis."
+  ),
+  highlight_val = paste0(
+    "Draw a symbol on combined treatment cells that kill less than the ",
+    "indicated percentage (0.5 = 50% killing)."
+  )
+)
+
 
 # |- Plot legends ---------------------------------------------------------
 
@@ -1247,10 +1284,7 @@ server <- function(input, output) {
       br(),
       wrap_selector(
         label = actionLink("dot_preview_colours", label = "ABCI colours"),
-        label_title = paste0(
-          "Colour palette for the ABCI values, designed to highlight the most ",
-          "relevant differences. Click to see the options."
-        ),
+        label_title = tooltips$abci_colours,
         selectInput(
           inputId = "plot_dot_colour_palette",
           label = NULL,
@@ -1261,7 +1295,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis title",
-        label_title = "Title for the X axis; applies to the entire plot",
+        label_title = tooltips$x_axis_title,
         textInput(
           inputId = "plot_dot_x_text",
           label = NULL,
@@ -1271,8 +1305,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis digits",
-        label_title =
-          "Number of decimal places to show for concentrations the X axis",
+        label_title = tooltips$x_axis_digits,
         numericInput(
           inputId = "plot_dot_x_decimal",
           label = NULL,
@@ -1285,7 +1318,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y axis title",
-        label_title = "Title for the Y axis; applies to the entire plot",
+        label_title = tooltips$y_axis_title,
         textInput(
           inputId = "plot_dot_y_text",
           label = NULL,
@@ -1295,8 +1328,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y axis digits",
-        label_title =
-          "Number of decimal places to show for concentrations the Y axis",
+        label_title = tooltips$y_axis_digits,
         numericInput(
           inputId = "plot_dot_y_decimal",
           label = NULL,
@@ -1309,7 +1341,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Size legend title",
-        label_title = "Title of the size legend in dot plots",
+        label_title = tooltips$size_legend,
         textInput(
           inputId = "plot_dot_size_text",
           label = NULL,
@@ -1319,10 +1351,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Draw activity threshold",
-        label_title = paste0(
-          "Include lines to indicate activity thresholds for individual ",
-          "treatments (e.g., MIC, MBIC, MBEC). Defaults to ≥50% killing."
-        ),
+        label_title = tooltips$draw_activity,
         checkboxGroupInput(
           inputId = "plot_dot_mic_lines",
           label = NULL,
@@ -1339,7 +1368,7 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Swap X and Y",
-            label_title = "Turn on to swap the values plotted on the X and Y axis",
+            label_title = tooltips$swap_x_y,
             input_switch(
               id = "plot_dot_swap",
               label = "Off",
@@ -1347,13 +1376,9 @@ server <- function(input, output) {
             )
           ),
 
-
           wrap_selector(
             label = "Axis labels",
-            label_title = paste0(
-              "Across the plot panels, should the X and Y axis labels vary ",
-              "or be the same?"
-            ),
+            label_title = tooltips$axis_labels,
             selectInput(
               inputId = "plot_dot_scales",
               label = NULL,
@@ -1364,10 +1389,7 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Activity threshold",
-            label_title = paste0(
-              "Draw a line when individual treatments reach the indicated ",
-              "percentage (0.5 = 50% killing). Applies to X and Y axis."
-            ),
+            label_title = tooltips$activity_val,
             numericInput(
               inputId = "plot_dot_mic_threshold",
               label = NULL,
@@ -1412,10 +1434,7 @@ server <- function(input, output) {
       br(),
       wrap_selector(
         label = actionLink("dot_split_preview_colours", label = "ABCI colours"),
-        label_title = paste0(
-          "Colour palette for the ABCI values, designed to highlight the most ",
-          "relevant differences. Click to see the options."
-        ),
+        label_title = tooltips$abci_colours,
         selectInput(
           inputId = "plot_dot_split_colour_palette",
           label = NULL,
@@ -1426,7 +1445,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis title",
-        label_title = "Title for the X axis; applies to the entire plot",
+        label_title = tooltips$x_axis_title,
         textInput(
           inputId = "plot_dot_split_x_text",
           label = NULL,
@@ -1436,8 +1455,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis digits",
-        label_title =
-          "Number of decimal places to show for concentrations the X axis",
+        label_title = tooltips$x_axis_digits,
         numericInput(
           inputId = "plot_dot_split_x_decimal",
           label = NULL,
@@ -1450,7 +1468,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y axis title",
-        label_title = "Title for the Y axis; applies to the entire plot",
+        label_title = tooltips$y_axis_title,
         textInput(
           inputId = "plot_dot_split_y_text",
           label = NULL,
@@ -1460,8 +1478,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y axis digits",
-        label_title =
-          "Number of decimal places to show for concentrations the Y axis",
+        label_title = tooltips$y_axis_digits,
         numericInput(
           inputId = "plot_dot_split_y_decimal",
           label = NULL,
@@ -1474,7 +1491,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Size legend title",
-        label_title = "Title of the size legend in dot plots",
+        label_title = tooltips$size_legend,
         textInput(
           inputId = "plot_dot_split_size_text",
           label = NULL,
@@ -1484,10 +1501,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Draw activity threshold",
-        label_title = paste0(
-          "Include lines to indicate activity thresholds for individual ",
-          "treatments (e.g., MIC, MBIC, MBEC). Defaults to ≥50% killing."
-        ),
+        label_title = tooltips$draw_activity,
         checkboxGroupInput(
           inputId = "plot_dot_split_mic_lines",
           label = NULL,
@@ -1504,7 +1518,7 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Swap X and Y",
-            label_title = "Turn on to swap the values plotted on the X and Y axis",
+            label_title = tooltips$swap_x_y,
             input_switch(
               id = "plot_dot_split_swap",
               label = "Off",
@@ -1514,10 +1528,7 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Filter stringency",
-            label_title = paste0(
-              "Choose whether to include ABCI values close to 0 (Loose) or ",
-              "hide them (Strict)."
-            ),
+            label_title = tooltips$filter,
             input_switch(
               id = "plot_dot_split_strict",
               label = "Strict",
@@ -1527,10 +1538,7 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Axis labels",
-            label_title = paste0(
-              "Across the plot panels, should the X and Y axis labels vary ",
-              "or be the same?"
-            ),
+            label_title = tooltips$axis_labels,
             selectInput(
               inputId = "plot_dot_split_scales",
               label = NULL,
@@ -1541,10 +1549,7 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Activity threshold",
-            label_title = paste0(
-              "Draw a line when individual treatments reach the indicated ",
-              "percentage (0.5 = 50% killing). Applies to X and Y axis."
-            ),
+            label_title = tooltips$activity_val,
             numericInput(
               inputId = "plot_dot_split_mic_threshold",
               label = NULL,
@@ -1597,10 +1602,7 @@ server <- function(input, output) {
       br(),
       wrap_selector(
         label = actionLink("tile_preview_colours", label = "ABCI colours"),
-        label_title = paste0(
-          "Colour palette for the ABCI values, designed to highlight the most ",
-          "relevant differences. Click to see the options."
-        ),
+        label_title = tooltips$abci_colours,
         selectInput(
           inputId = "plot_tile_colour_palette",
           label = NULL,
@@ -1611,7 +1613,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis title",
-        label_title = "Title for the X axis; applies to the entire plot",
+        label_title = tooltips$x_axis_title,
         textInput(
           inputId = "plot_tile_x_text",
           label = NULL,
@@ -1621,8 +1623,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis digits",
-        label_title =
-          "Number of decimal places to show for concentrations on the X axis",
+        label_title = tooltips$x_axis_digits,
         numericInput(
           inputId = "plot_tile_x_decimal",
           label = NULL,
@@ -1635,7 +1636,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y axis title",
-        label_title = "Title for the Y axis; applies to the entire plot",
+        label_title = tooltips$y_axis_title,
         textInput(
           inputId = "plot_tile_y_text",
           label = NULL,
@@ -1645,8 +1646,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y axis digits",
-        label_title =
-          "Number of decimal places to show for concentrations on the Y axis",
+        label_title = tooltips$y_axis_digits,
         numericInput(
           inputId = "plot_tile_y_decimal",
           label = NULL,
@@ -1659,10 +1659,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Draw activity threshold",
-        label_title = paste0(
-          "Include lines to indicate activity thresholds for individual ",
-          "treatments (e.g., MIC, MBIC, MBEC). Defaults to ≥50% killing."
-        ),
+        label_title = tooltips$draw_activity,
         checkboxGroupInput(
           inputId = "plot_tile_mic_lines",
           label = NULL,
@@ -1674,10 +1671,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Highlight low effect",
-        label_title = paste0(
-          "Draw a symbol on tiles with low effect when treatments are ",
-          "combined. Defaults to <50% killing."
-        ),
+        label_title = tooltips$highlight,
         input_switch(
           id = "plot_tile_minflag_toggle",
           label = "On",
@@ -1694,7 +1688,7 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Swap X and Y",
-            label_title = "Turn on to swap the values plotted on the X and Y axis",
+            label_title = tooltips$swap_x_y,
             input_switch(
               id = "plot_tile_swap",
               label = "Off",
@@ -1704,10 +1698,7 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Axis labels",
-            label_title = paste0(
-              "Across the plot panels, should the X and Y axis labels vary ",
-              "or be the same?"
-            ),
+            label_title = tooltips$axis_labels,
             selectInput(
               inputId = "plot_tile_scales",
               label = NULL,
@@ -1717,10 +1708,7 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Activity threshold",
-            label_title = paste0(
-              "Draw a line when individual treatments reach the indicated ",
-              "percentage (0.5 = 50% killing). Applies to X and Y axis."
-            ),
+            label_title = tooltips$activity_val,
             numericInput(
               inputId = "plot_tile_mic_threshold",
               label = NULL,
@@ -1730,10 +1718,7 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Low effect threshold",
-            label_title = paste0(
-              "Draw a symbol on combined treatment cells that kill less than ",
-              "the indicated percentage (0.5 = 50% killing)."
-            ),
+            label_title = tooltips$highlight_val,
             numericInput(
               inputId = "plot_tile_minflag_value",
               label = NULL,
@@ -1788,10 +1773,7 @@ server <- function(input, output) {
       br(),
       wrap_selector(
         label = actionLink("tile_split_preview_colours", label = "ABCI colours"),
-        label_title = paste0(
-          "Colour palette for the ABCI values, designed to highlight the most ",
-          "relevant differences. Click to see the options."
-        ),
+        label_title = tooltips$abci_colours,
         selectInput(
           inputId = "plot_tile_split_colour_palette",
           label = NULL,
@@ -1802,7 +1784,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis title",
-        label_title = "Title for the X axis; applies to the entire plot",
+        label_title = tooltips$x_axis_title,
         textInput(
           inputId = "plot_tile_split_x_text",
           label = NULL,
@@ -1812,8 +1794,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis digits",
-        label_title =
-          "Number of decimal places to show for concentrations the X axis",
+        label_title = tooltips$x_axis_digits,
         numericInput(
           inputId = "plot_tile_split_x_decimal",
           label = NULL,
@@ -1826,7 +1807,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y axis title",
-        label_title = "Title for the Y axis; applies to the entire plot",
+        label_title = tooltips$y_axis_title,
         textInput(
           inputId = "plot_tile_split_y_text",
           label = NULL,
@@ -1836,8 +1817,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y axis digits",
-        label_title =
-          "Number of decimal places to show for concentrations the Y axis",
+        label_title = tooltips$y_axis_digits,
         numericInput(
           inputId = "plot_tile_split_y_decimal",
           label = NULL,
@@ -1850,10 +1830,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Draw activity threshold",
-        label_title = paste0(
-          "Include lines to indicate activity thresholds for individual ",
-          "treatments (e.g., MIC, MBIC, MBEC). Defaults to ≥50% killing."
-        ),
+        label_title = tooltips$draw_activity,
         checkboxGroupInput(
           inputId = "plot_tile_split_mic_lines",
           label = NULL,
@@ -1865,10 +1842,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Highlight low effect",
-        label_title = paste0(
-          "Draw a symbol on tiles with low effect when treatments are ",
-          "combined. Defaults to <50% killing."
-        ),
+        label_title = tooltips$highlight,
         input_switch(
           id = "plot_tile_split_minflag_toggle",
           label = "On",
@@ -1884,7 +1858,7 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Swap X and Y",
-            label_title = "Turn on to swap the values plotted on the X and Y axis",
+            label_title = tooltips$swap_x_y,
             input_switch(
               id = "plot_tile_split_swap",
               label = "Off",
@@ -1894,10 +1868,7 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Filter stringency",
-            label_title = paste0(
-              "Choose whether to include ABCI values close to 0 (Loose) or ",
-              "hide them (Strict)."
-            ),
+            label_title = tooltips$filter,
             input_switch(
               id = "plot_tile_split_strict",
               label = "Strict",
@@ -1907,10 +1878,7 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Axis labels",
-            label_title = paste0(
-              "Across the plot panels, should the X and Y axis labels vary ",
-              "or be the same?"
-            ),
+            label_title = tooltips$axis_labels,
             selectInput(
               inputId = "plot_tile_split_scales",
               label = NULL,
@@ -1920,10 +1888,7 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Activity threshold",
-            label_title = paste0(
-              "Draw a line when individual treatments reach the indicated ",
-              "percentage (0.5 = 50% killing). Applies to X and Y axis."
-            ),
+            label_title = tooltips$activity_val,
             numericInput(
               inputId = "plot_tile_split_mic_threshold",
               label = NULL,
@@ -1933,10 +1898,7 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Low effect threshold",
-            label_title = paste0(
-              "Draw a symbol on combined treatment cells that kill less than ",
-              "the indicated percentage (0.5 = 50% killing)."
-            ),
+            label_title = tooltips$highlight_val,
             numericInput(
               inputId = "plot_tile_split_minflag_value",
               label = NULL,
@@ -2014,7 +1976,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis title",
-        label_title = "Title for the X axis; applies to the entire plot",
+        label_title = tooltips$x_axis_title,
         textInput(
           inputId = "plot_line_x_text",
           label = NULL,
@@ -2024,8 +1986,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "X axis digits",
-        label_title =
-          "Number of decimal places to show for concentrations the X axis",
+        label_title = tooltips$x_axis_digits,
         numericInput(
           inputId = "plot_line_x_decimal",
           label = NULL,
@@ -2064,7 +2025,7 @@ server <- function(input, output) {
         label = "Line digits",
         label_title = paste0(
           "Number of decimal places to show for concentrations of the ",
-          "treatment plotted as different lines."
+          "treatment plotted as different lines"
         ),
         numericInput(
           inputId = "plot_line_line_decimal",
@@ -2091,7 +2052,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Y axis title",
-        label_title = "Title for the Y axis; applies to the entire plot",
+        label_title = tooltips$y_axis_title,
         textInput(
           inputId = "plot_line_y_text",
           label = NULL,
@@ -2101,10 +2062,7 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Draw activity threshold",
-        label_title = paste0(
-          "Include lines to indicate activity thresholds for individual ",
-          "treatments (e.g., MIC, MBIC, MBEC). Defaults to ≥50% killing."
-        ),
+        label_title = tooltips$draw_activity,
         checkboxGroupInput(
           inputId = "plot_line_mic_lines",
           label = NULL,
@@ -2122,7 +2080,8 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Swap X and lines",
-            label_title = "Turn on to swap the values plotted on the X axis and as lines",
+            label_title =
+              "Turn on to swap the values plotted on the X axis and as lines",
             input_switch(
               id = "plot_line_swap",
               label = "Off",
@@ -2143,10 +2102,7 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Axis labels",
-            label_title = paste0(
-              "Across the plot panels, should the X and Y axis labels vary ",
-              "or be the same?"
-            ),
+            label_title = tooltips$axis_labels,
             selectInput(
               inputId = "plot_line_scales",
               label = NULL,
@@ -2156,10 +2112,7 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Activity threshold",
-            label_title = paste0(
-              "Draw a line when individual treatments reach the indicated ",
-              "percentage (0.5 = 50% killing). Applies to X axis."
-            ),
+            label_title = tooltips$activity_val,
             numericInput(
               inputId = "plot_line_mic_threshold",
               label = NULL,
