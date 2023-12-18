@@ -143,7 +143,7 @@ set_theme <- function() {
 wrap_selector <- function(label, label_title, selector) {
   div(
     class = "form-group row",
-    style = "margin-bottom: 0.25rem;",
+    style = "margin-bottom: 0.2rem;",
     tags$label(
       class = "col-sm-5 col-form-label",
       div(
