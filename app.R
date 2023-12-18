@@ -83,6 +83,12 @@ tooltips <- list(
 
 # |- Plot legends ---------------------------------------------------------
 
+link_paragraph <- p(
+  "You can learn more about how to interpret your data ",
+  actionLink("legend_here", "here", .noWS = "after"),
+  ". The text below can be used as a template for a figure legend:"
+)
+
 plot_legends <- list(
   dot = div(
     p(
@@ -95,13 +101,7 @@ plot_legends <- list(
       "lines can be added to illustrate the activity thresholds of the ",
       "individual drugs (e.g., MIC)."
     ),
-
-    p(
-      "You can learn more about how to interpret your data ",
-      actionLink("legend_here", "here", .noWS = "after"),
-      ". The text below can be used as a template for a figure legend:"
-    ),
-
+    link_paragraph,
     p(
       style = "font-size:0.75em",
       "Effects of different combinations of [Drug A] and [Drug B], evaluated ",
@@ -129,13 +129,7 @@ plot_legends <- list(
       "Vertical and horizontal lines can be added to illustrate the activity ",
       "thresholds of the individual drugs (e.g., MIC)."
     ),
-
-    p(
-      "You can learn more about how to interpret your data ",
-      actionLink("legend_here", "here", .noWS = "after"),
-      ". The text below can be used as a template for a figure legend:"
-    ),
-
+    link_paragraph,
     p(
       style = "font-size:0.75em",
       "Effects of different combinations of [Drug A] and [Drug B], evaluated ",
@@ -161,13 +155,7 @@ plot_legends <- list(
       "is recommended to combine this with a line plot for interesting ",
       "concentrations."
     ),
-
-    p(
-      "You can learn more about how to interpret your data ",
-      actionLink("legend_here", "here", .noWS = "after"),
-      ". The text below can be used as a template for a figure legend:"
-    ),
-
+    link_paragraph,
     p(
       style = "font-size:0.75em",
       "Anti-Biofilm Combination Index (ABCI) [Citation] for combinations of ",
@@ -194,13 +182,7 @@ plot_legends <- list(
       "is not depicted: it is recommended to combine this with a line plot ",
       "for interesting concentrations."
     ),
-
-    p(
-      "You can learn more about how to interpret your data ",
-      actionLink("legend_here", "here", .noWS = "after"),
-      ". The text below can be used as a template for a figure legend:"
-    ),
-
+    link_paragraph,
     p(
       style = "font-size:0.75em",
       "Anti-Biofilm Combination Index (ABCI) [Citation] for combinations of ",
@@ -224,13 +206,7 @@ plot_legends <- list(
       "represented as lines. A vertical line can be added to illustrate the ",
       "activity threshold (e.g., MIC) of the drug represented on the X axis."
     ),
-
-    p(
-      "You can learn more about how to interpret your data ",
-      actionLink("legend_here", "here", .noWS = "after"),
-      ". The text below can be used as a template for a figure legend:"
-    ),
-
+    link_paragraph,
     p(
       style = "font-size:0.75em",
       "Percentage of [biofilm inhibition] of different combinations of [Drug ",
@@ -855,8 +831,8 @@ server <- function(input, output) {
         p(
           "Use the dropdown to choose an uploaded experiment to preview. The ",
           "card to the right displays some information gathered from the ",
-          "experiment, while the table below shows the loaded data. Make sure ",
-          "everything looks OK before proceeding."
+          "experiment, while the table below shows the loaded data (first ",
+          "replicate only). Make sure everything looks OK before proceeding."
         ),
         selectInput(
           inputId = "upload_input_names_selector",
@@ -1007,9 +983,9 @@ server <- function(input, output) {
         ),
         card_body(
           p(
-            "Use the dropdown to see the calculated ABCI values for each ",
-            "uploaded experiment. The card to the right shows information ",
-            "about the chosen experiment."
+            "Use the dropdown to see the calculated average ABCI values for ",
+            "each uploaded experiment. The card to the right shows some ",
+            "information about the chosen experiment."
           ),
           selectInput(
             inputId = "results_names_selector",
