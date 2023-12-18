@@ -730,7 +730,7 @@ server <- function(input, output) {
         type = "error",
         duration = 10,
         ui = HTML(paste0(
-          "<h4 class='alert-heading'>Error!</h4>",
+          "<h4 class='alert-heading'><b>Error!</b></h4>",
           "<p class='mb-0'>Example data not found.</p>"
         ))
       )
@@ -749,9 +749,8 @@ server <- function(input, output) {
     } else {
       showNotification(
         type = "error",
-        duration = 10,
         ui = HTML(paste0(
-          "<h4 class='alert-heading'>Error!</h4>",
+          "<h4 class='alert-heading'><b>Error!</b></h4>",
           "<p class='mb-0'>Input data must be '.xls/xlsx' or '.ods'. Please ",
           "try again with another file.</p>"
         ))
@@ -770,7 +769,6 @@ server <- function(input, output) {
           "name" = unique(experiment$cols),
           "concentrations" = levels(experiment$cols_conc)
         ),
-
         "rows" = list(
           "name" = unique(experiment$rows),
           "concentrations" = levels(experiment$rows_conc)
@@ -1035,7 +1033,7 @@ server <- function(input, output) {
   })
 
 
-  # |- Enable results download --------------------------------------------
+  # |- Results download ---------------------------------------------------
 
   output$download_handler <- downloadHandler(
     filename = function() {
@@ -1137,7 +1135,7 @@ server <- function(input, output) {
     showNotification(
       type = "message",
       ui = HTML(paste0(
-        "<h4 class='alert-heading'>Reset successful!</h4>",
+        "<h4 class='alert-heading'><b>Reset successful!</b></h4>",
         "<p class='mb-0'>All inputs and results have been reset to their ",
         "original state. Upload another data set to get started.</p>"
       ))
@@ -1180,9 +1178,8 @@ server <- function(input, output) {
   observeEvent(input$legend_here, {
     showNotification(
       type = "default",
-      duration = 10,
       ui = HTML(paste0(
-        "<h4 class='alert-heading'>Whoa!</h4>",
+        "<h4 class='alert-heading'><b>Whoa!</b></h4>",
         "<p class='mb-0'>Sorry, that link doesn't lead anywhere... yet...</p>"
       ))
     )
@@ -2282,7 +2279,7 @@ server <- function(input, output) {
           showNotification(
             type = "warning",
             ui = HTML(paste0(
-              "<h4 class='alert-heading'>Warning!</h4>",
+              "<h4 class='alert-heading'><b>Warning!</b></h4>",
               "<p class='mb-0'>Values on the Y axis greater than 1.5 have ",
               "been reduced.</p>"
             ))
