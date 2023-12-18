@@ -513,15 +513,15 @@ ui <- page_fluid(
             open = NA,
 
             HTML(paste0(
-              "<p>Visualize the ABCI results using <b>dot</b> or <b>tile</b> ",
-              "plots. The <b>split</b> versions separate the positive and ",
-              "negative ABCI values into two different plots, for visual ",
-              "simplicity.</p>"
+              "<p>Visualize the ABCI values from your results using ",
+              "<b>dot</b> or <b>tile</b> plots. The <b>split</b> versions ",
+              "separate the positive and negative ABCI values into two ",
+              "different plots, for visual simplicity.</p>"
             )),
 
             HTML(paste0(
-              "<p>Alternatively one can use the <b>line</b> plot to visualize ",
-              "antimicrobial activity for any subset of concentrations.</p>"
+              "<p>Alternatively the <b>line</b> plot visualizes antimicrobial ",
+              "activity for any subset of concentrations.</p>"
             )),
 
             disabled(
@@ -561,7 +561,7 @@ ui <- page_fluid(
                 value = "line",
                 uiOutput("plot_inputs_line")
               )
-            ),
+            ) %>% tagAppendAttributes(class = "nav-justified"),
 
             disabled(
               actionButton(
