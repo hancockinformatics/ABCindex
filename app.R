@@ -567,9 +567,9 @@ ui <- page_fluid(
               actionButton(
                 inputId = "reset",
                 class = "mt-4 btn btn-warning",
-                label = "Reset",
+                label = "Analyze a new dataset",
                 icon = icon("arrow-rotate-left"),
-                title = "Reset all inputs, results, and plots"
+                title = "Resets all inputs, results, and plots"
               )
             )
           ),
@@ -1169,14 +1169,18 @@ server <- function(input, output) {
   observeEvent(input$reset, {
     showModal(
       modalDialog(
+        title = "Analyze a new dataset",
         paste0(
-          "Are you sure you want to reset the app? All results and plots will ",
-          "be lost!"
+          "Are you sure you want to analyze a new dataset? Doing so will ",
+          "reset the app, meaning all results and plots will be lost!"
         ),
-        title = "Reset ShinyABCi",
         footer = tagList(
           modalButton(label = "Cancel"),
-          actionButton("confirm_reset", "Reset", class = "btn btn-danger")
+          actionButton(
+            "confirm_reset",
+            "Reset and start over",
+            class = "btn btn-danger"
+          )
         )
       )
     )
