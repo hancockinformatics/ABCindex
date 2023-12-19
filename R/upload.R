@@ -3,7 +3,8 @@
 #' @param data_list A list of data frames (tibbles), from `abci_reader()` to
 #'   check for validity
 #'
-#' @return A list of experiments that had invalid wells
+#' @return A list of experiments that have invalid wells (valid being A1 through
+#'   H12)
 #'
 abci_check_wells <- function(data_list) {
   valid_wells <- unlist(lapply(

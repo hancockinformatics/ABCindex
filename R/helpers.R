@@ -2,6 +2,12 @@
 size_mapping_N1S2 <- readRDS("data/size_mapping_N1S2.Rds")
 
 
+#' disable_button
+#'
+#' @param id Input ID for the button being modified
+#' @param x Optional 'title' (tooltip) to add to the button. Overrides any
+#'   existing 'title' attribute
+#'
 disable_button <- function(id, x = NULL) {
   shinyjs::disable(id)
 
@@ -17,6 +23,12 @@ disable_button <- function(id, x = NULL) {
 }
 
 
+#' enable_button
+#'
+#' @param id Input ID for the button being modified
+#' @param x Optional 'title' (tooltip) to add to the button. Overrides any
+#'   existing 'title' attribute
+#'
 enable_button <- function(id, x = NULL) {
   shinyjs::enable(id)
 
@@ -32,30 +44,16 @@ enable_button <- function(id, x = NULL) {
 }
 
 
-ellipsis_render <- function(l) {
-  DT::JS(paste0(
-    "function(data, type, row, meta) {",
-    "if ( type !== 'display' ) {",
-    "return data;",
-    "}",
-    "if ( typeof data !== 'number' && typeof data !== 'string' ) {",
-    "return data;",
-    "}",
-    "data = data.toString();",
-    "if ( data.length < ", l, " ) {",
-    "return data;",
-    "}",
-    "var shortened = data.substr(0, ", l, ");",
-    "shortened = shortened.replace(/,?\\s([^\\s]*)$/, '');",
-    "return '<span class=\"ellipsis\" title=\"'+data+'\">'+",
-    "shortened+'&#8230;</span>';",
-    "}"
-  ))
-}
-
-
+#' get_dims
+#'
+#' @param n_cols Number of columns for the output plot
+#' @param n_rows Number of rows for the output plot
+#' @param type Type of plot (dot, dot_split, tile, tile_split, line)
+#'
+#' @return Character vector of output width and height, in pixels
+#'
 get_dims <- function(n_cols, n_rows, type) {
-  # Output "dims" is `c(width, height)`
+  # Output is `c(width, height)`
   dims <-
     if (n_cols == 1) {
       switch(
@@ -122,6 +120,10 @@ preset_palettes_split <- list(
 )
 
 
+#' set_theme
+#'
+#' @return None; Sets the default ggplot2 theme
+#'
 set_theme <- function() {
   theme_set(
     theme_classic(base_size = 24) +
@@ -140,6 +142,15 @@ set_theme <- function() {
 }
 
 
+#' wrap_selector
+#'
+#' @param label Name for the input object
+#' @param label_title Text to be shown as a tooltip when hovering over the "?"
+#'   icon next to the name
+#' @param selector A Shiny input, e.g. `selectInput()`, `numericInput()`, etc.
+#'
+#' @return Customized UI wrapper; a two-columm row with a name and input
+#'
 wrap_selector <- function(label, label_title, selector) {
   div(
     class = "form-group row",
