@@ -48,7 +48,8 @@ abci_master_input <- function(file, sheet = "all") {
       b1 <- abci_reader(file = file, sheet = sheet)
       check_b1 <- abci_check_wells(b1)
 
-      # Fails silently with bad wells
+      # Silent failures, such as bad wells, or anything else that doesn't
+      # throw an actual error
       if (length(check_b1 != 0)) {
         bad_experiments <- paste(check_b1, collapse = ", ")
 
@@ -64,6 +65,16 @@ abci_master_input <- function(file, sheet = "all") {
           suggest = paste0(
             "Check that each plate/replicate is separated by one or more ",
             "empty rows, then try again."
+          )
+        )
+      } else if (is.null(check_b1)) {
+        list(
+          data = NULL,
+          status = "error",
+          message = "An error occurred when trying to import your data. ",
+          suggest = paste0(
+            "Please ensure your data matches our input requirements, then try ",
+            "again."
           )
         )
       } else {

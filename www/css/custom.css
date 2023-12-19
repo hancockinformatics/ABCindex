@@ -70,16 +70,9 @@
   font-size: 32px;
   padding-right: 4px;
 }
-.shiny-notification-default {
-  color: #161718;
-  background: #495057;
-  opacity: 1;
-  border: 0;
-  font-size: 1rem;
-}
 .shiny-notification-message {
-  color: #10335b;
-  background: #d4e6f9;
+  color: #19490a;
+  background: #d9f0d1;
   opacity: 1;
   border: 0;
   font-size: 1rem;

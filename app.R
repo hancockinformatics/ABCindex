@@ -724,17 +724,30 @@ server <- function(input, output) {
 
   observeEvent(input$load_example_data, {
     if (file.exists("example_data/example_data_lucas.xlsx")) {
-      input_data_raw(abci_reader("example_data/example_data_lucas.xlsx"))
+      input_1 <- abci_reader("example_data/example_data_lucas.xlsx")
+      showNotification(
+        type = "message",
+        ui = HTML(paste0(
+          "<h4 class='alert-heading'><b>Success!</b></h4>",
+          "<p class='mb-0'>",
+          "Example data successfully loaded. Use the button at the bottom of ",
+          "the sidebar to proceed to the next step.",
+          "</p>"
+        ))
+      )
+      input_data_raw(input_1)
+
     } else {
       showNotification(
         type = "error",
         duration = 10,
         ui = HTML(paste0(
           "<h4 class='alert-heading'><b>Error!</b></h4>",
-          "<p class='mb-0'>Example data not found; please upload a dataset ",
+          "<p class='mb-0'>Example data not found! Please upload a dataset ",
           "to analyze.</p>"
         ))
       )
+      input_data_raw(NULL)
     }
   })
 
@@ -1149,7 +1162,6 @@ server <- function(input, output) {
     removeModal()
 
     showNotification(
-      type = "message",
       ui = HTML(paste0(
         "<h4 class='alert-heading'><b>Reset successful!</b></h4>",
         "<p class='mb-0'>All inputs and results have been reset to their ",
@@ -2294,6 +2306,7 @@ server <- function(input, output) {
         if (max(abci_plot_data()$bio_normal) > 1.5) {
           showNotification(
             type = "warning",
+            duration = 10,
             ui = HTML(paste0(
               "<h4 class='alert-heading'><b>Warning!</b></h4>",
               "<p class='mb-0'>Values on the Y axis greater than 1.5 have ",
