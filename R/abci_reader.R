@@ -1,3 +1,31 @@
+#' abci_check_wells
+#'
+#' @param data_list A list of data frames (tibbles), from `abci_reader()` to
+#'   check for validity
+#'
+#' @return A list of experiments that had invalid wells
+#'
+abci_check_wells <- function(data_list) {
+  valid_wells <- unlist(lapply(
+    seq(1, 12),
+    function(n) paste0(LETTERS[seq(1, 8)], n)
+  ))
+
+  purrr::imap(
+    data_list,
+    function(x, nm) {
+      ifelse(
+        test = !all(x$well %in% valid_wells),
+        yes = 1,
+        no = 0
+      )
+    }
+  ) %>%
+    purrr::discard(~.x == 0) %>%
+    names()
+}
+
+
 #' Read a spreadsheet containing plate data
 #'
 #' @param file Path to a spreadsheet, containing one or more sheets within, each

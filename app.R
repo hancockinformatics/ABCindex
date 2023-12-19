@@ -728,6 +728,7 @@ server <- function(input, output) {
     } else {
       showNotification(
         type = "error",
+        duration = 10,
         ui = HTML(paste0(
           "<h4 class='alert-heading'><b>Error!</b></h4>",
           "<p class='mb-0'>Example data not found; please upload a dataset ",
@@ -742,6 +743,32 @@ server <- function(input, output) {
 
   observeEvent(input$load_user_data, {
     input_data_raw(abci_reader(input$load_user_data$datapath))
+
+    input_ok <- abci_check_wells(input_data_raw())
+
+    if (length(input_ok) == 0) {
+      showNotification(
+        type = "message",
+        ui = HTML(paste0(
+          "<h4 class='alert-heading'><b>Success!</b></h4>",
+          "<p class='mb-0'>Data successfully loaded. Use the button to ",
+          "proceed to the next step.</p>"
+        ))
+      )
+    } else {
+      bad_experiments <- paste(input_ok, collapse = ", ")
+      showNotification(
+        type = "error",
+        duration = 10,
+        ui = HTML(paste0(
+          "<h4 class='alert-heading'><b>Error!</b></h4>",
+          "<p class='mb-0'>There was a problem parsing the following ",
+          "experiment(s): ", bad_experiments, ". Please check that the data ",
+          "follows our input requirements, then try again.</p>"
+        ))
+      )
+      input_data_raw(NULL)
+    }
   })
 
 
