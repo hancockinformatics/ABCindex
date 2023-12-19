@@ -1172,7 +1172,7 @@ server <- function(input, output) {
         title = "Analyze a new dataset",
         paste0(
           "Are you sure you want to analyze a new dataset? Doing so will ",
-          "reset the app, meaning all results and plots will be lost!"
+          "reset the app, meaning any current results and plots will be lost!"
         ),
         footer = tagList(
           modalButton(label = "Cancel"),
