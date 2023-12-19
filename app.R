@@ -850,17 +850,19 @@ server <- function(input, output) {
   output$upload_input_names_card <- renderUI(
     card(
       height = 350,
+      class = "mb-0",
       card_header(
         class = "bg-dark",
-        "Select an experiment to preview"
+        "Select an uploaded experiment to preview"
       ),
       card_body(
-        p(
-          "Use the dropdown to choose an uploaded experiment to preview. The ",
-          "card to the right displays some information gathered from the ",
-          "experiment, while the table below shows the loaded data (first ",
-          "replicate only). Make sure everything looks OK before proceeding."
-        ),
+        HTML(paste0(
+          "<p>Use the dropdown to choose an uploaded experiment to preview. ",
+          "The card to the right displays some information gathered from the ",
+          "experiment, while the table below shows the loaded data (<b>first ",
+          "replicate only</b>). Make sure everything looks OK before ",
+          "proceeding.</p>"
+        )),
         selectInput(
           inputId = "upload_input_names_selector",
           label = NULL,
@@ -875,24 +877,38 @@ server <- function(input, output) {
     experiment_drugs <- drug_info()[[input$upload_input_names_selector]]
     card(
       height = 350,
+      class = "mb-0",
       card_header(
         class = "bg-dark",
-        "Information on plate rows and columns"
+        paste0(
+          "Treatment information for experiment '",
+          input$upload_input_names_selector, "'"
+        )
       ),
       card_body(
-        p("Drug in columns: ", experiment_drugs[["cols"]][["name"]]),
-        p(
-          "Concentrations: ",
-          paste(experiment_drugs[["cols"]][["concentrations"]], collapse = ", ")
-        ),
+        HTML(paste0(
+          "<p><b>Treatment in the columns:</b> ",
+          experiment_drugs[["cols"]][["name"]],
+          "</p>"
+        )),
+        HTML(paste0(
+          "<p><b>Detected concentrations:</b> ",
+          paste(experiment_drugs[["cols"]][["concentrations"]], collapse = ", "),
+          "</p>"
+        )),
 
         hr(),
 
-        p("Drug in rows: ", experiment_drugs[["rows"]][["name"]]),
-        p(
-          "Concentrations: ",
-          paste(experiment_drugs[["rows"]][["concentrations"]], collapse = ", ")
-        )
+        HTML(paste0(
+          "<p><b>Treatment in the rows:</b> ",
+          experiment_drugs[["rows"]][["name"]],
+          "</p>"
+        )),
+        HTML(paste0(
+          "<p><b>Detected concentrations:</b> ",
+          paste(experiment_drugs[["rows"]][["concentrations"]], collapse = ", "),
+          "</p>"
+        ))
       )
     )
   })
@@ -904,7 +920,16 @@ server <- function(input, output) {
 
   output$upload_input_preview <- renderUI({
     req(input_data_preview(), input$upload_input_names_selector)
-    DT::dataTableOutput("input_data_preview_DT")
+    tagList(
+      card_header(
+        class = "bg-dark",
+        paste0(
+          "Input preview for the first replicate of '",
+          input$upload_input_names_selector, "'"
+        )
+      ),
+      DT::dataTableOutput("input_data_preview_DT")
+    )
   })
 
 
