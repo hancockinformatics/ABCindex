@@ -728,10 +728,10 @@ server <- function(input, output) {
     } else {
       showNotification(
         type = "error",
-        duration = 10,
         ui = HTML(paste0(
           "<h4 class='alert-heading'><b>Error!</b></h4>",
-          "<p class='mb-0'>Example data not found.</p>"
+          "<p class='mb-0'>Example data not found; please upload a dataset ",
+          "to analyze.</p>"
         ))
       )
     }
@@ -741,21 +741,7 @@ server <- function(input, output) {
   # |- User data ----------------------------------------------------------
 
   observeEvent(input$load_user_data, {
-    input_file <- input$load_user_data$datapath
-    input_ext <- tolower(tools::file_ext(input_file))
-
-    if (input_ext %in% c("xls", "xlsx", "ods")) {
-      input_data_raw(abci_reader(input_file))
-    } else {
-      showNotification(
-        type = "error",
-        ui = HTML(paste0(
-          "<h4 class='alert-heading'><b>Error!</b></h4>",
-          "<p class='mb-0'>Input data must be '.xls/xlsx' or '.ods'. Please ",
-          "try again with another file.</p>"
-        ))
-      )
-    }
+    input_data_raw(abci_reader(input$load_user_data$datapath))
   })
 
 

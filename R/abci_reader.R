@@ -1,13 +1,12 @@
 #' Read a spreadsheet containing plate data
 #'
-#' @param file Path to an Excel spreadsheet, containing one or more sheets
-#'   within, each with data in a 96 well-type format.
+#' @param file Path to a spreadsheet, containing one or more sheets within, each
+#'   with data in a 96 well-type format
 #' @param sheet Either the specific name(s) of one or more sheets to read data
 #'   from, or "all" to read all sheets.
 #'
-#' @return A list of data frames (tibbles), one for each plate detected, with
-#'   the following columns:
-#'   \item{assay}{The assay or analysis name, pulled from the sheet name}
+#' @return A list of data frames (tibbles), one for each sheet, with the
+#'   following columns:
 #'   \item{replicate}{Denotes different plates within the same sheet. Always
 #'   included, even with only one replicate.}
 #'   \item{well}{Well ID for each row in the data}
@@ -18,47 +17,38 @@
 #'   \item{bio}{The measured values contained within the wells, for a specific
 #'   row-column combination}
 #'
-#' @export
-#'
-#' @description The returned list is named based on the names from the sheets,
-#'   with a suffix to denote the plate (replicate) within each sheet.
-#'
 abci_reader <- function(file, sheet = "all") {
   options("cli.progress_show_after" = 0)
 
+  file_ext <- substr(tolower(tools::file_ext(file)), 1, 3)
+
   if (sheet == "all") {
-
-    all_sheets <-
-      if (grepl(x = file, pattern = "xls", ignore.case = TRUE)) {
-        readxl::excel_sheets(file)
-      } else if (grepl(x = file, pattern = "ods", ignore.case = TRUE)) {
-        readODS::ods_sheets(file)
-      }
-
-    all_data <- lapply(
-      cli::cli_progress_along(all_sheets, "Loading plate data"),
-      function(i) {
-        abci_reader_single(file, all_sheets[i])
-      }
-    ) %>% purrr::set_names(all_sheets)
-
+    all_sheets <- switch(
+      file_ext,
+      "xls" = readxl::excel_sheets(file),
+      "ods" = readODS::ods_sheets(file)
+    )
   } else {
-    all_data <- lapply(
-      cli::cli_progress_along(sheet, "Loading plate data"),
-      function(i) {
-        abci_reader_single(file, sheet[i])
-      }
-    ) %>% purrr::set_names(sheet)
+    all_sheets <- sheet
   }
+
+  all_data <- lapply(
+    cli::cli_progress_along(all_sheets, "Loading plate data"),
+    function(i) {
+      abci_reader_single(file = file, sheet = all_sheets[i], ext = file_ext)
+    }
+  ) %>% purrr::set_names(all_sheets)
+
   return(all_data)
 }
 
 
 #' INTERNAL Read a single sheet of plate data
 #'
-#' @param file Path to an Excel spreadsheet, containing one or more sheets
-#'   within, each with data in a 96-well type format
-#' @param sheet The name of a specific sheet with `file` to read data from
+#' @param file Path to a spreadsheet, containing one or more sheets within, each
+#'   with data in a 96 well-type format
+#' @param sheet The name of a sheet to read data from
+#' @param ext File extension to determine how the data is read
 #'
 #' @return A data frame (tibble), one for each plate detected, with the
 #'   following columns:
@@ -72,31 +62,17 @@ abci_reader <- function(file, sheet = "all") {
 #'   \item{bio}{The measured values contained within the wells, for a specific
 #'   row-column combination}
 #'
-#' @export
-#'
-#' @description This function is meant for internal use only, and is called by
-#'   `abci_reader()`. See that help page for more info: `?abci_reader`.
-#'
-abci_reader_single <- function(file, sheet) {
-  # Read in the sheet, which can contain one or more plates separated by empty
-  # rows
+abci_reader_single <- function(file, sheet, ext) {
+
   suppressMessages(
-    if (grepl(x = file, pattern = "xls", ignore.case = TRUE)) {
-      d1 <- readxl::read_excel(
-        file,
-        sheet = sheet,
-        col_names = FALSE
-      ) %>%
-        janitor::clean_names()
-    } else if (grepl(x = file, pattern = "ods", ignore.case = TRUE)) {
-      d1 <- readODS::read_ods(
-        file,
-        sheet = sheet,
-        col_names = FALSE
-      ) %>%
-        janitor::clean_names()
-    }
+    d0 <- switch(
+      ext,
+      "xls" = readxl::read_excel(file, sheet, col_names = FALSE),
+      "ods" = readODS::read_ods(file, sheet, col_names = FALSE)
+    )
   )
+
+  d1 <- janitor::clean_names(d0)
 
   # The "tbl_id" column defines groups of rows, each group being one plate, by
   # finding intervals between the empty rows
