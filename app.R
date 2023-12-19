@@ -849,7 +849,7 @@ server <- function(input, output) {
 
   output$upload_input_names_card <- renderUI(
     card(
-      height = 350,
+      height = 340,
       class = "mb-0",
       card_header(
         class = "bg-dark",
@@ -876,7 +876,7 @@ server <- function(input, output) {
   upload_drug_card <- reactive({
     experiment_drugs <- drug_info()[[input$upload_input_names_selector]]
     card(
-      height = 350,
+      height = 340,
       class = "mb-0",
       card_header(
         class = "bg-dark",
@@ -1028,17 +1028,18 @@ server <- function(input, output) {
 
     output$results_names_card <- renderUI(
       card(
-        height = 350,
+        height = 340,
+        class = "mb-0",
         card_header(
           class = "bg-dark",
-          "Preview ABCI results by experiment"
+          "Select an experiment to see the ABCI results"
         ),
         card_body(
-          p(
-            "Use the dropdown to see the calculated average ABCI values for ",
-            "each uploaded experiment. The card to the right shows some ",
-            "information about the chosen experiment."
-          ),
+          HTML(paste0(
+            "<p>Use the dropdown to see the calculated <b>average ABCI ",
+            "values</b> for each uploaded experiment. The card to the right ",
+            "shows some information about the chosen experiment.</p>"
+          )),
           selectInput(
             inputId = "results_names_selector",
             label = NULL,
@@ -1053,25 +1054,39 @@ server <- function(input, output) {
   analysis_drug_card <- reactive({
     experiment_drugs <- drug_info()[[input$results_names_selector]]
     card(
-      height = 350,
+      height = 340,
+      class = "mb-0",
       card_header(
         class = "bg-dark",
-        "Information on plate rows and columns"
+        paste0(
+          "Treatment information for experiment '",
+          input$results_names_selector, "'"
+        )
       ),
       card_body(
-        p("Drug in columns: ", experiment_drugs[["cols"]][["name"]]),
-        p(
-          "Concentrations: ",
-          paste(experiment_drugs[["cols"]][["concentrations"]], collapse = ", ")
-        ),
+        HTML(paste0(
+          "<p><b>Treatment in the columns:</b> ",
+          experiment_drugs[["cols"]][["name"]],
+          "</p>"
+        )),
+        HTML(paste0(
+          "<p><b>Detected concentrations:</b> ",
+          paste(experiment_drugs[["cols"]][["concentrations"]], collapse = ", "),
+          "</p>"
+        )),
 
         hr(),
 
-        p("Drug in rows: ", experiment_drugs[["rows"]][["name"]]),
-        p(
-          "Concentrations: ",
-          paste(experiment_drugs[["rows"]][["concentrations"]], collapse = ", ")
-        )
+        HTML(paste0(
+          "<p><b>Treatment in the rows:</b> ",
+          experiment_drugs[["rows"]][["name"]],
+          "</p>"
+        )),
+        HTML(paste0(
+          "<p><b>Detected concentrations:</b> ",
+          paste(experiment_drugs[["rows"]][["concentrations"]], collapse = ", "),
+          "</p>"
+        ))
       )
     )
   })
@@ -1083,7 +1098,16 @@ server <- function(input, output) {
 
   output$results_table_div <- renderUI({
     req(abci_results_display(), input$results_names_selector)
-    DT::dataTableOutput("results_table_DT")
+    tagList(
+      card_header(
+        class = "bg-dark",
+        paste0(
+          "ABCI results for the experiment '",
+          input$results_names_selector, "'"
+        )
+      ),
+      DT::dataTableOutput("results_table_DT")
+    )
   })
 
 
