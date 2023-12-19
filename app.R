@@ -742,29 +742,32 @@ server <- function(input, output) {
   # |- User data ----------------------------------------------------------
 
   observeEvent(input$load_user_data, {
-    input_data_raw(abci_reader(input$load_user_data$datapath))
 
-    input_ok <- abci_check_wells(input_data_raw())
+    input_1 <- abci_master_input(input$load_user_data$datapath)
 
-    if (length(input_ok) == 0) {
+    if (input_1$status == "success") {
       showNotification(
         type = "message",
         ui = HTML(paste0(
           "<h4 class='alert-heading'><b>Success!</b></h4>",
-          "<p class='mb-0'>Data successfully loaded. Use the button to ",
-          "proceed to the next step.</p>"
+          "<p class='mb-0'>",
+          input_1$message,
+          input_1$suggest,
+          "</p>"
         ))
       )
-    } else {
-      bad_experiments <- paste(input_ok, collapse = ", ")
+      input_data_raw(input_1$data)
+
+    } else if (input_1$status == "error") {
       showNotification(
         type = "error",
         duration = 10,
         ui = HTML(paste0(
           "<h4 class='alert-heading'><b>Error!</b></h4>",
-          "<p class='mb-0'>There was a problem parsing the following ",
-          "experiment(s): ", bad_experiments, ". Please check that the data ",
-          "follows our input requirements, then try again.</p>"
+          "<p class='mb-0'>",
+          input_1$message,
+          input_1$suggest,
+          "</p>"
         ))
       )
       input_data_raw(NULL)

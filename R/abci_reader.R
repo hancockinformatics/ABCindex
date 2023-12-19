@@ -26,6 +26,74 @@ abci_check_wells <- function(data_list) {
 }
 
 
+#' abci_master_input
+#'
+#' @param file Path to a spreadsheet, containing one or more sheets within, each
+#'   with data in a 96 well-type format
+#' @param sheet Either the specific name(s) of one or more sheets to read data
+#'   from, or "all" to read all sheets.
+#'
+#' @return A list with the following named elements:
+#'   \item{data}{List of data frames (tibbles) containing input experiments (on
+#'   success), or NULL on failure.}
+#'   \item{status}{Character indicating "success" or "error"}
+#'   \item{message}{Character providing some basic information based on the
+#'   status and input/output}
+#'   \item{suggest}{Character providing a hint of how the user should proceed}
+#'
+abci_master_input <- function(file, sheet = "all") {
+
+  tryCatch(
+    {
+      b1 <- abci_reader(file = file, sheet = sheet)
+      check_b1 <- abci_check_wells(b1)
+
+      # Fails silently with bad wells
+      if (length(check_b1 != 0)) {
+        bad_experiments <- paste(check_b1, collapse = ", ")
+
+        list(
+          data = NULL,
+          status = "error",
+          message = paste0(
+            "Invalid wells (outside A1-H12) were detected in the following ",
+            "experiment(s): ",
+            bad_experiments,
+            ". "
+          ),
+          suggest = paste0(
+            "Check that each plate/replicate is separated by one or more ",
+            "empty rows, then try again."
+          )
+        )
+      } else {
+        list(
+          data = b1,
+          status = "success",
+          message = "Your data was successfully loaded. ",
+          suggest = paste0(
+            "Use the button at the bottom of the sidebar to proceed to the ",
+            "next step."
+          )
+        )
+      }
+    },
+
+    error = function(e) {
+      list(
+        data = NULL,
+        status = "error",
+        message = "An error occurred when trying to import your data. ",
+        suggest = paste0(
+          "Please ensure your data matches our input requirements, then try ",
+          "again."
+        )
+      )
+    }
+  )
+}
+
+
 #' Read a spreadsheet containing plate data
 #'
 #' @param file Path to a spreadsheet, containing one or more sheets within, each
