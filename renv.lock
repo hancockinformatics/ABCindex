@@ -15,7 +15,7 @@
   "Packages": {
     "DT": {
       "Package": "DT",
-      "Version": "0.30",
+      "Version": "0.31",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -28,7 +28,7 @@
         "magrittr",
         "promises"
       ],
-      "Hash": "dffb4d94a00be1b4a4507e53ab95bd90"
+      "Hash": "77b5189f5272ae2b21e3ac2175ad107c"
     },
     "MASS": {
       "Package": "MASS",
@@ -183,14 +183,14 @@
     },
     "cli": {
       "Package": "cli",
-      "Version": "3.6.1",
+      "Version": "3.6.2",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
         "R",
         "utils"
       ],
-      "Hash": "89e6d8219950eac806ae0c489052048a"
+      "Hash": "1216ac65ac55ec0058a6f75d7ca0fd52"
     },
     "clipr": {
       "Package": "clipr",
@@ -260,13 +260,13 @@
     },
     "curl": {
       "Package": "curl",
-      "Version": "5.1.0",
+      "Version": "5.2.0",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
         "R"
       ],
-      "Hash": "9123f3ef96a2c1a93927d828b2fe7d4c"
+      "Hash": "ce88d13c0b10fe88a37d9c59dba2d7f9"
     },
     "digest": {
       "Package": "digest",
@@ -326,7 +326,7 @@
     },
     "fansi": {
       "Package": "fansi",
-      "Version": "1.0.5",
+      "Version": "1.0.6",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -334,7 +334,7 @@
         "grDevices",
         "utils"
       ],
-      "Hash": "3e8583a60163b4bc1a80016e63b9959e"
+      "Hash": "962174cf2aeb5b9eea581522286a911f"
     },
     "farver": {
       "Package": "farver",
@@ -495,7 +495,7 @@
     },
     "htmlwidgets": {
       "Package": "htmlwidgets",
-      "Version": "1.6.3",
+      "Version": "1.6.4",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -506,7 +506,7 @@
         "rmarkdown",
         "yaml"
       ],
-      "Hash": "a4040b08269c9af64554e55f514d002c"
+      "Hash": "04291cc45198225444a397606810ac37"
     },
     "httpuv": {
       "Package": "httpuv",
@@ -817,16 +817,17 @@
     },
     "progress": {
       "Package": "progress",
-      "Version": "1.2.2",
+      "Version": "1.2.3",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
+        "R",
         "R6",
         "crayon",
         "hms",
         "prettyunits"
       ],
-      "Hash": "14dc9f7a3c91ebb14ec5bb9208a07061"
+      "Hash": "f4625e061cb2865f111b47ff163a5ca6"
     },
     "promises": {
       "Package": "promises",
@@ -978,7 +979,7 @@
     },
     "rsconnect": {
       "Package": "rsconnect",
-      "Version": "1.1.1",
+      "Version": "1.2.0",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -996,7 +997,7 @@
         "tools",
         "yaml"
       ],
-      "Hash": "672fc66985074d17c86b6335105143b8"
+      "Hash": "c064d4993aedbf6c383041d1606aabeb"
     },
     "rstudioapi": {
       "Package": "rstudioapi",
@@ -1124,7 +1125,7 @@
     },
     "stringi": {
       "Package": "stringi",
-      "Version": "1.8.2",
+      "Version": "1.8.3",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -1133,7 +1134,7 @@
         "tools",
         "utils"
       ],
-      "Hash": "e68c45f81639001af5f1b15cd3599bbd"
+      "Hash": "058aebddea264f4c99401515182e656a"
     },
     "stringr": {
       "Package": "stringr",
@@ -1285,7 +1286,7 @@
     },
     "vroom": {
       "Package": "vroom",
-      "Version": "1.6.4",
+      "Version": "1.6.5",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -1307,7 +1308,7 @@
         "vctrs",
         "withr"
       ],
-      "Hash": "9db52c1656cf19c124f93124ea57f0fd"
+      "Hash": "390f9315bc0025be03012054103d227c"
     },
     "withr": {
       "Package": "withr",
@@ -1347,10 +1348,10 @@
     },
     "yaml": {
       "Package": "yaml",
-      "Version": "2.3.7",
+      "Version": "2.3.8",
       "Source": "Repository",
       "Repository": "RSPM",
-      "Hash": "0d0056cc5383fbc240ccd0cb584bf436"
+      "Hash": "29240487a071f535f5e5d5a323b7afbd"
     },
     "zip": {
       "Package": "zip",
