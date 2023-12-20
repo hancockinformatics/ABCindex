@@ -659,7 +659,7 @@ abci_plot_line <- function(
     jitter.x = TRUE,
     x.mic.line = FALSE,
     mic.threshold = 0.5,
-    colour.palette = "viridis",
+    colour.palette = "Accent",
     col.analysis = NULL,
     scales = "free",
     n.rows = NULL,
@@ -835,8 +835,8 @@ abci_plot_line <- function(
       geom_vline(data = mic.table, aes(xintercept = XLAB))
     }} +
 
-    scale_colour_viridis_d(
-      option = colour.palette,
+    ggplot2::scale_colour_brewer(
+      palette = colour.palette,
       labels = ~sprintf(
         paste0("%.", line.decimal, "f"),
         as.numeric(.x)

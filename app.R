@@ -22,9 +22,12 @@ set_theme()
 abci_colours <- preset_palettes[["choices"]]
 abci_colours_split <- preset_palettes_split[["choices"]]
 
-line_colours <- purrr::set_names(
-  c("turbo", "viridis", "magma", "plasma", "inferno", "cividis", "mako", "rocket"),
-  stringr::str_to_title
+line_colours <- list(
+  Accent = "Accent",
+  Dark = "Dark2",
+  `Set 1` = "Set1",
+  `Set 2` = "Set2",
+  `Set 3` = "Set3"
 )
 
 plot_scales <- c(
@@ -1300,8 +1303,8 @@ server <- function(input, output) {
       "viridis" = modalDialog(
         title = "Line colour palettes",
         easyClose = TRUE,
-        size = "l",
-        HTML("<img src='viridis_palettes.png' class='center'>")
+        size = "m",
+        HTML("<img src='rcolorbrewer_supported_palettes.png' class='center'>")
       )
     ),
     tagAppendAttributes,
