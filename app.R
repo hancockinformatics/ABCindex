@@ -1187,7 +1187,6 @@ server <- function(input, output) {
   })
 
   observeEvent(input$confirm_reset, {
-    shinyjs::reset("visualization_sidebar", asis = FALSE)
     updateNavbarPage(inputId = "navbar", selected = "upload")
     input_data_raw(NULL)
     input_data_tidy(NULL)
@@ -2414,12 +2413,13 @@ server <- function(input, output) {
 
     output$abci_plot_ui <- renderUI(
       tagList(
-        plotOutput(
-          outputId = "abci_plot",
-          width = output_dims[1],
-          height = output_dims[2]
-        ) %>% shinycssloaders::withSpinner(),
-
+        shinycssloaders::withSpinner(
+          plotOutput(
+            outputId = "abci_plot",
+            width = output_dims[1],
+            height = output_dims[2]
+          )
+        ),
         card(
           class = "border-0",
           card_body(

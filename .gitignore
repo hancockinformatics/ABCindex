@@ -47,6 +47,3 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
-
-# Example data
-example_data/example_data_noushin.xlsx
