@@ -1,3 +1,59 @@
+#' INTERNAL Calculate MIC values
+#'
+#' @param data Data frame containing the concentrations of two drugs, and the
+#'   assay output/measurement
+#' @param x.drug Character; Column name of concentrations of the first drug
+#' @param y.drug Character; Column name of concentrations of the second drug
+#' @param col.data Character; Column name which contains the measured value
+#' @param threshold Numeric; cutoff for determining MIC
+#'
+#' @return A data frame with the following columns:
+#'   \item{XMIC}{MIC value for `x.drug`}
+#'   \item{YMIC}{MIC value for `y.drug`}
+#'
+abci_mic <- function(
+    data,
+    x.drug,
+    y.drug,
+    col.data,
+    threshold = 0.5
+) {
+
+  if (any(c("spec_tbl_df", "tbl_df", "tbl") %in% class(data))) {
+    data <- as.data.frame(data)
+  }
+
+  stopifnot(
+    "Column given by 'x.drug' must be a factor" = is.factor(data[[x.drug]])
+  )
+  stopifnot(
+    "Column given by 'y.drug' must be a factor" = is.factor(data[[y.drug]])
+  )
+
+  data.clean <- data[data[, col.data] < threshold, ]
+  x.data.clean <- data.clean[data.clean[, y.drug] == 0, ]
+  y.data.clean <- data.clean[data.clean[, x.drug] == 0, ]
+
+  x.mic <-
+    if (nrow(x.data.clean) == 0) {
+      max(as.numeric(as.character(levels(droplevels(data.clean[[x.drug]])))))
+    } else {
+      min(as.numeric(as.character(x.data.clean[[x.drug]])))
+    }
+
+  y.mic <-
+    if (nrow(y.data.clean) == 0) {
+      max(as.numeric(as.character(levels(droplevels(data.clean[[y.drug]])))))
+    } else {
+      min(as.numeric(as.character(y.data.clean[[y.drug]])))
+    }
+
+  mic.table <- data.frame(XMIC = x.mic, YMIC = y.mic)
+
+  return(mic.table)
+}
+
+
 #' abci_plot_dot
 #'
 #' @param data Data frame, as output by `abci.analysis()`
@@ -26,8 +82,6 @@
 #'   Default to FALSE.
 #' @param col.mic Character; Column name to use for calculating MIC
 #' @param mic.threshold Threshold for calculating MIC. Defaults to 0.5.
-#' @param delta Logical; Are plotted values the simple "delta" as calculated by
-#'   `abci.analysis()`? Defaults to FALSE.
 #' @param colour.palette One of the pre-made palettes
 #' @param colour.na Colour assigned to any NA values. Defaults to "white".
 #' @param scale.limits Limits for the colour scale. Defaults to `c(-2, 2)`.
@@ -38,8 +92,7 @@
 #' @param size_mapping Data frame of values to use for size scaling. Currently
 #'   only supports the one object `size_mapping_N1S2`.
 #'
-#' @return A ggplot2 object#'
-#' @export
+#' @return A ggplot2 object
 #'
 #' @description A secondary graphing function. Similar to `abci_plot_tile()`,
 #'   but the amount of biofilm killed (typically "effect" column) is mapped to
@@ -69,8 +122,7 @@ abci_plot_dot <- function(
     y.mic.line = FALSE,
     col.mic,
     mic.threshold = 0.5,
-    delta = FALSE,
-    colour.palette = "BOB",
+    colour.palette = "A_RYB",
     colour.na = "white",
     scale.limits = c(-2.0, 2.0),
     scale.breaks = seq(2, -2, -0.5),
@@ -100,35 +152,6 @@ abci_plot_dot <- function(
     filter(reference %in% proper_labels) %>%
     mutate(new = scales::rescale(N1S2, to = size.range)) %>%
     pull(new)
-
-  # Set up proper colour scaling
-  upper <- max(scale.limits)
-  lower <- min(scale.limits)
-
-  plot.palette <- preset_palettes[[colour.palette]]
-
-  colour.pointers <-
-    if (colour.palette %in% c("PAN", "SUN", "BOB")) {
-      scales::rescale(
-        c(upper, upper / 2, upper / 4, upper / 8, 0, lower / 4, lower / 2, lower),
-        to = c(0, 1)
-      )
-    } else {
-      scales::rescale(
-        c(upper, 3 * upper / 4, upper / 2, upper / 4, 0, lower / 4, 3 * lower / 4, lower),
-        to = c(0, 1)
-      )
-    }
-
-  if (delta) {
-    scale.limits <- c(-100, 100)
-    scale.breaks <- seq(100, -100, -25)
-
-    colour.pointers <- scales::rescale(
-      c(100, 50, 25, 0, -25, -50, -100),
-      to = c(0, 1)
-    )
-  }
 
   # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
   # concentrations need to be converted to positions on their respective axes,
@@ -179,8 +202,8 @@ abci_plot_dot <- function(
 
   ggplot(data, aes(.data[[x.drug]], .data[[y.drug]])) +
 
-    geom_vline(xintercept = 1.5, linetype = "dashed") +
-    geom_hline(yintercept = 1.5, linetype = "dashed") +
+    geom_vline(xintercept = 1.5, linewidth = 0.5) +
+    geom_hline(yintercept = 1.5, linewidth = 0.5) +
 
     geom_point(
       aes(
@@ -228,8 +251,8 @@ abci_plot_dot <- function(
         "ABCi",
         col.fill
       ),
-      colours = plot.palette,
-      values = colour.pointers,
+      colours = preset_palettes$values[[colour.palette]],
+      values = preset_palettes$values$POINT,
       na.value = colour.na,
       limits = scale.limits,
       breaks = scale.breaks,
@@ -273,36 +296,45 @@ abci_plot_dot <- function(
 
 #' abci_plot_dot_split
 #'
-#' @param data
-#' @param x.drug
-#' @param y.drug
-#' @param col.fill
-#' @param col.size
-#' @param col.analysis
+#' @param data Data frame, as output by `abci.analysis()`
+#' @param x.drug Character; Column containing concentrations of the first drug
+#' @param y.drug Character; Column containing concentrations of the second drug
+#' @param col.fill Character; Column containing the values to plot
+#' @param col.size Character; Column containing values to map to dot size
+#' @param col.analysis Character; Optional column denoting different analyses,
+#'   by which to facet the plot
 #' @param strict
-#' @param size.range
-#' @param scales
-#' @param n.rows
-#' @param n.cols
-#' @param x.text
-#' @param y.text
-#' @param x.decimal
-#' @param y.decimal
-#' @param x.mic.line
-#' @param y.mic.line
-#' @param col.mic
-#' @param mic.threshold
-#' @param colour.palette
-#' @param colour.na
-#' @param scale.limits
-#' @param scale.breaks
-#' @param add.axis.lines
-#' @param size_mapping
+#' @param size.range Range of dot size, defaults to `c(3, 22)`
+#' @param scales Should the scales be "fixed" (default), "free", "free_x", or
+#'   "free_y"? See `?facet_wrap` for more details.
+#' @param n.rows Number of rows when faceting. Defaults to NULL (let's ggplot2
+#'   choose).
+#' @param n.cols Number of columns when faceting. Defaults to NULL (let's
+#'   ggplot2 choose).
+#' @param x.text Character; Label for the x-axis
+#' @param y.text Character; Label for the y-axis
+#' @param x.decimal Number of decimal places to show for x-axis labels. Defaults
+#'   to 1.
+#' @param y.decimal Number of decimal places to show for y-axis labels. Defaults
+#'   to 1.
+#' @param x.mic.line Logical; Include MIC line for the drug on the x axis?
+#'   Default to FALSE.
+#' @param y.mic.line Logical; Include MIC line for the drug on the y axis?
+#'   Default to FALSE.
+#' @param col.mic Character; Column name to use for calculating MIC
+#' @param mic.threshold Threshold for calculating MIC. Defaults to 0.5.
+#' @param colour.palette One of the pre-made palettes
+#' @param colour.na Colour assigned to any NA values. Defaults to "white".
+#' @param scale.limits Limits for the colour scale. Defaults to `c(-2, 2)`.
+#' @param scale.breaks Breaks for the colour scale. Defaults to `seq(2, -2,
+#'   -0.5)`.
+#' @param add.axis.lines Should lines be drawn for the x- and y-axis when
+#'   faceting? Defaults to TRUE.
+#' @param size_mapping Data frame of values to use for size scaling. Currently
+#'   only supports the one object `size_mapping_N1S2`.
 #'
-#' @return
-#' @export
+#' @return A ggplot2 object
 #'
-#' @examples
 abci_plot_dot_split <- function(
     data,
     x.drug,
@@ -324,7 +356,7 @@ abci_plot_dot_split <- function(
     y.mic.line = FALSE,
     col.mic,
     mic.threshold = 0.5,
-    colour.palette = "BOB",
+    colour.palette = "RYB",
     colour.na = "white",
     scale.limits = c(-2.0, 2.0),
     scale.breaks = seq(2, -2, -0.5),
@@ -356,12 +388,11 @@ abci_plot_dot_split <- function(
     mutate(new = scales::rescale(N1S2, to = size.range)) %>%
     pull(new)
 
-
   # Set up proper colour scaling
   upper <- max(scale.limits)
   lower <- min(scale.limits)
 
-  plot.palette <- preset_palettes_split[[colour.palette]]
+  plot.palette <- preset_palettes_split$values[[colour.palette]]
 
   colour.pointers <- list(
     "up" = scales::rescale(
@@ -373,7 +404,6 @@ abci_plot_dot_split <- function(
       to = c(0, 1)
     )
   )
-
 
   # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
   # concentrations need to be converted to positions on their respective axes,
@@ -483,8 +513,8 @@ abci_plot_dot_split <- function(
 
     ggplot(d, aes(.data[[x.drug]], .data[[y.drug]])) +
 
-      geom_vline(xintercept = 1.5, linetype = "dashed") +
-      geom_hline(yintercept = 1.5, linetype = "dashed") +
+      geom_vline(xintercept = 1.5, linewidth = 0.5) +
+      geom_hline(yintercept = 1.5, linewidth = 0.5) +
 
       geom_point(aes(colour = col_fill, size = col_size)) +
 
@@ -613,8 +643,7 @@ abci_plot_dot_split <- function(
 #' @param add.axis.lines Logical; Add a line to the x- and y-axis when faceting
 #'   with fixed axis. Defaults to TRUE.
 #'
-#' @return
-#' @export
+#' @return A ggplot2 object
 #'
 #' @description Draws a series of lines, showing the amount of biofilm killed as
 #'   a function of the concentration of two drugs - one on the x-axis, the other
@@ -884,8 +913,6 @@ abci_plot_line <- function(
 #'   Defaults to FALSE.
 #' @param col.mic Character; Column name to use for calculating MICs
 #' @param mic.threshold Threshold to use when calculating MICs. Defaults to 0.5.
-#' @param delta Logical; Are plotted values the simple "delta" as calculated by
-#'   `abci.analysis()`? Defaults to FALSE.
 #' @param colour.palette One of the pre-made palettes.
 #' @param colour.na Colour assigned to any NA values. Defaults to "white".
 #' @param scale.limits Limits for the colour scale. Defaults to
@@ -895,8 +922,7 @@ abci_plot_line <- function(
 #' @param add.axis.lines Should lines be drawn for the x- and y-axis when
 #'   faceting? Defaults to TRUE.
 #'
-#' @return A ggplot object
-#' @export
+#' @return A ggplot2 object
 #'
 #' @description The main graphic function. It takes the data produced by
 #'   `abci.analysis()`, and uses `ggplot2` to produce a standard ABCi graph. If
@@ -925,7 +951,6 @@ abci_plot_tile <- function(
     y.mic.line = FALSE,
     col.mic,
     mic.threshold = 0.5,
-    delta = FALSE,
     colour.palette = "YP",
     colour.na = "white",
     scale.limits = c(-2.0, 2.0),
@@ -946,34 +971,7 @@ abci_plot_tile <- function(
 
   if (minflag) {
     data <- data %>%
-      mutate(min = ifelse(effect_avg < minflag.value, "<", NA))
-  }
-
-  upper <- max(scale.limits)
-  lower <- min(scale.limits)
-
-  plot.palette <- preset_palettes[[colour.palette]]
-
-  colour.pointers <-
-    if (colour.palette %in% c("PAN", "SUN", "BOB")) {
-      scales::rescale(
-        c(upper, upper / 2, upper / 4, upper / 8, 0, lower / 4, lower / 2, lower),
-        to = c(0, 1)
-      )
-    } else {
-      scales::rescale(
-        c(upper, 3 * upper / 4, upper / 2, upper / 4, 0, lower / 4, 3 * lower / 4, lower),
-        to = c(0, 1)
-      )
-    }
-
-  if (delta) {
-    scale.limits <- c(-100, 100)
-    scale.breaks <- seq(100, -100, -25)
-    colour.pointers <- scales::rescale(
-      c(100, 50, 25, 0, -25, -50, -100),
-      to = c(0, 1)
-    )
+      mutate(min = ifelse(effect_avg < minflag.value, "<", ""))
   }
 
   # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
@@ -1080,8 +1078,8 @@ abci_plot_tile <- function(
         "ABCi",
         col.fill
       ),
-      colours = plot.palette,
-      values = colour.pointers,
+      colours = preset_palettes$values[[colour.palette]],
+      values = preset_palettes$values$POINT,
       na.value = colour.na,
       limits = scale.limits,
       breaks = scale.breaks,
@@ -1147,8 +1145,6 @@ abci_plot_tile <- function(
 #'   Defaults to FALSE.
 #' @param col.mic Character; Column name to use for calculating MICs
 #' @param mic.threshold Threshold to use when calculating MICs. Defaults to 0.5.
-#' @param delta Logical; Are plotted values the simple "delta" as calculated by
-#'   `abci.analysis()`? Defaults to FALSE.
 #' @param colour.palette One of the pre-made palettes.
 #' @param colour.na Colour assigned to any NA values. Defaults to "white".
 #' @param scale.limits Limits for the colour scale. Defaults to
@@ -1158,12 +1154,11 @@ abci_plot_tile <- function(
 #' @param add.axis.lines Should lines be drawn for the x- and y-axis when
 #'   faceting? Defaults to TRUE.
 #'
-#' @return
-#' @export
+#' @return A ggplot2 object
 #'
 #' @description A version of the tile plot which separates negative and positive
-#' ABCi values, producing two plots instead of one. How the splitting/filtering
-#' is done is controlled via the `strict` argument.
+#'   ABCi values, producing two plots instead of one. How the
+#'   splitting/filtering is done is controlled via the `strict` argument.
 #'
 abci_plot_tile_split <- function(
     data,
@@ -1185,8 +1180,7 @@ abci_plot_tile_split <- function(
     y.mic.line = FALSE,
     col.mic,
     mic.threshold = 0.5,
-    delta = FALSE,
-    colour.palette = "BOB",
+    colour.palette = "RYB",
     colour.na = "white",
     scale.limits = c(-2, 2),
     scale.breaks = seq(-2, 2, 0.5),
@@ -1206,13 +1200,13 @@ abci_plot_tile_split <- function(
 
   if (minflag) {
     data <- data %>%
-      mutate(min = ifelse(effect_avg < minflag.value, "<", NA))
+      mutate(min = ifelse(effect_avg < minflag.value, "<", ""))
   }
 
   upper <- max(scale.limits)
   lower <- min(scale.limits)
 
-  plot.palette <- preset_palettes_split[[colour.palette]]
+  plot.palette <- preset_palettes_split$values[[colour.palette]]
 
   colour.pointers <- list(
     "up" = scales::rescale(
@@ -1224,15 +1218,6 @@ abci_plot_tile_split <- function(
       to = c(0, 1)
     )
   )
-
-  if (delta) {
-    scale.limits <- c(-100, 100)
-    scale.breaks <- seq(100, -100, -25)
-    colour.pointers <- scales::rescale(
-      c(100, 50, 25, 0, -25, -50, -100),
-      to = c(0, 1)
-    )
-  }
 
   # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
   # concentrations need to be converted to positions on their respective axes,
@@ -1299,7 +1284,7 @@ abci_plot_tile_split <- function(
         min_sym = ifelse(
           test = !is.na(col_fill),
           yes = min,
-          no = NA
+          no = ""
         )
       ),
       "down" = mutate(
@@ -1312,7 +1297,7 @@ abci_plot_tile_split <- function(
         min_sym = ifelse(
           test = !is.na(col_fill),
           yes = min,
-          no = NA
+          no = ""
         )
       )
     )
@@ -1328,7 +1313,7 @@ abci_plot_tile_split <- function(
         min_sym = ifelse(
           test = !is.na(col_fill),
           yes = min,
-          no = NA
+          no = ""
         )
       ),
       "down" = mutate(
@@ -1341,7 +1326,7 @@ abci_plot_tile_split <- function(
         min_sym = ifelse(
           test = !is.na(col_fill),
           yes = min,
-          no = NA
+          no = ""
         )
       )
     )

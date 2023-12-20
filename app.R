@@ -19,19 +19,8 @@ set_theme()
 
 # |- Fixed plot inputs ----------------------------------------------------
 
-abci_colours <- list(
-  "Three-colour palettes" = list(
-    "Red-yellow-blue" = "BOB",
-    "Orange-yellow-purple" = "SUN",
-    "Magenta-yellow-blue" = "PAN"
-  ),
-  "Two-colour palettes" = list(
-    "Orange-purple" = "OP",
-    "Yellow-purple" = "YP",
-    "Yellow-blue" = "YB",
-    "Red-blue" = "RB"
-  )
-)
+abci_colours <- preset_palettes[["choices"]]
+abci_colours_split <- preset_palettes_split[["choices"]]
 
 line_colours <- purrr::set_names(
   c("turbo", "viridis", "magma", "plasma", "inferno", "cividis", "mako", "rocket"),
@@ -83,6 +72,12 @@ tooltips <- list(
 
 # |- Plot legends ---------------------------------------------------------
 
+link_paragraph <- p(
+  "You can learn more about how to interpret your data ",
+  actionLink("legend_here", "here", .noWS = "after"),
+  ". The text below can be used as a template for a figure legend:"
+)
+
 plot_legends <- list(
   dot = div(
     p(
@@ -95,13 +90,7 @@ plot_legends <- list(
       "lines can be added to illustrate the activity thresholds of the ",
       "individual drugs (e.g., MIC)."
     ),
-
-    p(
-      "You can learn more about how to interpret your data ",
-      actionLink("legend_here", "here", .noWS = "after"),
-      ". The text below can be used as a template for a figure legend:"
-    ),
-
+    link_paragraph,
     p(
       style = "font-size:0.75em",
       "Effects of different combinations of [Drug A] and [Drug B], evaluated ",
@@ -129,13 +118,7 @@ plot_legends <- list(
       "Vertical and horizontal lines can be added to illustrate the activity ",
       "thresholds of the individual drugs (e.g., MIC)."
     ),
-
-    p(
-      "You can learn more about how to interpret your data ",
-      actionLink("legend_here", "here", .noWS = "after"),
-      ". The text below can be used as a template for a figure legend:"
-    ),
-
+    link_paragraph,
     p(
       style = "font-size:0.75em",
       "Effects of different combinations of [Drug A] and [Drug B], evaluated ",
@@ -161,13 +144,7 @@ plot_legends <- list(
       "is recommended to combine this with a line plot for interesting ",
       "concentrations."
     ),
-
-    p(
-      "You can learn more about how to interpret your data ",
-      actionLink("legend_here", "here", .noWS = "after"),
-      ". The text below can be used as a template for a figure legend:"
-    ),
-
+    link_paragraph,
     p(
       style = "font-size:0.75em",
       "Anti-Biofilm Combination Index (ABCI) [Citation] for combinations of ",
@@ -194,13 +171,7 @@ plot_legends <- list(
       "is not depicted: it is recommended to combine this with a line plot ",
       "for interesting concentrations."
     ),
-
-    p(
-      "You can learn more about how to interpret your data ",
-      actionLink("legend_here", "here", .noWS = "after"),
-      ". The text below can be used as a template for a figure legend:"
-    ),
-
+    link_paragraph,
     p(
       style = "font-size:0.75em",
       "Anti-Biofilm Combination Index (ABCI) [Citation] for combinations of ",
@@ -224,13 +195,7 @@ plot_legends <- list(
       "represented as lines. A vertical line can be added to illustrate the ",
       "activity threshold (e.g., MIC) of the drug represented on the X axis."
     ),
-
-    p(
-      "You can learn more about how to interpret your data ",
-      actionLink("legend_here", "here", .noWS = "after"),
-      ". The text below can be used as a template for a figure legend:"
-    ),
-
+    link_paragraph,
     p(
       style = "font-size:0.75em",
       "Percentage of [biofilm inhibition] of different combinations of [Drug ",
@@ -537,15 +502,20 @@ ui <- page_fluid(
             open = NA,
 
             HTML(paste0(
-              "<p>Visualize the ABCI results using <b>dot</b> or <b>tile</b> ",
-              "plots. The <b>split</b> versions separate the positive and ",
-              "negative ABCI values into two different plots, for visual ",
-              "simplicity.</p>"
+              "<p>Visualize the ABCI values from your results using ",
+              "<b>dot</b> or <b>tile</b> plots. The <b>split</b> versions ",
+              "separate the positive and negative ABCI values into two ",
+              "different plots, for visual simplicity.</p>"
             )),
 
             HTML(paste0(
-              "<p>Alternatively one can use the <b>line</b> plot to visualize ",
-              "antimicrobial activity for any subset of concentrations.</p>"
+              "<p>Alternatively the <b>line</b> plot visualizes antimicrobial ",
+              "activity for any subset of concentrations.</p>"
+            )),
+
+            HTML(paste0(
+              "<p>You can download the plot by right-clicking on it and ",
+              "selecting <b>'Save image as...'</b></p>"
             )),
 
             disabled(
@@ -585,15 +555,15 @@ ui <- page_fluid(
                 value = "line",
                 uiOutput("plot_inputs_line")
               )
-            ),
+            ) %>% tagAppendAttributes(class = "nav-justified"),
 
             disabled(
               actionButton(
                 inputId = "reset",
                 class = "mt-4 btn btn-warning",
-                label = "Reset",
+                label = "Analyze a new dataset",
                 icon = icon("arrow-rotate-left"),
-                title = "Reset all inputs, results, and plots"
+                title = "Resets all inputs, results, and plots"
               )
             )
           ),
@@ -748,16 +718,31 @@ server <- function(input, output) {
 
   observeEvent(input$load_example_data, {
     if (file.exists("example_data/example_data_lucas.xlsx")) {
-      input_data_raw(abci_reader("example_data/example_data_lucas.xlsx"))
+      input_1 <- abci_reader("example_data/example_data_lucas.xlsx")
+      showNotification(
+        type = "message",
+        duration = 3,
+        ui = HTML(paste0(
+          "<h4 class='alert-heading'><b>Success!</b></h4>",
+          "<p class='mb-0'>",
+          "Example data successfully loaded. Use the button at the bottom of ",
+          "the sidebar to proceed to the next step.",
+          "</p>"
+        ))
+      )
+      input_data_raw(input_1)
+
     } else {
       showNotification(
         type = "error",
         duration = 10,
         ui = HTML(paste0(
-          "<h4 class='alert-heading'>Error!</h4>",
-          "<p class='mb-0'>Example data not found.</p>"
+          "<h4 class='alert-heading'><b>Error!</b></h4>",
+          "<p class='mb-0'>Example data not found! Please upload a dataset ",
+          "to analyze.</p>"
         ))
       )
+      input_data_raw(NULL)
     }
   })
 
@@ -765,21 +750,36 @@ server <- function(input, output) {
   # |- User data ----------------------------------------------------------
 
   observeEvent(input$load_user_data, {
-    input_file <- input$load_user_data$datapath
-    input_ext <- tolower(tools::file_ext(input_file))
 
-    if (input_ext %in% c("xls", "xlsx", "ods")) {
-      input_data_raw(abci_reader(input_file))
-    } else {
+    input_1 <- abci_master_input(input$load_user_data$datapath)
+
+    if (input_1$status == "success") {
+      showNotification(
+        type = "message",
+        duration = 3,
+        ui = HTML(paste0(
+          "<h4 class='alert-heading'><b>Success!</b></h4>",
+          "<p class='mb-0'>",
+          input_1$message,
+          input_1$suggest,
+          "</p>"
+        ))
+      )
+      input_data_raw(input_1$data)
+
+    } else if (input_1$status == "error") {
       showNotification(
         type = "error",
         duration = 10,
         ui = HTML(paste0(
-          "<h4 class='alert-heading'>Error!</h4>",
-          "<p class='mb-0'>Input data must be '.xls/xlsx' or '.ods'. Please ",
-          "try again with another file.</p>"
+          "<h4 class='alert-heading'><b>Error!</b></h4>",
+          "<p class='mb-0'>",
+          input_1$message,
+          input_1$suggest,
+          "</p>"
         ))
       )
+      input_data_raw(NULL)
     }
   })
 
@@ -794,7 +794,6 @@ server <- function(input, output) {
           "name" = unique(experiment$cols),
           "concentrations" = levels(experiment$cols_conc)
         ),
-
         "rows" = list(
           "name" = unique(experiment$rows),
           "concentrations" = levels(experiment$rows_conc)
@@ -846,18 +845,20 @@ server <- function(input, output) {
 
   output$upload_input_names_card <- renderUI(
     card(
-      height = 350,
+      height = 340,
+      class = "mb-0",
       card_header(
         class = "bg-dark",
-        "Select an experiment to preview"
+        "Select an uploaded experiment to preview"
       ),
       card_body(
-        p(
-          "Use the dropdown to choose an uploaded experiment to preview. The ",
-          "card to the right displays some information gathered from the ",
-          "experiment, while the table below shows the loaded data. Make sure ",
-          "everything looks OK before proceeding."
-        ),
+        HTML(paste0(
+          "<p>Use the dropdown to choose an uploaded experiment to preview. ",
+          "The card to the right displays some information gathered from the ",
+          "experiment, while the table below shows the loaded data (<b>first ",
+          "replicate only</b>). Make sure everything looks OK before ",
+          "proceeding.</p>"
+        )),
         selectInput(
           inputId = "upload_input_names_selector",
           label = NULL,
@@ -871,25 +872,39 @@ server <- function(input, output) {
   upload_drug_card <- reactive({
     experiment_drugs <- drug_info()[[input$upload_input_names_selector]]
     card(
-      height = 350,
+      height = 340,
+      class = "mb-0",
       card_header(
         class = "bg-dark",
-        "Information on plate rows and columns"
+        paste0(
+          "Treatment information for experiment '",
+          input$upload_input_names_selector, "'"
+        )
       ),
       card_body(
-        p("Drug in columns: ", experiment_drugs[["cols"]][["name"]]),
-        p(
-          "Concentrations: ",
-          paste(experiment_drugs[["cols"]][["concentrations"]], collapse = ", ")
-        ),
+        HTML(paste0(
+          "<p><b>Treatment in the columns:</b> ",
+          experiment_drugs[["cols"]][["name"]],
+          "</p>"
+        )),
+        HTML(paste0(
+          "<p><b>Detected concentrations:</b> ",
+          paste(experiment_drugs[["cols"]][["concentrations"]], collapse = ", "),
+          "</p>"
+        )),
 
         hr(),
 
-        p("Drug in rows: ", experiment_drugs[["rows"]][["name"]]),
-        p(
-          "Concentrations: ",
-          paste(experiment_drugs[["rows"]][["concentrations"]], collapse = ", ")
-        )
+        HTML(paste0(
+          "<p><b>Treatment in the rows:</b> ",
+          experiment_drugs[["rows"]][["name"]],
+          "</p>"
+        )),
+        HTML(paste0(
+          "<p><b>Detected concentrations:</b> ",
+          paste(experiment_drugs[["rows"]][["concentrations"]], collapse = ", "),
+          "</p>"
+        ))
       )
     )
   })
@@ -901,7 +916,16 @@ server <- function(input, output) {
 
   output$upload_input_preview <- renderUI({
     req(input_data_preview(), input$upload_input_names_selector)
-    DT::dataTableOutput("input_data_preview_DT")
+    tagList(
+      card_header(
+        class = "bg-dark",
+        paste0(
+          "Input preview for the first replicate of '",
+          input$upload_input_names_selector, "'"
+        )
+      ),
+      DT::dataTableOutput("input_data_preview_DT")
+    )
   })
 
 
@@ -1000,17 +1024,18 @@ server <- function(input, output) {
 
     output$results_names_card <- renderUI(
       card(
-        height = 350,
+        height = 340,
+        class = "mb-0",
         card_header(
           class = "bg-dark",
-          "Preview ABCI results by experiment"
+          "Select an experiment to see the ABCI results"
         ),
         card_body(
-          p(
-            "Use the dropdown to see the calculated ABCI values for each ",
-            "uploaded experiment. The card to the right shows information ",
-            "about the chosen experiment."
-          ),
+          HTML(paste0(
+            "<p>Use the dropdown to see the calculated <b>average ABCI ",
+            "values</b> for each uploaded experiment. The card to the right ",
+            "shows some information about the chosen experiment.</p>"
+          )),
           selectInput(
             inputId = "results_names_selector",
             label = NULL,
@@ -1025,25 +1050,39 @@ server <- function(input, output) {
   analysis_drug_card <- reactive({
     experiment_drugs <- drug_info()[[input$results_names_selector]]
     card(
-      height = 350,
+      height = 340,
+      class = "mb-0",
       card_header(
         class = "bg-dark",
-        "Information on plate rows and columns"
+        paste0(
+          "Treatment information for experiment '",
+          input$results_names_selector, "'"
+        )
       ),
       card_body(
-        p("Drug in columns: ", experiment_drugs[["cols"]][["name"]]),
-        p(
-          "Concentrations: ",
-          paste(experiment_drugs[["cols"]][["concentrations"]], collapse = ", ")
-        ),
+        HTML(paste0(
+          "<p><b>Treatment in the columns:</b> ",
+          experiment_drugs[["cols"]][["name"]],
+          "</p>"
+        )),
+        HTML(paste0(
+          "<p><b>Detected concentrations:</b> ",
+          paste(experiment_drugs[["cols"]][["concentrations"]], collapse = ", "),
+          "</p>"
+        )),
 
         hr(),
 
-        p("Drug in rows: ", experiment_drugs[["rows"]][["name"]]),
-        p(
-          "Concentrations: ",
-          paste(experiment_drugs[["rows"]][["concentrations"]], collapse = ", ")
-        )
+        HTML(paste0(
+          "<p><b>Treatment in the rows:</b> ",
+          experiment_drugs[["rows"]][["name"]],
+          "</p>"
+        )),
+        HTML(paste0(
+          "<p><b>Detected concentrations:</b> ",
+          paste(experiment_drugs[["rows"]][["concentrations"]], collapse = ", "),
+          "</p>"
+        ))
       )
     )
   })
@@ -1055,11 +1094,20 @@ server <- function(input, output) {
 
   output$results_table_div <- renderUI({
     req(abci_results_display(), input$results_names_selector)
-    DT::dataTableOutput("results_table_DT")
+    tagList(
+      card_header(
+        class = "bg-dark",
+        paste0(
+          "ABCI results for the experiment '",
+          input$results_names_selector, "'"
+        )
+      ),
+      DT::dataTableOutput("results_table_DT")
+    )
   })
 
 
-  # |- Enable results download --------------------------------------------
+  # |- Results download ---------------------------------------------------
 
   output$download_handler <- downloadHandler(
     filename = function() {
@@ -1117,14 +1165,18 @@ server <- function(input, output) {
   observeEvent(input$reset, {
     showModal(
       modalDialog(
+        title = "Analyze a new dataset",
         paste0(
-          "Are you sure you want to reset the app? All results and plots will ",
-          "be lost!"
+          "Are you sure you want to analyze a new dataset? Doing so will ",
+          "reset the app, meaning any current results and plots will be lost!"
         ),
-        title = "Reset ShinyABCi",
         footer = tagList(
           modalButton(label = "Cancel"),
-          actionButton("confirm_reset", "Reset", class = "btn btn-danger")
+          actionButton(
+            "confirm_reset",
+            "Reset and start over",
+            class = "btn btn-danger"
+          )
         )
       )
     )
@@ -1159,9 +1211,8 @@ server <- function(input, output) {
     removeModal()
 
     showNotification(
-      type = "message",
       ui = HTML(paste0(
-        "<h4 class='alert-heading'>Reset successful!</h4>",
+        "<h4 class='alert-heading'><b>Reset successful!</b></h4>",
         "<p class='mb-0'>All inputs and results have been reset to their ",
         "original state. Upload another data set to get started.</p>"
       ))
@@ -1204,9 +1255,8 @@ server <- function(input, output) {
   observeEvent(input$legend_here, {
     showNotification(
       type = "default",
-      duration = 10,
       ui = HTML(paste0(
-        "<h4 class='alert-heading'>Whoa!</h4>",
+        "<h4 class='alert-heading'><b>Whoa!</b></h4>",
         "<p class='mb-0'>Sorry, that link doesn't lead anywhere... yet...</p>"
       ))
     )
@@ -1288,7 +1338,7 @@ server <- function(input, output) {
         selectInput(
           inputId = "plot_dot_colour_palette",
           label = NULL,
-          selected = "BOB",
+          selected = "A_RYB",
           choices = abci_colours
         )
       ),
@@ -1438,8 +1488,8 @@ server <- function(input, output) {
         selectInput(
           inputId = "plot_dot_split_colour_palette",
           label = NULL,
-          selected = "BOB",
-          choices = abci_colours
+          selected = "RYB",
+          choices = abci_colours_split
         )
       ),
 
@@ -1606,7 +1656,7 @@ server <- function(input, output) {
         selectInput(
           inputId = "plot_tile_colour_palette",
           label = NULL,
-          selected = "BOB",
+          selected = "A_RYB",
           choices = abci_colours
         )
       ),
@@ -1777,8 +1827,8 @@ server <- function(input, output) {
         selectInput(
           inputId = "plot_tile_split_colour_palette",
           label = NULL,
-          selected = "BOB",
-          choices = abci_colours
+          selected = "RYB",
+          choices = abci_colours_split
         )
       ),
 
@@ -2305,8 +2355,9 @@ server <- function(input, output) {
         if (max(abci_plot_data()$bio_normal) > 1.5) {
           showNotification(
             type = "warning",
+            duration = 10,
             ui = HTML(paste0(
-              "<h4 class='alert-heading'>Warning!</h4>",
+              "<h4 class='alert-heading'><b>Warning!</b></h4>",
               "<p class='mb-0'>Values on the Y axis greater than 1.5 have ",
               "been reduced.</p>"
             ))
