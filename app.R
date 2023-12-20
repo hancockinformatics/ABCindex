@@ -19,19 +19,8 @@ set_theme()
 
 # |- Fixed plot inputs ----------------------------------------------------
 
-abci_colours <- list(
-  "Three-colour palettes" = list(
-    "Red-yellow-blue" = "BOB",
-    "Orange-yellow-purple" = "SUN",
-    "Magenta-yellow-blue" = "PAN"
-  ),
-  "Two-colour palettes" = list(
-    "Orange-purple" = "OP",
-    "Yellow-purple" = "YP",
-    "Yellow-blue" = "YB",
-    "Red-blue" = "RB"
-  )
-)
+abci_colours <- preset_palettes[["choices"]]
+abci_colours_split <- preset_palettes_split[["choices"]]
 
 line_colours <- purrr::set_names(
   c("turbo", "viridis", "magma", "plasma", "inferno", "cividis", "mako", "rocket"),
@@ -1349,7 +1338,7 @@ server <- function(input, output) {
         selectInput(
           inputId = "plot_dot_colour_palette",
           label = NULL,
-          selected = "BOB",
+          selected = "A_RYB",
           choices = abci_colours
         )
       ),
@@ -1499,8 +1488,8 @@ server <- function(input, output) {
         selectInput(
           inputId = "plot_dot_split_colour_palette",
           label = NULL,
-          selected = "BOB",
-          choices = abci_colours
+          selected = "RYB",
+          choices = abci_colours_split
         )
       ),
 
@@ -1667,7 +1656,7 @@ server <- function(input, output) {
         selectInput(
           inputId = "plot_tile_colour_palette",
           label = NULL,
-          selected = "BOB",
+          selected = "A_RYB",
           choices = abci_colours
         )
       ),
@@ -1838,8 +1827,8 @@ server <- function(input, output) {
         selectInput(
           inputId = "plot_tile_split_colour_palette",
           label = NULL,
-          selected = "BOB",
-          choices = abci_colours
+          selected = "RYB",
+          choices = abci_colours_split
         )
       ),
 

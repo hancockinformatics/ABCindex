@@ -122,7 +122,7 @@ abci_plot_dot <- function(
     y.mic.line = FALSE,
     col.mic,
     mic.threshold = 0.5,
-    colour.palette = "BOB",
+    colour.palette = "A_RYB",
     colour.na = "white",
     scale.limits = c(-2.0, 2.0),
     scale.breaks = seq(2, -2, -0.5),
@@ -152,25 +152,6 @@ abci_plot_dot <- function(
     filter(reference %in% proper_labels) %>%
     mutate(new = scales::rescale(N1S2, to = size.range)) %>%
     pull(new)
-
-  # Set up proper colour scaling
-  upper <- max(scale.limits)
-  lower <- min(scale.limits)
-
-  plot.palette <- preset_palettes[[colour.palette]]
-
-  colour.pointers <-
-    if (colour.palette %in% c("PAN", "SUN", "BOB")) {
-      scales::rescale(
-        c(upper, upper / 2, upper / 4, upper / 8, 0, lower / 4, lower / 2, lower),
-        to = c(0, 1)
-      )
-    } else {
-      scales::rescale(
-        c(upper, 3 * upper / 4, upper / 2, upper / 4, 0, lower / 4, 3 * lower / 4, lower),
-        to = c(0, 1)
-      )
-    }
 
   # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
   # concentrations need to be converted to positions on their respective axes,
@@ -270,8 +251,8 @@ abci_plot_dot <- function(
         "ABCi",
         col.fill
       ),
-      colours = plot.palette,
-      values = colour.pointers,
+      colours = preset_palettes$values[[colour.palette]],
+      values = preset_palettes$values$POINT,
       na.value = colour.na,
       limits = scale.limits,
       breaks = scale.breaks,
@@ -375,7 +356,7 @@ abci_plot_dot_split <- function(
     y.mic.line = FALSE,
     col.mic,
     mic.threshold = 0.5,
-    colour.palette = "BOB",
+    colour.palette = "RYB",
     colour.na = "white",
     scale.limits = c(-2.0, 2.0),
     scale.breaks = seq(2, -2, -0.5),
@@ -407,12 +388,11 @@ abci_plot_dot_split <- function(
     mutate(new = scales::rescale(N1S2, to = size.range)) %>%
     pull(new)
 
-
   # Set up proper colour scaling
   upper <- max(scale.limits)
   lower <- min(scale.limits)
 
-  plot.palette <- preset_palettes_split[[colour.palette]]
+  plot.palette <- preset_palettes_split$values[[colour.palette]]
 
   colour.pointers <- list(
     "up" = scales::rescale(
@@ -994,24 +974,6 @@ abci_plot_tile <- function(
       mutate(min = ifelse(effect_avg < minflag.value, "<", ""))
   }
 
-  upper <- max(scale.limits)
-  lower <- min(scale.limits)
-
-  plot.palette <- preset_palettes[[colour.palette]]
-
-  colour.pointers <-
-    if (colour.palette %in% c("PAN", "SUN", "BOB")) {
-      scales::rescale(
-        c(upper, upper / 2, upper / 4, upper / 8, 0, lower / 4, lower / 2, lower),
-        to = c(0, 1)
-      )
-    } else {
-      scales::rescale(
-        c(upper, 3 * upper / 4, upper / 2, upper / 4, 0, lower / 4, 3 * lower / 4, lower),
-        to = c(0, 1)
-      )
-    }
-
   # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
   # concentrations need to be converted to positions on their respective axes,
   # as the `geom_(x|y)line` functions only work by position. And since we don't
@@ -1116,8 +1078,8 @@ abci_plot_tile <- function(
         "ABCi",
         col.fill
       ),
-      colours = plot.palette,
-      values = colour.pointers,
+      colours = preset_palettes$values[[colour.palette]],
+      values = preset_palettes$values$POINT,
       na.value = colour.na,
       limits = scale.limits,
       breaks = scale.breaks,
@@ -1218,7 +1180,7 @@ abci_plot_tile_split <- function(
     y.mic.line = FALSE,
     col.mic,
     mic.threshold = 0.5,
-    colour.palette = "BOB",
+    colour.palette = "RYB",
     colour.na = "white",
     scale.limits = c(-2, 2),
     scale.breaks = seq(-2, 2, 0.5),
@@ -1244,7 +1206,7 @@ abci_plot_tile_split <- function(
   upper <- max(scale.limits)
   lower <- min(scale.limits)
 
-  plot.palette <- preset_palettes_split[[colour.palette]]
+  plot.palette <- preset_palettes_split$values[[colour.palette]]
 
   colour.pointers <- list(
     "up" = scales::rescale(
