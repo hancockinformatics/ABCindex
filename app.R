@@ -513,10 +513,10 @@ ui <- page_fluid(
               "activity for any subset of concentrations.</p>"
             )),
 
-            HTML(paste0(
-              "<p>You can download the plot by right-clicking on it and ",
-              "selecting <b>'Save image as...'</b></p>"
-            )),
+            p(
+              "You can save the plot by right-clicking on it and selecting ",
+              "'Save Image As...' from the menu."
+            ),
 
             disabled(
               actionButton(
@@ -720,8 +720,8 @@ server <- function(input, output) {
     if (file.exists("example_data/example_data_lucas.xlsx")) {
       input_1 <- abci_reader("example_data/example_data_lucas.xlsx")
       showNotification(
+        id = "upload_success",
         type = "message",
-        duration = 3,
         ui = HTML(paste0(
           "<h4 class='alert-heading'><b>Success!</b></h4>",
           "<p class='mb-0'>",
@@ -755,8 +755,8 @@ server <- function(input, output) {
 
     if (input_1$status == "success") {
       showNotification(
+        id = "upload_success",
         type = "message",
-        duration = 3,
         ui = HTML(paste0(
           "<h4 class='alert-heading'><b>Success!</b></h4>",
           "<p class='mb-0'>",
@@ -934,6 +934,7 @@ server <- function(input, output) {
   observeEvent(input$proceed_abci_calculations, {
     req(input_data_tidy())
     updateNavbarPage(inputId = "navbar", selected = "analysis")
+    removeNotification(id = "upload_success")
   })
 
 
