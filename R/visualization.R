@@ -92,8 +92,7 @@ abci_mic <- function(
 #' @param size_mapping Data frame of values to use for size scaling. Currently
 #'   only supports the one object `size_mapping_N1S2`.
 #'
-#' @return A ggplot2 object#'
-#' @export
+#' @return A ggplot2 object
 #'
 #' @description A secondary graphing function. Similar to `abci_plot_tile()`,
 #'   but the amount of biofilm killed (typically "effect" column) is mapped to
@@ -316,36 +315,45 @@ abci_plot_dot <- function(
 
 #' abci_plot_dot_split
 #'
-#' @param data
-#' @param x.drug
-#' @param y.drug
-#' @param col.fill
-#' @param col.size
-#' @param col.analysis
+#' @param data Data frame, as output by `abci.analysis()`
+#' @param x.drug Character; Column containing concentrations of the first drug
+#' @param y.drug Character; Column containing concentrations of the second drug
+#' @param col.fill Character; Column containing the values to plot
+#' @param col.size Character; Column containing values to map to dot size
+#' @param col.analysis Character; Optional column denoting different analyses,
+#'   by which to facet the plot
 #' @param strict
-#' @param size.range
-#' @param scales
-#' @param n.rows
-#' @param n.cols
-#' @param x.text
-#' @param y.text
-#' @param x.decimal
-#' @param y.decimal
-#' @param x.mic.line
-#' @param y.mic.line
-#' @param col.mic
-#' @param mic.threshold
-#' @param colour.palette
-#' @param colour.na
-#' @param scale.limits
-#' @param scale.breaks
-#' @param add.axis.lines
-#' @param size_mapping
+#' @param size.range Range of dot size, defaults to `c(3, 22)`
+#' @param scales Should the scales be "fixed" (default), "free", "free_x", or
+#'   "free_y"? See `?facet_wrap` for more details.
+#' @param n.rows Number of rows when faceting. Defaults to NULL (let's ggplot2
+#'   choose).
+#' @param n.cols Number of columns when faceting. Defaults to NULL (let's
+#'   ggplot2 choose).
+#' @param x.text Character; Label for the x-axis
+#' @param y.text Character; Label for the y-axis
+#' @param x.decimal Number of decimal places to show for x-axis labels. Defaults
+#'   to 1.
+#' @param y.decimal Number of decimal places to show for y-axis labels. Defaults
+#'   to 1.
+#' @param x.mic.line Logical; Include MIC line for the drug on the x axis?
+#'   Default to FALSE.
+#' @param y.mic.line Logical; Include MIC line for the drug on the y axis?
+#'   Default to FALSE.
+#' @param col.mic Character; Column name to use for calculating MIC
+#' @param mic.threshold Threshold for calculating MIC. Defaults to 0.5.
+#' @param colour.palette One of the pre-made palettes
+#' @param colour.na Colour assigned to any NA values. Defaults to "white".
+#' @param scale.limits Limits for the colour scale. Defaults to `c(-2, 2)`.
+#' @param scale.breaks Breaks for the colour scale. Defaults to `seq(2, -2,
+#'   -0.5)`.
+#' @param add.axis.lines Should lines be drawn for the x- and y-axis when
+#'   faceting? Defaults to TRUE.
+#' @param size_mapping Data frame of values to use for size scaling. Currently
+#'   only supports the one object `size_mapping_N1S2`.
 #'
-#' @return
-#' @export
+#' @return A ggplot2 object
 #'
-#' @examples
 abci_plot_dot_split <- function(
     data,
     x.drug,
@@ -416,7 +424,6 @@ abci_plot_dot_split <- function(
       to = c(0, 1)
     )
   )
-
 
   # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
   # concentrations need to be converted to positions on their respective axes,
@@ -656,8 +663,7 @@ abci_plot_dot_split <- function(
 #' @param add.axis.lines Logical; Add a line to the x- and y-axis when faceting
 #'   with fixed axis. Defaults to TRUE.
 #'
-#' @return
-#' @export
+#' @return A ggplot2 object
 #'
 #' @description Draws a series of lines, showing the amount of biofilm killed as
 #'   a function of the concentration of two drugs - one on the x-axis, the other
@@ -936,8 +942,7 @@ abci_plot_line <- function(
 #' @param add.axis.lines Should lines be drawn for the x- and y-axis when
 #'   faceting? Defaults to TRUE.
 #'
-#' @return A ggplot object
-#' @export
+#' @return A ggplot2 object
 #'
 #' @description The main graphic function. It takes the data produced by
 #'   `abci.analysis()`, and uses `ggplot2` to produce a standard ABCi graph. If
@@ -986,7 +991,7 @@ abci_plot_tile <- function(
 
   if (minflag) {
     data <- data %>%
-      mutate(min = ifelse(effect_avg < minflag.value, "<", NA))
+      mutate(min = ifelse(effect_avg < minflag.value, "<", ""))
   }
 
   upper <- max(scale.limits)
@@ -1187,12 +1192,11 @@ abci_plot_tile <- function(
 #' @param add.axis.lines Should lines be drawn for the x- and y-axis when
 #'   faceting? Defaults to TRUE.
 #'
-#' @return
-#' @export
+#' @return A ggplot2 object
 #'
 #' @description A version of the tile plot which separates negative and positive
-#' ABCi values, producing two plots instead of one. How the splitting/filtering
-#' is done is controlled via the `strict` argument.
+#'   ABCi values, producing two plots instead of one. How the
+#'   splitting/filtering is done is controlled via the `strict` argument.
 #'
 abci_plot_tile_split <- function(
     data,
@@ -1234,7 +1238,7 @@ abci_plot_tile_split <- function(
 
   if (minflag) {
     data <- data %>%
-      mutate(min = ifelse(effect_avg < minflag.value, "<", NA))
+      mutate(min = ifelse(effect_avg < minflag.value, "<", ""))
   }
 
   upper <- max(scale.limits)
@@ -1318,7 +1322,7 @@ abci_plot_tile_split <- function(
         min_sym = ifelse(
           test = !is.na(col_fill),
           yes = min,
-          no = NA
+          no = ""
         )
       ),
       "down" = mutate(
@@ -1331,7 +1335,7 @@ abci_plot_tile_split <- function(
         min_sym = ifelse(
           test = !is.na(col_fill),
           yes = min,
-          no = NA
+          no = ""
         )
       )
     )
@@ -1347,7 +1351,7 @@ abci_plot_tile_split <- function(
         min_sym = ifelse(
           test = !is.na(col_fill),
           yes = min,
-          no = NA
+          no = ""
         )
       ),
       "down" = mutate(
@@ -1360,7 +1364,7 @@ abci_plot_tile_split <- function(
         min_sym = ifelse(
           test = !is.na(col_fill),
           yes = min,
-          no = NA
+          no = ""
         )
       )
     )

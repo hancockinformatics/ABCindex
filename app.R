@@ -732,6 +732,7 @@ server <- function(input, output) {
       input_1 <- abci_reader("example_data/example_data_lucas.xlsx")
       showNotification(
         type = "message",
+        duration = 3,
         ui = HTML(paste0(
           "<h4 class='alert-heading'><b>Success!</b></h4>",
           "<p class='mb-0'>",
@@ -766,6 +767,7 @@ server <- function(input, output) {
     if (input_1$status == "success") {
       showNotification(
         type = "message",
+        duration = 3,
         ui = HTML(paste0(
           "<h4 class='alert-heading'><b>Success!</b></h4>",
           "<p class='mb-0'>",
