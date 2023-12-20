@@ -82,8 +82,6 @@ abci_mic <- function(
 #'   Default to FALSE.
 #' @param col.mic Character; Column name to use for calculating MIC
 #' @param mic.threshold Threshold for calculating MIC. Defaults to 0.5.
-#' @param delta Logical; Are plotted values the simple "delta" as calculated by
-#'   `abci.analysis()`? Defaults to FALSE.
 #' @param colour.palette One of the pre-made palettes
 #' @param colour.na Colour assigned to any NA values. Defaults to "white".
 #' @param scale.limits Limits for the colour scale. Defaults to `c(-2, 2)`.
@@ -125,7 +123,6 @@ abci_plot_dot <- function(
     y.mic.line = FALSE,
     col.mic,
     mic.threshold = 0.5,
-    delta = FALSE,
     colour.palette = "BOB",
     colour.na = "white",
     scale.limits = c(-2.0, 2.0),
@@ -175,16 +172,6 @@ abci_plot_dot <- function(
         to = c(0, 1)
       )
     }
-
-  if (delta) {
-    scale.limits <- c(-100, 100)
-    scale.breaks <- seq(100, -100, -25)
-
-    colour.pointers <- scales::rescale(
-      c(100, 50, 25, 0, -25, -50, -100),
-      to = c(0, 1)
-    )
-  }
 
   # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
   # concentrations need to be converted to positions on their respective axes,
@@ -940,8 +927,6 @@ abci_plot_line <- function(
 #'   Defaults to FALSE.
 #' @param col.mic Character; Column name to use for calculating MICs
 #' @param mic.threshold Threshold to use when calculating MICs. Defaults to 0.5.
-#' @param delta Logical; Are plotted values the simple "delta" as calculated by
-#'   `abci.analysis()`? Defaults to FALSE.
 #' @param colour.palette One of the pre-made palettes.
 #' @param colour.na Colour assigned to any NA values. Defaults to "white".
 #' @param scale.limits Limits for the colour scale. Defaults to
@@ -981,7 +966,6 @@ abci_plot_tile <- function(
     y.mic.line = FALSE,
     col.mic,
     mic.threshold = 0.5,
-    delta = FALSE,
     colour.palette = "YP",
     colour.na = "white",
     scale.limits = c(-2.0, 2.0),
@@ -1022,15 +1006,6 @@ abci_plot_tile <- function(
         to = c(0, 1)
       )
     }
-
-  if (delta) {
-    scale.limits <- c(-100, 100)
-    scale.breaks <- seq(100, -100, -25)
-    colour.pointers <- scales::rescale(
-      c(100, 50, 25, 0, -25, -50, -100),
-      to = c(0, 1)
-    )
-  }
 
   # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
   # concentrations need to be converted to positions on their respective axes,
@@ -1203,8 +1178,6 @@ abci_plot_tile <- function(
 #'   Defaults to FALSE.
 #' @param col.mic Character; Column name to use for calculating MICs
 #' @param mic.threshold Threshold to use when calculating MICs. Defaults to 0.5.
-#' @param delta Logical; Are plotted values the simple "delta" as calculated by
-#'   `abci.analysis()`? Defaults to FALSE.
 #' @param colour.palette One of the pre-made palettes.
 #' @param colour.na Colour assigned to any NA values. Defaults to "white".
 #' @param scale.limits Limits for the colour scale. Defaults to
@@ -1241,7 +1214,6 @@ abci_plot_tile_split <- function(
     y.mic.line = FALSE,
     col.mic,
     mic.threshold = 0.5,
-    delta = FALSE,
     colour.palette = "BOB",
     colour.na = "white",
     scale.limits = c(-2, 2),
@@ -1280,15 +1252,6 @@ abci_plot_tile_split <- function(
       to = c(0, 1)
     )
   )
-
-  if (delta) {
-    scale.limits <- c(-100, 100)
-    scale.breaks <- seq(100, -100, -25)
-    colour.pointers <- scales::rescale(
-      c(100, 50, 25, 0, -25, -50, -100),
-      to = c(0, 1)
-    )
-  }
 
   # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
   # concentrations need to be converted to positions on their respective axes,
