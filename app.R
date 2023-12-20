@@ -524,6 +524,11 @@ ui <- page_fluid(
               "activity for any subset of concentrations.</p>"
             )),
 
+            HTML(paste0(
+              "<p>You can download the plot by right-clicking on it and ",
+              "selecting <b>'Save image as...'</b></p>"
+            )),
+
             disabled(
               actionButton(
                 inputId = "create_plot",
