@@ -410,40 +410,24 @@ ui <- page_fluid(
             p(
               "ABCI values are calculated for every combination of ",
               "concentrations in your experiments. Positive ABCI values ",
-              "indicate the combination is more effective than eiher ",
+              "indicate the combination is more effective than either ",
               "individual drug. Please refer to the ",
               actionLink("tutorial_link", "ABCI tutorial"),
               " pages to learn more."
             ),
 
-            disabled(
-              downloadButton(
-                outputId = "download_handler",
-                label = "Download results table",
-                class = "btn btn-success align-items-center",
-                style = "width: 50%",
-                title = paste0(
-                  "Once your data has been analyzed, you can download the ",
-                  "results here"
-                )
-              )
-            ),
-
             HTML(paste0(
               "<p>Visualize the ABCI values from your results using ",
-              "<b>dot</b> or <b>tile</b> plots. The <b>split</b> versions ",
+              "<b>Dot</b> or <b>Tile</b> plots. The <b>Split</b> versions ",
               "separate the positive and negative ABCI values into two ",
-              "different plots, for visual simplicity.</p>"
-            )),
-
-            HTML(paste0(
-              "<p>Alternatively the <b>line</b> plot visualizes antimicrobial ",
-              "activity for any subset of concentrations.</p>"
+              "separate plots, for visual simplicity. Alternatively, the ",
+              "<b>Line</b> plot visualizes antimicrobial activity for any ",
+              "subset of concentrations.</p>"
             )),
 
             p(
               "You can save the plot by right-clicking on it and selecting ",
-              "'Save Image As...' from the menu."
+              "'Save Image As'."
             ),
 
             disabled(
@@ -485,10 +469,25 @@ ui <- page_fluid(
               )
             ) %>% tagAppendAttributes(class = "nav-justified"),
 
+            hr(),
+
+            disabled(
+              downloadButton(
+                outputId = "download_handler",
+                label = "Download results table",
+                class = "btn btn-success align-items-center mb-2",
+                style = "width: 50%",
+                title = paste0(
+                  "Once your data has been analyzed, you can download the ",
+                  "results here"
+                )
+              )
+            ),
+
             disabled(
               actionButton(
                 inputId = "reset",
-                class = "mt-4 btn btn-warning",
+                class = "btn btn-warning",
                 label = "Analyze a new dataset",
                 icon = icon("arrow-rotate-left"),
                 title = "Resets all inputs, results, and plots"
@@ -875,9 +874,9 @@ server <- function(input, output) {
 
       tagList(
         p(
-          "ShinyABCi expects data to be normalized to percentages (either ",
-          "0-1 or 0-100). If your data does not meet this criteria, use ",
-          "the options below to have it normalized."
+          "ShinyABCi expects the input data to be normalized to percentages ",
+          "(either 0-1 or 0-100). If your data does not meet this criteria, ",
+          "use the options below to have it normalized prior to calculations."
         ),
         radioButtons(
           inputId = "normalize_radio",
@@ -1248,7 +1247,7 @@ server <- function(input, output) {
       accordion(
         open = FALSE,
         accordion_panel(
-          title = "Advanced options",
+          title = "Advanced plot options",
 
           wrap_selector(
             label = "Swap X and Y",
@@ -1398,7 +1397,7 @@ server <- function(input, output) {
       accordion(
         open = FALSE,
         accordion_panel(
-          title = "Advanced options",
+          title = "Advanced plot options",
 
           wrap_selector(
             label = "Swap X and Y",
@@ -1568,7 +1567,7 @@ server <- function(input, output) {
       accordion(
         open = FALSE,
         accordion_panel(
-          title = "Advanced options",
+          title = "Advanced plot options",
 
           wrap_selector(
             label = "Swap X and Y",
@@ -1738,7 +1737,7 @@ server <- function(input, output) {
       accordion(
         open = FALSE,
         accordion_panel(
-          title = "Advanced options",
+          title = "Advanced plot options",
 
           wrap_selector(
             label = "Swap X and Y",
@@ -1960,7 +1959,7 @@ server <- function(input, output) {
       accordion(
         open = FALSE,
         accordion_panel(
-          title = "Advanced options",
+          title = "Advanced plot options",
 
           wrap_selector(
             label = "Swap X and lines",

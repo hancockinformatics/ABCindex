@@ -1,6 +1,6 @@
 Package: ShinyABCi
 Title: ShinyABCi
-Version: 0.99.183
+Version: 0.99.184
 Authors@R:
   person(given = "Travis",
          family = "Blimkie",
