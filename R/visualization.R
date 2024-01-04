@@ -947,6 +947,8 @@ abci_plot_tile <- function(
     y.decimal = 1,
     minflag = FALSE,
     minflag.value = 0.5,
+    highlight = FALSE,
+    highlight.value = 0.9,
     x.mic.line = FALSE,
     y.mic.line = FALSE,
     col.mic,
@@ -972,6 +974,11 @@ abci_plot_tile <- function(
   if (minflag) {
     data <- data %>%
       mutate(min = ifelse(effect_avg < minflag.value, "<", ""))
+  }
+
+  if (highlight) {
+    data <- data %>%
+      mutate(high = ifelse(effect_avg > highlight.value, "*", ""))
   }
 
   # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
@@ -1045,6 +1052,8 @@ abci_plot_tile <- function(
     }} +
 
     {if (minflag) geom_text(aes(label = min), size = 6)} +
+
+    {if (highlight) geom_text(aes(label = high), size = 6)} +
 
     {if (x.mic.line) {
       geom_vline(data = mic.table, aes(xintercept = XLAB))
