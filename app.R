@@ -22,9 +22,12 @@ set_theme()
 abci_colours <- preset_palettes[["choices"]]
 abci_colours_split <- preset_palettes_split[["choices"]]
 
-line_colours <- purrr::set_names(
-  c("turbo", "viridis", "magma", "plasma", "inferno", "cividis", "mako", "rocket"),
-  stringr::str_to_title
+line_colours <- list(
+  Accent = "Accent",
+  Dark = "Dark2",
+  `Set 1` = "Set1",
+  `Set 2` = "Set2",
+  `Set 3` = "Set3"
 )
 
 plot_scales <- c(
@@ -513,10 +516,10 @@ ui <- page_fluid(
               "activity for any subset of concentrations.</p>"
             )),
 
-            HTML(paste0(
-              "<p>You can download the plot by right-clicking on it and ",
-              "selecting <b>'Save image as...'</b></p>"
-            )),
+            p(
+              "You can save the plot by right-clicking on it and selecting ",
+              "'Save Image As...' from the menu."
+            ),
 
             disabled(
               actionButton(
@@ -720,8 +723,8 @@ server <- function(input, output) {
     if (file.exists("example_data/example_data_lucas.xlsx")) {
       input_1 <- abci_reader("example_data/example_data_lucas.xlsx")
       showNotification(
+        id = "upload_success",
         type = "message",
-        duration = 3,
         ui = HTML(paste0(
           "<h4 class='alert-heading'><b>Success!</b></h4>",
           "<p class='mb-0'>",
@@ -755,8 +758,8 @@ server <- function(input, output) {
 
     if (input_1$status == "success") {
       showNotification(
+        id = "upload_success",
         type = "message",
-        duration = 3,
         ui = HTML(paste0(
           "<h4 class='alert-heading'><b>Success!</b></h4>",
           "<p class='mb-0'>",
@@ -934,6 +937,7 @@ server <- function(input, output) {
   observeEvent(input$proceed_abci_calculations, {
     req(input_data_tidy())
     updateNavbarPage(inputId = "navbar", selected = "analysis")
+    removeNotification(id = "upload_success")
   })
 
 
@@ -1183,7 +1187,6 @@ server <- function(input, output) {
   })
 
   observeEvent(input$confirm_reset, {
-    shinyjs::reset("visualization_sidebar", asis = FALSE)
     updateNavbarPage(inputId = "navbar", selected = "upload")
     input_data_raw(NULL)
     input_data_tidy(NULL)
@@ -1299,8 +1302,8 @@ server <- function(input, output) {
       "viridis" = modalDialog(
         title = "Line colour palettes",
         easyClose = TRUE,
-        size = "l",
-        HTML("<img src='viridis_palettes.png' class='center'>")
+        size = "m",
+        HTML("<img src='rcolorbrewer_supported_palettes.png' class='center'>")
       )
     ),
     tagAppendAttributes,
@@ -2410,12 +2413,13 @@ server <- function(input, output) {
 
     output$abci_plot_ui <- renderUI(
       tagList(
-        plotOutput(
-          outputId = "abci_plot",
-          width = output_dims[1],
-          height = output_dims[2]
-        ) %>% shinycssloaders::withSpinner(),
-
+        shinycssloaders::withSpinner(
+          plotOutput(
+            outputId = "abci_plot",
+            width = output_dims[1],
+            height = output_dims[2]
+          )
+        ),
         card(
           class = "border-0",
           card_body(
