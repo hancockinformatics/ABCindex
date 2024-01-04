@@ -262,52 +262,46 @@ ui <- page_fluid(
             "Anti-Biofilm Combination Index calculation and visualization"
           ),
 
+          HTML(paste0(
+            "<p class='lead mb-4'>Welcome to ShinyABCi, a tool to quantify ",
+            "and visualize the <i>in vitro</i> effects of drug combinations. ",
+            "The Anti-Biofilm Combination Index (ABCI) is a metric designed ",
+            "to assess drug combination therapy in checkerboard assays ",
+            "without relying on activity thresholds (MIC/MBIC/MBEC), which ",
+            "present significant challenges when evaluating antibiofilm ",
+            "activity.</p>"
+          )),
+
+          HTML(paste0(
+            "<p class='lead mb-4'>Here, you can calculate ABCIs for your ",
+            "checkerboard data, as well as visualize it with different plots ",
+            "designed to quickly identify promising interactions and ",
+            "favourable drug ratios.</p>"
+          )),
+
+          HTML(paste0(
+            "<p class='lead mb-4'>Click the Get Started button to upload ",
+            "your data! If you’d like to learn more about how the ABCI is ",
+            "calculated or how to use ShinyABCi, check the respective ",
+            "tutorials below. For more information, including how to cite ",
+            "ShinyABCi, please refer to the About page.</p>"
+          )),
+
           div(
-            class = "col-lg-12 mx-auto",
-
-            HTML(paste0(
-              "<p class='lead mb-4'>Welcome to ShinyABCi, a tool to quantify ",
-              "and visualize the <i>in vitro</i> effects of drug combinations. ",
-              "The Anti-Biofilm Combination Index (ABCI) is a metric designed ",
-              "to assess drug combination therapy in checkerboard assays ",
-              "without relying on activity thresholds (MIC/MBIC/MBEC), which ",
-              "present significant challenges when evaluating antibiofilm ",
-              "activity.</p>"
-            )),
-
-            HTML(paste0(
-              "<p class='lead mb-4'>Here, you can calculate ABCIs for your ",
-              "checkerboard data, as well as visualize it with different plots ",
-              "designed to quickly identify promising interactions and ",
-              "favourable drug ratios.</p>"
-            )),
-
-            HTML(paste0(
-              "<p class='lead mb-4'>Click the Get Started button to upload ",
-              "your data! If you’d like to learn more about how the ABCI is ",
-              "calculated or how to use ShinyABCi, check the respective ",
-              "tutorials below. For more information, including how to cite ",
-              "ShinyABCi, please refer to the About page.</p>"
-            )),
-
-            br(),
-
-            div(
-              actionButton(
-                inputId = "get_started",
-                class = "btn btn-primary btn-lg px-4 me-md-2",
-                label = div(
-                  icon("play"),
-                  HTML("Get started")
-                )
-              ),
-              actionButton(
-                inputId = "learn_more",
-                class = "btn btn-outline-secondary btn-lg px-4",
-                label = div(
-                  icon("circle-info"),
-                  HTML("Learn more")
-                )
+            actionButton(
+              inputId = "get_started",
+              class = "btn btn-primary btn-lg px-4 me-md-2",
+              label = div(
+                icon("play"),
+                HTML("Get started")
+              )
+            ),
+            actionButton(
+              inputId = "learn_more",
+              class = "btn btn-outline-secondary btn-lg px-4",
+              label = div(
+                icon("circle-info"),
+                HTML("Learn more")
               )
             )
           )
@@ -403,7 +397,7 @@ ui <- page_fluid(
         layout_sidebar(
           sidebar = sidebar(
             id = "results_sidebar",
-            title = "ABCI results & visualization",
+            title = "ABCI visualizations and results",
             width = "580px",
             open = NA,
 
@@ -566,7 +560,7 @@ ui <- page_fluid(
                   class = "col",
                   tags$dl(
                     tags$dt(a(href = "https://rstudio.github.io/bslib/index.html", "bslib")),
-                    tags$dd("Provides a modern UI toolkit for Shiny based on Bootstrap."),
+                    tags$dd("Provides a modern UI toolkit for Shiny based on Bootstrap"),
                     tags$dt(a(href = "https://shiny.posit.co/", "shiny")),
                     tags$dd("Easily create and deploy web apps from R"),
                   )
@@ -646,6 +640,7 @@ server <- function(input, output) {
   observeEvent(input$load_example_data, {
     if (file.exists("example_data/example_data_lucas.xlsx")) {
       input_1 <- abci_reader("example_data/example_data_lucas.xlsx")
+
       showNotification(
         id = "upload_success",
         type = "message",
@@ -653,8 +648,7 @@ server <- function(input, output) {
           "<h4 class='alert-heading'><b>Success!</b></h4>",
           "<p class='mb-0'>",
           "Example data successfully loaded. Use the button at the bottom of ",
-          "the sidebar to proceed to the next step.",
-          "</p>"
+          "the sidebar to proceed to the next step.</p>"
         ))
       )
       input_data_raw(input_1)
@@ -869,7 +863,7 @@ server <- function(input, output) {
     removeNotification(id = "upload_success")
 
     showModal(modalDialog(
-      title = "Perform ABCI calculations",
+      title = "Perform ABCI calculations: Data normalization",
       size = "l",
 
       tagList(
