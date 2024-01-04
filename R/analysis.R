@@ -1,4 +1,4 @@
-#' Tidy-calculate ABCi values for one or more analyses
+#' abci_analysis
 #'
 #' @param data Data frame containing the concentrations of two drugs, and the
 #'   assay output/measurement
@@ -10,8 +10,6 @@
 #' @param col.reps Character; Column name denoting replicates. Defaults to NULL
 #'   for no replicates.
 #' @param normalize Logical; Should the data be normalized? Defaults to TRUE.
-#' @param delta Logical; Should calculation include simple difference of biofilm
-#'   eliminated? Defaults to FALSE.
 #'
 #' @return A data frame (tibble) with all the original columns, plus the
 #'   following new columns:
@@ -29,17 +27,6 @@
 #'   \item{bio_normal_avg}{Averaged "bio_normal", universally calculated}
 #'   \item{effect_avg}{Averaged "effect", universally calculated}
 #'   \item{abci_avg}{Averaged ABCi, universally calculate}
-#'   \item{delta}{Optional; simple difference in the measurement}
-#'
-#' @export
-#'
-#' @description Takes the data of checkerboard assays (surviving biofilm at
-#'   different concentrations of two drugs) and calculates biofilm percentages
-#'   and ABCi. The user provided `data` must contain at least three columns: two
-#'   with the concentrations of the drugs (`x.drug` and `y.drug`), and one with
-#'   the biomass (`col.data`). Optionally, one can provide `col.analysis` which
-#'   servers to split the single table `data` into groups, which are analyzed
-#'   separately before being recombined in the output.
 #'
 abci_analysis <- function(
     data,
@@ -48,8 +35,7 @@ abci_analysis <- function(
     col.data,
     col.analysis = NULL,
     col.reps = NULL,
-    normalize = TRUE,
-    delta = FALSE
+    normalize = TRUE
 ) {
   options("cli.progress_show_after" = 0)
 
@@ -63,8 +49,7 @@ abci_analysis <- function(
       y.drug = y.drug,
       col.data = col.data,
       col.reps = col.reps,
-      normalize = normalize,
-      delta = delta
+      normalize = normalize
     )
 
   } else {
@@ -88,8 +73,7 @@ abci_analysis <- function(
           y.drug = y.drug,
           col.data = col.data,
           col.reps = col.reps,
-          normalize = normalize,
-          delta = delta
+          normalize = normalize
         )
       }
     )
@@ -112,8 +96,6 @@ abci_analysis <- function(
 #' @param col.reps Character; Column name denoting replicates. Defaults to NULL
 #'   for no replicates.
 #' @param normalize Logical; Should the data be normalized? Defaults to TRUE.
-#' @param delta Logical; Should calculation include simple difference of biofilm
-#'   eliminated? Defaults to FALSE.
 #'
 #' @return A data frame (tibble) with all the original columns, plus the
 #'   following new columns:
@@ -131,13 +113,6 @@ abci_analysis <- function(
 #'   \item{bio_normal_avg}{Averaged "bio_normal", universally calculated}
 #'   \item{effect_avg}{Averaged "effect", universally calculated}
 #'   \item{abci_avg}{Averaged ABCi, universally calculate}
-#'   \item{delta}{Optional; simple difference in the measurement}
-#'
-#' @export
-#'
-#' @description This function is only meant to be called by `abci_analysis()`,
-#'   and shouldn't be used directly. It handles one assay/analysis (i.e. a sheet
-#'   within a spreadsheet), dealing with replicates accordingly.
 #'
 abci_analysis_single <- function(
     data,
@@ -145,8 +120,7 @@ abci_analysis_single <- function(
     y.drug,
     col.data,
     col.reps = NULL,
-    normalize = TRUE,
-    delta = FALSE
+    normalize = TRUE
 ) {
 
   # Make sure drug concentrations are properly ordered factors
@@ -293,18 +267,5 @@ abci_analysis_single <- function(
     ) %>%
     ungroup()
 
-  data_final <-
-    if (delta) {
-      data_abci %>%
-        rowwise() %>%
-        mutate(delta = case_when(
-          ref_x == 0 & ref_y == 0 & effect == 0 ~ 0,
-          ref_x == 0 & ref_y == 0 ~ NA,
-          TRUE ~ (effect - max(ref_x, ref_y)) * 100
-        ))
-    } else {
-      data_abci
-    }
-
-  return(data_final)
+  return(data_abci)
 }

@@ -7,7 +7,7 @@ preset_palettes_split <- readRDS("data/preset_palettes_split.Rds")
 #'
 #' @param id Input ID for the button being modified
 #' @param x Optional 'title' (tooltip) to add to the button. Overrides any
-#'   existing 'title' attribute
+#'   existing 'title' attribute.
 #'
 disable_button <- function(id, x = NULL) {
   shinyjs::disable(id)
@@ -28,7 +28,7 @@ disable_button <- function(id, x = NULL) {
 #'
 #' @param id Input ID for the button being modified
 #' @param x Optional 'title' (tooltip) to add to the button. Overrides any
-#'   existing 'title' attribute
+#'   existing 'title' attribute.
 #'
 enable_button <- function(id, x = NULL) {
   shinyjs::enable(id)
@@ -108,7 +108,7 @@ set_theme <- function() {
 #'   icon next to the name
 #' @param selector A Shiny input, e.g. `selectInput()`, `numericInput()`, etc.
 #'
-#' @return Customized UI wrapper; a two-columm row with a name and input
+#' @return Customized UI wrapper; a two-column row with a name and input
 #'
 wrap_selector <- function(label, label_title, selector) {
   div(
