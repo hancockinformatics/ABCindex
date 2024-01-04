@@ -1811,6 +1811,27 @@ server <- function(input, output) {
               min = 0,
               step = 0.1
             )
+          ),
+
+          wrap_selector(
+            label = "Highlight large effect",
+            label_title = "Replace me!",
+            input_switch(
+              id = "plot_tile_split_highlight_toggle",
+              label = "Off",
+              value = FALSE
+            )
+          ),
+
+          wrap_selector(
+            label = "Large effect threshold",
+            label_title = "Replace me!",
+            numericInput(
+              inputId = "plot_tile_split_highlight_value",
+              label = NULL,
+              value = 0.9,
+              min = 0
+            )
           )
         )
       )
@@ -1855,6 +1876,14 @@ server <- function(input, output) {
       update_switch("plot_tile_split_minflag_toggle", label = "On")
     } else {
       update_switch("plot_tile_split_minflag_toggle", label = "Off")
+    }
+  })
+
+  observeEvent(input$plot_tile_split_highlight_toggle, {
+    if (input$plot_tile_split_highlight_toggle) {
+      update_switch("plot_tile_split_highlight_toggle", label = "On")
+    } else {
+      update_switch("plot_tile_split_highlight_toggle", label = "Off")
     }
   })
 
@@ -2204,6 +2233,8 @@ server <- function(input, output) {
           col.mic = "bio_normal",
           minflag = isolate(input$plot_tile_split_minflag_toggle),
           minflag.value = isolate(input$plot_tile_split_minflag_value),
+          highlight = isolate(input$plot_tile_split_highlight_toggle),
+          highlight.value = isolate(input$plot_tile_split_highlight_value),
           colour.palette = isolate(input$plot_tile_split_colour_palette)
         )
 

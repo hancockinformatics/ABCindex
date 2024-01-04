@@ -968,18 +968,11 @@ abci_plot_tile <- function(
     data[col.analysis] <- droplevels(data[col.analysis])
   }
 
-  data <- data %>%
-    mutate(across(all_of(c(x.drug, y.drug)), forcats::fct_inseq))
-
-  if (minflag) {
-    data <- data %>%
-      mutate(min = ifelse(effect_avg < minflag.value, "<", ""))
-  }
-
-  if (highlight) {
-    data <- data %>%
-      mutate(high = ifelse(effect_avg > highlight.value, "*", ""))
-  }
+  data <- data %>% mutate(
+    across(all_of(c(x.drug, y.drug)), forcats::fct_inseq),
+    min = ifelse(effect_avg < minflag.value, "<", ""),
+    high = ifelse(effect_avg > highlight.value, "*", "")
+  )
 
   # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
   # concentrations need to be converted to positions on their respective axes,
@@ -1185,6 +1178,8 @@ abci_plot_tile_split <- function(
     y.decimal = 1,
     minflag = FALSE,
     minflag.value = 0.5,
+    highlight = FALSE,
+    highlight.value = 0.9,
     x.mic.line = FALSE,
     y.mic.line = FALSE,
     col.mic,
@@ -1204,13 +1199,12 @@ abci_plot_tile_split <- function(
     data[col.analysis] <- droplevels(data[col.analysis])
   }
 
-  data <- data %>%
-    mutate(across(all_of(c(x.drug, y.drug)), forcats::fct_inseq))
+  data <- data %>% mutate(
+    across(all_of(c(x.drug, y.drug)), forcats::fct_inseq),
+    min = ifelse(effect_avg < minflag.value, "<", ""),
+    high = ifelse(effect_avg > highlight.value, "*", "")
+  )
 
-  if (minflag) {
-    data <- data %>%
-      mutate(min = ifelse(effect_avg < minflag.value, "<", ""))
-  }
 
   upper <- max(scale.limits)
   lower <- min(scale.limits)
@@ -1294,6 +1288,11 @@ abci_plot_tile_split <- function(
           test = !is.na(col_fill),
           yes = min,
           no = ""
+        ),
+        high_sym = ifelse(
+          test = !is.na(col_fill),
+          yes = high,
+          no = ""
         )
       ),
       "down" = mutate(
@@ -1306,6 +1305,11 @@ abci_plot_tile_split <- function(
         min_sym = ifelse(
           test = !is.na(col_fill),
           yes = min,
+          no = ""
+        ),
+        high_sym = ifelse(
+          test = !is.na(col_fill),
+          yes = high,
           no = ""
         )
       )
@@ -1323,6 +1327,11 @@ abci_plot_tile_split <- function(
           test = !is.na(col_fill),
           yes = min,
           no = ""
+        ),
+        high_sym = ifelse(
+          test = !is.na(col_fill),
+          yes = high,
+          no = ""
         )
       ),
       "down" = mutate(
@@ -1335,6 +1344,11 @@ abci_plot_tile_split <- function(
         min_sym = ifelse(
           test = !is.na(col_fill),
           yes = min,
+          no = ""
+        ),
+        high_sym = ifelse(
+          test = !is.na(col_fill),
+          yes = high,
           no = ""
         )
       )
@@ -1363,7 +1377,9 @@ abci_plot_tile_split <- function(
         )
       }} +
 
-      {if (minflag) geom_text(aes(label = min_sym), size = 8)} +
+      {if (minflag) geom_text(aes(label = min_sym), size = 6)} +
+
+      {if (highlight) geom_text(aes(label = high_sym), size = 6)} +
 
       {if (x.mic.line) {
         geom_vline(data = mic.table, aes(xintercept = XLAB))
