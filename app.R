@@ -1126,13 +1126,15 @@ server <- function(input, output) {
         title = "ABCI colour palettes",
         easyClose = TRUE,
         size = "l",
-        HTML("<img src='abci_palettes.png' class='center'>")
+        HTML("<img src='abci_palettes.png' class='center'>"),
+        footer = modalButton("OK")
       ),
       "viridis" = modalDialog(
         title = "Line colour palettes",
         easyClose = TRUE,
         size = "m",
-        HTML("<img src='rcolorbrewer_supported_palettes.png' class='center'>")
+        HTML("<img src='rcolorbrewer_supported_palettes.svg' class='center'>"),
+        footer = modalButton("OK")
       )
     ),
     tagAppendAttributes,
