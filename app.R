@@ -504,7 +504,7 @@ ui <- page_fluid(
         div(
           class = "row flex-lg-row align-items-center g-5 py-5",
           div(
-            class = "col-lg-10",
+            class = "mt-0",
             h1(
               class = "display-3 fw-bold text-body-emphasis lh-1 mb-3",
               "About"
@@ -514,8 +514,12 @@ ui <- page_fluid(
               "ShinyABCi is an R Shiny app that facilitates the calculation ",
               "of the Anti-Biofilm Combination Index (ABCI). The metric was ",
               "created by Lucas Pedraz, and the app was developed by Travis ",
-              "Blimkie, all at the CMDR Hancock Lab at the University of ",
-              "British Columbia."
+              "Blimkie, all at the ",
+              a(
+                href = "http://cmdr.ubc.ca/bobh/",
+                "REW Hancock Laboratory"
+              ),
+              "at the University of British Columbia."
             ),
             h1(
               class = "display-6 fw-bold text-body-emphasis lh-1 mb-3",
@@ -555,7 +559,7 @@ ui <- page_fluid(
               class = "container",
               div(
                 class = "row align-items-start",
-                style = "font-size: 1.1em",
+                style = "font-size: 1.1em; font-weight: 300",
                 div(
                   class = "col",
                   tags$dl(
@@ -868,9 +872,9 @@ server <- function(input, output) {
 
       tagList(
         p(
-          "ShinyABCi expects the input data to be normalized to percentages ",
-          "(either 0-1 or 0-100). If your data does not meet this criteria, ",
-          "use the options below to have it normalized prior to calculations."
+          "By default, ShinyABCi will normalize all input data to ",
+          "percentages. If your data already meets this criteria, please ",
+          "select the appropriate option below before proceeding."
         ),
         radioButtons(
           inputId = "normalize_radio",
@@ -948,6 +952,7 @@ server <- function(input, output) {
         "changing the inputs"
       )
     )
+    click("create_plot")
   })
 
 
