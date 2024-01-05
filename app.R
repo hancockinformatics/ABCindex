@@ -2,6 +2,7 @@
 
 library(dplyr)
 library(ggplot2)
+library(openxlsx)
 library(shinyjs)
 library(shiny)
 library(bslib)
@@ -468,7 +469,7 @@ ui <- page_fluid(
             disabled(
               downloadButton(
                 outputId = "download_handler",
-                label = "Download results table",
+                label = "Download results spreadsheet",
                 class = "btn btn-success align-items-center mb-2",
                 style = "width: 50%",
                 title = paste0(
@@ -1036,13 +1037,13 @@ server <- function(input, output) {
           yes = "example_data",
           no = tools::file_path_sans_ext(input$load_user_data$name)
         ),
-        "_results.csv"
+        "_results.xlsx"
       )
     },
     content = function(filename) {
-      readr::write_csv(
+      excel_writer(
         x = abci_results(),
-        file = filename
+        filename = filename
       )
     }
   )

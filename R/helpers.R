@@ -10,10 +10,10 @@ preset_palettes_split <- readRDS("data/preset_palettes_split.Rds")
 #'   existing 'title' attribute.
 #'
 disable_button <- function(id, x = NULL) {
-  shinyjs::disable(id)
+  disable(id)
 
   if (!is.null(x)) {
-    shinyjs::runjs(paste0(
+    runjs(paste0(
       "document.getElementById('",
       id,
       "').setAttribute('title', '",
@@ -31,10 +31,10 @@ disable_button <- function(id, x = NULL) {
 #'   existing 'title' attribute.
 #'
 enable_button <- function(id, x = NULL) {
-  shinyjs::enable(id)
+  enable(id)
 
   if (!is.null(x)) {
-    shinyjs::runjs(paste0(
+    runjs(paste0(
       "document.getElementById('",
       id,
       "').setAttribute('title', '",
@@ -42,6 +42,61 @@ enable_button <- function(id, x = NULL) {
       "');"
     ))
   }
+}
+
+
+#' excel_writer
+#'
+#' @param x A data frame containing ABCI results in long format
+#' @param filename Desired filename for the output
+#'
+#' @return None
+#'
+excel_writer <- function(x, filename) {
+
+  x_split <- split(x, f = x$assay)
+  wb <- createWorkbook()
+
+  purrr::iwalk(x_split, function(df, nm) {
+
+    drug_cols <- unique(df$cols)
+    drug_rows <- unique(df$rows)
+
+    df_clean <- df %>%
+      select(cols_conc, rows_conc, abci_avg) %>%
+      distinct(cols_conc, rows_conc, .keep_all = TRUE) %>%
+      tidyr::pivot_wider(
+        names_from = "cols_conc",
+        values_from = "abci_avg"
+      ) %>%
+      tibble::column_to_rownames("rows_conc")
+
+    addWorksheet(wb, nm)
+    writeData(
+      wb = wb,
+      x = drug_cols,
+      sheet = nm,
+      startCol = 3,
+      startRow = 1
+    )
+    writeData(
+      wb = wb,
+      x = drug_rows,
+      sheet = nm,
+      startCol = 1,
+      startRow = 3
+    )
+    writeData(
+      wb = wb,
+      x = df_clean,
+      rowNames = TRUE,
+      sheet = nm,
+      startCol = 2,
+      startRow = 2
+    )
+
+    saveWorkbook(wb, filename, overwrite = TRUE)
+  })
 }
 
 
