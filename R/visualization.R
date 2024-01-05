@@ -122,6 +122,8 @@ abci_plot_dot <- function(
     y.mic.line = FALSE,
     col.mic,
     mic.threshold = 0.5,
+    highlight = FALSE,
+    highlight.value = 0.9,
     colour.palette = "A_RYB",
     colour.na = "white",
     scale.limits = c(-2.0, 2.0),
@@ -145,6 +147,12 @@ abci_plot_dot <- function(
       reference = ceiling(scales::rescale(.data[[col.size]], to = c(0, 100)))
     ) %>%
     left_join(size_mapping, by = "reference")
+
+  if (!highlight) {
+    data <- mutate(data, high = rep(0))
+  } else {
+    data <- mutate(data, high = ifelse(effect_avg > 0.9, 1, 0))
+  }
 
   proper_labels <- seq(0, 100, 20)
 
@@ -207,9 +215,11 @@ abci_plot_dot <- function(
 
     geom_point(
       aes(
-        colour = .data[[col.fill]],
-        size = scales::rescale(N1S2, to = size.range)
-      )
+        fill = .data[[col.fill]],
+        size = scales::rescale(N1S2, to = size.range),
+        stroke = high
+      ),
+      pch = 21
     ) +
 
     {if (!is.null(col.analysis)) {
@@ -245,7 +255,7 @@ abci_plot_dot <- function(
       )
     ) +
 
-    scale_colour_gradientn(
+    scale_fill_gradientn(
       name = ifelse(
         grepl(x = col.fill, pattern = "abci", ignore.case = TRUE),
         "ABCi",
@@ -263,7 +273,10 @@ abci_plot_dot <- function(
       name = paste(strwrap(size.text, width = 12), collapse = "\n"),
       breaks = proper_breaks,
       labels = proper_labels,
-      guide = guide_legend(keyheight = unit(10, "mm"))
+      guide = guide_legend(
+        keyheight = unit(10, "mm"),
+        override.aes = list(fill = "black")
+      )
     ) +
 
     {if (add.axis.lines) {
