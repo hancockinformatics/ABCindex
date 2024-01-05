@@ -9,7 +9,7 @@ library(bslib)
 app_version <- gsub(
   x = readLines("DESCRIPTION")[3],
   pattern = "^Version\\: ",
-  replacement = "v"
+  replacement = ""
 )
 
 app_theme <- bs_theme(version = 5, preset = "cosmo")
@@ -1464,6 +1464,27 @@ server <- function(input, output) {
               label = NULL,
               value = 0.5
             )
+          ),
+
+          wrap_selector(
+            label = "Highlight large effect",
+            label_title = "Replace me!",
+            input_switch(
+              id = "plot_dot_split_highlight_toggle",
+              label = "Off",
+              value = FALSE
+            )
+          ),
+
+          wrap_selector(
+            label = "Large effect threshold",
+            label_title = "Replace me!",
+            numericInput(
+              inputId = "plot_dot_split_highlight_value",
+              label = NULL,
+              value = 0.9,
+              min = 0
+            )
           )
         )
       )
@@ -1500,6 +1521,14 @@ server <- function(input, output) {
       update_switch("plot_dot_split_strict", label = "Strict")
     } else {
       update_switch("plot_dot_split_strict", label = "Loose")
+    }
+  })
+
+  observeEvent(input$plot_dot_split_highlight_toggle, {
+    if (input$plot_dot_split_highlight_toggle) {
+      update_switch("plot_dot_split_highlight_toggle", label = "On")
+    } else {
+      update_switch("plot_dot_split_highlight_toggle", label = "Off")
     }
   })
 
@@ -2198,6 +2227,8 @@ server <- function(input, output) {
           x.mic.line = ("X" %in% isolate(input$plot_dot_split_mic_lines)),
           y.mic.line = ("Y" %in% isolate(input$plot_dot_split_mic_lines)),
           mic.threshold = isolate(input$plot_dot_split_mic_threshold),
+          highlight = isolate(input$plot_dot_split_highlight_toggle),
+          highlight.value = isolate(input$plot_dot_split_highlight_value),
           col.mic = "bio_normal",
           colour.palette = isolate(input$plot_dot_split_colour_palette)
         ) +

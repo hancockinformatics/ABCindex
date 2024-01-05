@@ -59,7 +59,7 @@ get_dims <- function(n_cols, n_rows, type) {
     switch(
       type,
       "dot" = c(750, 450),
-      "dot_split" = c(700, 850),
+      "dot_split" = c(700, 900),
       "tile" = c(650, 400),
       "tile_split" = c(650, 800),
       "line" = c(700, 400)
@@ -68,7 +68,7 @@ get_dims <- function(n_cols, n_rows, type) {
     switch(
       type,
       "dot" = c(1200, 150 + 300 * n_rows),
-      "dot_split" = c(1150, 100 + 700 * n_rows),
+      "dot_split" = c(1150, 150 + 700 * n_rows),
       "tile" = c(1100, 100 + 300 * n_rows),
       "tile_split" = c(1100, 100 + 700 * n_rows),
       "line" = c(1150, 100 + 300 * n_rows)

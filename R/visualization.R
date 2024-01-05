@@ -369,6 +369,8 @@ abci_plot_dot_split <- function(
     y.mic.line = FALSE,
     col.mic,
     mic.threshold = 0.5,
+    highlight = FALSE,
+    highlight.value = 0.9,
     colour.palette = "RYB",
     colour.na = "white",
     scale.limits = c(-2.0, 2.0),
@@ -385,7 +387,6 @@ abci_plot_dot_split <- function(
     data[col.analysis] <- droplevels(data[col.analysis])
   }
 
-
   # Fix up the variable being mapped to size. Define labels and breaks.
   data <- data %>%
     mutate(
@@ -393,6 +394,12 @@ abci_plot_dot_split <- function(
       reference = ceiling(scales::rescale(.data[[col.size]], to = c(0, 100)))
     ) %>%
     left_join(size_mapping, by = "reference")
+
+  if (!highlight) {
+    data <- mutate(data, high = rep(0))
+  } else {
+    data <- mutate(data, high = ifelse(effect_avg > 0.9, 1, 0))
+  }
 
   proper_labels <- seq(0, 100, 20)
 
@@ -473,7 +480,8 @@ abci_plot_dot_split <- function(
           (.data[[x.drug]] == "0" | .data[[y.drug]] == "0") ~ .data[[col.fill]],
           .data[[col.fill]] > 0.1 ~ .data[[col.fill]],
           TRUE ~ NA
-        )
+        ),
+        col_high = ifelse(test = is.na(col_fill), yes = 0, no = high)
       ),
       "down" = mutate(
         data,
@@ -481,7 +489,8 @@ abci_plot_dot_split <- function(
           (.data[[x.drug]] == "0" | .data[[y.drug]] == "0") ~ .data[[col.fill]],
           .data[[col.fill]] < -0.1 ~ .data[[col.fill]],
           TRUE ~ NA
-        )
+        ),
+        col_high = ifelse(test = is.na(col_fill), yes = 0, no = high)
       )
     )
   } else {
@@ -492,7 +501,8 @@ abci_plot_dot_split <- function(
           (.data[[x.drug]] == "0" | .data[[y.drug]] == "0") ~ .data[[col.fill]],
           .data[[col.fill]] > -0.1 ~ .data[[col.fill]],
           TRUE ~ NA
-        )
+        ),
+        col_high = ifelse(test = is.na(col_fill), yes = 0, no = high)
       ),
       "down" = mutate(
         data,
@@ -500,7 +510,8 @@ abci_plot_dot_split <- function(
           (.data[[x.drug]] == "0" | .data[[y.drug]] == "0") ~ .data[[col.fill]],
           .data[[col.fill]] < 0.1 ~ .data[[col.fill]],
           TRUE ~ NA
-        )
+        ),
+        col_high = ifelse(test = is.na(col_fill), yes = 0, no = high)
       )
     )
   }
@@ -529,7 +540,10 @@ abci_plot_dot_split <- function(
       geom_vline(xintercept = 1.5, linewidth = 0.5) +
       geom_hline(yintercept = 1.5, linewidth = 0.5) +
 
-      geom_point(aes(colour = col_fill, size = col_size)) +
+      geom_point(
+        aes(fill = col_fill, size = col_size, stroke = col_high),
+        pch = 21
+      ) +
 
       {if (!is.null(col.analysis)) {
         facet_wrap(
@@ -564,7 +578,7 @@ abci_plot_dot_split <- function(
         )
       ) +
 
-      scale_colour_gradientn(
+      scale_fill_gradientn(
         name = ifelse(
           grepl(x = col.fill, pattern = "abci", ignore.case = TRUE),
           "ABCi",
@@ -583,7 +597,10 @@ abci_plot_dot_split <- function(
         limits = c(min(proper_breaks), max(proper_breaks)),
         breaks = proper_breaks,
         labels = proper_labels,
-        guide = guide_legend(keyheight = unit(10, "mm"))
+        guide = guide_legend(
+          keyheight = unit(10, "mm"),
+          override.aes = list(fill = "black")
+        )
       ) +
 
       {if (add.axis.lines) {
