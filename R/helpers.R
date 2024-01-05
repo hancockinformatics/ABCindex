@@ -10,10 +10,10 @@ preset_palettes_split <- readRDS("data/preset_palettes_split.Rds")
 #'   existing 'title' attribute.
 #'
 disable_button <- function(id, x = NULL) {
-  shinyjs::disable(id)
+  disable(id)
 
   if (!is.null(x)) {
-    shinyjs::runjs(paste0(
+    runjs(paste0(
       "document.getElementById('",
       id,
       "').setAttribute('title', '",
@@ -31,10 +31,10 @@ disable_button <- function(id, x = NULL) {
 #'   existing 'title' attribute.
 #'
 enable_button <- function(id, x = NULL) {
-  shinyjs::enable(id)
+  enable(id)
 
   if (!is.null(x)) {
-    shinyjs::runjs(paste0(
+    runjs(paste0(
       "document.getElementById('",
       id,
       "').setAttribute('title', '",
@@ -42,6 +42,61 @@ enable_button <- function(id, x = NULL) {
       "');"
     ))
   }
+}
+
+
+#' excel_writer
+#'
+#' @param x A data frame containing ABCI results in long format
+#' @param filename Desired filename for the output
+#'
+#' @return None
+#'
+excel_writer <- function(x, filename) {
+
+  x_split <- split(x, f = x$assay)
+  wb <- createWorkbook()
+
+  purrr::iwalk(x_split, function(df, nm) {
+
+    drug_cols <- unique(df$cols)
+    drug_rows <- unique(df$rows)
+
+    df_clean <- df %>%
+      select(cols_conc, rows_conc, abci_avg) %>%
+      distinct(cols_conc, rows_conc, .keep_all = TRUE) %>%
+      tidyr::pivot_wider(
+        names_from = "cols_conc",
+        values_from = "abci_avg"
+      ) %>%
+      tibble::column_to_rownames("rows_conc")
+
+    addWorksheet(wb, nm)
+    writeData(
+      wb = wb,
+      x = drug_cols,
+      sheet = nm,
+      startCol = 3,
+      startRow = 1
+    )
+    writeData(
+      wb = wb,
+      x = drug_rows,
+      sheet = nm,
+      startCol = 1,
+      startRow = 3
+    )
+    writeData(
+      wb = wb,
+      x = df_clean,
+      rowNames = TRUE,
+      sheet = nm,
+      startCol = 2,
+      startRow = 2
+    )
+
+    saveWorkbook(wb, filename, overwrite = TRUE)
+  })
 }
 
 
@@ -54,27 +109,26 @@ enable_button <- function(id, x = NULL) {
 #' @return Character vector of output width and height, in pixels
 #'
 get_dims <- function(n_cols, n_rows, type) {
-  # Output is `c(width, height)`
-  dims <-
-    if (n_cols == 1) {
-      switch(
-        type,
-        "tile" = c(650, 400),
-        "tile_split" = c(650, 800),
-        "dot" = c(750, 400),
-        "dot_split" = c(700, 850),
-        "line" = c(700, 400)
-      )
-    } else {
-      switch(
-        type,
-        "tile" = c(1100, 100 + 300 * n_rows),
-        "tile_split" = c(1100, 100 + 700 * n_rows),
-        "dot" = c(1200, 100 + 300 * n_rows),
-        "dot_split" = c(1150, 100 + 700 * n_rows),
-        "line" = c(1150, 100 + 300 * n_rows)
-      )
-    }
+
+  dims <- if (n_cols == 1) {
+    switch(
+      type,
+      "dot" = c(750, 450),
+      "dot_split" = c(700, 900),
+      "tile" = c(650, 400),
+      "tile_split" = c(650, 800),
+      "line" = c(700, 400)
+    )
+  } else {
+    switch(
+      type,
+      "dot" = c(1200, 150 + 300 * n_rows),
+      "dot_split" = c(1150, 150 + 700 * n_rows),
+      "tile" = c(1100, 100 + 300 * n_rows),
+      "tile_split" = c(1100, 100 + 700 * n_rows),
+      "line" = c(1150, 100 + 300 * n_rows)
+    )
+  }
   paste0(dims, "px")
 }
 

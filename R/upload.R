@@ -46,13 +46,13 @@ abci_master_input <- function(file, sheet = "all") {
 
   tryCatch(
     {
-      b1 <- abci_reader(file = file, sheet = sheet)
-      check_b1 <- abci_check_wells(b1)
+      x <- abci_reader(file = file, sheet = sheet)
+      check_x <- abci_check_wells(x)
 
       # Silent failures, such as bad wells, or anything else that doesn't
       # throw an actual error
-      if (length(check_b1 != 0)) {
-        bad_experiments <- paste(check_b1, collapse = ", ")
+      if (length(check_x != 0)) {
+        bad_experiments <- paste(check_x, collapse = ", ")
 
         list(
           data = NULL,
@@ -68,7 +68,7 @@ abci_master_input <- function(file, sheet = "all") {
             "empty rows, then try again."
           )
         )
-      } else if (is.null(check_b1)) {
+      } else if (is.null(check_x)) {
         list(
           data = NULL,
           status = "error",
@@ -80,13 +80,10 @@ abci_master_input <- function(file, sheet = "all") {
         )
       } else {
         list(
-          data = b1,
+          data = x,
           status = "success",
           message = "Your data was successfully loaded. ",
-          suggest = paste0(
-            "Use the button at the bottom of the sidebar to proceed to the ",
-            "next step."
-          )
+          suggest = "Use the button at the bottom of the sidebar to proceed."
         )
       }
     },
@@ -106,7 +103,7 @@ abci_master_input <- function(file, sheet = "all") {
 }
 
 
-#' Read a spreadsheet containing plate data
+#' abci_reader
 #'
 #' @param file Path to a spreadsheet, containing one or more sheets within, each
 #'   with data in a 96 well-type format
@@ -151,7 +148,7 @@ abci_reader <- function(file, sheet = "all") {
 }
 
 
-#' INTERNAL Read a single sheet of plate data
+#' abci_reader_single
 #'
 #' @param file Path to a spreadsheet, containing one or more sheets within, each
 #'   with data in a 96 well-type format

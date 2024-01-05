@@ -38,6 +38,7 @@ abci_analysis <- function(
     normalize = TRUE
 ) {
   options("cli.progress_show_after" = 0)
+  message("Normalize is set to ", normalize)
 
   # If "col.analysis" is NULL (default), assume input "data" is a single
   # analysis, and make the usual call to `abci_analysis_single()`
@@ -86,7 +87,7 @@ abci_analysis <- function(
 }
 
 
-#' INTERNAL Tidy-calculate ABCi values for a single analysis
+#' abci_analysis_single
 #'
 #' @param data Data frame containing the concentrations of two drugs, and the
 #'   assay output/measurement.

@@ -91,3 +91,8 @@
   border: 0;
   font-size: 1rem;
 }
+
+/* Remove bottom margin from sidebar titles */
+.bslib-sidebar-layout .sidebar-title {
+  margin-bottom: 0;
+}

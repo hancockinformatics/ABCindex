@@ -1,4 +1,4 @@
-#' INTERNAL Calculate MIC values
+#' abci_mic
 #'
 #' @param data Data frame containing the concentrations of two drugs, and the
 #'   assay output/measurement
@@ -122,6 +122,8 @@ abci_plot_dot <- function(
     y.mic.line = FALSE,
     col.mic,
     mic.threshold = 0.5,
+    highlight = FALSE,
+    highlight.value = 0.9,
     colour.palette = "A_RYB",
     colour.na = "white",
     scale.limits = c(-2.0, 2.0),
@@ -145,6 +147,12 @@ abci_plot_dot <- function(
       reference = ceiling(scales::rescale(.data[[col.size]], to = c(0, 100)))
     ) %>%
     left_join(size_mapping, by = "reference")
+
+  if (!highlight) {
+    data <- mutate(data, high = rep(0))
+  } else {
+    data <- mutate(data, high = ifelse(effect_avg > 0.9, 1, 0))
+  }
 
   proper_labels <- seq(0, 100, 20)
 
@@ -207,9 +215,11 @@ abci_plot_dot <- function(
 
     geom_point(
       aes(
-        colour = .data[[col.fill]],
-        size = scales::rescale(N1S2, to = size.range)
-      )
+        fill = .data[[col.fill]],
+        size = scales::rescale(N1S2, to = size.range),
+        stroke = high
+      ),
+      pch = 21
     ) +
 
     {if (!is.null(col.analysis)) {
@@ -245,7 +255,7 @@ abci_plot_dot <- function(
       )
     ) +
 
-    scale_colour_gradientn(
+    scale_fill_gradientn(
       name = ifelse(
         grepl(x = col.fill, pattern = "abci", ignore.case = TRUE),
         "ABCi",
@@ -263,7 +273,10 @@ abci_plot_dot <- function(
       name = paste(strwrap(size.text, width = 12), collapse = "\n"),
       breaks = proper_breaks,
       labels = proper_labels,
-      guide = guide_legend(keyheight = unit(10, "mm"))
+      guide = guide_legend(
+        keyheight = unit(10, "mm"),
+        override.aes = list(fill = "black")
+      )
     ) +
 
     {if (add.axis.lines) {
@@ -356,6 +369,8 @@ abci_plot_dot_split <- function(
     y.mic.line = FALSE,
     col.mic,
     mic.threshold = 0.5,
+    highlight = FALSE,
+    highlight.value = 0.9,
     colour.palette = "RYB",
     colour.na = "white",
     scale.limits = c(-2.0, 2.0),
@@ -372,7 +387,6 @@ abci_plot_dot_split <- function(
     data[col.analysis] <- droplevels(data[col.analysis])
   }
 
-
   # Fix up the variable being mapped to size. Define labels and breaks.
   data <- data %>%
     mutate(
@@ -380,6 +394,12 @@ abci_plot_dot_split <- function(
       reference = ceiling(scales::rescale(.data[[col.size]], to = c(0, 100)))
     ) %>%
     left_join(size_mapping, by = "reference")
+
+  if (!highlight) {
+    data <- mutate(data, high = rep(0))
+  } else {
+    data <- mutate(data, high = ifelse(effect_avg > 0.9, 1, 0))
+  }
 
   proper_labels <- seq(0, 100, 20)
 
@@ -460,7 +480,8 @@ abci_plot_dot_split <- function(
           (.data[[x.drug]] == "0" | .data[[y.drug]] == "0") ~ .data[[col.fill]],
           .data[[col.fill]] > 0.1 ~ .data[[col.fill]],
           TRUE ~ NA
-        )
+        ),
+        col_high = ifelse(test = is.na(col_fill), yes = 0, no = high)
       ),
       "down" = mutate(
         data,
@@ -468,7 +489,8 @@ abci_plot_dot_split <- function(
           (.data[[x.drug]] == "0" | .data[[y.drug]] == "0") ~ .data[[col.fill]],
           .data[[col.fill]] < -0.1 ~ .data[[col.fill]],
           TRUE ~ NA
-        )
+        ),
+        col_high = ifelse(test = is.na(col_fill), yes = 0, no = high)
       )
     )
   } else {
@@ -479,7 +501,8 @@ abci_plot_dot_split <- function(
           (.data[[x.drug]] == "0" | .data[[y.drug]] == "0") ~ .data[[col.fill]],
           .data[[col.fill]] > -0.1 ~ .data[[col.fill]],
           TRUE ~ NA
-        )
+        ),
+        col_high = ifelse(test = is.na(col_fill), yes = 0, no = high)
       ),
       "down" = mutate(
         data,
@@ -487,7 +510,8 @@ abci_plot_dot_split <- function(
           (.data[[x.drug]] == "0" | .data[[y.drug]] == "0") ~ .data[[col.fill]],
           .data[[col.fill]] < 0.1 ~ .data[[col.fill]],
           TRUE ~ NA
-        )
+        ),
+        col_high = ifelse(test = is.na(col_fill), yes = 0, no = high)
       )
     )
   }
@@ -516,7 +540,10 @@ abci_plot_dot_split <- function(
       geom_vline(xintercept = 1.5, linewidth = 0.5) +
       geom_hline(yintercept = 1.5, linewidth = 0.5) +
 
-      geom_point(aes(colour = col_fill, size = col_size)) +
+      geom_point(
+        aes(fill = col_fill, size = col_size, stroke = col_high),
+        pch = 21
+      ) +
 
       {if (!is.null(col.analysis)) {
         facet_wrap(
@@ -551,7 +578,7 @@ abci_plot_dot_split <- function(
         )
       ) +
 
-      scale_colour_gradientn(
+      scale_fill_gradientn(
         name = ifelse(
           grepl(x = col.fill, pattern = "abci", ignore.case = TRUE),
           "ABCi",
@@ -570,7 +597,10 @@ abci_plot_dot_split <- function(
         limits = c(min(proper_breaks), max(proper_breaks)),
         breaks = proper_breaks,
         labels = proper_labels,
-        guide = guide_legend(keyheight = unit(10, "mm"))
+        guide = guide_legend(
+          keyheight = unit(10, "mm"),
+          override.aes = list(fill = "black")
+        )
       ) +
 
       {if (add.axis.lines) {
@@ -947,6 +977,8 @@ abci_plot_tile <- function(
     y.decimal = 1,
     minflag = FALSE,
     minflag.value = 0.5,
+    highlight = FALSE,
+    highlight.value = 0.9,
     x.mic.line = FALSE,
     y.mic.line = FALSE,
     col.mic,
@@ -966,13 +998,11 @@ abci_plot_tile <- function(
     data[col.analysis] <- droplevels(data[col.analysis])
   }
 
-  data <- data %>%
-    mutate(across(all_of(c(x.drug, y.drug)), forcats::fct_inseq))
-
-  if (minflag) {
-    data <- data %>%
-      mutate(min = ifelse(effect_avg < minflag.value, "<", ""))
-  }
+  data <- data %>% mutate(
+    across(all_of(c(x.drug, y.drug)), forcats::fct_inseq),
+    min = ifelse(effect_avg < minflag.value, "<", ""),
+    high = ifelse(effect_avg > highlight.value, "*", "")
+  )
 
   # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
   # concentrations need to be converted to positions on their respective axes,
@@ -1045,6 +1075,8 @@ abci_plot_tile <- function(
     }} +
 
     {if (minflag) geom_text(aes(label = min), size = 6)} +
+
+    {if (highlight) geom_text(aes(label = high), size = 6)} +
 
     {if (x.mic.line) {
       geom_vline(data = mic.table, aes(xintercept = XLAB))
@@ -1176,6 +1208,8 @@ abci_plot_tile_split <- function(
     y.decimal = 1,
     minflag = FALSE,
     minflag.value = 0.5,
+    highlight = FALSE,
+    highlight.value = 0.9,
     x.mic.line = FALSE,
     y.mic.line = FALSE,
     col.mic,
@@ -1195,13 +1229,12 @@ abci_plot_tile_split <- function(
     data[col.analysis] <- droplevels(data[col.analysis])
   }
 
-  data <- data %>%
-    mutate(across(all_of(c(x.drug, y.drug)), forcats::fct_inseq))
+  data <- data %>% mutate(
+    across(all_of(c(x.drug, y.drug)), forcats::fct_inseq),
+    min = ifelse(effect_avg < minflag.value, "<", ""),
+    high = ifelse(effect_avg > highlight.value, "*", "")
+  )
 
-  if (minflag) {
-    data <- data %>%
-      mutate(min = ifelse(effect_avg < minflag.value, "<", ""))
-  }
 
   upper <- max(scale.limits)
   lower <- min(scale.limits)
@@ -1285,6 +1318,11 @@ abci_plot_tile_split <- function(
           test = !is.na(col_fill),
           yes = min,
           no = ""
+        ),
+        high_sym = ifelse(
+          test = !is.na(col_fill),
+          yes = high,
+          no = ""
         )
       ),
       "down" = mutate(
@@ -1297,6 +1335,11 @@ abci_plot_tile_split <- function(
         min_sym = ifelse(
           test = !is.na(col_fill),
           yes = min,
+          no = ""
+        ),
+        high_sym = ifelse(
+          test = !is.na(col_fill),
+          yes = high,
           no = ""
         )
       )
@@ -1314,6 +1357,11 @@ abci_plot_tile_split <- function(
           test = !is.na(col_fill),
           yes = min,
           no = ""
+        ),
+        high_sym = ifelse(
+          test = !is.na(col_fill),
+          yes = high,
+          no = ""
         )
       ),
       "down" = mutate(
@@ -1326,6 +1374,11 @@ abci_plot_tile_split <- function(
         min_sym = ifelse(
           test = !is.na(col_fill),
           yes = min,
+          no = ""
+        ),
+        high_sym = ifelse(
+          test = !is.na(col_fill),
+          yes = high,
           no = ""
         )
       )
@@ -1354,7 +1407,9 @@ abci_plot_tile_split <- function(
         )
       }} +
 
-      {if (minflag) geom_text(aes(label = min_sym), size = 8)} +
+      {if (minflag) geom_text(aes(label = min_sym), size = 6)} +
+
+      {if (highlight) geom_text(aes(label = high_sym), size = 6)} +
 
       {if (x.mic.line) {
         geom_vline(data = mic.table, aes(xintercept = XLAB))

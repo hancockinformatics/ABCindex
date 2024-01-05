@@ -2,6 +2,7 @@
 
 library(dplyr)
 library(ggplot2)
+library(openxlsx)
 library(shinyjs)
 library(shiny)
 library(bslib)
@@ -9,7 +10,7 @@ library(bslib)
 app_version <- gsub(
   x = readLines("DESCRIPTION")[3],
   pattern = "^Version\\: ",
-  replacement = "v"
+  replacement = ""
 )
 
 app_theme <- bs_theme(version = 5, preset = "cosmo")
@@ -262,52 +263,46 @@ ui <- page_fluid(
             "Anti-Biofilm Combination Index calculation and visualization"
           ),
 
+          HTML(paste0(
+            "<p class='lead mb-4'>Welcome to ShinyABCi, a tool to quantify ",
+            "and visualize the <i>in vitro</i> effects of drug combinations. ",
+            "The Anti-Biofilm Combination Index (ABCI) is a metric designed ",
+            "to assess drug combination therapy in checkerboard assays ",
+            "without relying on activity thresholds (MIC/MBIC/MBEC), which ",
+            "present significant challenges when evaluating antibiofilm ",
+            "activity.</p>"
+          )),
+
+          HTML(paste0(
+            "<p class='lead mb-4'>Here, you can calculate ABCIs for your ",
+            "checkerboard data, as well as visualize it with different plots ",
+            "designed to quickly identify promising interactions and ",
+            "favourable drug ratios.</p>"
+          )),
+
+          HTML(paste0(
+            "<p class='lead mb-4'>Click the Get Started button to upload ",
+            "your data! If you’d like to learn more about how the ABCI is ",
+            "calculated or how to use ShinyABCi, check the respective ",
+            "tutorials below. For more information, including how to cite ",
+            "ShinyABCi, please refer to the About page.</p>"
+          )),
+
           div(
-            class = "col-lg-12 mx-auto",
-
-            HTML(paste0(
-              "<p class='lead mb-4'>Welcome to ShinyABCi, a tool to quantify ",
-              "and visualize the <i>in vitro</i> effects of drug combinations. ",
-              "The Anti-Biofilm Combination Index (ABCI) is a metric designed ",
-              "to assess drug combination therapy in checkerboard assays ",
-              "without relying on activity thresholds (MIC/MBIC/MBEC), which ",
-              "present significant challenges when evaluating antibiofilm ",
-              "activity.</p>"
-            )),
-
-            HTML(paste0(
-              "<p class='lead mb-4'>Here, you can calculate ABCIs for your ",
-              "checkerboard data, as well as visualize it with different plots ",
-              "designed to quickly identify promising interactions and ",
-              "favourable drug ratios.</p>"
-            )),
-
-            HTML(paste0(
-              "<p class='lead mb-4'>Click the Get Started button to upload ",
-              "your data! If you’d like to learn more about how the ABCI is ",
-              "calculated or how to use ShinyABCi, check the respective ",
-              "tutorials below. For more information, including how to cite ",
-              "ShinyABCi, please refer to the About page.</p>"
-            )),
-
-            br(),
-
-            div(
-              actionButton(
-                inputId = "get_started",
-                class = "btn btn-primary btn-lg px-4 me-md-2",
-                label = div(
-                  icon("play"),
-                  HTML("Get started")
-                )
-              ),
-              actionButton(
-                inputId = "learn_more",
-                class = "btn btn-outline-secondary btn-lg px-4",
-                label = div(
-                  icon("circle-info"),
-                  HTML("Learn more")
-                )
+            actionButton(
+              inputId = "get_started",
+              class = "btn btn-primary btn-lg px-4 me-md-2",
+              label = div(
+                icon("play"),
+                HTML("Get started")
+              )
+            ),
+            actionButton(
+              inputId = "learn_more",
+              class = "btn btn-outline-secondary btn-lg px-4",
+              label = div(
+                icon("circle-info"),
+                HTML("Learn more")
               )
             )
           )
@@ -367,10 +362,10 @@ ui <- page_fluid(
 
             disabled(
               actionButton(
-                inputId = "proceed_abci_calculations",
+                inputId = "perform_abci_calculations",
                 class = "btn btn-primary btn-tooltip mt-auto",
-                label = "Proceed to ABCI calculations",
-                icon = icon("arrow-right"),
+                label = "Perform ABCI calculations",
+                icon = icon("calculator"),
                 title = paste0(
                   "Upload your plate data, or load our example data, then ",
                   "click here to analyze"
@@ -391,134 +386,43 @@ ui <- page_fluid(
     ),
 
 
-    # |- Analysis -------------------------------------------------------
+    # |- Results ----------------------------------------------------------
 
     nav_panel(
-      value = "analysis",
-      title = "Analysis",
+      value = "results",
+      title = "Results",
 
       card(
         min_height = "90vh",
 
         layout_sidebar(
           sidebar = sidebar(
-            title = "ABCI analysis",
-            class = "d-flex",
+            id = "results_sidebar",
+            title = "ABCI visualizations and results",
             width = "580px",
             open = NA,
 
             p(
-              "ShinyABCi expects data to be normalized to percentages (either ",
-              "0-1 or 0-100). If your data does not meet this criteria, use ",
-              "the options below to have it normalized."
-            ),
-            radioButtons(
-              inputId = "normalize_radio",
-              label = NULL,
-              choices = list(
-                "Normalize my data (becoming range 0-1)" = "run_norm",
-                "My data is already normalized (0-1 or 0-100)" = "no_norm"
-              ),
-              selected = "run_norm"
-            ),
-
-            disabled(
-              actionButton(
-                inputId = "perform_abci_calculations",
-                class = "btn btn-info btn-tooltip",
-                label = "Perform ABCI calculations",
-                icon = icon("calculator"),
-                width = "50%"
-              )
-            ),
-
-            p(class = "mt-3", style = "font-size: 1.25em", "Data interpretation"),
-            p(
               "ABCI values are calculated for every combination of ",
-              "concentrations in your experiments. A positive ABCI indicates ",
-              "the combination is more effective than any individual drug on ",
-              "its own. Please refer to the ",
+              "concentrations in your experiments. Positive ABCI values ",
+              "indicate the combination is more effective than either ",
+              "individual drug. Please refer to the ",
               actionLink("tutorial_link", "ABCI tutorial"),
               " pages to learn more."
             ),
-            HTML(paste0(
-              "<p class='mb-auto'>You can preview the results of your ",
-              "experiments using the table to the right, download the ",
-              "results, or continue to <b>Visualization</b> using the buttons ",
-              "below.</p>"
-            )),
-
-            disabled(
-              downloadButton(
-                outputId = "download_handler",
-                label = "Download your results",
-                class = "btn btn-success align-items-center mt-auto",
-                style = "width: 50%",
-                title = paste0(
-                  "Once your data is analyzed, you can download the results ",
-                  "here"
-                )
-              )
-            ),
-
-            disabled(
-              actionButton(
-                inputId = "visualize_your_results",
-                label = "Visualize your results",
-                class = "btn btn-primary btn-tooltip align-items-center",
-                icon = icon("arrow-right"),
-                width = "100%",
-                title = paste0(
-                  "Once your data is analyzed, you can proceed to the ",
-                  "Visualization page"
-                )
-              )
-            )
-          ),
-
-          layout_column_wrap(
-            width = 1/2,
-            fill = FALSE,
-            uiOutput("results_names_card"),
-            uiOutput("analysis_drug_card_UI")
-          ),
-          uiOutput("results_table_div")
-        )
-      )
-    ),
-
-
-    # |- Visualization ----------------------------------------------------
-
-    nav_panel(
-      value = "visualization",
-      title = "Visualization",
-
-      card(
-        min_height = "90vh",
-
-        layout_sidebar(
-          sidebar = sidebar(
-            title = "Visualization of ABCI results",
-            id = "visualization_sidebar",
-            width = "580px",
-            open = NA,
 
             HTML(paste0(
               "<p>Visualize the ABCI values from your results using ",
-              "<b>dot</b> or <b>tile</b> plots. The <b>split</b> versions ",
+              "<b>Dot</b> or <b>Tile</b> plots. The <b>Split</b> versions ",
               "separate the positive and negative ABCI values into two ",
-              "different plots, for visual simplicity.</p>"
-            )),
-
-            HTML(paste0(
-              "<p>Alternatively the <b>line</b> plot visualizes antimicrobial ",
-              "activity for any subset of concentrations.</p>"
+              "separate plots, for visual simplicity. Alternatively, the ",
+              "<b>Line</b> plot visualizes antimicrobial activity for any ",
+              "subset of concentrations.</p>"
             )),
 
             p(
               "You can save the plot by right-clicking on it and selecting ",
-              "'Save Image As...' from the menu."
+              "'Save Image As'."
             ),
 
             disabled(
@@ -532,7 +436,7 @@ ui <- page_fluid(
             ),
 
             navset_tab(
-              id = "visualize_tabs",
+              id = "plot_tabs",
               nav_panel(
                 title = "Dot",
                 value = "dot",
@@ -549,7 +453,7 @@ ui <- page_fluid(
                 uiOutput("plot_inputs_tile")
               ),
               nav_panel(
-                title = "Split tile",
+                title = "Split Tile",
                 value = "tile_split",
                 uiOutput("plot_inputs_tile_split")
               ),
@@ -560,10 +464,25 @@ ui <- page_fluid(
               )
             ) %>% tagAppendAttributes(class = "nav-justified"),
 
+            hr(),
+
+            disabled(
+              downloadButton(
+                outputId = "download_handler",
+                label = "Download results spreadsheet",
+                class = "btn btn-success align-items-center mb-2",
+                style = "width: 50%",
+                title = paste0(
+                  "Once your data has been analyzed, you can download the ",
+                  "results here"
+                )
+              )
+            ),
+
             disabled(
               actionButton(
                 inputId = "reset",
-                class = "mt-4 btn btn-warning",
+                class = "btn btn-warning",
                 label = "Analyze a new dataset",
                 icon = icon("arrow-rotate-left"),
                 title = "Resets all inputs, results, and plots"
@@ -586,7 +505,7 @@ ui <- page_fluid(
         div(
           class = "row flex-lg-row align-items-center g-5 py-5",
           div(
-            class = "col-lg-10",
+            class = "mt-0",
             h1(
               class = "display-3 fw-bold text-body-emphasis lh-1 mb-3",
               "About"
@@ -596,8 +515,12 @@ ui <- page_fluid(
               "ShinyABCi is an R Shiny app that facilitates the calculation ",
               "of the Anti-Biofilm Combination Index (ABCI). The metric was ",
               "created by Lucas Pedraz, and the app was developed by Travis ",
-              "Blimkie, all at the CMDR Hancock Lab at the University of ",
-              "British Columbia."
+              "Blimkie, all at the ",
+              a(
+                href = "http://cmdr.ubc.ca/bobh/",
+                "REW Hancock Laboratory"
+              ),
+              "at the University of British Columbia."
             ),
             h1(
               class = "display-6 fw-bold text-body-emphasis lh-1 mb-3",
@@ -637,12 +560,12 @@ ui <- page_fluid(
               class = "container",
               div(
                 class = "row align-items-start",
-                style = "font-size: 1.1em",
+                style = "font-size: 1.1em; font-weight: 300",
                 div(
                   class = "col",
                   tags$dl(
                     tags$dt(a(href = "https://rstudio.github.io/bslib/index.html", "bslib")),
-                    tags$dd("Provides a modern UI toolkit for Shiny based on Bootstrap."),
+                    tags$dd("Provides a modern UI toolkit for Shiny based on Bootstrap"),
                     tags$dt(a(href = "https://shiny.posit.co/", "shiny")),
                     tags$dd("Easily create and deploy web apps from R"),
                   )
@@ -694,7 +617,7 @@ ui <- page_fluid(
 
 server <- function(input, output) {
 
-  # Learn more action
+  # "Learn more" button
   observeEvent(input$learn_more, {
     updateNavbarPage(inputId = "navbar", selected = "about")
   })
@@ -722,6 +645,7 @@ server <- function(input, output) {
   observeEvent(input$load_example_data, {
     if (file.exists("example_data/example_data_lucas.xlsx")) {
       input_1 <- abci_reader("example_data/example_data_lucas.xlsx")
+
       showNotification(
         id = "upload_success",
         type = "message",
@@ -729,8 +653,7 @@ server <- function(input, output) {
           "<h4 class='alert-heading'><b>Success!</b></h4>",
           "<p class='mb-0'>",
           "Example data successfully loaded. Use the button at the bottom of ",
-          "the sidebar to proceed to the next step.",
-          "</p>"
+          "the sidebar to proceed to the next step.</p>"
         ))
       )
       input_data_raw(input_1)
@@ -810,12 +733,8 @@ server <- function(input, output) {
 
   input_data_preview <- reactive({
     req(input_data_raw())
-    enable_button(
-      "proceed_abci_calculations",
-      "Click here to proceed to the next step"
-    )
 
-    # For now, just show the first replicate in the preview...
+    # We only show the first replicate in the preview
     lapply(input_data_raw(), function(experiment) {
       experiment %>%
         mutate(across(where(is.numeric), ~signif(.x, digits = 4))) %>%
@@ -932,12 +851,53 @@ server <- function(input, output) {
   })
 
 
-  # Analysis --------------------------------------------------------------
+  # Calculations ----------------------------------------------------------
 
-  observeEvent(input$proceed_abci_calculations, {
-    req(input_data_tidy())
-    updateNavbarPage(inputId = "navbar", selected = "analysis")
+  observeEvent(input_data_raw(), {
+    enable_button(
+      "perform_abci_calculations",
+      "Click here to analyze the uploaded data"
+    )
+  })
+
+
+  # |- Calculations modal -------------------------------------------------
+
+  observeEvent(input$perform_abci_calculations, {
+    req(input_data_raw())
     removeNotification(id = "upload_success")
+
+    showModal(modalDialog(
+      title = "Perform ABCI calculations: Data normalization",
+      size = "l",
+
+      tagList(
+        p(
+          "By default, ShinyABCi will normalize all input data to ",
+          "percentages. If your data already meets this criteria, please ",
+          "select the appropriate option below before proceeding."
+        ),
+        radioButtons(
+          inputId = "normalize_radio",
+          label = NULL,
+          choices = list(
+            "Normalize my data (becoming range 0-1)" = "run_norm",
+            "My data is already normalized (0-1 or 0-100)" = "no_norm"
+          ),
+          selected = "run_norm",
+          width = "inherit"
+        )
+      ),
+
+      footer = tagList(
+        modalButton(label = "Cancel"),
+        actionButton(
+          inputId = "confirm_calc",
+          label = "Calculate ABCI values",
+          class = "btn btn-primary"
+        )
+      )
+    ))
   })
 
 
@@ -945,9 +905,7 @@ server <- function(input, output) {
 
   input_data_tidy <- reactiveVal()
 
-  observeEvent(input_data_raw(), {
-    enable_button("perform_abci_calculations")
-
+  observeEvent(input$confirm_calc, {
     input_data_raw() %>%
       bind_rows(.id = "assay") %>%
       mutate(across(c(cols_conc, rows_conc), forcats::fct_inseq)) %>%
@@ -959,7 +917,7 @@ server <- function(input, output) {
 
   abci_results <- reactiveVal()
 
-  observeEvent(input$perform_abci_calculations, {
+  observeEvent(input$confirm_calc, {
     req(input_data_tidy())
 
     abci_analysis(
@@ -975,173 +933,18 @@ server <- function(input, output) {
   })
 
 
-  # |- Create results table -----------------------------------------------
+  # Results ---------------------------------------------------------------
 
-  abci_results_display <- reactive({
+  observeEvent(input$confirm_calc, {
     req(abci_results())
 
-    slim_results <- abci_results() %>%
-      select(assay, cols_conc, rows_conc, abci_avg) %>%
-      mutate(across(where(is.numeric), ~signif(.x, digits = 4))) %>%
-      split(x = ., f = .$assay)
-
-    lapply(slim_results, function(experiment) {
-      experiment %>%
-        select(-assay) %>%
-        distinct(cols_conc, rows_conc, .keep_all = TRUE) %>%
-        tidyr::pivot_wider(
-          names_from = "cols_conc",
-          values_from = "abci_avg"
-        ) %>%
-        tibble::column_to_rownames("rows_conc")
-    })
-  })
-
-  output$results_table_DT <- DT::renderDataTable(
-    DT::formatStyle(
-      table = DT::datatable(
-        data = abci_results_display()[[input$results_names_selector]],
-        class = "table-striped cell-border",
-        selection = "none",
-        options = list(dom = "t")
-      ),
-      columns = 0,
-      fontWeight = "bold",
-      `text-align` = "right"
-    )
-  )
-
-
-  # |- Create and render cards --------------------------------------------
-
-  observeEvent(input$perform_abci_calculations, {
-    req(abci_results(), abci_results_display())
+    removeModal()
+    updateNavbarPage(inputId  = "navbar", selected = "results")
 
     enable_button(
       "download_handler",
       "Click here to download your results as a CSV file"
     )
-    enable_button(
-      "visualize_your_results",
-      "Click here to proceed to the Visualization page"
-    )
-
-    output$results_names_card <- renderUI(
-      card(
-        height = 340,
-        class = "mb-0",
-        card_header(
-          class = "bg-dark",
-          "Select an experiment to see the ABCI results"
-        ),
-        card_body(
-          HTML(paste0(
-            "<p>Use the dropdown to see the calculated <b>average ABCI ",
-            "values</b> for each uploaded experiment. The card to the right ",
-            "shows some information about the chosen experiment.</p>"
-          )),
-          selectInput(
-            inputId = "results_names_selector",
-            label = NULL,
-            choices = names(abci_results_display()),
-            width = "inherit"
-          )
-        )
-      )
-    )
-  })
-
-  analysis_drug_card <- reactive({
-    experiment_drugs <- drug_info()[[input$results_names_selector]]
-    card(
-      height = 340,
-      class = "mb-0",
-      card_header(
-        class = "bg-dark",
-        paste0(
-          "Treatment information for experiment '",
-          input$results_names_selector, "'"
-        )
-      ),
-      card_body(
-        HTML(paste0(
-          "<p><b>Treatment in the columns:</b> ",
-          experiment_drugs[["cols"]][["name"]],
-          "</p>"
-        )),
-        HTML(paste0(
-          "<p><b>Detected concentrations:</b> ",
-          paste(experiment_drugs[["cols"]][["concentrations"]], collapse = ", "),
-          "</p>"
-        )),
-
-        hr(),
-
-        HTML(paste0(
-          "<p><b>Treatment in the rows:</b> ",
-          experiment_drugs[["rows"]][["name"]],
-          "</p>"
-        )),
-        HTML(paste0(
-          "<p><b>Detected concentrations:</b> ",
-          paste(experiment_drugs[["rows"]][["concentrations"]], collapse = ", "),
-          "</p>"
-        ))
-      )
-    )
-  })
-
-  output$analysis_drug_card_UI <- renderUI({
-    req(abci_results_display(), input$results_names_selector)
-    analysis_drug_card()
-  })
-
-  output$results_table_div <- renderUI({
-    req(abci_results_display(), input$results_names_selector)
-    tagList(
-      card_header(
-        class = "bg-dark",
-        paste0(
-          "ABCI results for the experiment '",
-          input$results_names_selector, "'"
-        )
-      ),
-      DT::dataTableOutput("results_table_DT")
-    )
-  })
-
-
-  # |- Results download ---------------------------------------------------
-
-  output$download_handler <- downloadHandler(
-    filename = function() {
-      paste0(
-        "shinyABCi_",
-        ifelse(
-          test = is.null(input$load_user_data),
-          yes = "example_data",
-          no = tools::file_path_sans_ext(input$load_user_data$name)
-        ),
-        "_results.csv"
-      )
-    },
-    content = function(filename) {
-      readr::write_csv(
-        x = abci_results(),
-        file = filename
-      )
-    }
-  )
-
-
-  # Visualization ---------------------------------------------------------
-
-
-  # |- Buttons ------------------------------------------------------------
-
-  observeEvent(input$visualize_your_results, {
-    updateNavbarPage(inputId  = "navbar", selected = "visualization")
-
     enable("reset")
     enable_button(
       "create_plot",
@@ -1150,10 +953,14 @@ server <- function(input, output) {
         "changing the inputs"
       )
     )
+    click("create_plot")
   })
 
+
+  # |- Buttons ------------------------------------------------------------
+
   observeEvent({
-    input$visualize_tabs
+    input$plot_tabs
     abci_plot_data()
   }, {
     enable("reset")
@@ -1195,16 +1002,12 @@ server <- function(input, output) {
     output$abci_plot_ui <- NULL
 
     disable_button(
-      "proceed_abci_calculations",
+      "perform_abci_calculations",
       "Load your plate data, or our example data, then click here to analyze"
     )
     disable_button(
       "download_handler",
       "Once your data is analyzed, you can download the results here"
-    )
-    disable_button(
-      "visualize_your_results",
-      "Once your data is analyzed, you can proceed to the Visualization page"
     )
     disable_button(
       "create_plot",
@@ -1223,9 +1026,32 @@ server <- function(input, output) {
   })
 
 
+  # |- Results download ---------------------------------------------------
+
+  output$download_handler <- downloadHandler(
+    filename = function() {
+      paste0(
+        "shinyABCi_",
+        ifelse(
+          test = is.null(input$load_user_data),
+          yes = "example_data",
+          no = tools::file_path_sans_ext(input$load_user_data$name)
+        ),
+        "_results.xlsx"
+      )
+    },
+    content = function(filename) {
+      excel_writer(
+        x = abci_results(),
+        filename = filename
+      )
+    }
+  )
+
+
   # |- Reactive values/inputs ---------------------------------------------
 
-  plot_type <- reactive(input$visualize_tabs)
+  plot_type <- reactive(input$plot_tabs)
 
   abci_plot_data <- reactive(abci_results())
 
@@ -1297,13 +1123,15 @@ server <- function(input, output) {
         title = "ABCI colour palettes",
         easyClose = TRUE,
         size = "l",
-        HTML("<img src='abci_palettes.png' class='center'>")
+        HTML("<img src='abci_palettes.png' class='center'>"),
+        footer = modalButton("OK")
       ),
       "viridis" = modalDialog(
         title = "Line colour palettes",
         easyClose = TRUE,
         size = "m",
-        HTML("<img src='rcolorbrewer_supported_palettes.png' class='center'>")
+        HTML("<img src='rcolorbrewer_supported_palettes.svg' class='center'>"),
+        footer = modalButton("OK")
       )
     ),
     tagAppendAttributes,
@@ -1417,7 +1245,7 @@ server <- function(input, output) {
       accordion(
         open = FALSE,
         accordion_panel(
-          title = "Advanced options",
+          title = "Advanced plot options",
 
           wrap_selector(
             label = "Swap X and Y",
@@ -1448,6 +1276,27 @@ server <- function(input, output) {
               label = NULL,
               value = 0.5
             )
+          ),
+
+          wrap_selector(
+            label = "Highlight large effect",
+            label_title = "Replace me!",
+            input_switch(
+              id = "plot_dot_highlight_toggle",
+              label = "Off",
+              value = FALSE
+            )
+          ),
+
+          wrap_selector(
+            label = "Large effect threshold",
+            label_title = "Replace me!",
+            numericInput(
+              inputId = "plot_dot_highlight_value",
+              label = NULL,
+              value = 0.9,
+              min = 0
+            )
           )
         )
       )
@@ -1476,6 +1325,14 @@ server <- function(input, output) {
         inputId = "plot_dot_y_text",
         value = axis_titles()[["rows"]]
       )
+    }
+  })
+
+  observeEvent(input$plot_dot_highlight_toggle, {
+    if (input$plot_dot_highlight_toggle) {
+      update_switch("plot_dot_highlight_toggle", label = "On")
+    } else {
+      update_switch("plot_dot_highlight_toggle", label = "Off")
     }
   })
 
@@ -1567,7 +1424,7 @@ server <- function(input, output) {
       accordion(
         open = FALSE,
         accordion_panel(
-          title = "Advanced options",
+          title = "Advanced plot options",
 
           wrap_selector(
             label = "Swap X and Y",
@@ -1608,6 +1465,27 @@ server <- function(input, output) {
               label = NULL,
               value = 0.5
             )
+          ),
+
+          wrap_selector(
+            label = "Highlight large effect",
+            label_title = "Replace me!",
+            input_switch(
+              id = "plot_dot_split_highlight_toggle",
+              label = "Off",
+              value = FALSE
+            )
+          ),
+
+          wrap_selector(
+            label = "Large effect threshold",
+            label_title = "Replace me!",
+            numericInput(
+              inputId = "plot_dot_split_highlight_value",
+              label = NULL,
+              value = 0.9,
+              min = 0
+            )
           )
         )
       )
@@ -1644,6 +1522,14 @@ server <- function(input, output) {
       update_switch("plot_dot_split_strict", label = "Strict")
     } else {
       update_switch("plot_dot_split_strict", label = "Loose")
+    }
+  })
+
+  observeEvent(input$plot_dot_split_highlight_toggle, {
+    if (input$plot_dot_split_highlight_toggle) {
+      update_switch("plot_dot_split_highlight_toggle", label = "On")
+    } else {
+      update_switch("plot_dot_split_highlight_toggle", label = "Off")
     }
   })
 
@@ -1737,7 +1623,7 @@ server <- function(input, output) {
       accordion(
         open = FALSE,
         accordion_panel(
-          title = "Advanced options",
+          title = "Advanced plot options",
 
           wrap_selector(
             label = "Swap X and Y",
@@ -1776,8 +1662,28 @@ server <- function(input, output) {
               inputId = "plot_tile_minflag_value",
               label = NULL,
               value = 0.5,
-              min = 0,
-              step = 0.1
+              min = 0
+            )
+          ),
+
+          wrap_selector(
+            label = "Highlight large effect",
+            label_title = "Replace me!",
+            input_switch(
+              id = "plot_tile_highlight_toggle",
+              label = "Off",
+              value = FALSE
+            )
+          ),
+
+          wrap_selector(
+            label = "Large effect threshold",
+            label_title = "Replace me!",
+            numericInput(
+              inputId = "plot_tile_highlight_value",
+              label = NULL,
+              value = 0.9,
+              min = 0
             )
           )
         )
@@ -1790,6 +1696,14 @@ server <- function(input, output) {
       update_switch("plot_tile_minflag_toggle", label = "On")
     } else {
       update_switch("plot_tile_minflag_toggle", label = "Off")
+    }
+  })
+
+  observeEvent(input$plot_tile_highlight_toggle, {
+    if (input$plot_tile_highlight_toggle) {
+      update_switch("plot_tile_highlight_toggle", label = "On")
+    } else {
+      update_switch("plot_tile_highlight_toggle", label = "Off")
     }
   })
 
@@ -1907,7 +1821,7 @@ server <- function(input, output) {
       accordion(
         open = FALSE,
         accordion_panel(
-          title = "Advanced options",
+          title = "Advanced plot options",
 
           wrap_selector(
             label = "Swap X and Y",
@@ -1959,6 +1873,27 @@ server <- function(input, output) {
               min = 0,
               step = 0.1
             )
+          ),
+
+          wrap_selector(
+            label = "Highlight large effect",
+            label_title = "Replace me!",
+            input_switch(
+              id = "plot_tile_split_highlight_toggle",
+              label = "Off",
+              value = FALSE
+            )
+          ),
+
+          wrap_selector(
+            label = "Large effect threshold",
+            label_title = "Replace me!",
+            numericInput(
+              inputId = "plot_tile_split_highlight_value",
+              label = NULL,
+              value = 0.9,
+              min = 0
+            )
           )
         )
       )
@@ -2003,6 +1938,14 @@ server <- function(input, output) {
       update_switch("plot_tile_split_minflag_toggle", label = "On")
     } else {
       update_switch("plot_tile_split_minflag_toggle", label = "Off")
+    }
+  })
+
+  observeEvent(input$plot_tile_split_highlight_toggle, {
+    if (input$plot_tile_split_highlight_toggle) {
+      update_switch("plot_tile_split_highlight_toggle", label = "On")
+    } else {
+      update_switch("plot_tile_split_highlight_toggle", label = "Off")
     }
   })
 
@@ -2129,7 +2072,7 @@ server <- function(input, output) {
       accordion(
         open = FALSE,
         accordion_panel(
-          title = "Advanced options",
+          title = "Advanced plot options",
 
           wrap_selector(
             label = "Swap X and lines",
@@ -2218,7 +2161,7 @@ server <- function(input, output) {
 
     output$abci_plot <- renderPlot(
 
-      if (isolate(input$visualize_tabs) == "dot") {
+      if (isolate(input$plot_tabs) == "dot") {
         abci_plot_dot(
           data = isolate(abci_plot_data()),
           x.drug = ifelse(
@@ -2246,6 +2189,8 @@ server <- function(input, output) {
           x.mic.line = ("X" %in% isolate(input$plot_dot_mic_lines)),
           y.mic.line = ("Y" %in% isolate(input$plot_dot_mic_lines)),
           mic.threshold = isolate(input$plot_dot_mic_threshold),
+          highlight = isolate(input$plot_dot_highlight_toggle),
+          highlight.value = isolate(input$plot_dot_highlight_value),
           col.mic = "bio_normal",
           colour.palette = isolate(input$plot_dot_colour_palette)
         ) +
@@ -2253,7 +2198,7 @@ server <- function(input, output) {
             theme(legend.box = "horizontal")
           }}
 
-      } else if (isolate(input$visualize_tabs) == "dot_split") {
+      } else if (isolate(input$plot_tabs) == "dot_split") {
 
         abci_plot_dot_split(
           data = isolate(abci_plot_data()),
@@ -2283,6 +2228,8 @@ server <- function(input, output) {
           x.mic.line = ("X" %in% isolate(input$plot_dot_split_mic_lines)),
           y.mic.line = ("Y" %in% isolate(input$plot_dot_split_mic_lines)),
           mic.threshold = isolate(input$plot_dot_split_mic_threshold),
+          highlight = isolate(input$plot_dot_split_highlight_toggle),
+          highlight.value = isolate(input$plot_dot_split_highlight_value),
           col.mic = "bio_normal",
           colour.palette = isolate(input$plot_dot_split_colour_palette)
         ) +
@@ -2290,7 +2237,7 @@ server <- function(input, output) {
             theme(legend.box = "horizontal")
           }}
 
-      } else if (isolate(input$visualize_tabs) == "tile") {
+      } else if (isolate(input$plot_tabs) == "tile") {
         abci_plot_tile(
           data = isolate(abci_plot_data()),
           x.drug = ifelse(
@@ -2318,10 +2265,12 @@ server <- function(input, output) {
           col.mic = "bio_normal",
           minflag = isolate(input$plot_tile_minflag_toggle),
           minflag.value = isolate(input$plot_tile_minflag_value),
+          highlight = isolate(input$plot_tile_highlight_toggle),
+          highlight.value = isolate(input$plot_tile_highlight_value),
           colour.palette = isolate(input$plot_tile_colour_palette)
         )
 
-      }  else if (isolate(input$visualize_tabs) == "tile_split") {
+      }  else if (isolate(input$plot_tabs) == "tile_split") {
         abci_plot_tile_split(
           data = isolate(abci_plot_data()),
           x.drug = ifelse(
@@ -2350,10 +2299,12 @@ server <- function(input, output) {
           col.mic = "bio_normal",
           minflag = isolate(input$plot_tile_split_minflag_toggle),
           minflag.value = isolate(input$plot_tile_split_minflag_value),
+          highlight = isolate(input$plot_tile_split_highlight_toggle),
+          highlight.value = isolate(input$plot_tile_split_highlight_value),
           colour.palette = isolate(input$plot_tile_split_colour_palette)
         )
 
-      } else if (isolate(input$visualize_tabs) == "line") {
+      } else if (isolate(input$plot_tabs) == "line") {
 
         if (max(abci_plot_data()$bio_normal) > 1.5) {
           showNotification(
