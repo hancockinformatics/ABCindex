@@ -87,7 +87,7 @@ abci_analysis <- function(
 }
 
 
-#' INTERNAL Tidy-calculate ABCi values for a single analysis
+#' abci_analysis_single
 #'
 #' @param data Data frame containing the concentrations of two drugs, and the
 #'   assay output/measurement.

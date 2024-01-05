@@ -1,4 +1,4 @@
-#' INTERNAL Calculate MIC values
+#' abci_mic
 #'
 #' @param data Data frame containing the concentrations of two drugs, and the
 #'   assay output/measurement

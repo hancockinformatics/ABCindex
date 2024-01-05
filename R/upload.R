@@ -103,7 +103,7 @@ abci_master_input <- function(file, sheet = "all") {
 }
 
 
-#' Read a spreadsheet containing plate data
+#' abci_reader
 #'
 #' @param file Path to a spreadsheet, containing one or more sheets within, each
 #'   with data in a 96 well-type format
@@ -148,7 +148,7 @@ abci_reader <- function(file, sheet = "all") {
 }
 
 
-#' INTERNAL Read a single sheet of plate data
+#' abci_reader_single
 #'
 #' @param file Path to a spreadsheet, containing one or more sheets within, each
 #'   with data in a 96 well-type format

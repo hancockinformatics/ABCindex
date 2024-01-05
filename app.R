@@ -1009,10 +1009,6 @@ server <- function(input, output) {
       "Once your data is analyzed, you can download the results here"
     )
     disable_button(
-      "visualize_your_results",
-      "Once your data is analyzed, you can proceed to the Visualization page"
-    )
-    disable_button(
       "create_plot",
       "Upload and analyze some data to enable visualization"
     )
