@@ -78,13 +78,13 @@ get_mic <- function(
 #' @param size.range Range of dot size, defaults to `c(3, 15)`
 #' @param linear Should dot size scale linearly? Defaults to FALSE.
 #' @param scales Should the scales be "free" (default) or "fixed"?
-#' @param n.rows Number of rows when faceting
-#' @param n.cols Number of columns when faceting
+#' @param n.rows Number of rows when faceting. Defaults to NULL.
+#' @param n.cols Number of columns when faceting. Defaults to NULL.
 #' @param size.text Label for the size legend
 #' @param x.text Character; Label for the x-axis
 #' @param y.text Character; Label for the y-axis
-#' @param x.decimal Number of decimal shown for x-axis labels. Defaults to 1.
-#' @param y.decimal Number of decimal shown for y-axis labels. Defaults to 1.
+#' @param x.decimal Number of decimal places on x-axis labels. Defaults to 1.
+#' @param y.decimal Number of decimal places on y-axis labels. Defaults to 1.
 #' @param x.mic.line Logical; Include MIC line for the drug on the x axis?
 #'   Default to FALSE.
 #' @param y.mic.line Logical; Include MIC line for the drug on the y axis?
@@ -300,37 +300,32 @@ abci_plot_dot <- function(
 #' @param data Data frame, as output by `abci_analysis()`
 #' @param x.drug Character; Column containing concentrations of the first drug
 #' @param y.drug Character; Column containing concentrations of the second drug
-#' @param col.fill Character; Column containing the values to plot
+#' @param col.fill Character; Column containing the values to plot as fill
 #' @param col.size Character; Column containing values to map to dot size
 #' @param col.analysis Character; Optional column denoting different analyses,
 #'   by which to facet the plot
-#' @param strict
+#' @param strict Should marginal (close to 0) values be excluded in the
+#'   splitting? Defaults to TRUE.
 #' @param size.range Range of dot size, defaults to `c(3, 15)`
-#' @param scales Should the scales be "fixed" (default), "free", "free_x", or
-#'   "free_y"? See `?facet_wrap` for more details.
-#' @param n.rows Number of rows when faceting. Defaults to NULL (let's ggplot2
-#'   choose).
-#' @param n.cols Number of columns when faceting. Defaults to NULL (let's
-#'   ggplot2 choose).
+#' @param scales Should the scales be "free" (default) or "fixed?"
+#' @param n.rows Number of rows when faceting. Defaults to NULL.
+#' @param n.cols Number of columns when faceting. Defaults to NULL.
+#' @param size.text Character; Label for the size legend
 #' @param x.text Character; Label for the x-axis
 #' @param y.text Character; Label for the y-axis
-#' @param x.decimal Number of decimal places to show for x-axis labels. Defaults
-#'   to 1.
-#' @param y.decimal Number of decimal places to show for y-axis labels. Defaults
-#'   to 1.
+#' @param x.decimal Number of decimal places on x-axis labels. Defaults to 1.
+#' @param y.decimal Number of decimal places on y-axis labels. Defaults to 1.
 #' @param x.mic.line Logical; Include MIC line for the drug on the x axis?
 #'   Default to FALSE.
 #' @param y.mic.line Logical; Include MIC line for the drug on the y axis?
 #'   Default to FALSE.
 #' @param col.mic Character; Column name to use for calculating MIC
 #' @param mic.threshold Threshold for calculating MIC. Defaults to 0.5.
-#' @param colour.palette One of the pre-made palettes
-#' @param colour.na Colour assigned to any NA values. Defaults to "white".
-#' @param scale.limits Limits for the colour scale. Defaults to `c(-2, 2)`.
-#' @param scale.breaks Breaks for the colour scale. Defaults to `seq(2, -2,
-#'   -0.5)`.
-#' @param add.axis.lines Should lines be drawn for the x- and y-axis when
-#'   faceting? Defaults to TRUE.
+#' @param highlight Should combinations with a large effect be highlighted?
+#'   Defaults to FALSE.
+#' @param highlight.value Threshold for highlighting large effect. Defaults to
+#'   0.9.
+#' @param colour.palette One of the pre-made palettes for ABCI colour
 #' @param size_mapping Data frame of values to use for size scaling. Currently
 #'   only supports the one object `size_mapping_N1S2`.
 #'
@@ -360,10 +355,6 @@ abci_plot_dot_split <- function(
     highlight = FALSE,
     highlight.value = 0.9,
     colour.palette = "RYB",
-    colour.na = "white",
-    scale.limits = c(-2.0, 2.0),
-    scale.breaks = seq(2, -2, -0.5),
-    add.axis.lines = TRUE,
     size_mapping = size_mapping_N1S2
 ) {
 
@@ -383,12 +374,6 @@ abci_plot_dot_split <- function(
     ) %>%
     left_join(size_mapping, by = "reference")
 
-  if (!highlight) {
-    data <- mutate(data, high = rep(0))
-  } else {
-    data <- mutate(data, high = ifelse(effect_avg > 0.9, 1, 0))
-  }
-
   proper_labels <- seq(0, 100, 20)
 
   proper_breaks <- size_mapping %>%
@@ -396,11 +381,19 @@ abci_plot_dot_split <- function(
     mutate(new = scales::rescale(N1S2, to = size.range)) %>%
     pull(new)
 
-  # Set up proper colour scaling
+  # Setup dot highlighting variables
+  if (!highlight) {
+    data <- mutate(data, high = rep(0))
+  } else {
+    data <- mutate(data, high = ifelse(effect_avg > 0.9, 1, 0))
+  }
+
+  # Setup proper colour scaling
+  plot.palette <- preset_palettes_split$values[[colour.palette]]
+
+  scale.limits <- c(-2, 2)
   upper <- max(scale.limits)
   lower <- min(scale.limits)
-
-  plot.palette <- preset_palettes_split$values[[colour.palette]]
 
   colour.pointers <- list(
     "up" = scales::rescale(
@@ -413,9 +406,7 @@ abci_plot_dot_split <- function(
     )
   )
 
-  # MICs are calculated by `get_mic()` and recovered as a data frame. Drug
-  # concentrations need to be converted to positions on their respective axes,
-  # as the `geom_(x|y)line` functions only work by position.
+  # MICs are calculated by `get_mic()` and converted to positions on the axes
   if (any(x.mic.line, y.mic.line)) {
 
     if (is.null(col.analysis)) {
@@ -525,14 +516,6 @@ abci_plot_dot_split <- function(
 
     ggplot(d, aes(.data[[x.drug]], .data[[y.drug]])) +
 
-      geom_vline(xintercept = 1.5, linewidth = 0.5) +
-      geom_hline(yintercept = 1.5, linewidth = 0.5) +
-
-      geom_point(
-        aes(fill = col_fill, size = col_size, stroke = col_high),
-        pch = 21
-      ) +
-
       {if (!is.null(col.analysis)) {
         facet_wrap(
           ~.data[[col.analysis]],
@@ -542,40 +525,21 @@ abci_plot_dot_split <- function(
         )
       }} +
 
-      {if (x.mic.line) {
-        geom_vline(data = mic.table, aes(xintercept = XLAB))
-      }} +
-
-      {if (y.mic.line) {
-        geom_hline(data = mic.table, aes(yintercept = YLAB))
-      }} +
-
-      scale_x_discrete(
-        name = x.text,
-        labels = ~sprinter(.x, x.decimal)
-      ) +
-
-      scale_y_discrete(
-        name = y.text,
-        labels = ~sprinter(.x, y.decimal)
+      geom_point(
+        aes(fill = col_fill, size = col_size, stroke = col_high),
+        pch = 21
       ) +
 
       scale_fill_gradientn(
-        name = ifelse(
-          grepl(x = col.fill, pattern = "abci", ignore.case = TRUE),
-          "ABCi",
-          col.fill
-        ),
         colours = plot.palette[[nm]],
         values = colour.pointers[[nm]],
-        na.value = colour.na,
+        na.value = "white",
         limits = scale.limits.split[[nm]],
-        breaks = scale.breaks,
+        breaks = seq(-2, 2, 0.5),
         oob = scales::squish
       ) +
 
       scale_size_identity(
-        name = paste(strwrap(size.text, width = 12), collapse = "\n"),
         limits = c(min(proper_breaks), max(proper_breaks)),
         breaks = proper_breaks,
         labels = proper_labels,
@@ -585,31 +549,34 @@ abci_plot_dot_split <- function(
         )
       ) +
 
-      {if (add.axis.lines) {
-        annotate(
-          "segment",
-          x = -Inf,
-          xend = Inf,
-          y = -Inf,
-          yend = -Inf,
-          linewidth = 2
-        )
+      scale_x_discrete(labels = ~sprinter(.x, x.decimal)) +
+      scale_y_discrete(labels = ~sprinter(.x, y.decimal)) +
+
+      {if (x.mic.line) {
+        geom_vline(data = mic.table, aes(xintercept = XLAB))
       }} +
 
-      {if (add.axis.lines) {
-        annotate(
-          "segment",
-          x = -Inf,
-          xend = -Inf,
-          y = -Inf,
-          yend = Inf,
-          linewidth = 2
-        )
+      {if (y.mic.line) {
+        geom_hline(data = mic.table, aes(yintercept = YLAB))
       }} +
+
+      geom_vline(xintercept = 1.5, linewidth = 0.5) +
+      geom_hline(yintercept = 1.5, linewidth = 0.5) +
+
+      annotate("segment", x = -Inf, xend = Inf, y = -Inf, yend = -Inf, linewidth = 2) +
+      annotate("segment", x = -Inf, xend = -Inf, y = -Inf, yend = Inf, linewidth = 2) +
+
+      labs(
+        x = x.text,
+        y = y.text,
+        fill = "ABCI",
+        size = paste(strwrap(size.text, width = 12), collapse = "\n")
+      ) +
 
       {if (x.decimal > 1) {
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
       }} +
+
       theme(legend.key.height = unit(7, "mm"))
   })
 
