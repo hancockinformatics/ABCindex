@@ -4,7 +4,7 @@ preset_palettes <- readRDS("data/preset_palettes.Rds")
 preset_palettes_split <- readRDS("data/preset_palettes_split.Rds")
 
 # Axis lines that are always drawn on every facet, for all plot types
-line_x <- annotate(
+line_x <- ggplot2::annotate(
   "segment",
   x = -Inf,
   xend = Inf,
@@ -12,7 +12,7 @@ line_x <- annotate(
   yend = -Inf,
   linewidth = 2
 )
-line_y <- annotate(
+line_y <- ggplot2::annotate(
   "segment",
   x = -Inf,
   xend = -Inf,
