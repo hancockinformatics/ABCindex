@@ -52,25 +52,34 @@ tooltips <- list(
     "Include line(s) to indicate activity thresholds for individual ",
     "treatments (e.g., MIC, MBIC, MBEC). Defaults to ≥50% killing."
   ),
-  highlight = paste0(
-    "Draw a symbol on tiles with low effect when treatments are combined. ",
-    "Defaults to <50% killing."
-  ),
-  swap_x_y = "Turn on to swap the values plotted on the X and Y axis",
-  filter = paste0(
-    "Choose whether to include ABCI values close to 0 (Loose) or hide them ",
-    "(Strict)"
-  ),
-  axis_labels =
-    "Across the plot panels, should the X and Y axis labels vary or be the same?",
   activity_val = paste0(
     "Draw a line(s) when individual treatments reach the indicated ",
     "percentage (0.5 = 50% killing). Applies to X and Y axis."
   ),
-  highlight_val = paste0(
+  swap_x_y = "Turn on to swap the values plotted on the X and Y axis",
+  axis_labels =
+    "Across the plot panels, should the X and Y axis labels vary or be the same?",
+  low_effect = paste0(
+    "Draw a symbol on tiles with low effect when treatments are combined. ",
+    "Defaults to <50% killing."
+  ),
+  low_effect_val = paste0(
     "Draw a symbol on combined treatment cells that kill less than the ",
     "indicated percentage (0.5 = 50% killing)."
-  )
+  ),
+  large_effect = paste0(
+    "Outline dots, or draw a symbol on tiles, to highlight combinations with ",
+    "high killing"
+  ),
+  large_effect_val = paste0(
+    "Threshold value used for highlighting combinations with a large effect ",
+    "(0.9 = 90% killing)"
+    ),
+  filter = paste0(
+    "Choose whether to include ABCI values close to 0 (Loose) or hide them ",
+    "(Strict)"
+  ),
+  linear = "Toggle to enable linear/continuous scaling for dot sizes"
 )
 
 
@@ -1272,7 +1281,7 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Linear size scaling",
-            label_title = "Toggle custom or linear size scaling of dots",
+            label_title = "Enable linear size scaling of dots",
             input_switch(
               id = "plot_dot_linear",
               label = "Off",
@@ -1303,9 +1312,9 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Highlight large effect",
-            label_title = "Replace me!",
+            label_title = tooltips$large_effect,
             input_switch(
-              id = "plot_dot_highlight_toggle",
+              id = "plot_dot_large_toggle",
               label = "Off",
               value = FALSE
             )
@@ -1313,9 +1322,9 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Large effect threshold",
-            label_title = "Replace me!",
+            label_title = tooltips$large_effect_val,
             numericInput(
-              inputId = "plot_dot_highlight_value",
+              inputId = "plot_dot_large_value",
               label = NULL,
               value = 0.9,
               min = 0
@@ -1359,11 +1368,11 @@ server <- function(input, output) {
     }
   })
 
-  observeEvent(input$plot_dot_highlight_toggle, {
-    if (input$plot_dot_highlight_toggle) {
-      update_switch("plot_dot_highlight_toggle", label = "On")
+  observeEvent(input$plot_dot_large_toggle, {
+    if (input$plot_dot_large_toggle) {
+      update_switch("plot_dot_large_toggle", label = "On")
     } else {
-      update_switch("plot_dot_highlight_toggle", label = "Off")
+      update_switch("plot_dot_large_toggle", label = "Off")
     }
   })
 
@@ -1479,7 +1488,7 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Linear size scaling",
-            label_title = "Toggle custom or linear size scaling of dots",
+            label_title = "Enable linear size scaling of dots",
             input_switch(
               id = "plot_dot_split_linear",
               label = "Off",
@@ -1510,9 +1519,9 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Highlight large effect",
-            label_title = "Replace me!",
+            label_title = tooltips$large_effect,
             input_switch(
-              id = "plot_dot_split_highlight_toggle",
+              id = "plot_dot_split_large_toggle",
               label = "Off",
               value = FALSE
             )
@@ -1520,9 +1529,9 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Large effect threshold",
-            label_title = "Replace me!",
+            label_title = tooltips$large_effect_val,
             numericInput(
-              inputId = "plot_dot_split_highlight_value",
+              inputId = "plot_dot_split_large_value",
               label = NULL,
               value = 0.9,
               min = 0
@@ -1574,11 +1583,11 @@ server <- function(input, output) {
     }
   })
 
-  observeEvent(input$plot_dot_split_highlight_toggle, {
-    if (input$plot_dot_split_highlight_toggle) {
-      update_switch("plot_dot_split_highlight_toggle", label = "On")
+  observeEvent(input$plot_dot_split_large_toggle, {
+    if (input$plot_dot_split_large_toggle) {
+      update_switch("plot_dot_split_large_toggle", label = "On")
     } else {
-      update_switch("plot_dot_split_highlight_toggle", label = "Off")
+      update_switch("plot_dot_split_large_toggle", label = "Off")
     }
   })
 
@@ -1659,9 +1668,9 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Highlight low effect",
-        label_title = tooltips$highlight,
+        label_title = tooltips$low_effect,
         input_switch(
-          id = "plot_tile_minflag_toggle",
+          id = "plot_tile_low_toggle",
           label = "On",
           value = TRUE
         )
@@ -1706,9 +1715,9 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Low effect threshold",
-            label_title = tooltips$highlight_val,
+            label_title = tooltips$low_effect_val,
             numericInput(
-              inputId = "plot_tile_minflag_value",
+              inputId = "plot_tile_low_value",
               label = NULL,
               value = 0.5,
               min = 0
@@ -1717,9 +1726,9 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Highlight large effect",
-            label_title = "Replace me!",
+            label_title = tooltips$large_effect,
             input_switch(
-              id = "plot_tile_highlight_toggle",
+              id = "plot_tile_large_toggle",
               label = "Off",
               value = FALSE
             )
@@ -1727,9 +1736,9 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Large effect threshold",
-            label_title = "Replace me!",
+            label_title = tooltips$large_effect_val,
             numericInput(
-              inputId = "plot_tile_highlight_value",
+              inputId = "plot_tile_large_value",
               label = NULL,
               value = 0.9,
               min = 0
@@ -1740,19 +1749,19 @@ server <- function(input, output) {
     )
   })
 
-  observeEvent(input$plot_tile_minflag_toggle, {
-    if (input$plot_tile_minflag_toggle) {
-      update_switch("plot_tile_minflag_toggle", label = "On")
+  observeEvent(input$plot_tile_low_toggle, {
+    if (input$plot_tile_low_toggle) {
+      update_switch("plot_tile_low_toggle", label = "On")
     } else {
-      update_switch("plot_tile_minflag_toggle", label = "Off")
+      update_switch("plot_tile_low_toggle", label = "Off")
     }
   })
 
-  observeEvent(input$plot_tile_highlight_toggle, {
-    if (input$plot_tile_highlight_toggle) {
-      update_switch("plot_tile_highlight_toggle", label = "On")
+  observeEvent(input$plot_tile_large_toggle, {
+    if (input$plot_tile_large_toggle) {
+      update_switch("plot_tile_large_toggle", label = "On")
     } else {
-      update_switch("plot_tile_highlight_toggle", label = "Off")
+      update_switch("plot_tile_large_toggle", label = "Off")
     }
   })
 
@@ -1858,9 +1867,9 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Highlight low effect",
-        label_title = tooltips$highlight,
+        label_title = tooltips$low_effect,
         input_switch(
-          id = "plot_tile_split_minflag_toggle",
+          id = "plot_tile_split_low_toggle",
           label = "On",
           value = TRUE
         )
@@ -1914,9 +1923,9 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Low effect threshold",
-            label_title = tooltips$highlight_val,
+            label_title = tooltips$low_effect_val,
             numericInput(
-              inputId = "plot_tile_split_minflag_value",
+              inputId = "plot_tile_split_low_value",
               label = NULL,
               value = 0.5,
               min = 0,
@@ -1926,9 +1935,9 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Highlight large effect",
-            label_title = "Replace me!",
+            label_title = tooltips$large_effect,
             input_switch(
-              id = "plot_tile_split_highlight_toggle",
+              id = "plot_tile_split_large_toggle",
               label = "Off",
               value = FALSE
             )
@@ -1936,9 +1945,9 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Large effect threshold",
-            label_title = "Replace me!",
+            label_title = tooltips$large_effect_val,
             numericInput(
-              inputId = "plot_tile_split_highlight_value",
+              inputId = "plot_tile_split_large_value",
               label = NULL,
               value = 0.9,
               min = 0
@@ -1982,19 +1991,19 @@ server <- function(input, output) {
     }
   })
 
-  observeEvent(input$plot_tile_split_minflag_toggle, {
-    if (input$plot_tile_split_minflag_toggle) {
-      update_switch("plot_tile_split_minflag_toggle", label = "On")
+  observeEvent(input$plot_tile_split_low_toggle, {
+    if (input$plot_tile_split_low_toggle) {
+      update_switch("plot_tile_split_low_toggle", label = "On")
     } else {
-      update_switch("plot_tile_split_minflag_toggle", label = "Off")
+      update_switch("plot_tile_split_low_toggle", label = "Off")
     }
   })
 
-  observeEvent(input$plot_tile_split_highlight_toggle, {
-    if (input$plot_tile_split_highlight_toggle) {
-      update_switch("plot_tile_split_highlight_toggle", label = "On")
+  observeEvent(input$plot_tile_split_large_toggle, {
+    if (input$plot_tile_split_large_toggle) {
+      update_switch("plot_tile_split_large_toggle", label = "On")
     } else {
-      update_switch("plot_tile_split_highlight_toggle", label = "Off")
+      update_switch("plot_tile_split_large_toggle", label = "Off")
     }
   })
 
@@ -2239,8 +2248,8 @@ server <- function(input, output) {
           x.mic.line = ("X" %in% isolate(input$plot_dot_mic_lines)),
           y.mic.line = ("Y" %in% isolate(input$plot_dot_mic_lines)),
           mic.threshold = isolate(input$plot_dot_mic_threshold),
-          highlight = isolate(input$plot_dot_highlight_toggle),
-          highlight.value = isolate(input$plot_dot_highlight_value),
+          large.effect = isolate(input$plot_dot_large_toggle),
+          large.effect.val = isolate(input$plot_dot_large_value),
           col.mic = "bio_normal",
           colour.palette = isolate(input$plot_dot_colour_palette)
         ) +
@@ -2279,8 +2288,8 @@ server <- function(input, output) {
           x.mic.line = ("X" %in% isolate(input$plot_dot_split_mic_lines)),
           y.mic.line = ("Y" %in% isolate(input$plot_dot_split_mic_lines)),
           mic.threshold = isolate(input$plot_dot_split_mic_threshold),
-          highlight = isolate(input$plot_dot_split_highlight_toggle),
-          highlight.value = isolate(input$plot_dot_split_highlight_value),
+          large.effect = isolate(input$plot_dot_split_large_toggle),
+          large.effect.val = isolate(input$plot_dot_split_large_value),
           col.mic = "bio_normal",
           colour.palette = isolate(input$plot_dot_split_colour_palette)
         ) +
@@ -2314,10 +2323,10 @@ server <- function(input, output) {
           y.mic.line = ("Y" %in% isolate(input$plot_tile_mic_lines)),
           mic.threshold = isolate(input$plot_tile_mic_threshold),
           col.mic = "bio_normal",
-          minflag = isolate(input$plot_tile_minflag_toggle),
-          minflag.value = isolate(input$plot_tile_minflag_value),
-          highlight = isolate(input$plot_tile_highlight_toggle),
-          highlight.value = isolate(input$plot_tile_highlight_value),
+          low.effect = isolate(input$plot_tile_low_toggle),
+          low.effect.val = isolate(input$plot_tile_low_value),
+          large.effect = isolate(input$plot_tile_large_toggle),
+          large.effect.val = isolate(input$plot_tile_large_value),
           colour.palette = isolate(input$plot_tile_colour_palette)
         )
 
@@ -2348,10 +2357,10 @@ server <- function(input, output) {
           y.mic.line = ("Y" %in% isolate(input$plot_tile_split_mic_lines)),
           mic.threshold = isolate(input$plot_tile_split_mic_threshold),
           col.mic = "bio_normal",
-          minflag = isolate(input$plot_tile_split_minflag_toggle),
-          minflag.value = isolate(input$plot_tile_split_minflag_value),
-          highlight = isolate(input$plot_tile_split_highlight_toggle),
-          highlight.value = isolate(input$plot_tile_split_highlight_value),
+          low.effect = isolate(input$plot_tile_split_low_toggle),
+          low.effect.val = isolate(input$plot_tile_split_low_value),
+          large.effect = isolate(input$plot_tile_split_large_toggle),
+          large.effect.val = isolate(input$plot_tile_split_large_value),
           colour.palette = isolate(input$plot_tile_split_colour_palette)
         )
 

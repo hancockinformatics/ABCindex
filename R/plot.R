@@ -115,9 +115,9 @@ get_mic <- function(
 #'   Default to FALSE.
 #' @param col.mic Character; Column name to use for calculating MIC
 #' @param mic.threshold Threshold for calculating MIC. Defaults to 0.5.
-#' @param highlight Should combinations with a large effect be highlighted?
+#' @param large.effect Should combinations with a large effect be highlighted?
 #'   Defaults to FALSE.
-#' @param highlight.value Threshold for highlighting large effect. Defaults to
+#' @param large.effect.val Threshold for highlighting large effect. Defaults to
 #'   0.9.
 #' @param colour.palette One of the pre-made palettes for ABCI colour
 #' @param size_mapping Data frame of values to use for size scaling. Currently
@@ -146,8 +146,8 @@ plot_dot <- function(
     y.mic.line = FALSE,
     col.mic,
     mic.threshold = 0.5,
-    highlight = FALSE,
-    highlight.value = 0.9,
+    large.effect = FALSE,
+    large.effect.val = 0.9,
     colour.palette = "A_RYB",
     size_mapping = size_mapping_N1S2
 ) {
@@ -176,10 +176,10 @@ plot_dot <- function(
     pull(new)
 
   # Set up variables for dot highlighting
-  if (!highlight) {
-    data <- mutate(data, high = rep(0))
+  if (!large.effect) {
+    data <- mutate(data, large_chr = rep(0))
   } else {
-    data <- mutate(data, high = ifelse(effect_avg > 0.9, 1, 0))
+    data <- mutate(data, large_chr = ifelse(effect_avg > 0.9, 1, 0))
   }
 
   # MIC calculation, which is converted from a concentration to a position on
@@ -235,7 +235,7 @@ plot_dot <- function(
         aes(
           fill = .data[[col.fill]],
           size = reference,
-          stroke = high
+          stroke = large_chr
         ),
         pch = 21
       ) +
@@ -254,7 +254,7 @@ plot_dot <- function(
         aes(
           fill = .data[[col.fill]],
           size = scales::rescale(N1S2, to = size.range),
-          stroke = high
+          stroke = large_chr
         ),
         pch = 21
       ) +
@@ -341,9 +341,9 @@ plot_dot <- function(
 #'   Default to FALSE.
 #' @param col.mic Character; Column name to use for calculating MIC
 #' @param mic.threshold Threshold for calculating MIC. Defaults to 0.5.
-#' @param highlight Should combinations with a large effect be highlighted?
+#' @param large.effect Should combinations with a large effect be highlighted?
 #'   Defaults to FALSE.
-#' @param highlight.value Threshold for highlighting large effect. Defaults to
+#' @param large.effect.val Threshold for highlighting large effect. Defaults to
 #'   0.9.
 #' @param colour.palette One of the pre-made palettes for ABCI colour
 #' @param size_mapping Data frame of values to use for size scaling. Currently
@@ -373,8 +373,8 @@ plot_dot_split <- function(
     y.mic.line = FALSE,
     col.mic,
     mic.threshold = 0.5,
-    highlight = FALSE,
-    highlight.value = 0.9,
+    large.effect = FALSE,
+    large.effect.val = 0.9,
     colour.palette = "RYB",
     size_mapping = size_mapping_N1S2
 ) {
@@ -403,10 +403,10 @@ plot_dot_split <- function(
     pull(new)
 
   # Setup dot highlighting variables
-  if (!highlight) {
-    data <- mutate(data, high = rep(0))
+  if (!large.effect) {
+    data <- mutate(data, large_chr = rep(0))
   } else {
-    data <- mutate(data, high = ifelse(effect_avg > 0.9, 1, 0))
+    data <- mutate(data, large_chr = ifelse(effect_avg > 0.9, 1, 0))
   }
 
   # Setup proper colour scaling
@@ -481,7 +481,7 @@ plot_dot_split <- function(
           .data[[col.fill]] > 0.1 ~ .data[[col.fill]],
           TRUE ~ NA
         ),
-        col_high = ifelse(test = is.na(col_fill), yes = 0, no = high)
+        col_large = ifelse(test = is.na(col_fill), yes = 0, no = large_chr)
       ),
       "down" = mutate(
         data,
@@ -490,7 +490,7 @@ plot_dot_split <- function(
           .data[[col.fill]] < -0.1 ~ .data[[col.fill]],
           TRUE ~ NA
         ),
-        col_high = ifelse(test = is.na(col_fill), yes = 0, no = high)
+        col_large = ifelse(test = is.na(col_fill), yes = 0, no = large_chr)
       )
     )
   } else {
@@ -502,7 +502,7 @@ plot_dot_split <- function(
           .data[[col.fill]] > -0.1 ~ .data[[col.fill]],
           TRUE ~ NA
         ),
-        col_high = ifelse(test = is.na(col_fill), yes = 0, no = high)
+        col_large = ifelse(test = is.na(col_fill), yes = 0, no = large_chr)
       ),
       "down" = mutate(
         data,
@@ -511,7 +511,7 @@ plot_dot_split <- function(
           .data[[col.fill]] < 0.1 ~ .data[[col.fill]],
           TRUE ~ NA
         ),
-        col_high = ifelse(test = is.na(col_fill), yes = 0, no = high)
+        col_large = ifelse(test = is.na(col_fill), yes = 0, no = large_chr)
       )
     )
   }
@@ -538,7 +538,7 @@ plot_dot_split <- function(
     main_geom <- if (linear) {
       ggplot(d, aes(.data[[x.drug]], .data[[y.drug]])) +
         geom_point(
-          aes(fill = col_fill, size = reference, stroke = col_high),
+          aes(fill = col_fill, size = reference, stroke = col_large),
           pch = 21
         ) +
         scale_size_continuous(
@@ -553,7 +553,7 @@ plot_dot_split <- function(
     } else {
       ggplot(d, aes(.data[[x.drug]], .data[[y.drug]])) +
         geom_point(
-          aes(fill = col_fill, size = col_size, stroke = col_high),
+          aes(fill = col_fill, size = col_size, stroke = col_large),
           pch = 21
         ) +
         scale_size_identity(
@@ -871,9 +871,9 @@ plot_line <- function(
 #'   1.
 #' @param y.decimal Number of decimal places shown on y axis labels. Defaults to
 #'   1.
-#' @param minflag Logical; Should drug combinations with a low effect be
+#' @param low.effect Logical; Should drug combinations with a low effect be
 #'   labeled? Defaults to FALSE.
-#' @param minflag.value Threshold for determining which low-effect combinations
+#' @param low.effect.val Threshold for determining which low-effect combinations
 #'   to label. Defaults to 0.5
 #' @param x.mic.line Logical; Include MIC line for the drug on the x-axis?
 #'   Defaults to FALSE.
@@ -898,10 +898,10 @@ plot_tile <- function(
     y.text = "Drug 2",
     x.decimal = 1,
     y.decimal = 1,
-    minflag = FALSE,
-    minflag.value = 0.5,
-    highlight = FALSE,
-    highlight.value = 0.9,
+    low.effect = FALSE,
+    low.effect.val = 0.5,
+    large.effect = FALSE,
+    large.effect.val = 0.9,
     x.mic.line = FALSE,
     y.mic.line = FALSE,
     col.mic,
@@ -919,8 +919,8 @@ plot_tile <- function(
 
   data <- data %>% mutate(
     across(all_of(c(x.drug, y.drug)), forcats::fct_inseq),
-    min = ifelse(effect_avg < minflag.value, "<", ""),
-    high = ifelse(effect_avg > highlight.value, "*", "")
+    low_chr = ifelse(effect_avg < low.effect.val, "<", ""),
+    large_chr = ifelse(effect_avg > large.effect.val, "*", "")
   )
 
   # MICs are calculated by `get_mic()` as concentrations and converted to
@@ -987,8 +987,8 @@ plot_tile <- function(
 
     geom_raster(aes(fill = .data[[col.fill]])) +
 
-    {if (minflag) geom_text(aes(label = min), size = 6)} +
-    {if (highlight) geom_text(aes(label = high), size = 6)} +
+    {if (low.effect) geom_text(aes(label = low_chr), size = 6)} +
+    {if (large.effect) geom_text(aes(label = large_chr), size = 6)} +
 
     {if (x.mic.line) geom_vline(data = mic.table, aes(xintercept = XLAB))} +
     {if (y.mic.line) geom_hline(data = mic.table, aes(yintercept = YLAB))} +
@@ -1035,9 +1035,9 @@ plot_tile <- function(
 #'   1.
 #' @param y.decimal Number of decimal places shown on y axis labels. Defaults to
 #'   1.
-#' @param minflag Logical; Should drug combinations with a low effect be
+#' @param low.effect Logical; Should drug combinations with a low effect be
 #'   labeled? Defaults to FALSE.
-#' @param minflag.value Threshold for determining which low-effect combinations
+#' @param low.effect.val Threshold for determining which low-effect combinations
 #'   to label. Defaults to 0.5
 #' @param x.mic.line Logical; Include MIC line for the drug on the x-axis?
 #'   Defaults to FALSE.
@@ -1063,10 +1063,10 @@ plot_tile_split <- function(
     y.text = "Drug 2",
     x.decimal = 1,
     y.decimal = 1,
-    minflag = FALSE,
-    minflag.value = 0.5,
-    highlight = FALSE,
-    highlight.value = 0.9,
+    low.effect = FALSE,
+    low.effect.val = 0.5,
+    large.effect = FALSE,
+    large.effect.val = 0.9,
     x.mic.line = FALSE,
     y.mic.line = FALSE,
     col.mic,
@@ -1084,8 +1084,8 @@ plot_tile_split <- function(
 
   data <- data %>% mutate(
     across(all_of(c(x.drug, y.drug)), forcats::fct_inseq),
-    min = ifelse(effect_avg < minflag.value, "<", ""),
-    high = ifelse(effect_avg > highlight.value, "*", "")
+    low_chr = ifelse(effect_avg < low.effect.val, "<", ""),
+    large_chr = ifelse(effect_avg > large.effect.val, "*", "")
   )
 
 
@@ -1165,14 +1165,14 @@ plot_tile_split <- function(
           yes = .data[[col.fill]],
           no = NA
         ),
-        min_sym = ifelse(
+        low_sym = ifelse(
           test = !is.na(col_fill),
-          yes = min,
+          yes = low_chr,
           no = ""
         ),
-        high_sym = ifelse(
+        lagre_sym = ifelse(
           test = !is.na(col_fill),
-          yes = high,
+          yes = large_chr,
           no = ""
         )
       ),
@@ -1183,14 +1183,14 @@ plot_tile_split <- function(
           yes = .data[[col.fill]],
           no = NA
         ),
-        min_sym = ifelse(
+        low_sym = ifelse(
           test = !is.na(col_fill),
-          yes = min,
+          yes = low_chr,
           no = ""
         ),
-        high_sym = ifelse(
+        lagre_sym = ifelse(
           test = !is.na(col_fill),
-          yes = high,
+          yes = large_chr,
           no = ""
         )
       )
@@ -1204,14 +1204,14 @@ plot_tile_split <- function(
           yes = .data[[col.fill]],
           no = NA
         ),
-        min_sym = ifelse(
+        low_sym = ifelse(
           test = !is.na(col_fill),
-          yes = min,
+          yes = low_chr,
           no = ""
         ),
-        high_sym = ifelse(
+        lagre_sym = ifelse(
           test = !is.na(col_fill),
-          yes = high,
+          yes = large_chr,
           no = ""
         )
       ),
@@ -1222,14 +1222,14 @@ plot_tile_split <- function(
           yes = .data[[col.fill]],
           no = NA
         ),
-        min_sym = ifelse(
+        low_sym = ifelse(
           test = !is.na(col_fill),
-          yes = min,
+          yes = low_chr,
           no = ""
         ),
-        high_sym = ifelse(
+        lagre_sym = ifelse(
           test = !is.na(col_fill),
-          yes = high,
+          yes = large_chr,
           no = ""
         )
       )
@@ -1256,8 +1256,8 @@ plot_tile_split <- function(
 
       geom_raster(aes(fill = col_fill)) +
 
-      {if (minflag) geom_text(aes(label = min_sym), size = 6)} +
-      {if (highlight) geom_text(aes(label = high_sym), size = 6)} +
+      {if (low.effect) geom_text(aes(label = low_sym), size = 6)} +
+      {if (large.effect) geom_text(aes(label = lagre_sym), size = 6)} +
 
       {if (x.mic.line) geom_vline(data = mic.table, aes(xintercept = XLAB))} +
       {if (y.mic.line) geom_hline(data = mic.table, aes(yintercept = YLAB))} +
