@@ -10,7 +10,7 @@ sprinter <- function(x, n) {
 }
 
 
-#' abci_mic
+#' get_mic
 #'
 #' @param data Data frame containing the concentrations of two drugs, and the
 #'   assay output/measurement
@@ -23,7 +23,7 @@ sprinter <- function(x, n) {
 #'   \item{XMIC}{MIC value for `x.drug`}
 #'   \item{YMIC}{MIC value for `y.drug`}
 #'
-abci_mic <- function(
+get_mic <- function(
     data,
     x.drug,
     y.drug,
@@ -68,7 +68,7 @@ abci_mic <- function(
 
 #' abci_plot_dot
 #'
-#' @param data Data frame, as output by `abci.analysis()`
+#' @param data Data frame, as output by `abci_analysis()`
 #' @param x.drug Character; Column containing concentrations of the first drug
 #' @param y.drug Character; Column containing concentrations of the second drug
 #' @param col.fill Character; Column containing the values to plot
@@ -97,7 +97,7 @@ abci_mic <- function(
 #'   0.9.
 #' @param colour.palette One of the pre-made palettes for ABCI colour
 #' @param size_mapping Data frame of values to use for size scaling. Currently
-#'   only supports the one object, `size_mapping_N1S2`.
+#'   only supports the one object, "size_mapping_N1S2".
 #'
 #' @return A ggplot2 object
 #'
@@ -163,7 +163,7 @@ abci_plot_dot <- function(
   if (any(x.mic.line, y.mic.line)) {
 
     if (is.null(col.analysis)) {
-      mic.table <- abci_mic(
+      mic.table <- get_mic(
         data = data,
         x.drug = x.drug,
         y.drug = y.drug,
@@ -181,7 +181,7 @@ abci_plot_dot <- function(
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
-        result.mic <- abci_mic(
+        result.mic <- get_mic(
           data = d,
           x.drug = x.drug,
           y.drug = y.drug,
@@ -297,7 +297,7 @@ abci_plot_dot <- function(
 
 #' abci_plot_dot_split
 #'
-#' @param data Data frame, as output by `abci.analysis()`
+#' @param data Data frame, as output by `abci_analysis()`
 #' @param x.drug Character; Column containing concentrations of the first drug
 #' @param y.drug Character; Column containing concentrations of the second drug
 #' @param col.fill Character; Column containing the values to plot
@@ -305,7 +305,7 @@ abci_plot_dot <- function(
 #' @param col.analysis Character; Optional column denoting different analyses,
 #'   by which to facet the plot
 #' @param strict
-#' @param size.range Range of dot size, defaults to `c(3, 22)`
+#' @param size.range Range of dot size, defaults to `c(3, 15)`
 #' @param scales Should the scales be "fixed" (default), "free", "free_x", or
 #'   "free_y"? See `?facet_wrap` for more details.
 #' @param n.rows Number of rows when faceting. Defaults to NULL (let's ggplot2
@@ -413,13 +413,13 @@ abci_plot_dot_split <- function(
     )
   )
 
-  # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
+  # MICs are calculated by `get_mic()` and recovered as a data frame. Drug
   # concentrations need to be converted to positions on their respective axes,
   # as the `geom_(x|y)line` functions only work by position.
   if (any(x.mic.line, y.mic.line)) {
 
     if (is.null(col.analysis)) {
-      mic.table <- abci_mic(
+      mic.table <- get_mic(
         data = data,
         x.drug = x.drug,
         y.drug = y.drug,
@@ -437,7 +437,7 @@ abci_plot_dot_split <- function(
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
-        result.mic <- abci_mic(
+        result.mic <- get_mic(
           data = d,
           x.drug = x.drug,
           y.drug = y.drug,
@@ -740,7 +740,7 @@ abci_plot_line <- function(
   if (x.mic.line) {
 
     if (is.null(col.analysis)) {
-      mic.table <- abci_mic(
+      mic.table <- get_mic(
         data = data,
         x.drug = x.drug,
         y.drug = line.drug,
@@ -754,7 +754,7 @@ abci_plot_line <- function(
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
-        result.mic <- abci_mic(
+        result.mic <- get_mic(
           data = d,
           x.drug = x.drug,
           y.drug = line.drug,
@@ -980,7 +980,7 @@ abci_plot_tile <- function(
     high = ifelse(effect_avg > highlight.value, "*", "")
   )
 
-  # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
+  # MICs are calculated by `get_mic()` and recovered as a data frame. Drug
   # concentrations need to be converted to positions on their respective axes,
   # as the `geom_(x|y)line` functions only work by position. And since we don't
   # plot zero concentrations, we need to subtract one from the level to end up
@@ -988,7 +988,7 @@ abci_plot_tile <- function(
   if (any(x.mic.line, y.mic.line)) {
 
     if (is.null(col.analysis)) {
-      mic.table <- abci_mic(
+      mic.table <- get_mic(
         data = data,
         x.drug = x.drug,
         y.drug = y.drug,
@@ -1006,7 +1006,7 @@ abci_plot_tile <- function(
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
-        result.mic <- abci_mic(
+        result.mic <- get_mic(
           data = d,
           x.drug = x.drug,
           y.drug = y.drug,
@@ -1222,7 +1222,7 @@ abci_plot_tile_split <- function(
     )
   )
 
-  # MICs are calculated by `abci_mic()` and recovered as a data frame. Drug
+  # MICs are calculated by `get_mic()` and recovered as a data frame. Drug
   # concentrations need to be converted to positions on their respective axes,
   # as the `geom_(x|y)line` functions only work by position. And since we don't
   # plot zero concentrations, we need to subtract one from the level to end up
@@ -1230,7 +1230,7 @@ abci_plot_tile_split <- function(
   if (any(x.mic.line, y.mic.line)) {
 
     if (is.null(col.analysis)) {
-      mic.table <- abci_mic(
+      mic.table <- get_mic(
         data = data,
         x.drug = x.drug,
         y.drug = y.drug,
@@ -1248,7 +1248,7 @@ abci_plot_tile_split <- function(
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
-        result.mic <- abci_mic(
+        result.mic <- get_mic(
           data = d,
           x.drug = x.drug,
           y.drug = y.drug,
