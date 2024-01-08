@@ -1,6 +1,6 @@
 #' check_wells
 #'
-#' @param data_list A list of data frames (tibbles), from `abci_reader()` to
+#' @param data_list A list of data frames (tibbles), from `plate_reader()` to
 #'   check for validity
 #'
 #' @return A list of experiments that have invalid wells (valid being A1 through
@@ -27,7 +27,7 @@ check_wells <- function(data_list) {
 }
 
 
-#' abci_master_input
+#' plate_input
 #'
 #' @param file Path to a spreadsheet, containing one or more sheets within, each
 #'   with data in a 96 well-type format
@@ -42,11 +42,11 @@ check_wells <- function(data_list) {
 #'   status and input/output}
 #'   \item{suggest}{Character providing a hint of how the user should proceed}
 #'
-abci_master_input <- function(file, sheet = "all") {
+plate_input <- function(file, sheet = "all") {
 
   tryCatch(
     {
-      x <- abci_reader(file = file, sheet = sheet)
+      x <- plate_reader(file = file, sheet = sheet)
       check_x <- check_wells(x)
 
       # Silent failures, such as bad wells, or anything else that doesn't
@@ -103,7 +103,7 @@ abci_master_input <- function(file, sheet = "all") {
 }
 
 
-#' abci_reader
+#' plate_reader
 #'
 #' @param file Path to a spreadsheet, containing one or more sheets within, each
 #'   with data in a 96 well-type format
@@ -122,7 +122,7 @@ abci_master_input <- function(file, sheet = "all") {
 #'   \item{bio}{The measured values contained within the wells, for a specific
 #'   row-column combination}
 #'
-abci_reader <- function(file, sheet = "all") {
+plate_reader <- function(file, sheet = "all") {
   options("cli.progress_show_after" = 0)
 
   file_ext <- substr(tolower(tools::file_ext(file)), 1, 3)
@@ -140,7 +140,7 @@ abci_reader <- function(file, sheet = "all") {
   all_data <- lapply(
     cli::cli_progress_along(all_sheets, "Loading plate data"),
     function(i) {
-      abci_reader_single(file = file, sheet = all_sheets[i], ext = file_ext)
+      plate_reader_single(file = file, sheet = all_sheets[i], ext = file_ext)
     }
   ) %>% purrr::set_names(all_sheets)
 
@@ -148,7 +148,7 @@ abci_reader <- function(file, sheet = "all") {
 }
 
 
-#' abci_reader_single
+#' plate_reader_single
 #'
 #' @param file Path to a spreadsheet, containing one or more sheets within, each
 #'   with data in a 96 well-type format
@@ -167,7 +167,7 @@ abci_reader <- function(file, sheet = "all") {
 #'   \item{bio}{The measured values contained within the wells, for a specific
 #'   row-column combination}
 #'
-abci_reader_single <- function(file, sheet, ext) {
+plate_reader_single <- function(file, sheet, ext) {
 
   suppressMessages(
     d0 <- switch(

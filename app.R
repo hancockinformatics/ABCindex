@@ -645,7 +645,7 @@ server <- function(input, output) {
 
   observeEvent(input$load_example_data, {
     if (file.exists("example_data/example_data_lucas.xlsx")) {
-      input_1 <- abci_reader("example_data/example_data_lucas.xlsx")
+      input_1 <- plate_reader("example_data/example_data_lucas.xlsx")
 
       showNotification(
         id = "upload_success",
@@ -678,7 +678,7 @@ server <- function(input, output) {
 
   observeEvent(input$load_user_data, {
 
-    input_1 <- abci_master_input(input$load_user_data$datapath)
+    input_1 <- plate_input(input$load_user_data$datapath)
 
     if (input_1$status == "success") {
       showNotification(
