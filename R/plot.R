@@ -1,3 +1,8 @@
+# Axis lines that are always drawn on every facet, for all plot types
+line_x <- annotate("segment", x = -Inf, xend = Inf, y = -Inf, yend = -Inf, linewidth = 2)
+line_y <- annotate("segment", x = -Inf, xend = -Inf, y = -Inf, yend = Inf, linewidth = 2)
+
+
 #' sprinter
 #'
 #' @param x Character vector (factor) of numeric values
@@ -587,46 +592,34 @@ abci_plot_dot_split <- function(
 #' abci_plot_line
 #'
 #' @param data Data frame containing the measured biofilm (normalized)
-#' @param x.drug Character; Column name containing the concentration of the
-#'   first compound, which will be plotted on the x-axis.
+#' @param x.drug Character; Column name containing the concentrations of the
+#'   first compound, which will be plotted on the x-axis
 #' @param col.data Character; Column name containing the values which will be
 #'   plotted on the y-axis
-#' @param line.drug Compound which is mapped to the lines/colours of the graph
-#' @param line.include Values (concentrations) to include in the plot for the
-#'   `line.drug`. Must be exact matches, so use `levels(data$line.drug)` to get
-#'   the right names. Applies to all facets, and defaults to "all".
-#' @param plot.type Type of graph to draw; one of "replicates", "mean", or
-#'   "mean_sd".
+#' @param line.drug Compound mapped to the lines/colours of the graph
+#' @param line.include Values (concentrations) of `line.drug` to include in the
+#'   plot. Applies to all facets, and defaults to "all".
+#' @param plot.type Type of graph, either "replicates", "mean", or "mean_sd"
 #' @param jitter.x Logical; Should points be jittered along the x axis? Defaults
 #'   to TRUE.
 #' @param x.mic.line Logical; should a line be drawn to indicate MIC of the
-#'   compound on the x-axis? Defaults to FALSE, and is calculated using
-#'   `col.data`.
+#'   compound on the x-axis? Defaults to FALSE.
 #' @param mic.threshold Threshold for determining MIC; defaults to 0.5
-#' @param colour.palette Colours to use for the lines. All of the RColorBrewer
-#'   palettes are supported; see `RColorBrewer::display.brewer.all()` for all
-#'   options.
-#' @param col.analysis Character; Optional column name to use for faceting the
-#'   plot.
-#' @param scales Character; passed into `facet_wrap` to determine how the x- and
-#'   y-axis scales are set. See `?facet_wrap` for details.
-#' @param n.rows Number of rows to use when faceting.
-#' @param n.cols Number of columns to use when faceting.
+#' @param colour.palette Colours to use for the lines, one of: "Accent", "Dark",
+#'   "Set 1", "Set 2", or "Set 3"
+#' @param col.analysis Character; Optional column name to use for faceting.
+#' @param scales Should the scales be "free" (default) or "fixed?"
+#' @param n.rows Number of rows to use when faceting. Defaults to NULL.
+#' @param n.cols Number of columns to use when faceting. Defaults to NULL.
 #' @param x.text Character; Title for the x-axis.
 #' @param y.text Character; Title for the y-axis.
 #' @param line.text Title of the legend for the compound mapped to lines/colours
-#' @param x.decimal Number of decimal places to show for x-axis labels. Will
-#'   apply to all facets.
-#' @param line.decimal Number of decimal places to show for line legend labels.
-#'   Will apply to all facets.
-#' @param add.axis.lines Logical; Add a line to the x- and y-axis when faceting
-#'   with fixed axis. Defaults to TRUE.
+#' @param x.decimal Number of decimal places shown for x-axis labels. Applies to
+#'   all facets.
+#' @param line.decimal Number of decimal places shown on the colour legend
+#'   labels (lines).
 #'
 #' @return A ggplot2 object
-#'
-#' @description Draws a series of lines, showing the amount of biofilm killed as
-#'   a function of the concentration of two drugs - one on the x-axis, the other
-#'   as differently coloured lines.
 #'
 abci_plot_line <- function(
     data,
@@ -647,8 +640,7 @@ abci_plot_line <- function(
     y.text = "Measurement",
     line.text = "Drug 2",
     x.decimal = 1,
-    line.decimal = 1,
-    add.axis.lines = TRUE
+    line.decimal = 1
 ) {
 
   if (any(c("spec_tbl_df", "tbl_df", "tbl") %in% class(data))) {
@@ -810,9 +802,7 @@ abci_plot_line <- function(
       )
     }} +
 
-    {if (x.mic.line) {
-      geom_vline(data = mic.table, aes(xintercept = XLAB))
-    }} +
+    {if (x.mic.line) geom_vline(data = mic.table, aes(xintercept = XLAB))} +
 
     scale_colour_brewer(
       palette = colour.palette,
@@ -827,26 +817,8 @@ abci_plot_line <- function(
       colour = paste(strwrap(line.text, width = 12), collapse = "\n")
     ) +
 
-    {if (add.axis.lines) {
-      annotate(
-        "segment",
-        x = -Inf,
-        xend = Inf,
-        y = -Inf,
-        yend = -Inf,
-        linewidth = 2
-      )
-    }} +
-    {if (add.axis.lines) {
-      annotate(
-        "segment",
-        x = -Inf,
-        xend = -Inf,
-        y = -Inf,
-        yend = Inf,
-        linewidth = 2
-      )
-    }} +
+    line_x +
+    line_y +
 
     theme(legend.key.height = NULL) +
 
