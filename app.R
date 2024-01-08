@@ -420,11 +420,6 @@ ui <- page_fluid(
               "subset of concentrations.</p>"
             )),
 
-            p(
-              "You can save the plot by right-clicking on it and selecting ",
-              "'Save Image As'."
-            ),
-
             disabled(
               actionButton(
                 inputId = "create_plot",
@@ -565,16 +560,22 @@ ui <- page_fluid(
                   class = "col",
                   tags$dl(
                     tags$dt(a(href = "https://rstudio.github.io/bslib/index.html", "bslib")),
-                    tags$dd("Provides a modern UI toolkit for Shiny based on Bootstrap"),
+                    tags$dd("A modern Bootstrap UI toolkit for Shiny"),
+
+                    tags$dt(a(href = "https://ycphs.github.io/openxlsx/index.html", "openxlsx")),
+                    tags$dd("Write data to XLSX files"),
+
                     tags$dt(a(href = "https://shiny.posit.co/", "shiny")),
                     tags$dd("Easily create and deploy web apps from R"),
                   )
                 ),
+
                 div(
                   class = "col",
                   tags$dl(
                     tags$dt(a(href = "https://deanattali.com/shinyjs/", "shinyjs")),
                     tags$dd("Extend Shiny functionality with Javascript"),
+
                     tags$dt(a(href = "https://www.tidyverse.org/", "tidyverse")),
                     tags$dd("Packages for data manipulation and visualization"),
                   )
@@ -955,6 +956,18 @@ server <- function(input, output) {
     )
     click("create_plot")
   })
+
+  observeEvent(input$create_plot, {
+    showNotification(
+      type = "default",
+      duration = NULL,
+      ui = HTML(paste0(
+        "<p class='mb-0'>",
+        "You can save the plot by right-clicking on it and selecting ",
+        "'Save Image As'.</p>"
+      ))
+    )
+  }, once = TRUE)
 
 
   # |- Buttons ------------------------------------------------------------
