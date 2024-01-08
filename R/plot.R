@@ -552,18 +552,12 @@ abci_plot_dot_split <- function(
 
       scale_x_discrete(
         name = x.text,
-        labels = ~sprintf(
-          paste0("%.", x.decimal, "f"),
-          as.numeric(.x)
-        )
+        labels = ~sprinter(.x, x.decimal)
       ) +
 
       scale_y_discrete(
         name = y.text,
-        labels = ~sprintf(
-          paste0("%.", y.decimal, "f"),
-          as.numeric(.x)
-        )
+        labels = ~sprinter(.x, y.decimal)
       ) +
 
       scale_fill_gradientn(
@@ -855,16 +849,10 @@ abci_plot_line <- function(
 
     scale_colour_brewer(
       palette = colour.palette,
-      labels = ~sprintf(
-        paste0("%.", line.decimal, "f"),
-        as.numeric(.x)
-      )
+      labels = ~sprinter(.x, line.decimal)
     ) +
 
-    scale_x_discrete(labels = ~sprintf(
-      paste0("%.", x.decimal, "f"),
-      as.numeric(.x)
-    )) +
+    scale_x_discrete(labels = ~sprinter(.x, x.decimal)) +
 
     labs(
       x = x.text,
@@ -1077,19 +1065,13 @@ abci_plot_tile <- function(
     scale_x_discrete(
       name = x.text,
       expand = c(0, 0),
-      labels = ~sprintf(
-        paste0("%.", x.decimal, "f"),
-        as.numeric(.x)
-      )
+      labels = ~sprinter(.x, x.decimal)
     ) +
 
     scale_y_discrete(
       name = y.text,
       expand = c(0, 0),
-      labels = ~sprintf(
-        paste0("%.", y.decimal, "f"),
-        as.numeric(.x)
-      )
+      labels = ~sprinter(.x, y.decimal)
     ) +
 
     scale_fill_gradientn(
@@ -1410,19 +1392,13 @@ abci_plot_tile_split <- function(
       scale_x_discrete(
         name = x.text,
         expand = c(0, 0),
-        labels = ~sprintf(
-          paste0("%.", x.decimal, "f"),
-          as.numeric(.x)
-        )
+        labels = ~sprinter(.x, x.decimal)
       ) +
 
       scale_y_discrete(
         name = y.text,
         expand = c(0, 0),
-        labels = ~sprintf(
-          paste0("%.", y.decimal, "f"),
-          as.numeric(.x)
-        )
+        labels = ~sprinter(.x, y.decimal)
       ) +
 
       scale_fill_gradientn(
