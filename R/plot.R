@@ -3,7 +3,7 @@ size_mapping_N1S2 <- readRDS("data/size_mapping_N1S2.Rds")
 preset_palettes <- readRDS("data/preset_palettes.Rds")
 preset_palettes_split <- readRDS("data/preset_palettes_split.Rds")
 
-# Axis lines that are always drawn on every facet, for all plot types
+# Axis lines drawn on every facet, for all plot types
 line_x <- ggplot2::annotate(
   "segment",
   x = -Inf,
@@ -90,7 +90,7 @@ get_mic <- function(
 }
 
 
-#' abci_plot_dot
+#' plot_dot
 #'
 #' @param data Data frame, as output by `abci_analysis()`
 #' @param x.drug Character; Column containing concentrations of the first drug
@@ -125,7 +125,7 @@ get_mic <- function(
 #'
 #' @return A ggplot2 object
 #'
-abci_plot_dot <- function(
+plot_dot <- function(
     data,
     x.drug,
     y.drug,
@@ -314,7 +314,7 @@ abci_plot_dot <- function(
 }
 
 
-#' abci_plot_dot_split
+#' plot_dot_split
 #'
 #' @param data Data frame, as output by `abci_analysis()`
 #' @param x.drug Character; Column containing concentrations of the first drug
@@ -350,7 +350,7 @@ abci_plot_dot <- function(
 #'
 #' @return A ggplot2 object
 #'
-abci_plot_dot_split <- function(
+plot_dot_split <- function(
     data,
     x.drug,
     y.drug,
@@ -598,7 +598,7 @@ abci_plot_dot_split <- function(
 }
 
 
-#' abci_plot_line
+#' plot_line
 #'
 #' @param data Data frame containing the measured biofilm (normalized)
 #' @param x.drug Character; Column name containing the concentrations of the
@@ -630,7 +630,7 @@ abci_plot_dot_split <- function(
 #'
 #' @return A ggplot2 object
 #'
-abci_plot_line <- function(
+plot_line <- function(
     data,
     x.drug,
     col.data,
@@ -837,7 +837,7 @@ abci_plot_line <- function(
 }
 
 
-#' abci_plot_tile
+#' plot_tile
 #'
 #' @param data Data frame, as output by `abci_analysis()`
 #' @param x.drug Character; Column containing concentrations of the first drug
@@ -868,7 +868,7 @@ abci_plot_line <- function(
 #'
 #' @return A ggplot2 object
 #'
-abci_plot_tile <- function(
+plot_tile <- function(
     data,
     x.drug,
     y.drug,
@@ -999,7 +999,7 @@ abci_plot_tile <- function(
 }
 
 
-#' abci_plot_tile_split
+#' plot_tile_split
 #'
 #' @param data Data frame, as output by `abci_analysis()`
 #' @param x.drug Character; Column containing concentrations of the first drug
@@ -1032,7 +1032,7 @@ abci_plot_tile <- function(
 #'
 #' @return A ggplot2 object
 #'
-abci_plot_tile_split <- function(
+plot_tile_split <- function(
     data,
     x.drug,
     y.drug,

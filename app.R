@@ -2193,7 +2193,7 @@ server <- function(input, output) {
     output$abci_plot <- renderPlot(
 
       if (isolate(input$plot_tabs) == "dot") {
-        abci_plot_dot(
+        plot_dot(
           data = isolate(abci_plot_data()),
           x.drug = ifelse(
             isolate(input$plot_dot_swap),
@@ -2232,7 +2232,7 @@ server <- function(input, output) {
 
       } else if (isolate(input$plot_tabs) == "dot_split") {
 
-        abci_plot_dot_split(
+        plot_dot_split(
           data = isolate(abci_plot_data()),
           x.drug = ifelse(
             isolate(input$plot_dot_split_swap),
@@ -2270,7 +2270,7 @@ server <- function(input, output) {
           }}
 
       } else if (isolate(input$plot_tabs) == "tile") {
-        abci_plot_tile(
+        plot_tile(
           data = isolate(abci_plot_data()),
           x.drug = ifelse(
             isolate(input$plot_tile_swap),
@@ -2303,7 +2303,7 @@ server <- function(input, output) {
         )
 
       }  else if (isolate(input$plot_tabs) == "tile_split") {
-        abci_plot_tile_split(
+        plot_tile_split(
           data = isolate(abci_plot_data()),
           x.drug = ifelse(
             isolate(input$plot_tile_split_swap),
@@ -2349,7 +2349,7 @@ server <- function(input, output) {
             ))
           )
         }
-        abci_plot_line(
+        plot_line(
           data = isolate(abci_plot_data()),
           plot.type = isolate(input$plot_line_type),
           x.drug = ifelse(

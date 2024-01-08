@@ -55,8 +55,8 @@ abci_analysis <- function(
 
   } else {
     # Otherwise, when "col.analysis" is not NULL, we'll split the input "data"
-    # into a list of data frames, and apply `abci.calculation()` to each, before
-    # binding the results back together.
+    # into a list of data frames, and apply `abci_analysis_single()` to each,
+    # before binding the results back together.
     stopifnot(
       "Column given by 'col.analysis' must be present in input 'data'" =
         col.analysis %in% colnames(data)
