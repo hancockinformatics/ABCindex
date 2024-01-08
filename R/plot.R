@@ -279,6 +279,13 @@ plot_dot <- function(
       )
     }} +
 
+    {if (x.mic.line) geom_vline(data = mic.table, aes(xintercept = XLAB))} +
+    {if (y.mic.line) geom_hline(data = mic.table, aes(yintercept = YLAB))} +
+
+    # Draw lines to separate 0-concentration values
+    geom_vline(xintercept = 1.5, linewidth = 0.5) +
+    geom_hline(yintercept = 1.5, linewidth = 0.5) +
+
     scale_fill_gradientn(
       colours = preset_palettes$values[[colour.palette]],
       values = preset_palettes$values$POINT,
@@ -287,13 +294,6 @@ plot_dot <- function(
       breaks = seq(-2, 2, 0.5),
       oob = scales::squish
     ) +
-
-    {if (x.mic.line) geom_vline(data = mic.table, aes(xintercept = XLAB))} +
-    {if (y.mic.line) geom_hline(data = mic.table, aes(yintercept = YLAB))} +
-
-    # Draw lines to separate 0-concentration values
-    geom_vline(xintercept = 1.5, linewidth = 0.5) +
-    geom_hline(yintercept = 1.5, linewidth = 0.5) +
 
     scale_x_discrete(labels = ~sprinter(.x, x.decimal)) +
     scale_y_discrete(labels = ~sprinter(.x, y.decimal)) +
@@ -326,6 +326,7 @@ plot_dot <- function(
 #' @param strict Should marginal (close to 0) values be excluded in the
 #'   splitting? Defaults to TRUE.
 #' @param size.range Range of dot size, defaults to `c(3, 15)`
+#' @param linear Should dot size scale linearly? Defaults to FALSE.
 #' @param scales Should the scales be "free" (default) or "fixed?"
 #' @param n.rows Number of rows when faceting. Defaults to NULL.
 #' @param n.cols Number of columns when faceting. Defaults to NULL.
@@ -359,6 +360,7 @@ plot_dot_split <- function(
     col.analysis = NULL,
     strict = TRUE,
     size.range = c(3, 15),
+    linear = FALSE,
     scales = "free",
     n.rows = NULL,
     n.cols = NULL,
@@ -533,8 +535,39 @@ plot_dot_split <- function(
 
   dot_plots <- purrr::imap(data_split_scaled, function(d, nm) {
 
-    ggplot(d, aes(.data[[x.drug]], .data[[y.drug]])) +
+    main_geom <- if (linear) {
+      ggplot(d, aes(.data[[x.drug]], .data[[y.drug]])) +
+        geom_point(
+          aes(fill = col_fill, size = reference, stroke = col_high),
+          pch = 21
+        ) +
+        scale_size_continuous(
+          range = size.range,
+          limits = c(0, 100),
+          breaks = proper_labels,
+          guide = guide_legend(
+            keyheight = unit(10, "mm"),
+            override.aes = list(fill = "black")
+          )
+        )
+    } else {
+      ggplot(d, aes(.data[[x.drug]], .data[[y.drug]])) +
+        geom_point(
+          aes(fill = col_fill, size = col_size, stroke = col_high),
+          pch = 21
+        ) +
+        scale_size_identity(
+          limits = c(min(proper_breaks), max(proper_breaks)),
+          breaks = proper_breaks,
+          labels = proper_labels,
+          guide = guide_legend(
+            keyheight = unit(10, "mm"),
+            override.aes = list(fill = "black")
+          )
+        )
+    }
 
+    main_geom +
       {if (!is.null(col.analysis)) {
         facet_wrap(
           ~.data[[col.analysis]],
@@ -544,10 +577,11 @@ plot_dot_split <- function(
         )
       }} +
 
-      geom_point(
-        aes(fill = col_fill, size = col_size, stroke = col_high),
-        pch = 21
-      ) +
+      {if (x.mic.line) geom_vline(data = mic.table, aes(xintercept = XLAB))} +
+      {if (y.mic.line) geom_hline(data = mic.table, aes(yintercept = YLAB))} +
+
+      geom_vline(xintercept = 1.5, linewidth = 0.5) +
+      geom_hline(yintercept = 1.5, linewidth = 0.5) +
 
       scale_fill_gradientn(
         colours = plot.palette[[nm]],
@@ -558,24 +592,8 @@ plot_dot_split <- function(
         oob = scales::squish
       ) +
 
-      scale_size_identity(
-        limits = c(min(proper_breaks), max(proper_breaks)),
-        breaks = proper_breaks,
-        labels = proper_labels,
-        guide = guide_legend(
-          keyheight = unit(10, "mm"),
-          override.aes = list(fill = "black")
-        )
-      ) +
-
       scale_x_discrete(labels = ~sprinter(.x, x.decimal)) +
       scale_y_discrete(labels = ~sprinter(.x, y.decimal)) +
-
-      {if (x.mic.line) geom_vline(data = mic.table, aes(xintercept = XLAB))} +
-      {if (y.mic.line) geom_hline(data = mic.table, aes(yintercept = YLAB))} +
-
-      geom_vline(xintercept = 1.5, linewidth = 0.5) +
-      geom_hline(yintercept = 1.5, linewidth = 0.5) +
 
       line_x +
       line_y +
@@ -801,7 +819,6 @@ plot_line <- function(
     }
 
   main_geoms +
-
     {if (!is.null(col.analysis)) {
       facet_wrap(
         ~.data[[col.analysis]],

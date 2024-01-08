@@ -1478,6 +1478,16 @@ server <- function(input, output) {
           ),
 
           wrap_selector(
+            label = "Linear size scaling",
+            label_title = "Toggle custom or linear size scaling of dots",
+            input_switch(
+              id = "plot_dot_split_linear",
+              label = "Off",
+              value = FALSE
+            )
+          ),
+
+          wrap_selector(
             label = "Axis labels",
             label_title = tooltips$axis_labels,
             selectInput(
@@ -1553,6 +1563,14 @@ server <- function(input, output) {
       update_switch("plot_dot_split_strict", label = "Strict")
     } else {
       update_switch("plot_dot_split_strict", label = "Loose")
+    }
+  })
+
+  observeEvent(input$plot_dot_split_linear, {
+    if (input$plot_dot_split_linear) {
+      update_switch("plot_dot_split_linear", label = "On")
+    } else {
+      update_switch("plot_dot_split_linear", label = "Off")
     }
   })
 
@@ -2248,6 +2266,7 @@ server <- function(input, output) {
           col.size = "effect_avg",
           strict = isolate(input$plot_dot_split_strict),
           size.range = c(3, 15),
+          linear = isolate(input$plot_dot_split_linear),
           col.analysis = "assay",
           n.cols = abci_plot_dims()[[1]],
           n.rows = abci_plot_dims()[[2]],
