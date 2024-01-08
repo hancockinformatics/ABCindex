@@ -96,7 +96,7 @@ abci_mic <- function(
 #'
 #' @description A secondary graphing function. Similar to `abci_plot_tile()`,
 #'   but the amount of biofilm killed (typically "effect" column) is mapped to
-#'   dot siz. It takes the data produced by `abci.analysis()`. If requested,
+#'   dot size. It takes the data produced by `abci.analysis()`. If requested,
 #'   this function will calculate the MICs for the individual drugs (to make
 #'   reference lines). The axes are formatted as needed for ggplot2, without
 #'   zero values and with the right significant digits. The `col.analysis`
@@ -125,10 +125,8 @@ abci_plot_dot <- function(
     highlight = FALSE,
     highlight.value = 0.9,
     colour.palette = "A_RYB",
-    colour.na = "white",
     scale.limits = c(-2.0, 2.0),
     scale.breaks = seq(2, -2, -0.5),
-    add.axis.lines = TRUE,
     size_mapping = size_mapping_N1S2
 ) {
 
@@ -210,8 +208,14 @@ abci_plot_dot <- function(
 
   ggplot(data, aes(.data[[x.drug]], .data[[y.drug]])) +
 
-    geom_vline(xintercept = 1.5, linewidth = 0.5) +
-    geom_hline(yintercept = 1.5, linewidth = 0.5) +
+    {if (!is.null(col.analysis)) {
+      facet_wrap(
+        ~.data[[col.analysis]],
+        nrow = n.rows,
+        ncol = n.cols,
+        scales = scales
+      )
+    }} +
 
     geom_point(
       aes(
@@ -222,48 +226,11 @@ abci_plot_dot <- function(
       pch = 21
     ) +
 
-    {if (!is.null(col.analysis)) {
-      facet_wrap(
-        ~.data[[col.analysis]],
-        nrow = n.rows,
-        ncol = n.cols,
-        scales = scales
-      )
-    }} +
-
-    {if (x.mic.line) {
-      geom_vline(data = mic.table, aes(xintercept = XLAB))
-    }} +
-
-    {if (y.mic.line) {
-      geom_hline(data = mic.table, aes(yintercept = YLAB))
-    }} +
-
-    scale_x_discrete(
-      name = x.text,
-      labels = ~sprintf(
-        paste0("%.", x.decimal, "f"),
-        as.numeric(.x)
-      )
-    ) +
-
-    scale_y_discrete(
-      name = y.text,
-      labels = ~sprintf(
-        paste0("%.", y.decimal, "f"),
-        as.numeric(.x)
-      )
-    ) +
-
     scale_fill_gradientn(
-      name = ifelse(
-        grepl(x = col.fill, pattern = "abci", ignore.case = TRUE),
-        "ABCi",
-        col.fill
-      ),
+      name = "ABCi",
       colours = preset_palettes$values[[colour.palette]],
       values = preset_palettes$values$POINT,
-      na.value = colour.na,
+      na.value = "white",
       limits = scale.limits,
       breaks = scale.breaks,
       oob = scales::squish
@@ -279,27 +246,29 @@ abci_plot_dot <- function(
       )
     ) +
 
-    {if (add.axis.lines) {
-      annotate(
-        "segment",
-        x = -Inf,
-        xend = Inf,
-        y = -Inf,
-        yend = -Inf,
-        linewidth = 2
-      )
+    {if (x.mic.line) {
+      geom_vline(data = mic.table, aes(xintercept = XLAB))
     }} +
 
-    {if (add.axis.lines) {
-      annotate(
-        "segment",
-        x = -Inf,
-        xend = -Inf,
-        y = -Inf,
-        yend = Inf,
-        linewidth = 2
-      )
+    {if (y.mic.line) {
+      geom_hline(data = mic.table, aes(yintercept = YLAB))
     }} +
+
+    scale_x_discrete(
+      name = x.text,
+      labels = ~sprintf(paste0("%.", x.decimal, "f"), as.numeric(.x))
+    ) +
+
+    scale_y_discrete(
+      name = y.text,
+      labels = ~sprintf(paste0("%.", y.decimal, "f"), as.numeric(.x))
+    ) +
+
+    annotate("segment", x = -Inf, xend = Inf, y = -Inf, yend = -Inf, linewidth = 2) +
+    annotate("segment", x = -Inf, xend = -Inf, y = -Inf, yend = Inf, linewidth = 2) +
+
+    geom_vline(xintercept = 1.5, linewidth = 0.5) +
+    geom_hline(yintercept = 1.5, linewidth = 0.5) +
 
     {if (x.decimal > 1) {
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
