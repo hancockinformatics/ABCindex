@@ -1,4 +1,4 @@
-#' abci_check_wells
+#' check_wells
 #'
 #' @param data_list A list of data frames (tibbles), from `abci_reader()` to
 #'   check for validity
@@ -6,7 +6,7 @@
 #' @return A list of experiments that have invalid wells (valid being A1 through
 #'   H12)
 #'
-abci_check_wells <- function(data_list) {
+check_wells <- function(data_list) {
   valid_wells <- unlist(lapply(
     seq(1, 12),
     function(n) paste0(LETTERS[seq(1, 8)], n)
@@ -47,7 +47,7 @@ abci_master_input <- function(file, sheet = "all") {
   tryCatch(
     {
       x <- abci_reader(file = file, sheet = sheet)
-      check_x <- abci_check_wells(x)
+      check_x <- check_wells(x)
 
       # Silent failures, such as bad wells, or anything else that doesn't
       # throw an actual error

@@ -1,8 +1,3 @@
-size_mapping_N1S2 <- readRDS("data/size_mapping_N1S2.Rds")
-preset_palettes <- readRDS("data/preset_palettes.Rds")
-preset_palettes_split <- readRDS("data/preset_palettes_split.Rds")
-
-
 #' disable_button
 #'
 #' @param id Input ID for the button being modified
