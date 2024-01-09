@@ -129,7 +129,7 @@ abci_analysis_single <- function(
     mutate(across(all_of(c(x.drug, y.drug)), forcats::fct_inseq))
 
   if (!normalize) {
-    if (max(data_clean[[col.data]]) >= 100) {
+    if (max(data_clean[[col.data]]) >= 50) {
       data_clean[[col.data]] <- data_clean[[col.data]] / 100
     }
   }
