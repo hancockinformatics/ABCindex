@@ -74,7 +74,7 @@ tooltips <- list(
   large_effect_val = paste0(
     "Threshold value used for highlighting combinations with a large effect ",
     "(0.9 = 90% killing)"
-    ),
+  ),
   filter = paste0(
     "Choose whether to include ABCI values close to 0 (Loose) or hide them ",
     "(Strict)"
@@ -351,7 +351,12 @@ ui <- page_fluid(
             p(
               "You can learn more about the data we support in the ShinyABCi ",
               actionLink("tutorial_link", "tutorial", .noWS = "after"),
-              ". You can also try our example data by clicking the button below."
+              ". You can also ",
+              actionLink(
+                "load_example_data",
+                "try our example data"
+              ),
+              "for a demonstration of ShinyABCi."
             ),
 
             fileInput(
@@ -359,14 +364,6 @@ ui <- page_fluid(
               label = NULL,
               buttonLabel = list(icon("upload"), "Upload plate data..."),
               accept = c("xls", ".xls", "xlsx", ".xlsx", "ods", ".ods")
-            ),
-
-            actionButton(
-              inputId = "load_example_data",
-              class = "btn btn-info btn-tooltip mb-auto",
-              label = "Load example data",
-              width = "50%",
-              title = "Click here to try our example data"
             ),
 
             disabled(
@@ -438,6 +435,15 @@ ui <- page_fluid(
                 title = "Upload and analyze some data to enable visualization"
               )
             ),
+
+            # HTML(paste0(
+            #   "<table class='table mb-0 mt-3' style='border-collapse: collapse'>",
+            #   "<tr class='table-primary'>",
+            #   "<th style='text-align: center'>ABCI</td>",
+            #   "<th style='text-align: right; padding-right: 30px'>Activity</td>",
+            #   "</tr>",
+            #   "</table>"
+            # )),
 
             navset_tab(
               id = "plot_tabs",
