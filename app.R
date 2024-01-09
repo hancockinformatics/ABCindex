@@ -734,11 +734,17 @@ server <- function(input, output) {
       list(
         "cols" = list(
           "name" = unique(experiment$cols),
-          "concentrations" = levels(experiment$cols_conc)
+          "concentrations" = levels(experiment$cols_conc) %>%
+            as.character() %>%
+            as.numeric() %>%
+            sort()
         ),
         "rows" = list(
           "name" = unique(experiment$rows),
-          "concentrations" = levels(experiment$rows_conc)
+          "concentrations" = levels(experiment$rows_conc) %>%
+            as.character() %>%
+            as.numeric() %>%
+            sort()
         )
       )
     })
