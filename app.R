@@ -977,6 +977,7 @@ server <- function(input, output) {
       type = "default",
       duration = NULL,
       ui = HTML(paste0(
+        "<h4 class='alert-heading'><b>Saving your results</b></h4>",
         "<p class='mb-0'>",
         "You can save the plot by right-clicking on it and selecting ",
         "'Save Image As'.</p>"
@@ -1023,6 +1024,7 @@ server <- function(input, output) {
 
   observeEvent(input$confirm_reset, {
     updateNavbarPage(inputId = "navbar", selected = "upload")
+    shinyjs::reset("load_user_data")
     input_data_raw(NULL)
     input_data_tidy(NULL)
     abci_results(NULL)
