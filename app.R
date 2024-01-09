@@ -712,7 +712,7 @@ server <- function(input, output) {
     } else if (input_1$status == "error") {
       showNotification(
         type = "error",
-        duration = 10,
+        duration = 20,
         ui = HTML(paste0(
           "<h4 class='alert-heading'><b>Error!</b></h4>",
           "<p class='mb-0'>",

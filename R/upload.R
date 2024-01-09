@@ -27,6 +27,37 @@ check_wells <- function(data_list) {
 }
 
 
+check_untreated <- function(data_list) {
+  check_results <- purrr::map(
+    data_list,
+    function(x) {
+      checklist <- c()
+
+      if (!"0" %in% x$cols_conc) {
+        checklist <- append(checklist, "columns")
+      }
+      if (!"0" %in% x$rows_conc) {
+        checklist <- append(checklist, "rows")
+      }
+      return(checklist)
+    }
+  ) %>% purrr::compact()
+
+  if (length(check_results) == 0) {
+    return(NULL)
+  } else {
+    purrr::imap(check_results, function(x, nm) {
+      paste0(
+        nm,
+        " (",
+        paste(x, collapse = ", "),
+        ")"
+      )
+    })
+  }
+}
+
+
 #' plate_input
 #'
 #' @param file Path to a spreadsheet, containing one or more sheets within, each
@@ -47,12 +78,14 @@ plate_input <- function(file, sheet = "all") {
   tryCatch(
     {
       x <- plate_reader(file = file, sheet = sheet)
-      check_x <- check_wells(x)
+      check_well_result <- check_wells(x)
+      check_untreated_result <- check_untreated(x)
+
 
       # Silent failures, such as bad wells, or anything else that doesn't
       # throw an actual error
-      if (length(check_x != 0)) {
-        bad_experiments <- paste(check_x, collapse = ", ")
+      if (length(check_well_result != 0)) {
+        bad_experiments <- paste(check_well_result, collapse = ", ")
 
         list(
           data = NULL,
@@ -68,7 +101,7 @@ plate_input <- function(file, sheet = "all") {
             "empty rows, then try again."
           )
         )
-      } else if (is.null(check_x)) {
+      } else if (is.null(check_well_result)) {
         list(
           data = NULL,
           status = "error",
@@ -78,6 +111,19 @@ plate_input <- function(file, sheet = "all") {
             "again."
           )
         )
+      } else if (!is.null(check_untreated_result)) {
+        list(
+          data = NULL,
+          status = "error",
+          message = paste0(
+            "No untreated samples were detected in the following experiment(s): ",
+            paste(check_untreated_result, collapse = "; "),
+            ". "
+          ),
+          suggest =
+            "Please ensure your data contains untreated samples, and try again."
+        )
+
       } else {
         list(
           data = x,
