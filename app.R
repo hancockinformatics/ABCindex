@@ -2432,6 +2432,7 @@ server <- function(input, output) {
     output$abci_plot_ui <- renderUI(
       tagList(
         shinycssloaders::withSpinner(
+          type = 8,
           plotOutput(
             outputId = "abci_plot",
             width = output_dims[1],
