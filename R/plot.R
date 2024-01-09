@@ -616,7 +616,7 @@ plot_dot_split <- function(
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
       }} +
 
-      theme(legend.key.height = unit(7, "mm"))
+      theme(legend.key.height = unit(7, "mm"), legend.box = "horizontal")
   })
 
   patchwork::wrap_plots(dot_plots, ncol = 1)
