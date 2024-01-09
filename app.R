@@ -269,7 +269,7 @@ ui <- page_fluid(
 
           h1(
             class = "display-6 mb-4",
-            "Anti-Biofilm Combination Index calculation and visualization"
+            "Calculation & visualization of the Anti-Biofilm Combination Index"
           ),
 
           HTML(paste0(

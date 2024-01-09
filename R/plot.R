@@ -33,32 +33,36 @@ sprinter <- function(x, n) {
   sprintf(paste0("%.", n, "f"), as.numeric(x))
 }
 
-
-#' get_mic
+#' find_mic
 #'
 #' @param data Data frame containing the concentrations of two drugs, and the
 #'   assay output/measurement
 #' @param x.drug Character; Column name of concentrations of the first drug
 #' @param y.drug Character; Column name of concentrations of the second drug
 #' @param col.data Character; Column name which contains the measured value
-#' @param threshold Numeric; cutoff for determining MIC
+#' @param threshold Numeric; cutoff for determining MIC. Defaults to 0.5.
+#' @param zero If `TRUE` (default), the index/position is returned as-is. When
+#'   `FALSE`, subtract one from the value, used when making plots without zero
+#'   concentration results (tiles)
 #'
 #' @return A data frame with the following columns:
-#'   \item{XMIC}{MIC value for `x.drug`}
-#'   \item{YMIC}{MIC value for `y.drug`}
+#'   \item{XMIC}{MIC for `x.drug`}
+#'   \item{YMIC}{MIC for `y.drug`}
+#'   \item{XLAB}{Index or position of MIC for `x.drug`}
+#'   \item{YLAB}{Index or position of MIC for `y.drug`}
 #'
-get_mic <- function(
+find_mic <- function(
     data,
     x.drug,
     y.drug,
     col.data,
-    threshold = 0.5
+    threshold = 0.5,
+    zero = TRUE
 ) {
 
   if (any(c("spec_tbl_df", "tbl_df", "tbl") %in% class(data))) {
     data <- as.data.frame(data)
   }
-
   stopifnot(
     "Column given by 'x.drug' must be a factor" = is.factor(data[[x.drug]])
   )
@@ -66,27 +70,54 @@ get_mic <- function(
     "Column given by 'y.drug' must be a factor" = is.factor(data[[y.drug]])
   )
 
-  data.clean <- data[data[, col.data] < threshold, ]
-  x.data.clean <- data.clean[data.clean[, y.drug] == 0, ]
-  y.data.clean <- data.clean[data.clean[, x.drug] == 0, ]
+  x1 <- data %>%
+    filter(.data[[y.drug]] == "0") %>%
+    mutate(x.new = as.numeric(as.character(.data[[x.drug]]))) %>%
+    select(x.new, all_of(c(col.data))) %>%
+    arrange(desc(x.new)) %>%
+    tibble::deframe()
 
-  x.mic <-
-    if (nrow(x.data.clean) == 0) {
-      max(as.numeric(as.character(levels(droplevels(data.clean[[x.drug]])))))
-    } else {
-      min(as.numeric(as.character(x.data.clean[[x.drug]])))
-    }
+  x_temp <- purrr::head_while(x1, ~.x < threshold) %>%
+    names() %>%
+    last()
 
-  y.mic <-
-    if (nrow(y.data.clean) == 0) {
-      max(as.numeric(as.character(levels(droplevels(data.clean[[y.drug]])))))
-    } else {
-      min(as.numeric(as.character(y.data.clean[[y.drug]])))
-    }
+  x_mic <- ifelse(
+    length(x_temp) == 0,
+    first(names(x1)),
+    x_temp
+  )
 
-  mic.table <- data.frame(XMIC = x.mic, YMIC = y.mic)
+  y1 <- data %>%
+    filter(.data[[x.drug]] == "0") %>%
+    mutate(y.new = as.numeric(as.character(.data[[y.drug]]))) %>%
+    select(y.new, all_of(c(col.data))) %>%
+    arrange(desc(y.new)) %>%
+    tibble::deframe()
 
-  return(mic.table)
+  y_temp <- purrr::head_while(y1, ~.x < threshold) %>%
+    names() %>%
+    last()
+
+  y_mic <- ifelse(
+    length(y_temp) == 0,
+    first(names(y1)),
+    y_temp
+  )
+
+  mic_table <- tibble(
+    XMIC = x_mic,
+    YMIC = y_mic,
+    XLAB = which(levels(droplevels(data[["cols_conc"]])) == x_mic),
+    YLAB = which(levels(droplevels(data[["rows_conc"]])) == y_mic)
+  )
+
+  if (!zero) {
+    mic_table <- mic_table %>%
+      mutate(across(where(is.numeric), ~.x - 1)) %>%
+      as.data.frame()
+  }
+
+  return(mic_table)
 }
 
 
@@ -187,39 +218,27 @@ plot_dot <- function(
   if (any(x.mic.line, y.mic.line)) {
 
     if (is.null(col.analysis)) {
-      mic.table <- get_mic(
+      mic.table <- find_mic(
         data = data,
         x.drug = x.drug,
         y.drug = y.drug,
         col.data = col.mic,
-        threshold = mic.threshold
+        threshold = mic.threshold,
+        zero = TRUE
       )
-
-      mic.table$XLAB <-
-        which(levels(droplevels(data[[x.drug]])) == mic.table$XMIC)
-
-      mic.table$YLAB <-
-        which(levels(droplevels(data[[y.drug]])) == mic.table$YMIC)
 
     } else {
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
-        result.mic <- get_mic(
+        find_mic(
           data = d,
           x.drug = x.drug,
           y.drug = y.drug,
           col.data = col.mic,
-          threshold = mic.threshold
+          threshold = mic.threshold,
+          zero = TRUE
         )
-
-        result.mic$XLAB <-
-          which(levels(droplevels(d[[x.drug]])) == result.mic$XMIC)
-
-        result.mic$YLAB <-
-          which(levels(droplevels(d[[y.drug]])) == result.mic$YMIC)
-
-        result.mic
       })
 
       mic.table <- do.call(rbind, mic.table.split)
@@ -431,39 +450,27 @@ plot_dot_split <- function(
   if (any(x.mic.line, y.mic.line)) {
 
     if (is.null(col.analysis)) {
-      mic.table <- get_mic(
+      mic.table <- find_mic(
         data = data,
         x.drug = x.drug,
         y.drug = y.drug,
         col.data = col.mic,
-        threshold = mic.threshold
+        threshold = mic.threshold,
+        zero = TRUE
       )
-
-      mic.table$XLAB <-
-        which(levels(droplevels(data[[x.drug]])) == mic.table$XMIC)
-
-      mic.table$YLAB <-
-        which(levels(droplevels(data[[y.drug]])) == mic.table$YMIC)
 
     } else {
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
-        result.mic <- get_mic(
+        find_mic(
           data = d,
           x.drug = x.drug,
           y.drug = y.drug,
           col.data = col.mic,
-          threshold = mic.threshold
+          threshold = mic.threshold,
+          zero = TRUE
         )
-
-        result.mic$XLAB <-
-          which(levels(droplevels(d[[x.drug]])) == result.mic$XMIC)
-
-        result.mic$YLAB <-
-          which(levels(droplevels(d[[y.drug]])) == result.mic$YMIC)
-
-        result.mic
       })
 
       mic.table <- do.call(rbind, mic.table.split)
@@ -726,30 +733,27 @@ plot_line <- function(
   if (x.mic.line) {
 
     if (is.null(col.analysis)) {
-      mic.table <- get_mic(
+      mic.table <- find_mic(
         data = data,
         x.drug = x.drug,
         y.drug = line.drug,
         col.data = col.data,
-        threshold = mic.threshold
+        threshold = mic.threshold,
+        zero = TRUE
       )
-
-      mic.table$XLAB <- which(levels(droplevels(data[[x.drug]])) == mic.table$XMIC)
 
     } else {
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
-        result.mic <- get_mic(
+        find_mic(
           data = d,
           x.drug = x.drug,
           y.drug = line.drug,
           col.data = col.data,
-          threshold = mic.threshold
+          threshold = mic.threshold,
+          zero = TRUE
         )
-
-        result.mic$XLAB <- which(levels(droplevels(d[[x.drug]])) == result.mic$XMIC)
-        result.mic
       })
 
       mic.table <- do.call(rbind, mic.table.split)
@@ -928,39 +932,27 @@ plot_tile <- function(
   if (any(x.mic.line, y.mic.line)) {
 
     if (is.null(col.analysis)) {
-      mic.table <- get_mic(
+      mic.table <- find_mic(
         data = data,
         x.drug = x.drug,
         y.drug = y.drug,
         col.data = col.mic,
-        threshold = mic.threshold
+        threshold = mic.threshold,
+        zero = FALSE
       )
-
-      mic.table$XLAB <-
-        which(levels(droplevels(data[[x.drug]])) == mic.table$XMIC) - 1
-
-      mic.table$YLAB <-
-        which(levels(droplevels(data[[y.drug]])) == mic.table$YMIC) - 1
 
     } else {
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
-        result.mic <- get_mic(
+        find_mic(
           data = d,
           x.drug = x.drug,
           y.drug = y.drug,
           col.data = col.mic,
-          threshold = mic.threshold
+          threshold = mic.threshold,
+          zero = FALSE
         )
-
-        result.mic$XLAB <-
-          which(levels(droplevels(d[[x.drug]])) == result.mic$XMIC) - 1
-
-        result.mic$YLAB <-
-          which(levels(droplevels(d[[y.drug]])) == result.mic$YMIC) - 1
-
-        result.mic
       })
 
       mic.table <- do.call(rbind, mic.table.split)
@@ -1111,39 +1103,27 @@ plot_tile_split <- function(
   if (any(x.mic.line, y.mic.line)) {
 
     if (is.null(col.analysis)) {
-      mic.table <- get_mic(
+      mic.table <- find_mic(
         data = data,
         x.drug = x.drug,
         y.drug = y.drug,
         col.data = col.mic,
-        threshold = mic.threshold
+        threshold = mic.threshold,
+        zero = FALSE
       )
-
-      mic.table$XLAB <-
-        which(levels(droplevels(data[[x.drug]])) == mic.table$XMIC) - 1
-
-      mic.table$YLAB <-
-        which(levels(droplevels(data[[y.drug]])) == mic.table$YMIC) - 1
 
     } else {
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
-        result.mic <- get_mic(
+        find_mic(
           data = d,
           x.drug = x.drug,
           y.drug = y.drug,
           col.data = col.mic,
-          threshold = mic.threshold
+          threshold = mic.threshold,
+          zero = FALSE
         )
-
-        result.mic$XLAB <-
-          which(levels(droplevels(d[[x.drug]])) == result.mic$XMIC) - 1
-
-        result.mic$YLAB <-
-          which(levels(droplevels(d[[y.drug]])) == result.mic$YMIC) - 1
-
-        result.mic
       })
 
       mic.table <- do.call(rbind, mic.table.split)

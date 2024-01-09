@@ -43,7 +43,7 @@ enable_button <- function(id, x = NULL) {
 #' excel_writer
 #'
 #' @param x A data frame containing ABCI results in long format
-#' @param filename Desired filename for the output
+#' @param filename Desired name for the output file
 #'
 #' @return None
 #'
