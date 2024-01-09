@@ -840,6 +840,7 @@ plot_line <- function(
     ) +
 
     scale_x_discrete(labels = ~sprinter(.x, x.decimal)) +
+    scale_y_continuous(labels = ~.x * 100) +
 
     labs(
       x = x.text,
