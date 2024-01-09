@@ -924,7 +924,7 @@ plot_tile <- function(
   data <- data %>% mutate(
     across(all_of(c(x.drug, y.drug)), forcats::fct_inseq),
     low_chr = ifelse(effect_avg < low.effect.val, "<", ""),
-    large_chr = ifelse(effect_avg > large.effect.val, "*", "")
+    large_chr = ifelse(effect_avg > large.effect.val, "⚹", "")
   )
 
   # MICs are calculated by `get_mic()` as concentrations and converted to
@@ -980,7 +980,7 @@ plot_tile <- function(
     geom_raster(aes(fill = .data[[col.fill]])) +
 
     {if (low.effect) geom_text(aes(label = low_chr), size = 6)} +
-    {if (large.effect) geom_text(aes(label = large_chr), size = 6)} +
+    {if (large.effect) geom_text(aes(label = large_chr), size = 5)} +
 
     {if (x.mic.line) geom_vline(data = mic.table, aes(xintercept = XLAB))} +
     {if (y.mic.line) geom_hline(data = mic.table, aes(yintercept = YLAB))} +
