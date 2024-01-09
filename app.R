@@ -252,14 +252,13 @@ ui <- page_fluid(
     collapsible = TRUE,
     bg = bs_get_variables(app_theme, varnames = "primary"),
     window_title = "ShinyABCi",
-    title = "ShinyABCi",
 
 
     # |- Home page ------------------------------------------------------
 
     nav_panel(
       value = "home",
-      title = "Home",
+      title = "ShinyABCi",
 
       div(
         class = "container my-5",
