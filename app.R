@@ -58,7 +58,7 @@ tooltips <- list(
   ),
   swap_x_y = "Turn on to swap the values plotted on the X and Y axis",
   axis_labels =
-    "Across the plot panels, should the X and Y axis labels vary or be the same?",
+    "Across plot panels, should the X and Y axis labels vary or be the same?",
   low_effect = paste0(
     "Draw a symbol on tiles with low effect when treatments are combined. ",
     "Defaults to <50% killing."
@@ -520,8 +520,9 @@ ui <- page_fluid(
     nav_panel(
       value = "about",
       title = "About",
+
       div(
-        class = "container col-xxl-8 px-4 py-5",
+        class = "container col-xxl-6 px-4 pt-5",
         div(
           class = "row flex-lg-row align-items-center g-5 py-5",
           div(

@@ -2,17 +2,18 @@
 <div class="container col-xxl-6 px-4 pt-1">
   <div class="row flex-lg-row align-items-center py-5">
 
+    <h1 class="display-3 fw-bold text-body-emphasis lh-1 mb-3">Help & tutorials</h1>
     <p class="lead">
       The first section covers the use of the app. Click here to jump to the
       next section, which details the calculation of the ABCI values.
     </p>
 
-    <h1 class="display-4 fw-bold text-body-emphasis">How to use ShinyABCi</h1>
-    <h1 class="display-6">
-      Interpretation and visualization of checkerboard assays using ShinyABCi
-    </h1>
+    <h1>How to use ShinyABCi</h1>
+    <p class="lead">
+      Interpretation and visualization of checkerboard assays
+    </p>
 
-    <h4 class="mt-4">1. Prepare your data for ShinyABCi</h4>
+    <h3>1. Prepare your data for ShinyABCi</h3>
     <p>
       ShinyABCi takes any form of checkerboard assay data (e.g., crystal
       violet, TTC) in the same format produced by microplate readers. Data can
@@ -42,7 +43,7 @@
     </p>
     <img src="tutorial/t1_input_template.png" alt="Input template" style="width: 882px; height: 713px">
 
-    <h4 class="mt-4">2. Prepare your data for ShinyABCi</h4>
+    <h3 class="mt-4">2. Prepare your data for ShinyABCi</h3>
     <p>
       Click <b>"Upload plate data"</b> and select an .xlsx or .ods file
       formatted as detailed above. An input preview will appear to the right of
@@ -70,9 +71,9 @@
       which will perform the analysis and take you to the "Results" tab.
     </p>
 
-    <h4 class="mt-4">3. Create ShinyABCi plots</h4>
+    <h3 class="mt-4">3. Create ShinyABCi plots</h3>
     <p>ShinyABCi lets you visualize two types of information:</p>
-     <ul>
+    <ul>
       <li>
         <b>Drug interaction (Anti-Biofilm Combination Index)</b>. Positive
         values indicate a drug combination that, at the given concentrations,
@@ -105,11 +106,240 @@
       "Create or update the plot"" again to confirm the changes. Hover over
       the "?" next to each option to read an explanatory tooltip.
     </p>
-
     <p>
       You can download the plot by right-clicking on it and selecting
       <b>"Save image as..."</b>
     </p>
+
+
+    <h3 class="mt-4">Learn more</h3>
+    <div class="accordion mb-4" id="accordion1">
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#a1_c1" aria-expanded="false" aria-controls="a1_c1">
+            Choose the right colour palette
+          </button>
+        </h2>
+        <div id="a1_c1" class="accordion-collapse collapse" data-bs-parent="#accordion1">
+          <div class="accordion-body">
+            <p>
+              ShinyABCi represents ABCI values using continuous non-linear
+              palettes designed to highlight the most biologically-relevant
+              differences. Negative ABCIs are represented with little colour
+              variation, as any drug interaction that displays less
+              antimicrobial activity than the individual drugs is already an
+              indication of antagonistic behaviour.
+            </p>
+            <p>
+              Default ShinyABCi palettes (A) provide a colour gradient for
+              positive ABCIs with a contrasting colour for low positives, to
+              improve the discoverability of positive interactions that fall
+              short of formal synergy. Accentuate high ABCI  palettes (B) move
+              the contrasting colour to ABCI > 1.0 combinations to attract more
+              attention to synergistic behaviour. Positive/negative ABCI
+              palettes (C) remove contrasting colours to only depict whether
+              drug interactions are positive or negative.
+            </p>
+            <p>
+              We are colourblind friendly. All ShinyABCi palettes are designed,
+              to the best of our knowledge, to be accessible for people with
+              protanopia, deuteranopia, or tritanopia.
+            </p>
+            <img src="tutorial/t4_abci_palettes.png" alt="ABCI palettes" style="width: 400px; height: 372px">
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#a1_c2" aria-expanded="false" aria-controls="a1_c2">
+            Split positive and negative ABCI values
+          </button>
+        </h2>
+        <div id="a1_c2" class="accordion-collapse collapse" data-bs-parent="#accordion1">
+          <div class="accordion-body">
+            <p>
+              In case you want to focus exclusively on positive or negative
+              drug interactions, we offer “split” tile and dot plots, which
+              separate the positive and negative ABCI values into two different
+              plots.
+            </p>
+            <p>
+              The "filter stringency" option, available in the advanced options
+              box exclusively for split plots, lets you choose the behaviour of
+              split plots towards indifferent drug interactions (ABCI value
+              close to 0). Choose "loose" to display those values on both plots
+              or "strict" to hide them.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#a1_c3" aria-expanded="false" aria-controls="a1_c3">
+            Display activity thresholds
+          </button>
+        </h2>
+        <div id="a1_c3" class="accordion-collapse collapse" data-bs-parent="#accordion1">
+          <div class="accordion-body">
+            <p>
+              As a visual aid to interpret drug interaction data, you can
+              choose to plot lines indicating thresholds of antimicrobial
+              activity for the individual drugs (e.g., MIC, MBIC, MBEC). To
+              activate this option, toggle on "Draw activity threshold". The
+              target killing percentage can be modifier in the advanced options
+              box; the default value is 0.5 (50% killing, e.g., MIC50).
+            </p>
+            <p>
+              Antimicrobial activity thresholds are provided exclusively as
+              visual indicators and are not used for calculations.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#a1_c4" aria-expanded="false" aria-controls="a1_c4">
+            Make readable line plots
+          </button>
+        </h2>
+        <div id="a1_c4" class="accordion-collapse collapse" data-bs-parent="#accordion1">
+          <div class="accordion-body">
+            <p>
+              Line plots are simple representations of the antimicrobial
+              activity of your drug combinations. Given the number of
+              concentrations often evaluated in checkerboard assays, full line
+              plots of all your data may be hard to read. Our recommendation is
+              to first use ABCI plots to identify the most relevant
+              concentrations and represent only those in the line plot.
+            </p>
+            <p>
+              By default, ShinyABCi’s line plots gently nudge some values along
+              the X axis to prevent overlapping lines. This can be disabled by
+              toggling off “X axis jitter” in the advanced options box.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <br>
+    <hr>
+
+
+    <h1 class="mt-3">ABCI calculations</h1>
+    <p class="lead">
+      Information about the Anti-Biofilm Combination Index and how ShinyABCi
+      calculates and plots the data.
+    </p>
+
+    <h3>Rationale behind ShinyABCi</h3>
+    <p>
+      Placeholder text.
+    </p>
+
+    <h3 class="mt-4">Anti-Biofilm Combination Index</h3>
+    <p>
+      The Anti-Biofilm Combination Index (ABCI) is calculated for each specific
+      combination of drug concentrations (i.e., each well on a 96-well plate).
+      It is designed to assess drug combination therapy without relying on
+      antimicrobial activity thresholds (e.g., MIC), focusing on the most
+      important difference when making therapy decisions: is the drug
+      combination better than using the best individual drug on its own?
+    </p>
+    <p>
+      ABCI is defined as the difference between the percentage of biomass
+      killed by the drug combination and the percentage killed by the best of
+      the individual drugs, divided by the combined effects of the two
+      individual drugs. It can be calculated as follows:
+    </p>
+    <img src="tutorial/t5_abci_formula.png" alt="ABCI formula" style="width: 600px; height: 163px">
+    <p>The resulting ABCI value can then be interpreted as follows:</p>
+    <ul>
+      <li>
+        A positive ABCI indicates that the drug combination presents higher
+        activity than any of the individual drugs (additive or synergistic
+        behaviour). Higher ABCI values indicate a more significant gain in
+        antimicrobial activity relative to the combined effects of the
+        individual drugs.
+      </li>
+      <li>
+        An ABCI of zero indicates that the drug combination presents the same
+        activity as at least the best of the individual drugs (indifferent
+        behaviour).
+      </li>
+      <li>
+        A negative ABCI indicates that the drug combination presents lower
+        activity than at least the best of the individual drugs (antagonistic
+        behaviour). Lower ABCI values indicate a more significant loss in
+        antimicrobial activity relative to the combined effects of the
+        individual drugs.
+      </li>
+    </ul>
+    <p>
+      The following examples illustrate possible ABCI values and their
+      interpretation depending on the combined effects of two drugs A and B:
+    </p>
+    <img src="tutorial/t6_abci_value_examples.png" alt="ABCI example" style="width: 880px; height: 308px">
+
+    <h3 class="mt-4">Data processing in ShinyABCi</h3>
+    <p>
+      Placeholder text.
+    </p>
+
+    <h3 class="mt-4">Learn more</h3>
+
+    <div class="accordion" id="accordion2">
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#a2_c1" aria-expanded="false" aria-controls="a2_c1">
+            <p class="mb-0">Generalized ABCI for <i>n</i> drugs</p>
+          </button>
+        </h2>
+        <div id="a2_c1" class="accordion-collapse collapse" data-bs-parent="#accordion2">
+          <div class="accordion-body">
+            <p>
+              Placeholder text.
+            </p>
+            <img src="tutorial/t7_abci_formula_general.png" alt="Generalized ABCI formula" style="width: 600px; height: 166px">
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#a2_c2" aria-expanded="false" aria-controls="a2_c2">
+            Dot size scaling in ShinyABCi plots
+          </button>
+        </h2>
+        <div id="a2_c2" class="accordion-collapse collapse" data-bs-parent="#accordion2">
+          <div class="accordion-body">
+            <p>
+              ShinyABCi’s dot plots represent antimicrobial activity
+              (percentage of biomass killed) using a continuous non-linear scale
+              designed to highlight the most biologically-relevant differences.
+              More specifically, while preserving some degree of granularity all
+              across the scale, our plots are designed to maximize the size
+              difference between +/- 50% killing (often considered the threshold
+              between "active" and "inactive") and the difference between +/-
+              85% killing. We consider that last difference to be of the utmost
+              importance, given that ShinyABCi is primarily intended to be used
+              for antibiofilm assays, in which full eradication is often hard to
+              achieve and one of the main reasons to attempt combination
+              therapies.
+            </p>
+            <p>
+              Below, you can see the exact relationship between percentage of
+              biofilm killed and dot size used by ShinyABCi.
+            </p>
+            <img src="tutorial/t8_dot_size_scaling.png" alt="Dot size scaling">
+          </div>
+        </div>
+      </div>
+    </div>
 
   </div>
 </div>
