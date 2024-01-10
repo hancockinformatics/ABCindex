@@ -1,0 +1,115 @@
+<!DOCTYPE HTML>
+<div class="container col-xxl-6 px-4 pt-1">
+  <div class="row flex-lg-row align-items-center py-5">
+
+    <p class="lead">
+      The first section covers the use of the app. Click here to jump to the
+      next section, which details the calculation of the ABCI values.
+    </p>
+
+    <h1 class="display-4 fw-bold text-body-emphasis">How to use ShinyABCi</h1>
+    <h1 class="display-6">
+      Interpretation and visualization of checkerboard assays using ShinyABCi
+    </h1>
+
+    <h4 class="mt-4">1. Prepare your data for ShinyABCi</h4>
+    <p>
+      ShinyABCi takes any form of checkerboard assay data (e.g., crystal
+      violet, TTC) in the same format produced by microplate readers. Data can
+      be provided as direct measurements (absorbance, fluorescence) or relative
+      measurements (percentage of untreated or relative to an external control).
+      ABCI was designed for antibiofilm activity data but can be used for any
+      kind of checkerboard assays, including planktonic experiments (see the
+      ABCI calculations tutorial for more information).
+    </p>
+    <p>
+      We provide input templates in .xslx or .ods  format. The only necessary
+      preprocessing step is blank subtraction: if it has not been performed by
+      the microplate reader software, please subtract the blank before
+      uploading your data.
+    </p>
+    <p>
+      You can upload different experiments as sheets in the input file; they
+      will become different panels in the final graph. Each experiment can have
+      any number of replicates, which must be provided as individual tables
+      within the same sheet separated by at least one blank row. Not all
+      treatment concentrations need to be represented in every replicate.
+    </p>
+    <p>
+      Data must include untreated wells (concentration = 0) . Do not include in
+      the input any wells that are not intended to be plotted in the final
+      graph (e.g., blank wells, external controls).
+    </p>
+    <img src="tutorial/t1_input_template.png" alt="Input template" style="width: 882px; height: 713px">
+
+    <h4 class="mt-4">2. Prepare your data for ShinyABCi</h4>
+    <p>
+      Click <b>"Upload plate data"</b> and select an .xlsx or .ods file
+      formatted as detailed above. An input preview will appear to the right of
+      the screen detailing the treatment in the rows and columns of each of your
+      experiments, as well as the different concentrations included. Make sure
+      everything looks OK and click "Perform ABCI calculations". If the
+      preview does not reflect your intended input the most likely reason is a
+      mistake in the input file; try downloading the template and copying and
+      pasting your data onto it.
+    </p>
+    <img src="tutorial/t2_input_preview.png" alt="Input preview" style="width: 880px; height: 495px">
+    <p>
+      Afer clicking "Perform ABCI calculation, a dialog window will appear with
+      two options for data normalization. By default, ShinyABCi will assume your
+      data is direct observations (e.g., absorbance units or relative
+      fluorescence units) and convert them into percentages relative to the
+      average of the untreated wells (both concentrations equal to zero). This
+      is the <b>"Normalize my data"</b> option. If you have already converted
+      your data to percentages (for example, to make them relative to a growth
+      control consisting of multiple wells per plate) select <b>"My data is
+      already normalized"</b> instead.
+    </p>
+    <p>
+      Once you've made the appropriate selection, click "Calculate ABCI values",
+      which will perform the analysis and take you to the "Results" tab.
+    </p>
+
+    <h4 class="mt-4">3. Create ShinyABCi plots</h4>
+    <p>ShinyABCi lets you visualize two types of information:</p>
+     <ul>
+      <li>
+        <b>Drug interaction (Anti-Biofilm Combination Index)</b>. Positive
+        values indicate a drug combination that, at the given concentrations,
+        presents higher antimicrobial activity than any of the individual drugs
+        on their own (additive or synergistic behaviour). Negative values
+        indicate a combination with worse activity than at least the best of the
+        individual drugs (antagonism). See the ABCI calculations tutorial for
+        more information.
+      </li>
+      <li>
+        <b>Antimicrobial activity (percentage of biomass killed)</b>. Depending
+        on the type of experiment this may have different biological
+        interpretation, such as biofilm inhibition or biofilm eradication.
+      </li>
+    </ul>
+    <p>
+      The recommended plot for ShinyABCi results is the <b>dot plot</b>, which
+      depicts both ABCI values (as colours) and antimicrobial activity (as dot
+      sizes). You can also use <b>tile plots</b> to only represent ABCIs; in
+      that case, we recommend choosing the drug concentrations you are most
+      interested in and represent their antimicrobial activity in a <b>line
+      plot</b>. Dot and tile plots are available in <b>split</b> versions that
+      separate the positive and negative ABCI values into two different plots,
+      for visual simplicity.
+    </p>
+    <img src="tutorial/t3_plot_examples.png" alt="Plot examples" style="width: 880px; height: 702px">
+    <p>
+      Choose the type of plot you want and click <b>"Create or update the
+      plot"</b>. You can use the options below to modify the plot and click
+      "Create or update the plot"" again to confirm the changes. Hover over
+      the "?" next to each option to read an explanatory tooltip.
+    </p>
+
+    <p>
+      You can download the plot by right-clicking on it and selecting
+      <b>"Save image as..."</b>
+    </p>
+
+  </div>
+</div>

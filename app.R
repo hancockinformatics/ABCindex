@@ -505,6 +505,16 @@ ui <- page_fluid(
     ),
 
 
+  # |- Help ---------------------------------------------------------------
+
+    nav_panel(
+      value = "help",
+      title = "Help",
+
+      includeHTML("www/tutorial/tutorial.html")
+    ),
+
+
     # |- About ----------------------------------------------------------
 
     nav_panel(
