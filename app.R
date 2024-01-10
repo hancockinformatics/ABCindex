@@ -87,7 +87,7 @@ tooltips <- list(
 
 link_paragraph <- p(
   "You can learn more about how to interpret your data ",
-  actionLink("legend_here", "here", .noWS = "after"),
+  actionLink("help_from_legend", "here", .noWS = "after"),
   ". The text below can be used as a template for a figure legend:"
 )
 
@@ -225,7 +225,7 @@ plot_legends <- list(
 
 ui <- page_fluid(
   theme = app_theme,
-  HTML("<base target='_blank' rel='noopener noreferrer'>"),
+  # HTML("<base target='_blank' rel='noopener noreferrer'>"),
   useShinyjs(),
   tags$script(src = "js/client.js"),
   tags$head(
@@ -292,9 +292,9 @@ ui <- page_fluid(
           HTML(paste0(
             "<p class='lead mb-4'>Click the Get Started button to upload ",
             "your data! If you’d like to learn more about how the ABCI is ",
-            "calculated or how to use ShinyABCi, check the respective ",
-            "tutorials below. For more information, including how to cite ",
-            "ShinyABCi, please refer to the About page.</p>"
+            "calculated or how to use ShinyABCi, check the help pages below. ",
+            "For more information, including how to cite ShinyABCi, please ",
+            "refer to the About page.</p>"
           )),
 
           div(
@@ -304,15 +304,26 @@ ui <- page_fluid(
               label = div(
                 icon("play"),
                 HTML("Get started")
-              )
+              ),
+              width = "175px"
             ),
             actionButton(
-              inputId = "learn_more",
-              class = "btn btn-outline-secondary btn-lg px-4",
+              inputId = "help_from_home",
+              class = "btn btn-info btn-lg px-4 me-md-2",
+              label = div(
+                icon("circle-question"),
+                HTML("Help")
+              ),
+              width = "175px"
+            ),
+            actionButton(
+              inputId = "about",
+              class = "btn btn-secondary btn-lg px-4 me-md-2",
               label = div(
                 icon("circle-info"),
-                HTML("Learn more")
-              )
+                HTML("About")
+              ),
+              width = "175px"
             )
           )
         )
@@ -350,13 +361,14 @@ ui <- page_fluid(
 
             p(
               "You can learn more about the data we support in the ShinyABCi ",
-              actionLink("tutorial_link", "tutorial", .noWS = "after"),
+              actionLink("help_from_upload", "help pages", .noWS = "after"),
               ". You can also ",
               actionLink(
                 "load_example_data",
-                "try our example data"
+                "try our example data",
+                .noWS = "after"
               ),
-              "for a demonstration of ShinyABCi."
+              "."
             ),
 
             fileInput(
@@ -413,8 +425,8 @@ ui <- page_fluid(
               "concentrations in your experiments. Positive ABCI values ",
               "indicate the combination is more effective than either ",
               "individual drug. Please refer to the ",
-              actionLink("tutorial_link", "ABCI tutorial"),
-              " pages to learn more."
+              actionLink("help_from_results", "ABCI help pages"),
+              " to learn more."
             ),
 
             HTML(paste0(
@@ -539,19 +551,21 @@ ui <- page_fluid(
               "Blimkie, all at the ",
               a(
                 href = "http://cmdr.ubc.ca/bobh/",
+                target = "_blank",
+                rel = "noopener noreferrer",
                 "REW Hancock Laboratory"
               ),
               "at the University of British Columbia."
             ),
             h1(
               class = "display-6 fw-bold text-body-emphasis lh-1 mb-3",
-              "Tutorial"
+              "Help pages"
             ),
             p(
               class = "lead",
-              "A tutorial explaining the calculation of ABCI values, usage of ",
-              "the app, and interpretation of results can be found ",
-              actionLink("about_tutorial", "here", .noWS = "after"), "."
+              "Detailed information, covering the usage of the app, and ",
+              "interpretation and calculation of ABCI values, can be found ",
+              actionLink("help_from_about", "here", .noWS = "after"), "."
             ),
 
             h1(
@@ -564,6 +578,8 @@ ui <- page_fluid(
               "let us know by submitting an issue at our ",
               a(
                 href = "https://github.com/hancockinformatics/ShinyABCi",
+                target = "_blank",
+                rel = "noopener noreferrer",
                 "Github page",
                 .noWS = "after"
               ), "."
@@ -585,13 +601,28 @@ ui <- page_fluid(
                 div(
                   class = "col",
                   tags$dl(
-                    tags$dt(a(href = "https://rstudio.github.io/bslib/index.html", "bslib")),
+                    tags$dt(a(
+                      href = "https://rstudio.github.io/bslib/index.html",
+                      target = "_blank",
+                      rel = "noopener noreferrer",
+                      "bslib"
+                    )),
                     tags$dd("A modern Bootstrap UI toolkit for Shiny"),
 
-                    tags$dt(a(href = "https://ycphs.github.io/openxlsx/index.html", "openxlsx")),
+                    tags$dt(a(
+                      href = "https://ycphs.github.io/openxlsx/index.html",
+                      target = "_blank",
+                      rel = "noopener noreferrer",
+                      "openxlsx"
+                    )),
                     tags$dd("Write data to XLSX files"),
 
-                    tags$dt(a(href = "https://shiny.posit.co/", "shiny")),
+                    tags$dt(a(
+                      href = "https://shiny.posit.co/",
+                      target = "_blank",
+                      rel = "noopener noreferrer",
+                      "shiny"
+                    )),
                     tags$dd("Easily create and deploy web apps from R"),
                   )
                 ),
@@ -599,10 +630,20 @@ ui <- page_fluid(
                 div(
                   class = "col",
                   tags$dl(
-                    tags$dt(a(href = "https://deanattali.com/shinyjs/", "shinyjs")),
+                    tags$dt(a(
+                      href = "https://deanattali.com/shinyjs/",
+                      target = "_blank",
+                      rel = "noopener noreferrer",
+                      "shinyjs"
+                    )),
                     tags$dd("Extend Shiny functionality with Javascript"),
 
-                    tags$dt(a(href = "https://www.tidyverse.org/", "tidyverse")),
+                    tags$dt(a(
+                      href = "https://www.tidyverse.org/",
+                      target = "_blank",
+                      rel = "noopener noreferrer",
+                      "tidyverse"
+                    )),
                     tags$dd("Packages for data manipulation and visualization"),
                   )
                 )
@@ -623,6 +664,8 @@ ui <- page_fluid(
         icon("github"),
         "Github",
         href = "https://github.com/hancockinformatics/ShinyABCi",
+        target = "_blank",
+        rel = "noopener noreferrer",
         title = "Visit our Github to browse the code or submit an issue."
       )
     ),
@@ -644,16 +687,27 @@ ui <- page_fluid(
 
 server <- function(input, output) {
 
-  # "Learn more" button
-  observeEvent(input$learn_more, {
+  observeEvent(input$help_from_legend, {
+    updateNavbarPage(inputId = "navbar", selected = "help")
+  })
+
+  # Home ------------------------------------------------------------------
+
+  observeEvent(input$get_started, {
+    updateNavbarPage(inputId = "navbar", selected = "upload")
+  })
+  observeEvent(input$help_from_home, {
+    updateNavbarPage(inputId = "navbar", selected = "help")
+  })
+  observeEvent(input$about, {
     updateNavbarPage(inputId = "navbar", selected = "about")
   })
 
 
   # Upload ----------------------------------------------------------------
 
-  observeEvent(input$get_started, {
-    updateNavbarPage(inputId = "navbar", selected = "upload")
+  observeEvent(input$help_from_upload, {
+    updateNavbarPage(inputId = "navbar", selected = "help")
   })
 
   # Download the template
@@ -968,6 +1022,10 @@ server <- function(input, output) {
 
   # Results ---------------------------------------------------------------
 
+  observeEvent(input$help_from_results, {
+    updateNavbarPage(inputId = "navbar", selected = "help")
+  })
+
   observeEvent(input$confirm_calc, {
     req(abci_results())
 
@@ -1127,16 +1185,6 @@ server <- function(input, output) {
   )
 
   plot_legend_ui <- reactive(plot_legends[[plot_type()]])
-
-  observeEvent(input$legend_here, {
-    showNotification(
-      type = "default",
-      ui = HTML(paste0(
-        "<h4 class='alert-heading'><b>Whoa!</b></h4>",
-        "<p class='mb-0'>Sorry, that link doesn't lead anywhere... yet...</p>"
-      ))
-    )
-  })
 
 
   # |-- Line include options ----------------------------------------------
@@ -2466,6 +2514,13 @@ server <- function(input, output) {
         )
       )
     )
+  })
+
+
+  # About -----------------------------------------------------------------
+
+  observeEvent(input$help_from_about, {
+    updateNavbarPage(inputId = "navbar", selected = "help")
   })
 } # Shiny sever close
 
