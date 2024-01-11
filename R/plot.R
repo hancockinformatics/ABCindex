@@ -298,8 +298,16 @@ plot_dot <- function(
       )
     }} +
 
-    {if (x.mic.line) geom_vline(data = mic.table, aes(xintercept = XLAB))} +
-    {if (y.mic.line) geom_hline(data = mic.table, aes(yintercept = YLAB))} +
+    {if (x.mic.line) geom_vline(
+      data = mic.table,
+      aes(xintercept = XLAB),
+      linewidth = 2
+    )} +
+    {if (y.mic.line) geom_hline(
+      data = mic.table,
+      aes(yintercept = YLAB),
+      linewidth = 2
+    )} +
 
     # Draw lines to separate 0-concentration values
     geom_vline(xintercept = 1.5, linewidth = 0.5) +
@@ -565,8 +573,16 @@ plot_dot_split <- function(
         )
       }} +
 
-      {if (x.mic.line) geom_vline(data = mic.table, aes(xintercept = XLAB))} +
-      {if (y.mic.line) geom_hline(data = mic.table, aes(yintercept = YLAB))} +
+      {if (x.mic.line) geom_vline(
+        data = mic.table,
+        aes(xintercept = XLAB),
+        linewidth = 2
+      )} +
+      {if (y.mic.line) geom_hline(
+        data = mic.table,
+        aes(yintercept = YLAB),
+        linewidth = 2
+      )} +
 
       geom_vline(xintercept = 1.5, linewidth = 0.5) +
       geom_hline(yintercept = 1.5, linewidth = 0.5) +
