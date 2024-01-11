@@ -448,15 +448,6 @@ ui <- page_fluid(
               )
             ),
 
-            # HTML(paste0(
-            #   "<table class='table mb-0 mt-3' style='border-collapse: collapse'>",
-            #   "<tr class='table-primary'>",
-            #   "<th style='text-align: center'>ABCI</td>",
-            #   "<th style='text-align: right; padding-right: 30px'>Activity</td>",
-            #   "</tr>",
-            #   "</table>"
-            # )),
-
             navset_tab(
               id = "plot_tabs",
               nav_panel(
@@ -1252,7 +1243,7 @@ server <- function(input, output) {
         title = "ABCI colour palettes",
         easyClose = TRUE,
         size = "m",
-        HTML("<img src='img/abci_palettes_preview.png' class='center'>"),
+        HTML("<img src='img/abci_palettes_preview.svg' class='center'>"),
         footer = modalButton("Close")
       ),
       "rcolorbrewer" = modalDialog(
@@ -2524,9 +2515,9 @@ server <- function(input, output) {
     req(abci_plot_data())
 
     output_dims <- get_dims(
-      abci_plot_dims()[[1]],
-      abci_plot_dims()[[2]],
-      plot_type()
+      type = plot_type(),
+      n_cols = abci_plot_dims()[[1]],
+      n_rows = abci_plot_dims()[[2]]
     )
 
     output$abci_plot_ui <- renderUI(

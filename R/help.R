@@ -97,13 +97,13 @@ excel_writer <- function(x, filename) {
 
 #' get_dims
 #'
+#' @param type Type of plot (dot, dot_split, tile, tile_split, line)
 #' @param n_cols Number of columns for the output plot
 #' @param n_rows Number of rows for the output plot
-#' @param type Type of plot (dot, dot_split, tile, tile_split, line)
 #'
 #' @return Character vector of output width and height, in pixels
 #'
-get_dims <- function(n_cols, n_rows, type) {
+get_dims <- function(type, n_cols, n_rows) {
 
   dims <- if (n_cols == 1) {
     switch(
@@ -118,7 +118,7 @@ get_dims <- function(n_cols, n_rows, type) {
     switch(
       type,
       "dot" = c(1200, 150 + 300 * n_rows),
-      "dot_split" = c(1150, 150 + 700 * n_rows),
+      "dot_split" = c(1250, 150 + 700 * n_rows),
       "tile" = c(1100, 100 + 300 * n_rows),
       "tile_split" = c(1100, 100 + 700 * n_rows),
       "line" = c(1150, 100 + 300 * n_rows)
