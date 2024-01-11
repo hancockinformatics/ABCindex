@@ -354,7 +354,7 @@ ui <- page_fluid(
               "Each sheet/experiment will be analyzed independently, becoming ",
               "separate panels in the final plots, while replicates within an ",
               "experiment will be averaged. You can use the following link to ",
-              downloadLink("download_template", label = "download a template"),
+              actionLink("download_template", label = "download a template"),
               "of the required input format. If required, subtract any ",
               "'blank' wells before uploading."
             ),
@@ -710,11 +710,45 @@ server <- function(input, output) {
     updateNavbarPage(inputId = "navbar", selected = "help")
   })
 
-  # Download the template
-  output$download_template <- downloadHandler(
+
+  # |- Download the template ----------------------------------------------
+
+  observeEvent(input$download_template, {
+    showModal(modalDialog(
+      title = "Download input template",
+      size = "m",
+      p(
+        "The template data can be downloaded as either a '.xlsx' or '.ods' ",
+        "file using the buttons below."
+      ),
+      downloadButton(
+        outputId = "handler_xlsx",
+        label = "XLSX",
+        width = "50px",
+        class = "btn btn-success px-4 me-md-2"
+      ),
+      downloadButton(
+        outputId = "handler_ods",
+        label = "ODS",
+        width = "50px",
+        class = "btn btn-success px-4 me-md-2"
+      ),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+
+  output$handler_xlsx <- downloadHandler(
     filename = "ShinyABCi_data_template.xlsx",
     content = function(file) {
       file.copy("example_data/ShinyABCi_data_template.xlsx", file)
+    }
+  )
+
+  output$handler_ods <- downloadHandler(
+    filename = "ShinyABCi_data_template.ods",
+    content = function(file) {
+      file.copy("example_data/ShinyABCi_data_template.ods", file)
     }
   )
 
