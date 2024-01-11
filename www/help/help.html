@@ -1,8 +1,9 @@
 <!DOCTYPE HTML>
+
 <div class="container col-xxl-6 px-4 pt-1">
   <div class="row flex-lg-row align-items-center py-5">
 
-    <h1 class="display-3 fw-bold text-body-emphasis lh-1 mb-3">Help & tutorials</h1>
+    <h1 class="display-3 fw-bold text-body-emphasis lh-1 mb-3">ShinyABCi help</h1>
     <p class="lead">
       The first section covers the use of the app. Click
       <a href="#anchor-calc">here</a> to jump to the next section, which details
@@ -11,10 +12,10 @@
 
     <h1 id="anchor-howto">How to use ShinyABCi</h1>
     <p class="lead">
-      Interpretation and visualization of checkerboard assays
+      Interpretation and visualization of checkerboard assays.
     </p>
 
-    <h3>1. Prepare your data for ShinyABCi</h3>
+    <h3>1. Prepare your data</h3>
     <p>
       ShinyABCi takes any form of checkerboard assay data (e.g. crystal
       violet or TTC) in the same format produced by microplate readers. Data can
@@ -43,9 +44,9 @@
       the input any wells that are not intended to be plotted in the final
       graph (e.g., blank wells, external controls).
     </p>
-    <img src="tutorial/t1_input_template.png" alt="Input template" style="width: 882px; height: 713px" class="center">
+    <img src="help/img/t1_input_template.png" alt="Input template" style="width: 882px; height: 713px" class="center">
 
-    <h3 class="mt-4">2. Prepare your data for ShinyABCi</h3>
+    <h3 class="mt-4">2. Upload and analyze your data</h3>
     <p>
       Click <b>"Upload plate data"</b> and select an .xlsx or .ods file
       formatted as detailed above. An input preview will appear to the right of
@@ -56,7 +57,7 @@
       mistake in the input file; try downloading the template and copying and
       pasting your data onto it.
     </p>
-    <img src="tutorial/t2_input_preview.png" alt="Input preview" style="width: 880px; height: 495px" class="center">
+    <img src="help/img/t2_input_preview.png" alt="Input preview" style="width: 880px; height: 495px" class="center">
     <p>
       Afer clicking "Perform ABCI calculation, a dialog window will appear with
       two options for data normalization. By default, ShinyABCi will assume your
@@ -73,7 +74,7 @@
       which will perform the analysis and take you to the "Results" tab.
     </p>
 
-    <h3 class="mt-4">3. Create ShinyABCi plots</h3>
+    <h3 class="mt-4">3. Create plots from your results</h3>
     <p>ShinyABCi lets you visualize two types of information:</p>
     <ul>
       <li>
@@ -102,7 +103,7 @@
       separate the positive and negative ABCI values into two different plots,
       for visual simplicity.
     </p>
-    <img src="tutorial/t3_plot_examples.png" alt="Plot examples" style="width: 880px; height: 702px" class="center">
+    <img src="help/img/t3_plot_examples.png" alt="Plot examples" style="width: 880px; height: 702px" class="center">
     <p>
       Choose the type of plot you want and click <b>"Create or update the
       plot"</b>. You can use the options below to modify the plot and click
@@ -116,7 +117,7 @@
 
 
     <h3 class="mt-4">Learn more</h3>
-    <div class="accordion mb-4" id="accordion1">
+    <div class="accordion" id="accordion1" style="margin-bottom:3rem">
       <div class="accordion-item">
         <h2 class="accordion-header">
           <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#a1_c1" aria-expanded="false" aria-controls="a1_c1">
@@ -148,7 +149,7 @@
               designed, to the best of our knowledge, to be accessible for
               people with protanopia, deuteranopia, or tritanopia.
             </p>
-            <img src="tutorial/t4_abci_palettes.png" alt="ABCI palettes" style="width: 400px; height: 372px" class="center">
+            <img src="help/img/t4_abci_palettes.png" alt="ABCI palettes" style="width: 400px; height: 372px" class="center">
           </div>
         </div>
       </div>
@@ -260,7 +261,7 @@
       the individual drugs, divided by the combined effects of the two
       individual drugs. It can be calculated as follows:
     </p>
-    <img src="tutorial/t5_abci_formula.png" alt="ABCI formula" style="width: 600px; height: 163px" class="center">
+    <img src="help/img/t5_abci_formula.png" alt="ABCI formula" style="width: 600px; height: 163px" class="center">
     <p>The resulting ABCI value can then be interpreted as follows:</p>
     <ul>
       <li>
@@ -284,73 +285,65 @@
       </li>
     </ul>
     <p>
-      The following examples illustrate possible ABCI values and their
+      The following table illustrates possible ABCI values and their
       interpretation depending on the combined effects of two drugs A and B:
     </p>
 
 
     <table class="table table-bordered">
-    <thead>
-      <tr class="table-light">
-        <th scope="col">Killing for Drug A</th>
-        <th scope="col">Killing for Drug B</th>
-        <th scope="col">Combined Killing</th>
-        <th scope="col">Interaction Type</th>
-        <th scope="col">ABCI Value</th>
+      <thead>
+        <tr class="table-light">
+          <th scope="col">Killing for Drug A</th>
+          <th scope="col">Killing for Drug B</th>
+          <th scope="col">Combined Killing</th>
+          <th scope="col">Interaction Type</th>
+          <th scope="col">ABCI Value</th>
+        </tr>
+      </thead>
+      <tr class="table-danger">
+        <td>30%</td>
+        <td>30%</td>
+        <td>100%</td>
+        <td>Synergistic</td>
+        <td>2.33</td>
       </tr>
-    </thead>
-
-    <tr class="table-danger">
-      <td>30%</td>
-      <td>30%</td>
-      <td>100%</td>
-      <td>Synergistic</td>
-      <td>2.33</td>
-    </tr>
-
-    <tr class="table-danger">
-      <td>40%</td>
-      <td>40%</td>
-      <td>80%</td>
-      <td>Perfectly additive</td>
-      <td>1.00</td>
-    </tr>
-
-    <tr class="table-warning">
-      <td>50%</td>
-      <td>50%</td>
-      <td>90%</td>
-      <td>Imperfectly additive</td>
-      <td>0.80</td>
-    </tr>
-
-    <tr>
-      <td>70%</td>
-      <td>70%</td>
-      <td>70%</td>
-      <td>Indifferent</td>
-      <td>0.00</td>
-    </tr>
-
-    <tr class="table-primary">
-      <td>20%</td>
-      <td>90%</td>
-      <td>80%</td>
-      <td>Antagonistic</td>
-      <td>-0.18</td>
-    </tr>
-
-    <tr class="table-primary">
-      <td>70%</td>
-      <td>70%</td>
-      <td>50%</td>
-      <td>Antagonistic</td>
-      <td>-0.29</td>
-    </tr>
-  </table>
-
-
-    <img src="tutorial/t6_abci_value_examples.png" alt="ABCI example" style="width: 880px; height: 308px" class="center">
+      <tr class="table-danger">
+        <td>40%</td>
+        <td>40%</td>
+        <td>80%</td>
+        <td>Perfectly additive</td>
+        <td>1.00</td>
+      </tr>
+      <tr class="table-warning">
+        <td>50%</td>
+        <td>50%</td>
+        <td>90%</td>
+        <td>Imperfectly additive</td>
+        <td>0.80</td>
+      </tr>
+      <tr>
+        <td>70%</td>
+        <td>70%</td>
+        <td>70%</td>
+        <td>Indifferent</td>
+        <td>0.00</td>
+      </tr>
+      <tr class="table-primary">
+        <td>20%</td>
+        <td>90%</td>
+        <td>80%</td>
+        <td>Antagonistic</td>
+        <td>-0.18</td>
+      </tr>
+      <tr class="table-primary">
+        <td>70%</td>
+        <td>70%</td>
+        <td>50%</td>
+        <td>Antagonistic</td>
+        <td>-0.29</td>
+      </tr>
+    </table>
+    <!--<img src="help/img/t6_abci_value_examples.png" alt="ABCI example" style="width: 880px; height: 308px" class="center">-->
 
     <h3 class="mt-4">Data processing in ShinyABCi</h3>
     <p>
@@ -371,7 +364,7 @@
             <p>
               Placeholder text.
             </p>
-            <img src="tutorial/t7_abci_formula_general.png" alt="Generalized ABCI formula" style="width: 600px; height: 166px" class="center">
+            <img src="help/img/t7_abci_formula_general.png" alt="Generalized ABCI formula" style="width: 600px; height: 166px" class="center">
           </div>
         </div>
       </div>
@@ -390,9 +383,9 @@
               designed to highlight the most biologically-relevant differences.
               More specifically, while preserving some degree of granularity all
               across the scale, our plots are designed to maximize the size
-              difference between +/- 50% killing (often considered the threshold
-              between "active" and "inactive") and the difference between +/-
-              85% killing. We consider that last difference to be of the utmost
+              difference between ±50% killing (often considered the threshold
+              between "active" and "inactive") and the difference between ±85%
+              killing. We consider that last difference to be of the utmost
               importance, given that ShinyABCi is primarily intended to be used
               for antibiofilm assays, in which full eradication is often hard to
               achieve and one of the main reasons to attempt combination
@@ -402,7 +395,7 @@
               Below, you can see the exact relationship between percentage of
               biofilm killed and dot size used by ShinyABCi.
             </p>
-            <img src="tutorial/t8_dot_size_scaling.png" alt="Dot size scaling" class="center">
+            <img src="help/img/t8_dot_size_scaling.png" alt="Dot size scaling" style="width: 450px; height: 337px" class="center">
           </div>
         </div>
       </div>
