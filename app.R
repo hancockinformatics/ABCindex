@@ -233,13 +233,13 @@ ui <- page_fluid(
     tags$link(
       rel = "icon",
       type = "image/svg",
-      href = "hancock_lab_logo_32.svg",
+      href = "img/hancock_lab_logo_32.svg",
       sizes = "32x32"
     ),
     tags$link(
       rel = "icon",
       type = "image/svg",
-      href = "hancock_lab_logo_16.svg",
+      href = "img/hancock_lab_logo_16.svg",
       sizes = "16x16"
     )
   ),
@@ -523,7 +523,7 @@ ui <- page_fluid(
       value = "help",
       title = "Help",
 
-      includeHTML("www/tutorial/tutorial.html")
+      includeHTML("www/help/help.html")
     ),
 
 
@@ -1217,16 +1217,16 @@ server <- function(input, output) {
       "abci" = modalDialog(
         title = "ABCI colour palettes",
         easyClose = TRUE,
-        size = "l",
-        HTML("<img src='abci_palettes.png' class='center'>"),
-        footer = modalButton("OK")
+        size = "m",
+        HTML("<img src='img/abci_palettes_preview.png' class='center'>"),
+        footer = modalButton("Close")
       ),
-      "viridis" = modalDialog(
+      "rcolorbrewer" = modalDialog(
         title = "Line colour palettes",
         easyClose = TRUE,
         size = "m",
-        HTML("<img src='rcolorbrewer_supported_palettes.svg' class='center'>"),
-        footer = modalButton("OK")
+        HTML("<img src='img/rcolorbrewer_supported_palettes.svg' class='center'>"),
+        footer = modalButton("Close")
       )
     ),
     tagAppendAttributes,
@@ -1246,7 +1246,7 @@ server <- function(input, output) {
     showModal(modal_colours$abci)
   })
   observeEvent(input$line_preview_colours, {
-    showModal(modal_colours$viridis)
+    showModal(modal_colours$rcolorbrewer)
   })
 
 
