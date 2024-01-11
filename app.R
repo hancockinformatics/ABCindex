@@ -1084,7 +1084,7 @@ server <- function(input, output) {
   observeEvent(input$create_plot, {
     showNotification(
       type = "default",
-      duration = NULL,
+      duration = 30,
       ui = HTML(paste0(
         "<h4 class='alert-heading'><b>Saving your results</b></h4>",
         "<p class='mb-0'>",
@@ -2479,7 +2479,7 @@ server <- function(input, output) {
             duration = 10,
             ui = HTML(paste0(
               "<h4 class='alert-heading'><b>Warning!</b></h4>",
-              "<p class='mb-0'>Values on the Y axis greater than 1.5 have ",
+              "<p class='mb-0'>Values on the Y axis greater than 150% have ",
               "been reduced.</p>"
             ))
           )
