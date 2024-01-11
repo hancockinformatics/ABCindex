@@ -1,12 +1,12 @@
-#' abci_check_wells
+#' check_wells
 #'
-#' @param data_list A list of data frames (tibbles), from `abci_reader()` to
+#' @param data_list A list of data frames (tibbles), from `plate_reader()` to
 #'   check for validity
 #'
 #' @return A list of experiments that have invalid wells (valid being A1 through
 #'   H12)
 #'
-abci_check_wells <- function(data_list) {
+check_wells <- function(data_list) {
   valid_wells <- unlist(lapply(
     seq(1, 12),
     function(n) paste0(LETTERS[seq(1, 8)], n)
@@ -27,7 +27,38 @@ abci_check_wells <- function(data_list) {
 }
 
 
-#' abci_master_input
+check_untreated <- function(data_list) {
+  check_results <- purrr::map(
+    data_list,
+    function(x) {
+      checklist <- c()
+
+      if (!"0" %in% x$cols_conc) {
+        checklist <- append(checklist, "columns")
+      }
+      if (!"0" %in% x$rows_conc) {
+        checklist <- append(checklist, "rows")
+      }
+      return(checklist)
+    }
+  ) %>% purrr::compact()
+
+  if (length(check_results) == 0) {
+    return(NULL)
+  } else {
+    purrr::imap(check_results, function(x, nm) {
+      paste0(
+        nm,
+        " (",
+        paste(x, collapse = ", "),
+        ")"
+      )
+    })
+  }
+}
+
+
+#' plate_input
 #'
 #' @param file Path to a spreadsheet, containing one or more sheets within, each
 #'   with data in a 96 well-type format
@@ -42,17 +73,19 @@ abci_check_wells <- function(data_list) {
 #'   status and input/output}
 #'   \item{suggest}{Character providing a hint of how the user should proceed}
 #'
-abci_master_input <- function(file, sheet = "all") {
+plate_input <- function(file, sheet = "all") {
 
   tryCatch(
     {
-      x <- abci_reader(file = file, sheet = sheet)
-      check_x <- abci_check_wells(x)
+      x <- plate_reader(file = file, sheet = sheet)
+      check_well_result <- check_wells(x)
+      check_untreated_result <- check_untreated(x)
+
 
       # Silent failures, such as bad wells, or anything else that doesn't
       # throw an actual error
-      if (length(check_x != 0)) {
-        bad_experiments <- paste(check_x, collapse = ", ")
+      if (length(check_well_result != 0)) {
+        bad_experiments <- paste(check_well_result, collapse = ", ")
 
         list(
           data = NULL,
@@ -68,7 +101,7 @@ abci_master_input <- function(file, sheet = "all") {
             "empty rows, then try again."
           )
         )
-      } else if (is.null(check_x)) {
+      } else if (is.null(check_well_result)) {
         list(
           data = NULL,
           status = "error",
@@ -78,6 +111,19 @@ abci_master_input <- function(file, sheet = "all") {
             "again."
           )
         )
+      } else if (!is.null(check_untreated_result)) {
+        list(
+          data = NULL,
+          status = "error",
+          message = paste0(
+            "No untreated samples were detected in the following experiment(s): ",
+            paste(check_untreated_result, collapse = "; "),
+            ". "
+          ),
+          suggest =
+            "Please ensure your data contains untreated samples, and try again."
+        )
+
       } else {
         list(
           data = x,
@@ -103,7 +149,7 @@ abci_master_input <- function(file, sheet = "all") {
 }
 
 
-#' abci_reader
+#' plate_reader
 #'
 #' @param file Path to a spreadsheet, containing one or more sheets within, each
 #'   with data in a 96 well-type format
@@ -122,7 +168,7 @@ abci_master_input <- function(file, sheet = "all") {
 #'   \item{bio}{The measured values contained within the wells, for a specific
 #'   row-column combination}
 #'
-abci_reader <- function(file, sheet = "all") {
+plate_reader <- function(file, sheet = "all") {
   options("cli.progress_show_after" = 0)
 
   file_ext <- substr(tolower(tools::file_ext(file)), 1, 3)
@@ -140,7 +186,7 @@ abci_reader <- function(file, sheet = "all") {
   all_data <- lapply(
     cli::cli_progress_along(all_sheets, "Loading plate data"),
     function(i) {
-      abci_reader_single(file = file, sheet = all_sheets[i], ext = file_ext)
+      plate_reader_single(file = file, sheet = all_sheets[i], ext = file_ext)
     }
   ) %>% purrr::set_names(all_sheets)
 
@@ -148,7 +194,7 @@ abci_reader <- function(file, sheet = "all") {
 }
 
 
-#' abci_reader_single
+#' plate_reader_single
 #'
 #' @param file Path to a spreadsheet, containing one or more sheets within, each
 #'   with data in a 96 well-type format
@@ -167,7 +213,7 @@ abci_reader <- function(file, sheet = "all") {
 #'   \item{bio}{The measured values contained within the wells, for a specific
 #'   row-column combination}
 #'
-abci_reader_single <- function(file, sheet, ext) {
+plate_reader_single <- function(file, sheet, ext) {
 
   suppressMessages(
     d0 <- switch(

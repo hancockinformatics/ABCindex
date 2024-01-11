@@ -1,3 +1,8 @@
+/* Remove bottom margin from sidebar titles */
+.bslib-sidebar-layout .sidebar-title {
+  margin-bottom: 0;
+}
+
 /* Set the width of the file button to match the "Load example data" button */
 .btn-file {
   width: 180px;
@@ -32,8 +37,8 @@
   padding-right: 0;
 }
 .navbar, .tab-content {
-  padding-left: 15px;
-  padding-right: 15px;
+  padding-left: 0;
+  padding-right: 16px;
 }
 
 /* Tweak placement and size of modal dialogs */
@@ -57,7 +62,7 @@
 
 /* Customize shiny notifications */
 #shiny-notification-panel {
-  width: 400px;
+  width: 450px;
   margin-right: 24px;
   margin-bottom: 24px;
 }
@@ -70,29 +75,23 @@
   font-size: 32px;
   padding-right: 4px;
 }
+.shiny-notification {
+  background: #fcfcfd;
+  opacity: 1;
+  font-size: 1rem;
+}
 .shiny-notification-message {
   color: #19490a;
   background: #d9f0d1;
-  opacity: 1;
-  border: 0;
-  font-size: 1rem;
+  border-color: #19490a;
 }
 .shiny-notification-warning {
   color: #662f0a;
   background: #ffc8a3;
-  opacity: 1;
-  border: 0;
-  font-size: 1rem;
+  border-color: #662f0a;
 }
 .shiny-notification-error {
   color: #660017;
   background: #ff99b0;
-  opacity: 1;
-  border: 0;
-  font-size: 1rem;
-}
-
-/* Remove bottom margin from sidebar titles */
-.bslib-sidebar-layout .sidebar-title {
-  margin-bottom: 0;
+  border-color: #660017;
 }

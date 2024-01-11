@@ -52,25 +52,34 @@ tooltips <- list(
     "Include line(s) to indicate activity thresholds for individual ",
     "treatments (e.g., MIC, MBIC, MBEC). Defaults to ≥50% killing."
   ),
-  highlight = paste0(
-    "Draw a symbol on tiles with low effect when treatments are combined. ",
-    "Defaults to <50% killing."
-  ),
-  swap_x_y = "Turn on to swap the values plotted on the X and Y axis",
-  filter = paste0(
-    "Choose whether to include ABCI values close to 0 (Loose) or hide them ",
-    "(Strict)"
-  ),
-  axis_labels =
-    "Across the plot panels, should the X and Y axis labels vary or be the same?",
   activity_val = paste0(
     "Draw a line(s) when individual treatments reach the indicated ",
     "percentage (0.5 = 50% killing). Applies to X and Y axis."
   ),
-  highlight_val = paste0(
+  swap_x_y = "Turn on to swap the values plotted on the X and Y axis",
+  axis_labels =
+    "Across plot panels, should the X and Y axis labels vary or be the same?",
+  low_effect = paste0(
+    "Draw a symbol on tiles with low effect when treatments are combined. ",
+    "Defaults to <50% killing."
+  ),
+  low_effect_val = paste0(
     "Draw a symbol on combined treatment cells that kill less than the ",
     "indicated percentage (0.5 = 50% killing)."
-  )
+  ),
+  large_effect = paste0(
+    "Outline dots, or draw a symbol on tiles, to highlight combinations with ",
+    "high killing"
+  ),
+  large_effect_val = paste0(
+    "Threshold value used for highlighting combinations with a large effect ",
+    "(0.9 = 90% killing)"
+  ),
+  filter = paste0(
+    "Choose whether to include ABCI values close to 0 (Loose) or hide them ",
+    "(Strict)"
+  ),
+  linear = "Toggle to enable linear/continuous scaling for dot sizes"
 )
 
 
@@ -78,7 +87,7 @@ tooltips <- list(
 
 link_paragraph <- p(
   "You can learn more about how to interpret your data ",
-  actionLink("legend_here", "here", .noWS = "after"),
+  actionLink("help_from_legend", "here", .noWS = "after"),
   ". The text below can be used as a template for a figure legend:"
 )
 
@@ -216,20 +225,20 @@ plot_legends <- list(
 
 ui <- page_fluid(
   theme = app_theme,
-  HTML("<base target='_blank' rel='noopener noreferrer'>"),
   useShinyjs(),
+  tags$script(src = "js/client.js"),
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "css/custom.css"),
     tags$link(
       rel = "icon",
       type = "image/svg",
-      href = "hancock_lab_logo_32.svg",
+      href = "img/hancock_lab_logo_32.svg",
       sizes = "32x32"
     ),
     tags$link(
       rel = "icon",
       type = "image/svg",
-      href = "hancock_lab_logo_16.svg",
+      href = "img/hancock_lab_logo_16.svg",
       sizes = "16x16"
     )
   ),
@@ -242,14 +251,13 @@ ui <- page_fluid(
     collapsible = TRUE,
     bg = bs_get_variables(app_theme, varnames = "primary"),
     window_title = "ShinyABCi",
-    title = "ShinyABCi",
 
 
     # |- Home page ------------------------------------------------------
 
     nav_panel(
       value = "home",
-      title = "Home",
+      title = "ShinyABCi",
 
       div(
         class = "container my-5",
@@ -260,7 +268,7 @@ ui <- page_fluid(
 
           h1(
             class = "display-6 mb-4",
-            "Anti-Biofilm Combination Index calculation and visualization"
+            "Calculation & visualization of the Anti-Biofilm Combination Index"
           ),
 
           HTML(paste0(
@@ -283,9 +291,9 @@ ui <- page_fluid(
           HTML(paste0(
             "<p class='lead mb-4'>Click the Get Started button to upload ",
             "your data! If you’d like to learn more about how the ABCI is ",
-            "calculated or how to use ShinyABCi, check the respective ",
-            "tutorials below. For more information, including how to cite ",
-            "ShinyABCi, please refer to the About page.</p>"
+            "calculated or how to use ShinyABCi, check the help pages below. ",
+            "For more information, including how to cite ShinyABCi, please ",
+            "refer to the About page.</p>"
           )),
 
           div(
@@ -295,15 +303,26 @@ ui <- page_fluid(
               label = div(
                 icon("play"),
                 HTML("Get started")
-              )
+              ),
+              width = "175px"
             ),
             actionButton(
-              inputId = "learn_more",
-              class = "btn btn-outline-secondary btn-lg px-4",
+              inputId = "help_from_home",
+              class = "btn btn-info btn-lg px-4 me-md-2",
+              label = div(
+                icon("circle-question"),
+                HTML("Help")
+              ),
+              width = "175px"
+            ),
+            actionButton(
+              inputId = "about",
+              class = "btn btn-secondary btn-lg px-4 me-md-2",
               label = div(
                 icon("circle-info"),
-                HTML("Learn more")
-              )
+                HTML("About")
+              ),
+              width = "175px"
             )
           )
         )
@@ -334,15 +353,21 @@ ui <- page_fluid(
               "Each sheet/experiment will be analyzed independently, becoming ",
               "separate panels in the final plots, while replicates within an ",
               "experiment will be averaged. You can use the following link to ",
-              downloadLink("download_template", label = "download a template"),
+              actionLink("download_template", label = "download a template"),
               "of the required input format. If required, subtract any ",
               "'blank' wells before uploading."
             ),
 
             p(
               "You can learn more about the data we support in the ShinyABCi ",
-              actionLink("tutorial_link", "tutorial", .noWS = "after"),
-              ". You can also try our example data by clicking the button below."
+              actionLink("help_from_upload", "help pages", .noWS = "after"),
+              ". You can also ",
+              actionLink(
+                "load_example_data",
+                "try our example data",
+                .noWS = "after"
+              ),
+              "."
             ),
 
             fileInput(
@@ -350,14 +375,6 @@ ui <- page_fluid(
               label = NULL,
               buttonLabel = list(icon("upload"), "Upload plate data..."),
               accept = c("xls", ".xls", "xlsx", ".xlsx", "ods", ".ods")
-            ),
-
-            actionButton(
-              inputId = "load_example_data",
-              class = "btn btn-info btn-tooltip mb-auto",
-              label = "Load example data",
-              width = "50%",
-              title = "Click here to try our example data"
             ),
 
             disabled(
@@ -407,8 +424,8 @@ ui <- page_fluid(
               "concentrations in your experiments. Positive ABCI values ",
               "indicate the combination is more effective than either ",
               "individual drug. Please refer to the ",
-              actionLink("tutorial_link", "ABCI tutorial"),
-              " pages to learn more."
+              actionLink("help_from_results", "ABCI help pages"),
+              " to learn more."
             ),
 
             HTML(paste0(
@@ -419,11 +436,6 @@ ui <- page_fluid(
               "<b>Line</b> plot visualizes antimicrobial activity for any ",
               "subset of concentrations.</p>"
             )),
-
-            p(
-              "You can save the plot by right-clicking on it and selecting ",
-              "'Save Image As'."
-            ),
 
             disabled(
               actionButton(
@@ -495,13 +507,24 @@ ui <- page_fluid(
     ),
 
 
+  # |- Help ---------------------------------------------------------------
+
+    nav_panel(
+      value = "help",
+      title = "Help",
+
+      includeHTML("www/help/help.html")
+    ),
+
+
     # |- About ----------------------------------------------------------
 
     nav_panel(
       value = "about",
       title = "About",
+
       div(
-        class = "container col-xxl-8 px-4 py-5",
+        class = "container col-xxl-6 px-4 pt-5",
         div(
           class = "row flex-lg-row align-items-center g-5 py-5",
           div(
@@ -518,19 +541,21 @@ ui <- page_fluid(
               "Blimkie, all at the ",
               a(
                 href = "http://cmdr.ubc.ca/bobh/",
+                target = "_blank",
+                rel = "noopener noreferrer",
                 "REW Hancock Laboratory"
               ),
               "at the University of British Columbia."
             ),
             h1(
               class = "display-6 fw-bold text-body-emphasis lh-1 mb-3",
-              "Tutorial"
+              "Help pages"
             ),
             p(
               class = "lead",
-              "A tutorial explaining the calculation of ABCI values, usage of ",
-              "the app, and interpretation of results can be found ",
-              actionLink("about_tutorial", "here", .noWS = "after"), "."
+              "Detailed information, covering the usage of the app, and ",
+              "interpretation and calculation of ABCI values, can be found ",
+              actionLink("help_from_about", "here", .noWS = "after"), "."
             ),
 
             h1(
@@ -543,6 +568,8 @@ ui <- page_fluid(
               "let us know by submitting an issue at our ",
               a(
                 href = "https://github.com/hancockinformatics/ShinyABCi",
+                target = "_blank",
+                rel = "noopener noreferrer",
                 "Github page",
                 .noWS = "after"
               ), "."
@@ -564,18 +591,49 @@ ui <- page_fluid(
                 div(
                   class = "col",
                   tags$dl(
-                    tags$dt(a(href = "https://rstudio.github.io/bslib/index.html", "bslib")),
-                    tags$dd("Provides a modern UI toolkit for Shiny based on Bootstrap"),
-                    tags$dt(a(href = "https://shiny.posit.co/", "shiny")),
+                    tags$dt(a(
+                      href = "https://rstudio.github.io/bslib/index.html",
+                      target = "_blank",
+                      rel = "noopener noreferrer",
+                      "bslib"
+                    )),
+                    tags$dd("A modern Bootstrap UI toolkit for Shiny"),
+
+                    tags$dt(a(
+                      href = "https://ycphs.github.io/openxlsx/index.html",
+                      target = "_blank",
+                      rel = "noopener noreferrer",
+                      "openxlsx"
+                    )),
+                    tags$dd("Write data to XLSX files"),
+
+                    tags$dt(a(
+                      href = "https://shiny.posit.co/",
+                      target = "_blank",
+                      rel = "noopener noreferrer",
+                      "shiny"
+                    )),
                     tags$dd("Easily create and deploy web apps from R"),
                   )
                 ),
+
                 div(
                   class = "col",
                   tags$dl(
-                    tags$dt(a(href = "https://deanattali.com/shinyjs/", "shinyjs")),
+                    tags$dt(a(
+                      href = "https://deanattali.com/shinyjs/",
+                      target = "_blank",
+                      rel = "noopener noreferrer",
+                      "shinyjs"
+                    )),
                     tags$dd("Extend Shiny functionality with Javascript"),
-                    tags$dt(a(href = "https://www.tidyverse.org/", "tidyverse")),
+
+                    tags$dt(a(
+                      href = "https://www.tidyverse.org/",
+                      target = "_blank",
+                      rel = "noopener noreferrer",
+                      "tidyverse"
+                    )),
                     tags$dd("Packages for data manipulation and visualization"),
                   )
                 )
@@ -596,6 +654,8 @@ ui <- page_fluid(
         icon("github"),
         "Github",
         href = "https://github.com/hancockinformatics/ShinyABCi",
+        target = "_blank",
+        rel = "noopener noreferrer",
         title = "Visit our Github to browse the code or submit an issue."
       )
     ),
@@ -617,23 +677,68 @@ ui <- page_fluid(
 
 server <- function(input, output) {
 
-  # "Learn more" button
-  observeEvent(input$learn_more, {
+  observeEvent(input$help_from_legend, {
+    updateNavbarPage(inputId = "navbar", selected = "help")
+  })
+
+  # Home ------------------------------------------------------------------
+
+  observeEvent(input$get_started, {
+    updateNavbarPage(inputId = "navbar", selected = "upload")
+  })
+  observeEvent(input$help_from_home, {
+    updateNavbarPage(inputId = "navbar", selected = "help")
+  })
+  observeEvent(input$about, {
     updateNavbarPage(inputId = "navbar", selected = "about")
   })
 
 
   # Upload ----------------------------------------------------------------
 
-  observeEvent(input$get_started, {
-    updateNavbarPage(inputId = "navbar", selected = "upload")
+  observeEvent(input$help_from_upload, {
+    updateNavbarPage(inputId = "navbar", selected = "help")
   })
 
-  # Download the template
-  output$download_template <- downloadHandler(
+
+  # |- Download the template ----------------------------------------------
+
+  observeEvent(input$download_template, {
+    showModal(modalDialog(
+      title = "Download input template",
+      size = "m",
+      p(
+        "The template data can be downloaded as either a '.xlsx' or '.ods' ",
+        "file using the buttons below."
+      ),
+      downloadButton(
+        outputId = "handler_xlsx",
+        label = "XLSX",
+        width = "50px",
+        class = "btn btn-success px-4 me-md-2"
+      ),
+      downloadButton(
+        outputId = "handler_ods",
+        label = "ODS",
+        width = "50px",
+        class = "btn btn-success px-4 me-md-2"
+      ),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+
+  output$handler_xlsx <- downloadHandler(
     filename = "ShinyABCi_data_template.xlsx",
     content = function(file) {
       file.copy("example_data/ShinyABCi_data_template.xlsx", file)
+    }
+  )
+
+  output$handler_ods <- downloadHandler(
+    filename = "ShinyABCi_data_template.ods",
+    content = function(file) {
+      file.copy("example_data/ShinyABCi_data_template.ods", file)
     }
   )
 
@@ -644,7 +749,7 @@ server <- function(input, output) {
 
   observeEvent(input$load_example_data, {
     if (file.exists("example_data/example_data_lucas.xlsx")) {
-      input_1 <- abci_reader("example_data/example_data_lucas.xlsx")
+      input_1 <- plate_reader("example_data/example_data_lucas.xlsx")
 
       showNotification(
         id = "upload_success",
@@ -677,7 +782,7 @@ server <- function(input, output) {
 
   observeEvent(input$load_user_data, {
 
-    input_1 <- abci_master_input(input$load_user_data$datapath)
+    input_1 <- plate_input(input$load_user_data$datapath)
 
     if (input_1$status == "success") {
       showNotification(
@@ -696,7 +801,7 @@ server <- function(input, output) {
     } else if (input_1$status == "error") {
       showNotification(
         type = "error",
-        duration = 10,
+        duration = 20,
         ui = HTML(paste0(
           "<h4 class='alert-heading'><b>Error!</b></h4>",
           "<p class='mb-0'>",
@@ -718,11 +823,17 @@ server <- function(input, output) {
       list(
         "cols" = list(
           "name" = unique(experiment$cols),
-          "concentrations" = levels(experiment$cols_conc)
+          "concentrations" = levels(experiment$cols_conc) %>%
+            as.character() %>%
+            as.numeric() %>%
+            sort()
         ),
         "rows" = list(
           "name" = unique(experiment$rows),
-          "concentrations" = levels(experiment$rows_conc)
+          "concentrations" = levels(experiment$rows_conc) %>%
+            as.character() %>%
+            as.numeric() %>%
+            sort()
         )
       )
     })
@@ -935,6 +1046,10 @@ server <- function(input, output) {
 
   # Results ---------------------------------------------------------------
 
+  observeEvent(input$help_from_results, {
+    updateNavbarPage(inputId = "navbar", selected = "help")
+  })
+
   observeEvent(input$confirm_calc, {
     req(abci_results())
 
@@ -955,6 +1070,19 @@ server <- function(input, output) {
     )
     click("create_plot")
   })
+
+  observeEvent(input$create_plot, {
+    showNotification(
+      type = "default",
+      duration = 30,
+      ui = HTML(paste0(
+        "<h4 class='alert-heading'><b>Saving your results</b></h4>",
+        "<p class='mb-0'>",
+        "You can save the plot by right-clicking on it and selecting ",
+        "'Save Image As'.</p>"
+      ))
+    )
+  }, once = TRUE)
 
 
   # |- Buttons ------------------------------------------------------------
@@ -995,6 +1123,7 @@ server <- function(input, output) {
 
   observeEvent(input$confirm_reset, {
     updateNavbarPage(inputId = "navbar", selected = "upload")
+    shinyjs::reset("load_user_data")
     input_data_raw(NULL)
     input_data_tidy(NULL)
     abci_results(NULL)
@@ -1081,16 +1210,6 @@ server <- function(input, output) {
 
   plot_legend_ui <- reactive(plot_legends[[plot_type()]])
 
-  observeEvent(input$legend_here, {
-    showNotification(
-      type = "default",
-      ui = HTML(paste0(
-        "<h4 class='alert-heading'><b>Whoa!</b></h4>",
-        "<p class='mb-0'>Sorry, that link doesn't lead anywhere... yet...</p>"
-      ))
-    )
-  })
-
 
   # |-- Line include options ----------------------------------------------
 
@@ -1122,16 +1241,16 @@ server <- function(input, output) {
       "abci" = modalDialog(
         title = "ABCI colour palettes",
         easyClose = TRUE,
-        size = "l",
-        HTML("<img src='abci_palettes.png' class='center'>"),
-        footer = modalButton("OK")
+        size = "m",
+        HTML("<img src='img/abci_palettes_preview.svg' class='center'>"),
+        footer = modalButton("Close")
       ),
-      "viridis" = modalDialog(
+      "rcolorbrewer" = modalDialog(
         title = "Line colour palettes",
         easyClose = TRUE,
         size = "m",
-        HTML("<img src='rcolorbrewer_supported_palettes.svg' class='center'>"),
-        footer = modalButton("OK")
+        HTML("<img src='img/rcolorbrewer_supported_palettes.svg' class='center'>"),
+        footer = modalButton("Close")
       )
     ),
     tagAppendAttributes,
@@ -1151,7 +1270,7 @@ server <- function(input, output) {
     showModal(modal_colours$abci)
   })
   observeEvent(input$line_preview_colours, {
-    showModal(modal_colours$viridis)
+    showModal(modal_colours$rcolorbrewer)
   })
 
 
@@ -1258,6 +1377,16 @@ server <- function(input, output) {
           ),
 
           wrap_selector(
+            label = "Linear size scaling",
+            label_title = "Enable linear size scaling of dots",
+            input_switch(
+              id = "plot_dot_linear",
+              label = "Off",
+              value = FALSE
+            )
+          ),
+
+          wrap_selector(
             label = "Axis labels",
             label_title = tooltips$axis_labels,
             selectInput(
@@ -1280,9 +1409,9 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Highlight large effect",
-            label_title = "Replace me!",
+            label_title = tooltips$large_effect,
             input_switch(
-              id = "plot_dot_highlight_toggle",
+              id = "plot_dot_large_toggle",
               label = "Off",
               value = FALSE
             )
@@ -1290,9 +1419,9 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Large effect threshold",
-            label_title = "Replace me!",
+            label_title = tooltips$large_effect_val,
             numericInput(
-              inputId = "plot_dot_highlight_value",
+              inputId = "plot_dot_large_value",
               label = NULL,
               value = 0.9,
               min = 0
@@ -1328,11 +1457,19 @@ server <- function(input, output) {
     }
   })
 
-  observeEvent(input$plot_dot_highlight_toggle, {
-    if (input$plot_dot_highlight_toggle) {
-      update_switch("plot_dot_highlight_toggle", label = "On")
+  observeEvent(input$plot_dot_linear, {
+    if (input$plot_dot_linear) {
+      update_switch("plot_dot_linear", label = "On")
     } else {
-      update_switch("plot_dot_highlight_toggle", label = "Off")
+      update_switch("plot_dot_linear", label = "Off")
+    }
+  })
+
+  observeEvent(input$plot_dot_large_toggle, {
+    if (input$plot_dot_large_toggle) {
+      update_switch("plot_dot_large_toggle", label = "On")
+    } else {
+      update_switch("plot_dot_large_toggle", label = "Off")
     }
   })
 
@@ -1447,6 +1584,16 @@ server <- function(input, output) {
           ),
 
           wrap_selector(
+            label = "Linear size scaling",
+            label_title = "Enable linear size scaling of dots",
+            input_switch(
+              id = "plot_dot_split_linear",
+              label = "Off",
+              value = FALSE
+            )
+          ),
+
+          wrap_selector(
             label = "Axis labels",
             label_title = tooltips$axis_labels,
             selectInput(
@@ -1469,9 +1616,9 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Highlight large effect",
-            label_title = "Replace me!",
+            label_title = tooltips$large_effect,
             input_switch(
-              id = "plot_dot_split_highlight_toggle",
+              id = "plot_dot_split_large_toggle",
               label = "Off",
               value = FALSE
             )
@@ -1479,9 +1626,9 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Large effect threshold",
-            label_title = "Replace me!",
+            label_title = tooltips$large_effect_val,
             numericInput(
-              inputId = "plot_dot_split_highlight_value",
+              inputId = "plot_dot_split_large_value",
               label = NULL,
               value = 0.9,
               min = 0
@@ -1525,11 +1672,19 @@ server <- function(input, output) {
     }
   })
 
-  observeEvent(input$plot_dot_split_highlight_toggle, {
-    if (input$plot_dot_split_highlight_toggle) {
-      update_switch("plot_dot_split_highlight_toggle", label = "On")
+  observeEvent(input$plot_dot_split_linear, {
+    if (input$plot_dot_split_linear) {
+      update_switch("plot_dot_split_linear", label = "On")
     } else {
-      update_switch("plot_dot_split_highlight_toggle", label = "Off")
+      update_switch("plot_dot_split_linear", label = "Off")
+    }
+  })
+
+  observeEvent(input$plot_dot_split_large_toggle, {
+    if (input$plot_dot_split_large_toggle) {
+      update_switch("plot_dot_split_large_toggle", label = "On")
+    } else {
+      update_switch("plot_dot_split_large_toggle", label = "Off")
     }
   })
 
@@ -1610,9 +1765,9 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Highlight low effect",
-        label_title = tooltips$highlight,
+        label_title = tooltips$low_effect,
         input_switch(
-          id = "plot_tile_minflag_toggle",
+          id = "plot_tile_low_toggle",
           label = "On",
           value = TRUE
         )
@@ -1657,9 +1812,9 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Low effect threshold",
-            label_title = tooltips$highlight_val,
+            label_title = tooltips$low_effect_val,
             numericInput(
-              inputId = "plot_tile_minflag_value",
+              inputId = "plot_tile_low_value",
               label = NULL,
               value = 0.5,
               min = 0
@@ -1668,9 +1823,9 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Highlight large effect",
-            label_title = "Replace me!",
+            label_title = tooltips$large_effect,
             input_switch(
-              id = "plot_tile_highlight_toggle",
+              id = "plot_tile_large_toggle",
               label = "Off",
               value = FALSE
             )
@@ -1678,9 +1833,9 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Large effect threshold",
-            label_title = "Replace me!",
+            label_title = tooltips$large_effect_val,
             numericInput(
-              inputId = "plot_tile_highlight_value",
+              inputId = "plot_tile_large_value",
               label = NULL,
               value = 0.9,
               min = 0
@@ -1691,19 +1846,19 @@ server <- function(input, output) {
     )
   })
 
-  observeEvent(input$plot_tile_minflag_toggle, {
-    if (input$plot_tile_minflag_toggle) {
-      update_switch("plot_tile_minflag_toggle", label = "On")
+  observeEvent(input$plot_tile_low_toggle, {
+    if (input$plot_tile_low_toggle) {
+      update_switch("plot_tile_low_toggle", label = "On")
     } else {
-      update_switch("plot_tile_minflag_toggle", label = "Off")
+      update_switch("plot_tile_low_toggle", label = "Off")
     }
   })
 
-  observeEvent(input$plot_tile_highlight_toggle, {
-    if (input$plot_tile_highlight_toggle) {
-      update_switch("plot_tile_highlight_toggle", label = "On")
+  observeEvent(input$plot_tile_large_toggle, {
+    if (input$plot_tile_large_toggle) {
+      update_switch("plot_tile_large_toggle", label = "On")
     } else {
-      update_switch("plot_tile_highlight_toggle", label = "Off")
+      update_switch("plot_tile_large_toggle", label = "Off")
     }
   })
 
@@ -1809,9 +1964,9 @@ server <- function(input, output) {
 
       wrap_selector(
         label = "Highlight low effect",
-        label_title = tooltips$highlight,
+        label_title = tooltips$low_effect,
         input_switch(
-          id = "plot_tile_split_minflag_toggle",
+          id = "plot_tile_split_low_toggle",
           label = "On",
           value = TRUE
         )
@@ -1865,9 +2020,9 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Low effect threshold",
-            label_title = tooltips$highlight_val,
+            label_title = tooltips$low_effect_val,
             numericInput(
-              inputId = "plot_tile_split_minflag_value",
+              inputId = "plot_tile_split_low_value",
               label = NULL,
               value = 0.5,
               min = 0,
@@ -1877,9 +2032,9 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Highlight large effect",
-            label_title = "Replace me!",
+            label_title = tooltips$large_effect,
             input_switch(
-              id = "plot_tile_split_highlight_toggle",
+              id = "plot_tile_split_large_toggle",
               label = "Off",
               value = FALSE
             )
@@ -1887,9 +2042,9 @@ server <- function(input, output) {
 
           wrap_selector(
             label = "Large effect threshold",
-            label_title = "Replace me!",
+            label_title = tooltips$large_effect_val,
             numericInput(
-              inputId = "plot_tile_split_highlight_value",
+              inputId = "plot_tile_split_large_value",
               label = NULL,
               value = 0.9,
               min = 0
@@ -1933,19 +2088,19 @@ server <- function(input, output) {
     }
   })
 
-  observeEvent(input$plot_tile_split_minflag_toggle, {
-    if (input$plot_tile_split_minflag_toggle) {
-      update_switch("plot_tile_split_minflag_toggle", label = "On")
+  observeEvent(input$plot_tile_split_low_toggle, {
+    if (input$plot_tile_split_low_toggle) {
+      update_switch("plot_tile_split_low_toggle", label = "On")
     } else {
-      update_switch("plot_tile_split_minflag_toggle", label = "Off")
+      update_switch("plot_tile_split_low_toggle", label = "Off")
     }
   })
 
-  observeEvent(input$plot_tile_split_highlight_toggle, {
-    if (input$plot_tile_split_highlight_toggle) {
-      update_switch("plot_tile_split_highlight_toggle", label = "On")
+  observeEvent(input$plot_tile_split_large_toggle, {
+    if (input$plot_tile_split_large_toggle) {
+      update_switch("plot_tile_split_large_toggle", label = "On")
     } else {
-      update_switch("plot_tile_split_highlight_toggle", label = "Off")
+      update_switch("plot_tile_split_large_toggle", label = "Off")
     }
   })
 
@@ -2162,7 +2317,7 @@ server <- function(input, output) {
     output$abci_plot <- renderPlot(
 
       if (isolate(input$plot_tabs) == "dot") {
-        abci_plot_dot(
+        plot_dot(
           data = isolate(abci_plot_data()),
           x.drug = ifelse(
             isolate(input$plot_dot_swap),
@@ -2177,6 +2332,7 @@ server <- function(input, output) {
           col.fill = "abci_avg",
           col.size = "effect_avg",
           size.range = c(3, 15),
+          linear = isolate(input$plot_dot_linear),
           col.analysis = "assay",
           n.cols = abci_plot_dims()[[1]],
           n.rows = abci_plot_dims()[[2]],
@@ -2189,8 +2345,8 @@ server <- function(input, output) {
           x.mic.line = ("X" %in% isolate(input$plot_dot_mic_lines)),
           y.mic.line = ("Y" %in% isolate(input$plot_dot_mic_lines)),
           mic.threshold = isolate(input$plot_dot_mic_threshold),
-          highlight = isolate(input$plot_dot_highlight_toggle),
-          highlight.value = isolate(input$plot_dot_highlight_value),
+          large.effect = isolate(input$plot_dot_large_toggle),
+          large.effect.val = isolate(input$plot_dot_large_value),
           col.mic = "bio_normal",
           colour.palette = isolate(input$plot_dot_colour_palette)
         ) +
@@ -2200,7 +2356,7 @@ server <- function(input, output) {
 
       } else if (isolate(input$plot_tabs) == "dot_split") {
 
-        abci_plot_dot_split(
+        plot_dot_split(
           data = isolate(abci_plot_data()),
           x.drug = ifelse(
             isolate(input$plot_dot_split_swap),
@@ -2216,6 +2372,7 @@ server <- function(input, output) {
           col.size = "effect_avg",
           strict = isolate(input$plot_dot_split_strict),
           size.range = c(3, 15),
+          linear = isolate(input$plot_dot_split_linear),
           col.analysis = "assay",
           n.cols = abci_plot_dims()[[1]],
           n.rows = abci_plot_dims()[[2]],
@@ -2228,8 +2385,8 @@ server <- function(input, output) {
           x.mic.line = ("X" %in% isolate(input$plot_dot_split_mic_lines)),
           y.mic.line = ("Y" %in% isolate(input$plot_dot_split_mic_lines)),
           mic.threshold = isolate(input$plot_dot_split_mic_threshold),
-          highlight = isolate(input$plot_dot_split_highlight_toggle),
-          highlight.value = isolate(input$plot_dot_split_highlight_value),
+          large.effect = isolate(input$plot_dot_split_large_toggle),
+          large.effect.val = isolate(input$plot_dot_split_large_value),
           col.mic = "bio_normal",
           colour.palette = isolate(input$plot_dot_split_colour_palette)
         ) +
@@ -2238,7 +2395,7 @@ server <- function(input, output) {
           }}
 
       } else if (isolate(input$plot_tabs) == "tile") {
-        abci_plot_tile(
+        plot_tile(
           data = isolate(abci_plot_data()),
           x.drug = ifelse(
             isolate(input$plot_tile_swap),
@@ -2263,15 +2420,15 @@ server <- function(input, output) {
           y.mic.line = ("Y" %in% isolate(input$plot_tile_mic_lines)),
           mic.threshold = isolate(input$plot_tile_mic_threshold),
           col.mic = "bio_normal",
-          minflag = isolate(input$plot_tile_minflag_toggle),
-          minflag.value = isolate(input$plot_tile_minflag_value),
-          highlight = isolate(input$plot_tile_highlight_toggle),
-          highlight.value = isolate(input$plot_tile_highlight_value),
+          low.effect = isolate(input$plot_tile_low_toggle),
+          low.effect.val = isolate(input$plot_tile_low_value),
+          large.effect = isolate(input$plot_tile_large_toggle),
+          large.effect.val = isolate(input$plot_tile_large_value),
           colour.palette = isolate(input$plot_tile_colour_palette)
         )
 
       }  else if (isolate(input$plot_tabs) == "tile_split") {
-        abci_plot_tile_split(
+        plot_tile_split(
           data = isolate(abci_plot_data()),
           x.drug = ifelse(
             isolate(input$plot_tile_split_swap),
@@ -2297,10 +2454,10 @@ server <- function(input, output) {
           y.mic.line = ("Y" %in% isolate(input$plot_tile_split_mic_lines)),
           mic.threshold = isolate(input$plot_tile_split_mic_threshold),
           col.mic = "bio_normal",
-          minflag = isolate(input$plot_tile_split_minflag_toggle),
-          minflag.value = isolate(input$plot_tile_split_minflag_value),
-          highlight = isolate(input$plot_tile_split_highlight_toggle),
-          highlight.value = isolate(input$plot_tile_split_highlight_value),
+          low.effect = isolate(input$plot_tile_split_low_toggle),
+          low.effect.val = isolate(input$plot_tile_split_low_value),
+          large.effect = isolate(input$plot_tile_split_large_toggle),
+          large.effect.val = isolate(input$plot_tile_split_large_value),
           colour.palette = isolate(input$plot_tile_split_colour_palette)
         )
 
@@ -2312,12 +2469,12 @@ server <- function(input, output) {
             duration = 10,
             ui = HTML(paste0(
               "<h4 class='alert-heading'><b>Warning!</b></h4>",
-              "<p class='mb-0'>Values on the Y axis greater than 1.5 have ",
+              "<p class='mb-0'>Values on the Y axis greater than 150% have ",
               "been reduced.</p>"
             ))
           )
         }
-        abci_plot_line(
+        plot_line(
           data = isolate(abci_plot_data()),
           plot.type = isolate(input$plot_line_type),
           x.drug = ifelse(
@@ -2357,14 +2514,15 @@ server <- function(input, output) {
     req(abci_plot_data())
 
     output_dims <- get_dims(
-      abci_plot_dims()[[1]],
-      abci_plot_dims()[[2]],
-      plot_type()
+      type = plot_type(),
+      n_cols = abci_plot_dims()[[1]],
+      n_rows = abci_plot_dims()[[2]]
     )
 
     output$abci_plot_ui <- renderUI(
       tagList(
         shinycssloaders::withSpinner(
+          type = 8,
           plotOutput(
             outputId = "abci_plot",
             width = output_dims[1],
@@ -2380,6 +2538,13 @@ server <- function(input, output) {
         )
       )
     )
+  })
+
+
+  # About -----------------------------------------------------------------
+
+  observeEvent(input$help_from_about, {
+    updateNavbarPage(inputId = "navbar", selected = "help")
   })
 } # Shiny sever close
 

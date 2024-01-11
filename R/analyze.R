@@ -55,8 +55,8 @@ abci_analysis <- function(
 
   } else {
     # Otherwise, when "col.analysis" is not NULL, we'll split the input "data"
-    # into a list of data frames, and apply `abci.calculation()` to each, before
-    # binding the results back together.
+    # into a list of data frames, and apply `abci_analysis_single()` to each,
+    # before binding the results back together.
     stopifnot(
       "Column given by 'col.analysis' must be present in input 'data'" =
         col.analysis %in% colnames(data)
@@ -129,7 +129,7 @@ abci_analysis_single <- function(
     mutate(across(all_of(c(x.drug, y.drug)), forcats::fct_inseq))
 
   if (!normalize) {
-    if (max(data_clean[[col.data]]) >= 100) {
+    if (max(data_clean[[col.data]]) >= 50) {
       data_clean[[col.data]] <- data_clean[[col.data]] / 100
     }
   }

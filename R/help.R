@@ -1,8 +1,3 @@
-size_mapping_N1S2 <- readRDS("data/size_mapping_N1S2.Rds")
-preset_palettes <- readRDS("data/preset_palettes.Rds")
-preset_palettes_split <- readRDS("data/preset_palettes_split.Rds")
-
-
 #' disable_button
 #'
 #' @param id Input ID for the button being modified
@@ -48,7 +43,7 @@ enable_button <- function(id, x = NULL) {
 #' excel_writer
 #'
 #' @param x A data frame containing ABCI results in long format
-#' @param filename Desired filename for the output
+#' @param filename Desired name for the output file
 #'
 #' @return None
 #'
@@ -102,13 +97,13 @@ excel_writer <- function(x, filename) {
 
 #' get_dims
 #'
+#' @param type Type of plot (dot, dot_split, tile, tile_split, line)
 #' @param n_cols Number of columns for the output plot
 #' @param n_rows Number of rows for the output plot
-#' @param type Type of plot (dot, dot_split, tile, tile_split, line)
 #'
 #' @return Character vector of output width and height, in pixels
 #'
-get_dims <- function(n_cols, n_rows, type) {
+get_dims <- function(type, n_cols, n_rows) {
 
   dims <- if (n_cols == 1) {
     switch(
@@ -123,7 +118,7 @@ get_dims <- function(n_cols, n_rows, type) {
     switch(
       type,
       "dot" = c(1200, 150 + 300 * n_rows),
-      "dot_split" = c(1150, 150 + 700 * n_rows),
+      "dot_split" = c(1250, 150 + 700 * n_rows),
       "tile" = c(1100, 100 + 300 * n_rows),
       "tile_split" = c(1100, 100 + 700 * n_rows),
       "line" = c(1150, 100 + 300 * n_rows)
@@ -172,10 +167,8 @@ wrap_selector <- function(label, label_title, selector) {
       class = "col-sm-5 col-form-label",
       div(
         label,
-        icon(
-          "circle-question",
-          title = label_title
-        )
+        icon("circle-question"),
+        title = label_title
       )
     ),
     div(
