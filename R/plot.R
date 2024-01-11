@@ -394,7 +394,7 @@ plot_dot_split <- function(
     mic.threshold = 0.5,
     large.effect = FALSE,
     large.effect.val = 0.9,
-    colour.palette = "RYB",
+    colour.palette = "A_RYB",
     size_mapping = size_mapping_N1S2
 ) {
 
@@ -427,24 +427,6 @@ plot_dot_split <- function(
   } else {
     data <- mutate(data, large_chr = ifelse(effect_avg > 0.9, 1, 0))
   }
-
-  # Setup proper colour scaling
-  plot.palette <- preset_palettes_split$values[[colour.palette]]
-
-  scale.limits <- c(-2, 2)
-  upper <- max(scale.limits)
-  lower <- min(scale.limits)
-
-  colour.pointers <- list(
-    "up" = scales::rescale(
-      c(upper, 3 * upper / 4, upper / 2, upper / 4, 0),
-      to = c(0, 1)
-    ),
-    "down" = scales::rescale(
-      c(lower, 3 * lower / 4, lower / 2, lower / 4, 0),
-      to = c(0, 1)
-    )
-  )
 
   # MICs are calculated by `get_mic()` and converted to positions on the axes
   if (any(x.mic.line, y.mic.line)) {
@@ -535,10 +517,7 @@ plot_dot_split <- function(
     )
   })
 
-  scale.limits.split <- list(
-    "up" = c(0, scale.limits[scale.limits > 0]),
-    "down" = c(scale.limits[scale.limits < 0], 0)
-  )
+  scale.limits.split <- list("up" = c(0, 2), "down" = c(-2, 0))
 
   dot_plots <- purrr::imap(data_split_scaled, function(d, nm) {
 
@@ -554,7 +533,8 @@ plot_dot_split <- function(
           breaks = proper_labels,
           guide = guide_legend(
             keyheight = unit(10, "mm"),
-            override.aes = list(fill = "black")
+            override.aes = list(fill = "black"),
+            order = 1
           )
         )
     } else {
@@ -569,7 +549,8 @@ plot_dot_split <- function(
           labels = proper_labels,
           guide = guide_legend(
             keyheight = unit(10, "mm"),
-            override.aes = list(fill = "black")
+            override.aes = list(fill = "black"),
+            order = 1
           )
         )
     }
@@ -591,12 +572,13 @@ plot_dot_split <- function(
       geom_hline(yintercept = 1.5, linewidth = 0.5) +
 
       scale_fill_gradientn(
-        colours = plot.palette[[nm]],
-        values = colour.pointers[[nm]],
+        colours = preset_palettes_split[["values"]][[nm]][[colour.palette]],
+        values = preset_palettes_split[["values"]][[nm]][["POINT"]],
         na.value = "white",
         limits = scale.limits.split[[nm]],
         breaks = seq(-2, 2, 0.5),
-        oob = scales::squish
+        oob = scales::squish,
+        guide = guide_colourbar(order = 2)
       ) +
 
       scale_x_discrete(labels = ~sprinter(.x, x.decimal)) +
@@ -911,7 +893,7 @@ plot_tile <- function(
     y.mic.line = FALSE,
     col.mic,
     mic.threshold = 0.5,
-    colour.palette = "YP"
+    colour.palette = "A_RYB"
 ) {
 
   if (any(c("spec_tbl_df", "tbl_df", "tbl") %in% class(data))) {
@@ -1064,7 +1046,7 @@ plot_tile_split <- function(
     y.mic.line = FALSE,
     col.mic,
     mic.threshold = 0.5,
-    colour.palette = "RYB"
+    colour.palette = "A_RYB"
 ) {
 
   if (any(c("spec_tbl_df", "tbl_df", "tbl") %in% class(data))) {
@@ -1081,26 +1063,7 @@ plot_tile_split <- function(
     large_chr = ifelse(effect_avg > large.effect.val, "*", "")
   )
 
-
-  scale.limits <- c(-2, 2)
-  upper <- max(scale.limits)
-  lower <- min(scale.limits)
-
-  plot.palette <- preset_palettes_split$values[[colour.palette]]
-
-  colour.pointers <- list(
-    "up" = scales::rescale(
-      c(upper, 3 * upper / 4, upper / 2, upper / 4, 0),
-      to = c(0, 1)
-    ),
-    "down" = scales::rescale(
-      c(lower, 3 * lower / 4, lower / 2, lower / 4, 0),
-      to = c(0, 1)
-    )
-  )
-
-  # MICs are calculated by `get_mic()` as concentrations and converted to
-  # positions on their respective axes
+  # MICs are calculated by `find_mic()`
   if (any(x.mic.line, y.mic.line)) {
 
     if (is.null(col.analysis)) {
@@ -1217,10 +1180,7 @@ plot_tile_split <- function(
     )
   }
 
-  scale.limits.split <- list(
-    "up" = c(0, scale.limits[scale.limits > 0]),
-    "down" = c(scale.limits[scale.limits < 0], 0)
-  )
+  scale.limits.split <- list("up" = c(0, 2), "down" = c(-2, 0))
 
   tile_plots <- purrr::imap(data_split, function(d, nm) {
 
@@ -1244,8 +1204,8 @@ plot_tile_split <- function(
       {if (y.mic.line) geom_hline(data = mic.table, aes(yintercept = YLAB))} +
 
       scale_fill_gradientn(
-        colours = plot.palette[[nm]],
-        values = colour.pointers[[nm]],
+        colours = preset_palettes_split[["values"]][[nm]][[colour.palette]],
+        values = preset_palettes_split[["values"]][[nm]][["POINT"]],
         na.value = "white",
         limits = scale.limits.split[[nm]],
         breaks = seq(-2, 2, 0.5),
