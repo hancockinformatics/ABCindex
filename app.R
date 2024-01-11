@@ -225,7 +225,6 @@ plot_legends <- list(
 
 ui <- page_fluid(
   theme = app_theme,
-  # HTML("<base target='_blank' rel='noopener noreferrer'>"),
   useShinyjs(),
   tags$script(src = "js/client.js"),
   tags$head(

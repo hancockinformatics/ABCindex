@@ -167,10 +167,8 @@ wrap_selector <- function(label, label_title, selector) {
       class = "col-sm-5 col-form-label",
       div(
         label,
-        icon(
-          "circle-question",
-          title = label_title
-        )
+        icon("circle-question"),
+        title = label_title
       )
     ),
     div(
