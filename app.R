@@ -475,14 +475,10 @@ ui <- page_fluid(
 
             disabled(
               downloadButton(
-                outputId = "download_handler",
+                outputId = "results_handler_xlsx",
                 label = "Download results spreadsheet",
-                class = "btn btn-success align-items-center mb-2",
                 style = "width: 50%",
-                title = paste0(
-                  "Once your data has been analyzed, you can download the ",
-                  "results here"
-                )
+                class = "btn btn-success align-items-center"
               )
             ),
 
@@ -1053,8 +1049,8 @@ server <- function(input, output) {
     updateNavbarPage(inputId  = "navbar", selected = "results")
 
     enable_button(
-      "download_handler",
-      "Click here to download your results as a CSV file"
+      "results_handler_xlsx",
+      "Click here to download your results as an XLSX file"
     )
     enable("reset")
     enable_button(
@@ -1131,7 +1127,7 @@ server <- function(input, output) {
       "Load your plate data, or our example data, then click here to analyze"
     )
     disable_button(
-      "download_handler",
+      "results_handler_xlsx",
       "Once your data is analyzed, you can download the results here"
     )
     disable_button(
@@ -1151,9 +1147,9 @@ server <- function(input, output) {
   })
 
 
-  # |- Results download ---------------------------------------------------
+  # |- Download results ---------------------------------------------------
 
-  output$download_handler <- downloadHandler(
+  output$results_handler_xlsx <- downloadHandler(
     filename = function() {
       paste0(
         "shinyABCi_",
@@ -1165,10 +1161,10 @@ server <- function(input, output) {
         "_results.xlsx"
       )
     },
-    content = function(filename) {
-      excel_writer(
+    content = function(file) {
+      writer_xlsx(
         x = abci_results(),
-        filename = filename
+        filename = file
       )
     }
   )
