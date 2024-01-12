@@ -4,6 +4,17 @@
 ![shinyapps.io](https://github.com/hancockinformatics/ShinyABCi/actions/workflows/shiny-deploy.yaml/badge.svg)
 <!-- badges: end -->
 
-Shiny app to calculate Anti-Biofilm Combination Index (ABCI).
+## About
+ShinyABCi is a tool to quantify and visualize the *in vitro* effects of drug 
+combinations. The Anti-Biofilm Combination Index (ABCI) is a metric designed
+to assess drug combination therapy in checkerboard assays, without relying on
+activity thresholds (e.g. MIC, MBIC, or MBEC), which present significant 
+challenges when evaluating antibiofilm activity.
 
-Developed by Travis Blimkie and Lucas Pedraz at the Hancock Lab.
+## Availability
+It is currently available at: 
+https://travis-m-blimkie.shinyapps.io/ShinyABCi/
+
+## Contributors
+ShinyABCi was developed by Travis Blimkie and Lucas Pedraz at the Hancock Lab. A 
+big thanks to all the testers, including Evan Haney and Noushin Akhoundsadegh.
