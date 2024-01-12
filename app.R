@@ -591,13 +591,26 @@ ui <- page_fluid(
                     tags$dd("A modern Bootstrap UI toolkit for Shiny"),
 
                     tags$dt(a(
+                      href = "https://docs.ropensci.org/readODS/",
+                      target = "_blank",
+                      rel = "noopener noreferrer",
+                      "readODS"
+                    )),
+                    tags$dd("Read data from ODS files"),
+
+                    tags$dt(a(
                       href = "https://ycphs.github.io/openxlsx/index.html",
                       target = "_blank",
                       rel = "noopener noreferrer",
                       "openxlsx"
                     )),
-                    tags$dd("Write data to XLSX files"),
+                    tags$dd("Read and write XLSX files")
+                  )
+                ),
 
+                div(
+                  class = "col",
+                  tags$dl(
                     tags$dt(a(
                       href = "https://shiny.posit.co/",
                       target = "_blank",
@@ -605,12 +618,7 @@ ui <- page_fluid(
                       "shiny"
                     )),
                     tags$dd("Easily create and deploy web apps from R"),
-                  )
-                ),
 
-                div(
-                  class = "col",
-                  tags$dl(
                     tags$dt(a(
                       href = "https://deanattali.com/shinyjs/",
                       target = "_blank",
