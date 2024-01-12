@@ -32,8 +32,8 @@ line_colours <- list(
 )
 
 plot_scales <- c(
-  "Labels on every facet" = "free",
-  "Only label the outermost axis" = "fixed"
+  "Axis labels on every panel" = "free",
+  "Only label the outermost axes" = "fixed"
 )
 
 tooltips <- list(
@@ -275,23 +275,23 @@ ui <- page_fluid(
             "<p class='lead mb-4'>Welcome to ShinyABCi, a tool to quantify ",
             "and visualize the <i>in vitro</i> effects of drug combinations. ",
             "The Anti-Biofilm Combination Index (ABCI) is a metric designed ",
-            "to assess drug combination therapy in checkerboard assays ",
-            "without relying on activity thresholds (MIC/MBIC/MBEC), which ",
-            "present significant challenges when evaluating antibiofilm ",
-            "activity.</p>"
+            "to assess drug combination therapy in checkerboard assays, ",
+            "without relying on activity thresholds (e.g. MIC, MBIC, or ",
+            "MBEC), which present significant challenges when evaluating ",
+            "antibiofilm activity.</p>"
           )),
 
           HTML(paste0(
-            "<p class='lead mb-4'>Here, you can calculate ABCIs for your ",
-            "checkerboard data, as well as visualize it with different plots ",
+            "<p class='lead mb-4'>Here you can calculate ABCIs for your ",
+            "checkerboard data, and visualize the results different plots ",
             "designed to quickly identify promising interactions and ",
             "favourable drug ratios.</p>"
           )),
 
           HTML(paste0(
             "<p class='lead mb-4'>Click the Get Started button to upload ",
-            "your data! If you’d like to learn more about how the ABCI is ",
-            "calculated or how to use ShinyABCi, check the help pages below. ",
+            "your data. If you’d like to learn more about how ABCI is ",
+            "calculated, or how to use ShinyABCi, check the Help pages below. ",
             "For more information, including how to cite ShinyABCi, please ",
             "refer to the About page.</p>"
           )),
@@ -352,22 +352,18 @@ ui <- page_fluid(
               "of checkerboard experiments, each with one or more replicates. ",
               "Each sheet/experiment will be analyzed independently, becoming ",
               "separate panels in the final plots, while replicates within an ",
-              "experiment will be averaged. You can use the following link to ",
+              "experiment will be averaged. You can use the link to ",
               actionLink("download_template", label = "download a template"),
-              "of the required input format. If required, subtract any ",
-              "'blank' wells before uploading."
+              "of the input format. If required, subtract any 'blank' wells ",
+              "before uploading your data."
             ),
 
             p(
-              "You can learn more about the data we support in the ShinyABCi ",
-              actionLink("help_from_upload", "help pages", .noWS = "after"),
-              ". You can also ",
-              actionLink(
-                "load_example_data",
-                "try our example data",
-                .noWS = "after"
-              ),
-              "."
+              "Use the link to ",
+              actionLink("load_example_data", "try our example data"),
+              "or check out the ",
+              actionLink("help_from_upload", "Help pages"),
+              "to learn more about the data types we support."
             ),
 
             fileInput(
@@ -420,21 +416,20 @@ ui <- page_fluid(
             open = NA,
 
             p(
-              "ABCI values are calculated for every combination of ",
-              "concentrations in your experiments. Positive ABCI values ",
-              "indicate the combination is more effective than either ",
-              "individual drug. Please refer to the ",
+              "ABCI is calculated for every combination of concentrations in ",
+              "each of your experiments. Positive ABCI values indicate the ",
+              "combination is more effective than either individual drug. ",
+              "Please refer to the ",
               actionLink("help_from_results", "ABCI help pages"),
-              " to learn more."
+              " to learn more about ABCI."
             ),
 
             HTML(paste0(
-              "<p>Visualize the ABCI values from your results using ",
-              "<b>Dot</b> or <b>Tile</b> plots. The <b>Split</b> versions ",
-              "separate the positive and negative ABCI values into two ",
-              "separate plots, for visual simplicity. Alternatively, the ",
-              "<b>Line</b> plot visualizes antimicrobial activity for any ",
-              "subset of concentrations.</p>"
+              "<p>Visualize your ABCI results using <b>Dot</b> or <b>Tile</b> ",
+              "plots. The <b>Split</b> versions separate the positive and ",
+              "negative ABCI values into two plots, for visual simplicity. ",
+              "Alternatively, the <b>Line</b> plot displays antimicrobial ",
+              "activity for all or a subset of concentrations.</p>"
             )),
 
             disabled(
@@ -886,11 +881,12 @@ server <- function(input, output) {
       ),
       card_body(
         HTML(paste0(
-          "<p>Use the dropdown to choose an uploaded experiment to preview. ",
-          "The card to the right displays some information gathered from the ",
-          "experiment, while the table below shows the loaded data (<b>first ",
-          "replicate only</b>). Make sure everything looks OK before ",
-          "proceeding.</p>"
+          "<p>Use the dropdown to choose an experiment to preview. The card ",
+          "to the right displays some information gathered from the ",
+          "experiment, while the table below shows the uploaded data ",
+          "(<b>first replicate only</b>). Make sure everything looks OK ",
+          "before proceeding by clicking the button at the bottom of the ",
+          "sidebar.</p>"
         )),
         selectInput(
           inputId = "upload_input_names_selector",
@@ -953,7 +949,7 @@ server <- function(input, output) {
       card_header(
         class = "bg-dark",
         paste0(
-          "Input preview for the first replicate of '",
+          "Data from the first replicate of experiment '",
           input$upload_input_names_selector, "'"
         )
       ),
@@ -985,7 +981,7 @@ server <- function(input, output) {
       tagList(
         p(
           "By default, ShinyABCi will normalize all input data to ",
-          "percentages. If your data already meets this criteria, please ",
+          "percentages. If your data has already been normalized, please ",
           "select the appropriate option below before proceeding."
         ),
         radioButtons(
@@ -993,7 +989,7 @@ server <- function(input, output) {
           label = NULL,
           choices = list(
             "Normalize my data (becoming range 0-1)" = "run_norm",
-            "My data is already normalized (0-1 or 0-100)" = "no_norm"
+            "My data is already normalized (range 0-1 or 0-100)" = "no_norm"
           ),
           selected = "run_norm",
           width = "inherit"
