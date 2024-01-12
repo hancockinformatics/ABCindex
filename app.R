@@ -502,7 +502,7 @@ ui <- page_fluid(
     ),
 
 
-  # |- Help ---------------------------------------------------------------
+    # |- Help -------------------------------------------------------------
 
     nav_panel(
       value = "help",
@@ -707,33 +707,33 @@ server <- function(input, output) {
         "file using the buttons below."
       ),
       downloadButton(
-        outputId = "handler_xlsx",
+        outputId = "template_handler_xlsx",
         label = "XLSX",
         width = "50px",
-        class = "btn btn-success px-4 me-md-2"
+        class = "btn btn-success px-4 me-md-2 align-items-center"
       ),
       downloadButton(
-        outputId = "handler_ods",
+        outputId = "template_handler_ods",
         label = "ODS",
         width = "50px",
-        class = "btn btn-success px-4 me-md-2"
+        class = "btn btn-success px-4 me-md-2 align-items-center"
       ),
       easyClose = TRUE,
       footer = modalButton("Close")
     ))
   })
 
-  output$handler_xlsx <- downloadHandler(
-    filename = "ShinyABCi_data_template.xlsx",
+  output$template_handler_xlsx <- downloadHandler(
+    filename = "shinyABCi_data_template.xlsx",
     content = function(file) {
-      file.copy("example_data/ShinyABCi_data_template.xlsx", file)
+      file.copy("example_data/shinyABCi_data_template.xlsx", file)
     }
   )
 
-  output$handler_ods <- downloadHandler(
-    filename = "ShinyABCi_data_template.ods",
+  output$template_handler_ods <- downloadHandler(
+    filename = "shinyABCi_data_template.ods",
     content = function(file) {
-      file.copy("example_data/ShinyABCi_data_template.ods", file)
+      file.copy("example_data/shinyABCi_data_template.ods", file)
     }
   )
 
@@ -752,8 +752,8 @@ server <- function(input, output) {
         ui = HTML(paste0(
           "<h4 class='alert-heading'><b>Success!</b></h4>",
           "<p class='mb-0'>",
-          "Example data successfully loaded. Use the button at the bottom of ",
-          "the sidebar to proceed to the next step.</p>"
+          "The example data was successfully loaded. Use the button at the ",
+          "bottom of the sidebar to proceed to the next step.</p>"
         ))
       )
       input_data_raw(input_1)
