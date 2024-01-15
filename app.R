@@ -13,7 +13,7 @@ app_version <- gsub(
   replacement = ""
 )
 
-app_theme <- bs_theme(version = 5, preset = "cosmo")
+app_theme <- bs_theme(version = 5, bootswatch = "cosmo")
 
 set_theme()
 
@@ -224,7 +224,12 @@ plot_legends <- list(
 # Define UI ---------------------------------------------------------------
 
 ui <- page_fluid(
-  theme = app_theme,
+  theme = bs_add_variables(
+    app_theme
+    # primary = "red"
+    # "progress-bar-bg" = "orange"
+  ),
+
   useShinyjs(),
   tags$script(src = "js/client.js"),
   tags$head(
