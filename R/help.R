@@ -109,8 +109,8 @@ get_dims <- function(type, n_cols, n_rows) {
   dims <- if (n_cols == 1) {
     switch(
       type,
-      "dot" = c(750, 450),
-      "dot_split" = c(700, 900),
+      "dot" = c(800, 450),
+      "dot_split" = c(800, 900),
       "tile" = c(650, 400),
       "tile_split" = c(650, 800),
       "line" = c(700, 400)
