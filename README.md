@@ -18,3 +18,12 @@ https://travis-m-blimkie.shinyapps.io/ShinyABCi/
 ## Contributors
 ShinyABCi was developed by Travis Blimkie and Lucas Pedraz at the Hancock Lab. A 
 big thanks to all the testers, including Evan Haney and Noushin Akhoundsadegh.
+
+## Dependencies
+
+- [bslib](https://rstudio.github.io/bslib/index.html)
+- [readODS](https://docs.ropensci.org/readODS/)
+- [openxlsx](https://ycphs.github.io/openxlsx/index.html)
+- [shiny](https://www.rstudio.com/products/shiny/)
+- [shinyjs](https://deanattali.com/shinyjs/)
+- [tidyverse](https://www.tidyverse.org/)
