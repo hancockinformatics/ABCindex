@@ -821,7 +821,7 @@ server <- function(input, output) {
 
   # |- Gather input info --------------------------------------------------
 
-  # drug_info()[[experiment]][[cols]][[name]]
+  # drug_info()[[experiment]][[cols/rows]][[name/concentrations]]
   drug_info <- reactive(
     lapply(input_data_raw(), function(experiment) {
       list(
@@ -921,50 +921,27 @@ server <- function(input, output) {
       ),
 
       card_body(
-        value_box(
-          title = NULL,
-          value = paste0("Columns: ", experiment_drugs[["cols"]][["name"]]),
-          HTML(paste0(
-            "<p><b>Detected concentrations:</b> ",
-            paste(experiment_drugs[["cols"]][["concentrations"]], collapse = ", "),
-            "</p>"
-          )),
-          # theme = "primary",
-          class = "border-0"
-        ),
-
-        value_box(
-          title = NULL,
-          value = paste0("Rows: ", experiment_drugs[["rows"]][["name"]]),
-          HTML(paste0(
-            "<p><b>Detected concentrations:</b> ",
-            paste(experiment_drugs[["rows"]][["concentrations"]], collapse = ", "),
-            "</p>"
-          )),
-          # theme = "info",
-          class = "border-0"
-        )
-        # HTML(paste0(
-        #   "<p><b>Treatment in the columns:</b> ",
-        #   experiment_drugs[["cols"]][["name"]],
-        #   "</p>"
-        # )),
-        # HTML(paste0(
-        #   "<p><b>Detected concentrations:</b> ",
-        #   paste(experiment_drugs[["cols"]][["concentrations"]], collapse = ", "),
-        #   "</p>"
-        # )),
-        # hr(),
-        # HTML(paste0(
-        #   "<p><b>Treatment in the rows:</b> ",
-        #   experiment_drugs[["rows"]][["name"]],
-        #   "</p>"
-        # )),
-        # HTML(paste0(
-        #   "<p><b>Detected concentrations:</b> ",
-        #   paste(experiment_drugs[["rows"]][["concentrations"]], collapse = ", "),
-        #   "</p>"
-        # ))
+        HTML(paste0(
+          "<p><b>Treatment in the columns:</b> ",
+          experiment_drugs[["cols"]][["name"]],
+          "</p>"
+        )),
+        HTML(paste0(
+          "<p><b>Detected concentrations:</b> ",
+          paste(experiment_drugs[["cols"]][["concentrations"]], collapse = ", "),
+          "</p>"
+        )),
+        hr(),
+        HTML(paste0(
+          "<p><b>Treatment in the rows:</b> ",
+          experiment_drugs[["rows"]][["name"]],
+          "</p>"
+        )),
+        HTML(paste0(
+          "<p><b>Detected concentrations:</b> ",
+          paste(experiment_drugs[["rows"]][["concentrations"]], collapse = ", "),
+          "</p>"
+        ))
       )
     )
   })
