@@ -676,9 +676,6 @@ ui <- page_fluid(
 
 server <- function(input, output) {
 
-  observeEvent(input$help_from_legend, {
-    updateNavbarPage(inputId = "navbar", selected = "help")
-  })
 
   # Home ------------------------------------------------------------------
 
@@ -723,7 +720,10 @@ server <- function(input, output) {
         class = "btn btn-success px-4 me-md-2 align-items-center"
       ),
       easyClose = TRUE,
-      footer = modalButton("Close")
+      footer = tagAppendAttributes(
+        modalButton(label = "Cancel"),
+        class = "btn-outline-secondary"
+      ),
     ))
   })
 
@@ -1001,7 +1001,10 @@ server <- function(input, output) {
       ),
 
       footer = tagList(
-        modalButton(label = "Cancel"),
+        tagAppendAttributes(
+          modalButton(label = "Cancel"),
+          class = "btn-outline-secondary"
+        ),
         actionButton(
           inputId = "confirm_calc",
           label = "Calculate ABCI values",
@@ -1050,6 +1053,10 @@ server <- function(input, output) {
     updateNavbarPage(inputId = "navbar", selected = "help")
   })
 
+  observeEvent(input$help_from_legend, {
+    updateNavbarPage(inputId = "navbar", selected = "help")
+  })
+
   observeEvent(input$confirm_calc, {
     req(abci_results())
 
@@ -1073,10 +1080,9 @@ server <- function(input, output) {
 
   observeEvent(input$create_plot, {
     showNotification(
-      type = "default",
+      type = "warning",
       duration = 30,
       ui = HTML(paste0(
-        "<h4 class='alert-heading'><b>Saving your results</b></h4>",
         "<p class='mb-0'>",
         "You can save the plot by right-clicking on it and selecting ",
         "'Save Image As'.</p>"
@@ -1110,7 +1116,10 @@ server <- function(input, output) {
           "reset the app, meaning any current results and plots will be lost!"
         ),
         footer = tagList(
-          modalButton(label = "Cancel"),
+          tagAppendAttributes(
+            modalButton(label = "Cancel"),
+            class = "btn-outline-secondary"
+          ),
           actionButton(
             "confirm_reset",
             "Reset and start over",
@@ -2468,9 +2477,8 @@ server <- function(input, output) {
             type = "warning",
             duration = 10,
             ui = HTML(paste0(
-              "<h4 class='alert-heading'><b>Warning!</b></h4>",
               "<p class='mb-0'>Values on the Y axis greater than 150% have ",
-              "been reduced.</p>"
+              "been reduced to maintain legibility.</p>"
             ))
           )
         }
