@@ -133,7 +133,7 @@ get_dims <- function(type, n_cols, n_rows) {
 #'
 #' @return None; Sets the default ggplot2 theme
 #'
-set_theme <- function() {
+set_ggplot_theme <- function() {
   theme_set(
     theme_classic(base_size = 24) +
       theme(

@@ -15,7 +15,7 @@ app_version <- gsub(
 
 app_theme <- bs_theme(version = 5, bootswatch = "cosmo")
 
-set_theme()
+set_ggplot_theme()
 
 
 # |- Fixed plot inputs ----------------------------------------------------
