@@ -1062,6 +1062,9 @@ server <- function(input, output) {
     updateNavbarPage(inputId = "navbar", selected = "help")
   })
 
+
+  # |- Enable and update things -------------------------------------------
+
   observeEvent(input$confirm_calc, {
     req(abci_results())
 
@@ -1085,6 +1088,7 @@ server <- function(input, output) {
 
   observeEvent(input$create_plot, {
     showNotification(
+      id = "save_notification",
       type = "warning",
       duration = 30,
       ui = HTML(paste0(
@@ -1096,21 +1100,7 @@ server <- function(input, output) {
   }, once = TRUE)
 
 
-  # |- Buttons ------------------------------------------------------------
-
-  observeEvent({
-    input$plot_tabs
-    abci_plot_data()
-  }, {
-    enable("reset")
-    enable_button(
-      "create_plot",
-      paste0(
-        "Click to generate a new plot, or to update an existing plot after ",
-        "changing the inputs"
-      )
-    )
-  })
+  # |- Reset button -------------------------------------------------------
 
   observeEvent(input$reset, {
     showModal(
@@ -1136,13 +1126,14 @@ server <- function(input, output) {
   })
 
   observeEvent(input$confirm_reset, {
-    updateNavbarPage(inputId = "navbar", selected = "upload")
+    removeModal()
     shinyjs::reset("load_user_data")
     input_data_raw(NULL)
     input_data_tidy(NULL)
     abci_results(NULL)
     output$abci_plot <- NULL
     output$abci_plot_ui <- NULL
+    updateNavbarPage(inputId = "navbar", selected = "upload")
 
     disable_button(
       "perform_abci_calculations",
@@ -1157,11 +1148,12 @@ server <- function(input, output) {
       "Upload and analyze some data to enable visualization"
     )
 
-    removeModal()
+    removeNotification(id = "save_notification")
 
     showNotification(
+      type = "warning",
       ui = HTML(paste0(
-        "<h4 class='alert-heading'><b>Reset successful!</b></h4>",
+        "<h4 class='alert-heading'><b>Reset successful</b></h4>",
         "<p class='mb-0'>All inputs and results have been reset to their ",
         "original state. Upload another data set to get started.</p>"
       ))
