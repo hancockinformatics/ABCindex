@@ -759,7 +759,7 @@ server <- function(input, output) {
         id = "upload_success",
         type = "message",
         ui = HTML(paste0(
-          "<h4 class='alert-heading'><b>Success!</b></h4>",
+          "<h4 class='alert-heading'><b>Upload successful</b></h4>",
           "<p class='mb-0'>",
           "The example data was successfully loaded. Use the button at the ",
           "bottom of the sidebar to proceed to the next step.</p>"
@@ -770,9 +770,9 @@ server <- function(input, output) {
     } else {
       showNotification(
         type = "error",
-        duration = 10,
+        duration = 20,
         ui = HTML(paste0(
-          "<h4 class='alert-heading'><b>Error!</b></h4>",
+          "<h4 class='alert-heading'><b>Error</b></h4>",
           "<p class='mb-0'>Example data not found! Please upload a dataset ",
           "to analyze.</p>"
         ))
@@ -793,7 +793,7 @@ server <- function(input, output) {
         id = "upload_success",
         type = "message",
         ui = HTML(paste0(
-          "<h4 class='alert-heading'><b>Success!</b></h4>",
+          "<h4 class='alert-heading'><b>Upload successful</b></h4>",
           "<p class='mb-0'>",
           input_1$message,
           input_1$suggest,
@@ -807,7 +807,7 @@ server <- function(input, output) {
         type = "error",
         duration = 20,
         ui = HTML(paste0(
-          "<h4 class='alert-heading'><b>Error!</b></h4>",
+          "<h4 class='alert-heading'><b>Error</b></h4>",
           "<p class='mb-0'>",
           input_1$message,
           input_1$suggest,
@@ -919,30 +919,52 @@ server <- function(input, output) {
           input$upload_input_names_selector, "'"
         )
       ),
+
       card_body(
-        HTML(paste0(
-          "<p><b>Treatment in the columns:</b> ",
-          experiment_drugs[["cols"]][["name"]],
-          "</p>"
-        )),
-        HTML(paste0(
-          "<p><b>Detected concentrations:</b> ",
-          paste(experiment_drugs[["cols"]][["concentrations"]], collapse = ", "),
-          "</p>"
-        )),
+        value_box(
+          title = NULL,
+          value = paste0("Columns: ", experiment_drugs[["cols"]][["name"]]),
+          HTML(paste0(
+            "<p><b>Detected concentrations:</b> ",
+            paste(experiment_drugs[["cols"]][["concentrations"]], collapse = ", "),
+            "</p>"
+          )),
+          # theme = "primary",
+          class = "border-0"
+        ),
 
-        hr(),
-
-        HTML(paste0(
-          "<p><b>Treatment in the rows:</b> ",
-          experiment_drugs[["rows"]][["name"]],
-          "</p>"
-        )),
-        HTML(paste0(
-          "<p><b>Detected concentrations:</b> ",
-          paste(experiment_drugs[["rows"]][["concentrations"]], collapse = ", "),
-          "</p>"
-        ))
+        value_box(
+          title = NULL,
+          value = paste0("Rows: ", experiment_drugs[["rows"]][["name"]]),
+          HTML(paste0(
+            "<p><b>Detected concentrations:</b> ",
+            paste(experiment_drugs[["rows"]][["concentrations"]], collapse = ", "),
+            "</p>"
+          )),
+          # theme = "info",
+          class = "border-0"
+        )
+        # HTML(paste0(
+        #   "<p><b>Treatment in the columns:</b> ",
+        #   experiment_drugs[["cols"]][["name"]],
+        #   "</p>"
+        # )),
+        # HTML(paste0(
+        #   "<p><b>Detected concentrations:</b> ",
+        #   paste(experiment_drugs[["cols"]][["concentrations"]], collapse = ", "),
+        #   "</p>"
+        # )),
+        # hr(),
+        # HTML(paste0(
+        #   "<p><b>Treatment in the rows:</b> ",
+        #   experiment_drugs[["rows"]][["name"]],
+        #   "</p>"
+        # )),
+        # HTML(paste0(
+        #   "<p><b>Detected concentrations:</b> ",
+        #   paste(experiment_drugs[["rows"]][["concentrations"]], collapse = ", "),
+        #   "</p>"
+        # ))
       )
     )
   })
