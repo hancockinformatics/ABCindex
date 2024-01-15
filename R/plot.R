@@ -923,7 +923,7 @@ plot_tile <- function(
   data <- data %>% mutate(
     across(all_of(c(x.drug, y.drug)), forcats::fct_inseq),
     low_chr = ifelse(effect_avg < low.effect.val, "<", ""),
-    large_chr = ifelse(effect_avg > large.effect.val, "⚹", "")
+    large_chr = ifelse(effect_avg > large.effect.val, "✱", "")
   )
 
   # MICs are calculated by `get_mic()` as concentrations and converted to
@@ -1076,7 +1076,7 @@ plot_tile_split <- function(
   data <- data %>% mutate(
     across(all_of(c(x.drug, y.drug)), forcats::fct_inseq),
     low_chr = ifelse(effect_avg < low.effect.val, "<", ""),
-    large_chr = ifelse(effect_avg > large.effect.val, "*", "")
+    large_chr = ifelse(effect_avg > large.effect.val, "✱", "")
   )
 
   # MICs are calculated by `find_mic()`

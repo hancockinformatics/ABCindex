@@ -176,7 +176,7 @@ plate_reader <- function(file, sheet = "all") {
   if (sheet == "all") {
     all_sheets <- switch(
       file_ext,
-      "xls" = readxl::excel_sheets(file),
+      "xls" = openxlsx::getSheetNames(file),
       "ods" = readODS::ods_sheets(file)
     )
   } else {
@@ -218,8 +218,13 @@ plate_reader_single <- function(file, sheet, ext) {
   suppressMessages(
     d0 <- switch(
       ext,
-      "xls" = readxl::read_excel(file, sheet, col_names = FALSE),
-      "ods" = readODS::read_ods(file, sheet, col_names = FALSE)
+      "ods" = readODS::read_ods(file, sheet, col_names = FALSE),
+      "xls" = openxlsx::read.xlsx(
+        file,
+        sheet,
+        colNames = FALSE,
+        skipEmptyRows = FALSE
+      )
     )
   )
 

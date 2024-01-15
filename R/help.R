@@ -40,14 +40,16 @@ enable_button <- function(id, x = NULL) {
 }
 
 
-#' excel_writer
+#' writer_xlsx
 #'
 #' @param x A data frame containing ABCI results in long format
 #' @param filename Desired name for the output file
 #'
 #' @return None
 #'
-excel_writer <- function(x, filename) {
+writer_xlsx <- function(x, filename) {
+
+  if (is.null(x)) return(NULL)
 
   x_split <- split(x, f = x$assay)
   wb <- createWorkbook()
@@ -89,7 +91,6 @@ excel_writer <- function(x, filename) {
       startCol = 2,
       startRow = 2
     )
-
     saveWorkbook(wb, filename, overwrite = TRUE)
   })
 }
@@ -108,8 +109,8 @@ get_dims <- function(type, n_cols, n_rows) {
   dims <- if (n_cols == 1) {
     switch(
       type,
-      "dot" = c(750, 450),
-      "dot_split" = c(700, 900),
+      "dot" = c(800, 450),
+      "dot_split" = c(800, 900),
       "tile" = c(650, 400),
       "tile_split" = c(650, 800),
       "line" = c(700, 400)
@@ -132,7 +133,7 @@ get_dims <- function(type, n_cols, n_rows) {
 #'
 #' @return None; Sets the default ggplot2 theme
 #'
-set_theme <- function() {
+set_ggplot_theme <- function() {
   theme_set(
     theme_classic(base_size = 24) +
       theme(

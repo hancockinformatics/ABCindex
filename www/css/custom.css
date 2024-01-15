@@ -69,29 +69,29 @@
 .shiny-progress-notification .progress-text .progress-message {
   font-size: 110%;
   font-weight: normal;
-  color: #161718;
+  color: var(--bs-secondary-text-emphasis);
 }
 .shiny-notification-close {
   font-size: 32px;
   padding-right: 4px;
 }
 .shiny-notification {
-  background: #fcfcfd;
+  background: var(--bs-light-bg-subtle);
   opacity: 1;
   font-size: 1rem;
 }
 .shiny-notification-message {
-  color: #19490a;
-  background: #d9f0d1;
-  border-color: #19490a;
+  color: var(--bs-success-text-emphasis);
+  background: var(--bs-success-bg-subtle);
+  border-color: var(--bs-success-border-subtle);
 }
 .shiny-notification-warning {
-  color: #662f0a;
-  background: #ffc8a3;
-  border-color: #662f0a;
+  color: var(--bs-primary-text-emphasis);
+  background: var(--bs-primary-bg-subtle);
+  border-color: var(--bs-primary-border-subtle);
 }
 .shiny-notification-error {
-  color: #660017;
-  background: #ff99b0;
-  border-color: #660017;
+  color: var(--bs-danger-text-emphasis);
+  background: var(--bs-danger-bg-subtle);
+  border-color: var(--bs-danger-border-subtle);
 }

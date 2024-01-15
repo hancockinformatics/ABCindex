@@ -13,9 +13,9 @@ app_version <- gsub(
   replacement = ""
 )
 
-app_theme <- bs_theme(version = 5, preset = "cosmo")
+app_theme <- bs_theme(version = 5, bootswatch = "cosmo")
 
-set_theme()
+set_ggplot_theme()
 
 
 # |- Fixed plot inputs ----------------------------------------------------
@@ -32,8 +32,8 @@ line_colours <- list(
 )
 
 plot_scales <- c(
-  "Labels on every facet" = "free",
-  "Only label the outermost axis" = "fixed"
+  "Axis labels on every panel" = "free",
+  "Only label the outermost axes" = "fixed"
 )
 
 tooltips <- list(
@@ -224,7 +224,12 @@ plot_legends <- list(
 # Define UI ---------------------------------------------------------------
 
 ui <- page_fluid(
-  theme = app_theme,
+  theme = bs_add_variables(
+    app_theme
+    # primary = "red"
+    # "progress-bar-bg" = "orange"
+  ),
+
   useShinyjs(),
   tags$script(src = "js/client.js"),
   tags$head(
@@ -275,23 +280,23 @@ ui <- page_fluid(
             "<p class='lead mb-4'>Welcome to ShinyABCi, a tool to quantify ",
             "and visualize the <i>in vitro</i> effects of drug combinations. ",
             "The Anti-Biofilm Combination Index (ABCI) is a metric designed ",
-            "to assess drug combination therapy in checkerboard assays ",
-            "without relying on activity thresholds (MIC/MBIC/MBEC), which ",
-            "present significant challenges when evaluating antibiofilm ",
-            "activity.</p>"
+            "to assess drug combination therapy in checkerboard assays, ",
+            "without relying on activity thresholds (e.g. MIC, MBIC, or ",
+            "MBEC), which present significant challenges when evaluating ",
+            "antibiofilm activity.</p>"
           )),
 
           HTML(paste0(
-            "<p class='lead mb-4'>Here, you can calculate ABCIs for your ",
-            "checkerboard data, as well as visualize it with different plots ",
+            "<p class='lead mb-4'>Here you can calculate ABCIs for your ",
+            "checkerboard data, and visualize the results different plots ",
             "designed to quickly identify promising interactions and ",
             "favourable drug ratios.</p>"
           )),
 
           HTML(paste0(
             "<p class='lead mb-4'>Click the Get Started button to upload ",
-            "your data! If you’d like to learn more about how the ABCI is ",
-            "calculated or how to use ShinyABCi, check the help pages below. ",
+            "your data. If you’d like to learn more about how ABCI is ",
+            "calculated, or how to use ShinyABCi, check the Help pages below. ",
             "For more information, including how to cite ShinyABCi, please ",
             "refer to the About page.</p>"
           )),
@@ -352,22 +357,18 @@ ui <- page_fluid(
               "of checkerboard experiments, each with one or more replicates. ",
               "Each sheet/experiment will be analyzed independently, becoming ",
               "separate panels in the final plots, while replicates within an ",
-              "experiment will be averaged. You can use the following link to ",
+              "experiment will be averaged. You can use the link to ",
               actionLink("download_template", label = "download a template"),
-              "of the required input format. If required, subtract any ",
-              "'blank' wells before uploading."
+              "of the input format. If required, subtract any 'blank' wells ",
+              "before uploading your data."
             ),
 
             p(
-              "You can learn more about the data we support in the ShinyABCi ",
-              actionLink("help_from_upload", "help pages", .noWS = "after"),
-              ". You can also ",
-              actionLink(
-                "load_example_data",
-                "try our example data",
-                .noWS = "after"
-              ),
-              "."
+              "Use the link to ",
+              actionLink("load_example_data", "try our example data"),
+              "or check out the ",
+              actionLink("help_from_upload", "Help pages"),
+              "to learn more about the data types we support."
             ),
 
             fileInput(
@@ -420,21 +421,20 @@ ui <- page_fluid(
             open = NA,
 
             p(
-              "ABCI values are calculated for every combination of ",
-              "concentrations in your experiments. Positive ABCI values ",
-              "indicate the combination is more effective than either ",
-              "individual drug. Please refer to the ",
+              "ABCI is calculated for every combination of concentrations in ",
+              "each of your experiments. Positive ABCI values indicate the ",
+              "combination is more effective than either individual drug. ",
+              "Please refer to the ",
               actionLink("help_from_results", "ABCI help pages"),
-              " to learn more."
+              " to learn more about ABCI."
             ),
 
             HTML(paste0(
-              "<p>Visualize the ABCI values from your results using ",
-              "<b>Dot</b> or <b>Tile</b> plots. The <b>Split</b> versions ",
-              "separate the positive and negative ABCI values into two ",
-              "separate plots, for visual simplicity. Alternatively, the ",
-              "<b>Line</b> plot visualizes antimicrobial activity for any ",
-              "subset of concentrations.</p>"
+              "<p>Visualize your ABCI results using <b>Dot</b> or <b>Tile</b> ",
+              "plots. The <b>Split</b> versions separate the positive and ",
+              "negative ABCI values into two plots, for visual simplicity. ",
+              "Alternatively, the <b>Line</b> plot displays antimicrobial ",
+              "activity for all or a subset of concentrations.</p>"
             )),
 
             disabled(
@@ -480,14 +480,10 @@ ui <- page_fluid(
 
             disabled(
               downloadButton(
-                outputId = "download_handler",
+                outputId = "results_handler_xlsx",
                 label = "Download results spreadsheet",
-                class = "btn btn-success align-items-center mb-2",
                 style = "width: 50%",
-                title = paste0(
-                  "Once your data has been analyzed, you can download the ",
-                  "results here"
-                )
+                class = "btn btn-success align-items-center"
               )
             ),
 
@@ -507,7 +503,7 @@ ui <- page_fluid(
     ),
 
 
-  # |- Help ---------------------------------------------------------------
+    # |- Help -------------------------------------------------------------
 
     nav_panel(
       value = "help",
@@ -600,13 +596,26 @@ ui <- page_fluid(
                     tags$dd("A modern Bootstrap UI toolkit for Shiny"),
 
                     tags$dt(a(
+                      href = "https://docs.ropensci.org/readODS/",
+                      target = "_blank",
+                      rel = "noopener noreferrer",
+                      "readODS"
+                    )),
+                    tags$dd("Read data from ODS files"),
+
+                    tags$dt(a(
                       href = "https://ycphs.github.io/openxlsx/index.html",
                       target = "_blank",
                       rel = "noopener noreferrer",
                       "openxlsx"
                     )),
-                    tags$dd("Write data to XLSX files"),
+                    tags$dd("Read and write XLSX files")
+                  )
+                ),
 
+                div(
+                  class = "col",
+                  tags$dl(
                     tags$dt(a(
                       href = "https://shiny.posit.co/",
                       target = "_blank",
@@ -614,12 +623,7 @@ ui <- page_fluid(
                       "shiny"
                     )),
                     tags$dd("Easily create and deploy web apps from R"),
-                  )
-                ),
 
-                div(
-                  class = "col",
-                  tags$dl(
                     tags$dt(a(
                       href = "https://deanattali.com/shinyjs/",
                       target = "_blank",
@@ -677,9 +681,6 @@ ui <- page_fluid(
 
 server <- function(input, output) {
 
-  observeEvent(input$help_from_legend, {
-    updateNavbarPage(inputId = "navbar", selected = "help")
-  })
 
   # Home ------------------------------------------------------------------
 
@@ -712,33 +713,36 @@ server <- function(input, output) {
         "file using the buttons below."
       ),
       downloadButton(
-        outputId = "handler_xlsx",
+        outputId = "template_handler_xlsx",
         label = "XLSX",
         width = "50px",
-        class = "btn btn-success px-4 me-md-2"
+        class = "btn btn-success px-4 me-md-2 align-items-center"
       ),
       downloadButton(
-        outputId = "handler_ods",
+        outputId = "template_handler_ods",
         label = "ODS",
         width = "50px",
-        class = "btn btn-success px-4 me-md-2"
+        class = "btn btn-success px-4 me-md-2 align-items-center"
       ),
       easyClose = TRUE,
-      footer = modalButton("Close")
+      footer = tagAppendAttributes(
+        modalButton(label = "Cancel"),
+        class = "btn-outline-secondary"
+      ),
     ))
   })
 
-  output$handler_xlsx <- downloadHandler(
-    filename = "ShinyABCi_data_template.xlsx",
+  output$template_handler_xlsx <- downloadHandler(
+    filename = "shinyABCi_data_template.xlsx",
     content = function(file) {
-      file.copy("example_data/ShinyABCi_data_template.xlsx", file)
+      file.copy("example_data/shinyABCi_data_template.xlsx", file)
     }
   )
 
-  output$handler_ods <- downloadHandler(
-    filename = "ShinyABCi_data_template.ods",
+  output$template_handler_ods <- downloadHandler(
+    filename = "shinyABCi_data_template.ods",
     content = function(file) {
-      file.copy("example_data/ShinyABCi_data_template.ods", file)
+      file.copy("example_data/shinyABCi_data_template.ods", file)
     }
   )
 
@@ -755,10 +759,10 @@ server <- function(input, output) {
         id = "upload_success",
         type = "message",
         ui = HTML(paste0(
-          "<h4 class='alert-heading'><b>Success!</b></h4>",
+          "<h4 class='alert-heading'><b>Upload successful</b></h4>",
           "<p class='mb-0'>",
-          "Example data successfully loaded. Use the button at the bottom of ",
-          "the sidebar to proceed to the next step.</p>"
+          "The example data was successfully loaded. Use the button at the ",
+          "bottom of the sidebar to proceed to the next step.</p>"
         ))
       )
       input_data_raw(input_1)
@@ -766,9 +770,9 @@ server <- function(input, output) {
     } else {
       showNotification(
         type = "error",
-        duration = 10,
+        duration = 20,
         ui = HTML(paste0(
-          "<h4 class='alert-heading'><b>Error!</b></h4>",
+          "<h4 class='alert-heading'><b>Error</b></h4>",
           "<p class='mb-0'>Example data not found! Please upload a dataset ",
           "to analyze.</p>"
         ))
@@ -789,7 +793,7 @@ server <- function(input, output) {
         id = "upload_success",
         type = "message",
         ui = HTML(paste0(
-          "<h4 class='alert-heading'><b>Success!</b></h4>",
+          "<h4 class='alert-heading'><b>Upload successful</b></h4>",
           "<p class='mb-0'>",
           input_1$message,
           input_1$suggest,
@@ -803,7 +807,7 @@ server <- function(input, output) {
         type = "error",
         duration = 20,
         ui = HTML(paste0(
-          "<h4 class='alert-heading'><b>Error!</b></h4>",
+          "<h4 class='alert-heading'><b>Error</b></h4>",
           "<p class='mb-0'>",
           input_1$message,
           input_1$suggest,
@@ -817,7 +821,7 @@ server <- function(input, output) {
 
   # |- Gather input info --------------------------------------------------
 
-  # drug_info()[[experiment]][[cols]][[name]]
+  # drug_info()[[experiment]][[cols/rows]][[name/concentrations]]
   drug_info <- reactive(
     lapply(input_data_raw(), function(experiment) {
       list(
@@ -886,11 +890,12 @@ server <- function(input, output) {
       ),
       card_body(
         HTML(paste0(
-          "<p>Use the dropdown to choose an uploaded experiment to preview. ",
-          "The card to the right displays some information gathered from the ",
-          "experiment, while the table below shows the loaded data (<b>first ",
-          "replicate only</b>). Make sure everything looks OK before ",
-          "proceeding.</p>"
+          "<p>Use the dropdown to choose an experiment to preview. The card ",
+          "to the right displays some information gathered from the ",
+          "experiment, while the table below shows the uploaded data ",
+          "(<b>first replicate only</b>). Make sure everything looks OK ",
+          "before proceeding by clicking the button at the bottom of the ",
+          "sidebar.</p>"
         )),
         selectInput(
           inputId = "upload_input_names_selector",
@@ -914,6 +919,7 @@ server <- function(input, output) {
           input$upload_input_names_selector, "'"
         )
       ),
+
       card_body(
         HTML(paste0(
           "<p><b>Treatment in the columns:</b> ",
@@ -925,9 +931,7 @@ server <- function(input, output) {
           paste(experiment_drugs[["cols"]][["concentrations"]], collapse = ", "),
           "</p>"
         )),
-
         hr(),
-
         HTML(paste0(
           "<p><b>Treatment in the rows:</b> ",
           experiment_drugs[["rows"]][["name"]],
@@ -953,7 +957,7 @@ server <- function(input, output) {
       card_header(
         class = "bg-dark",
         paste0(
-          "Input preview for the first replicate of '",
+          "Data from the first replicate of experiment '",
           input$upload_input_names_selector, "'"
         )
       ),
@@ -985,7 +989,7 @@ server <- function(input, output) {
       tagList(
         p(
           "By default, ShinyABCi will normalize all input data to ",
-          "percentages. If your data already meets this criteria, please ",
+          "percentages. If your data has already been normalized, please ",
           "select the appropriate option below before proceeding."
         ),
         radioButtons(
@@ -993,7 +997,7 @@ server <- function(input, output) {
           label = NULL,
           choices = list(
             "Normalize my data (becoming range 0-1)" = "run_norm",
-            "My data is already normalized (0-1 or 0-100)" = "no_norm"
+            "My data is already normalized (range 0-1 or 0-100)" = "no_norm"
           ),
           selected = "run_norm",
           width = "inherit"
@@ -1001,7 +1005,10 @@ server <- function(input, output) {
       ),
 
       footer = tagList(
-        modalButton(label = "Cancel"),
+        tagAppendAttributes(
+          modalButton(label = "Cancel"),
+          class = "btn-outline-secondary"
+        ),
         actionButton(
           inputId = "confirm_calc",
           label = "Calculate ABCI values",
@@ -1050,6 +1057,13 @@ server <- function(input, output) {
     updateNavbarPage(inputId = "navbar", selected = "help")
   })
 
+  observeEvent(input$help_from_legend, {
+    updateNavbarPage(inputId = "navbar", selected = "help")
+  })
+
+
+  # |- Enable and update things -------------------------------------------
+
   observeEvent(input$confirm_calc, {
     req(abci_results())
 
@@ -1057,8 +1071,8 @@ server <- function(input, output) {
     updateNavbarPage(inputId  = "navbar", selected = "results")
 
     enable_button(
-      "download_handler",
-      "Click here to download your results as a CSV file"
+      "results_handler_xlsx",
+      "Click here to download your results as an XLSX file"
     )
     enable("reset")
     enable_button(
@@ -1073,10 +1087,10 @@ server <- function(input, output) {
 
   observeEvent(input$create_plot, {
     showNotification(
-      type = "default",
+      id = "save_notification",
+      type = "warning",
       duration = 30,
       ui = HTML(paste0(
-        "<h4 class='alert-heading'><b>Saving your results</b></h4>",
         "<p class='mb-0'>",
         "You can save the plot by right-clicking on it and selecting ",
         "'Save Image As'.</p>"
@@ -1085,21 +1099,7 @@ server <- function(input, output) {
   }, once = TRUE)
 
 
-  # |- Buttons ------------------------------------------------------------
-
-  observeEvent({
-    input$plot_tabs
-    abci_plot_data()
-  }, {
-    enable("reset")
-    enable_button(
-      "create_plot",
-      paste0(
-        "Click to generate a new plot, or to update an existing plot after ",
-        "changing the inputs"
-      )
-    )
-  })
+  # |- Reset button -------------------------------------------------------
 
   observeEvent(input$reset, {
     showModal(
@@ -1110,7 +1110,10 @@ server <- function(input, output) {
           "reset the app, meaning any current results and plots will be lost!"
         ),
         footer = tagList(
-          modalButton(label = "Cancel"),
+          tagAppendAttributes(
+            modalButton(label = "Cancel"),
+            class = "btn-outline-secondary"
+          ),
           actionButton(
             "confirm_reset",
             "Reset and start over",
@@ -1122,20 +1125,21 @@ server <- function(input, output) {
   })
 
   observeEvent(input$confirm_reset, {
-    updateNavbarPage(inputId = "navbar", selected = "upload")
+    removeModal()
     shinyjs::reset("load_user_data")
     input_data_raw(NULL)
     input_data_tidy(NULL)
     abci_results(NULL)
     output$abci_plot <- NULL
     output$abci_plot_ui <- NULL
+    updateNavbarPage(inputId = "navbar", selected = "upload")
 
     disable_button(
       "perform_abci_calculations",
       "Load your plate data, or our example data, then click here to analyze"
     )
     disable_button(
-      "download_handler",
+      "results_handler_xlsx",
       "Once your data is analyzed, you can download the results here"
     )
     disable_button(
@@ -1143,11 +1147,12 @@ server <- function(input, output) {
       "Upload and analyze some data to enable visualization"
     )
 
-    removeModal()
+    removeNotification(id = "save_notification")
 
     showNotification(
+      type = "warning",
       ui = HTML(paste0(
-        "<h4 class='alert-heading'><b>Reset successful!</b></h4>",
+        "<h4 class='alert-heading'><b>Reset successful</b></h4>",
         "<p class='mb-0'>All inputs and results have been reset to their ",
         "original state. Upload another data set to get started.</p>"
       ))
@@ -1155,9 +1160,9 @@ server <- function(input, output) {
   })
 
 
-  # |- Results download ---------------------------------------------------
+  # |- Download results ---------------------------------------------------
 
-  output$download_handler <- downloadHandler(
+  output$results_handler_xlsx <- downloadHandler(
     filename = function() {
       paste0(
         "shinyABCi_",
@@ -1169,10 +1174,10 @@ server <- function(input, output) {
         "_results.xlsx"
       )
     },
-    content = function(filename) {
-      excel_writer(
+    content = function(file) {
+      writer_xlsx(
         x = abci_results(),
-        filename = filename
+        filename = file
       )
     }
   )
@@ -2468,9 +2473,8 @@ server <- function(input, output) {
             type = "warning",
             duration = 10,
             ui = HTML(paste0(
-              "<h4 class='alert-heading'><b>Warning!</b></h4>",
               "<p class='mb-0'>Values on the Y axis greater than 150% have ",
-              "been reduced.</p>"
+              "been reduced to maintain legibility.</p>"
             ))
           )
         }
