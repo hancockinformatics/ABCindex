@@ -573,7 +573,7 @@ ui <- page_fluid(
 
             h1(
               class = "display-6 fw-bold text-body-emphasis lh-1 mb-3",
-              "References & resources"
+              "Dependencies"
             ),
             p(
               class = "lead",
