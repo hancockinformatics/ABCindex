@@ -2449,8 +2449,9 @@ server <- function(input, output) {
       modalDialog(
         title = "Analyze a new dataset",
         paste0(
-          "Are you sure you want to analyze a new dataset? Doing so will ",
-          "reset the app, meaning any current results and plots will be lost!"
+          "Are you sure you want to refresh this page and analyze a new ",
+          "dataset? Doing so will reset the app, meaning any current results ",
+          "and plots will be lost!"
         ),
         footer = tagList(
           tagAppendAttributes(
@@ -2459,7 +2460,7 @@ server <- function(input, output) {
           ),
           actionButton(
             "confirm_reset",
-            "Reset and start over",
+            "Refresh and start over",
             class = "btn btn-danger"
           )
         )
@@ -2468,38 +2469,7 @@ server <- function(input, output) {
   })
 
   observeEvent(input$confirm_reset, {
-    removeNotification(id = "save_notification")
-    removeModal()
-
-    shinyjs::reset("load_user_data")
-    input_data(NULL)
-    abci_results(NULL)
-    output$abci_plot <- NULL
-    output$abci_plot_ui <- NULL
-
-    disable_button(
-      "perform_abci_calculations",
-      "Load your plate data, or our example data, then click here to analyze"
-    )
-    disable_button(
-      "results_handler_xlsx",
-      "Once your data is analyzed, you can download the results here"
-    )
-    disable_button(
-      "create_plot",
-      "Upload and analyze some data to enable visualization"
-    )
-
-    updateNavbarPage(inputId = "navbar", selected = "upload")
-
-    showNotification(
-      type = "warning",
-      ui = HTML(paste0(
-        "<h4 class='alert-heading'><b>Reset successful</b></h4>",
-        "<p class='mb-0'>All inputs and results have been reset to their ",
-        "original state. Upload another data set to get started.</p>"
-      ))
-    )
+    runjs("window.onbeforeunload = null; location.reload();")
   })
 } # Shiny sever close
 
