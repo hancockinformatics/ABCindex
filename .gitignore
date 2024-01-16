@@ -47,6 +47,3 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
-
-# Dev-only data
-data/*csv
