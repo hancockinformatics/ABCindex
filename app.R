@@ -747,75 +747,48 @@ server <- function(input, output) {
   )
 
 
-  # |- Example data -------------------------------------------------------
+  # |- Loading data -------------------------------------------------------
 
   input_data_raw <- reactiveVal()
 
+  # Example data
   observeEvent(input$load_example_data, {
-    if (file.exists("example_data/example_data_lucas.xlsx")) {
-      input_1 <- plate_reader("example_data/example_data_lucas.xlsx")
 
-      showNotification(
-        id = "upload_success",
-        type = "message",
-        ui = HTML(paste0(
-          "<h4 class='alert-heading'><b>Upload successful</b></h4>",
-          "<p class='mb-0'>",
-          "The example data was successfully loaded. Use the button at the ",
-          "bottom of the sidebar to proceed to the next step.</p>"
-        ))
-      )
-      input_data_raw(input_1)
+    initial_input <- plate_input("example_data/example_data_lucas.xlsx")
+    input_data_raw(initial_input$data)
 
-    } else {
-      showNotification(
-        type = "error",
-        duration = 20,
-        ui = HTML(paste0(
-          "<h4 class='alert-heading'><b>Error</b></h4>",
-          "<p class='mb-0'>Example data not found! Please upload a dataset ",
-          "to analyze.</p>"
-        ))
-      )
-      input_data_raw(NULL)
-    }
+    showNotification(
+      id = "upload_notification",
+      type = initial_input$type,
+      duration = ifelse(initial_input$type == "error", 20, 10),
+      ui = HTML(paste0(
+        "<h4 class='alert-heading'><b>", initial_input$status, "</b></h4>",
+        "<p class='mb-0'>",
+        initial_input$message,
+        initial_input$suggest,
+        "</p>"
+      ))
+    )
   })
 
-
-  # |- User data ----------------------------------------------------------
-
+  # User data
   observeEvent(input$load_user_data, {
 
-    input_1 <- plate_input(input$load_user_data$datapath)
+    initial_input <- plate_input(input$load_user_data$datapath)
+    input_data_raw(initial_input$data)
 
-    if (input_1$status == "success") {
-      showNotification(
-        id = "upload_success",
-        type = "message",
-        ui = HTML(paste0(
-          "<h4 class='alert-heading'><b>Upload successful</b></h4>",
-          "<p class='mb-0'>",
-          input_1$message,
-          input_1$suggest,
-          "</p>"
-        ))
-      )
-      input_data_raw(input_1$data)
-
-    } else if (input_1$status == "error") {
-      showNotification(
-        type = "error",
-        duration = 20,
-        ui = HTML(paste0(
-          "<h4 class='alert-heading'><b>Error</b></h4>",
-          "<p class='mb-0'>",
-          input_1$message,
-          input_1$suggest,
-          "</p>"
-        ))
-      )
-      input_data_raw(NULL)
-    }
+    showNotification(
+      id = "upload_notification",
+      type = initial_input$type,
+      duration = ifelse(initial_input$type == "error", 20, 10),
+      ui = HTML(paste0(
+        "<h4 class='alert-heading'><b>", initial_input$status, "</b></h4>",
+        "<p class='mb-0'>",
+        initial_input$message,
+        initial_input$suggest,
+        "</p>"
+      ))
+    )
   })
 
 
@@ -980,7 +953,7 @@ server <- function(input, output) {
 
   observeEvent(input$perform_abci_calculations, {
     req(input_data_raw())
-    removeNotification(id = "upload_success")
+    removeNotification(id = "upload_notification")
 
     showModal(modalDialog(
       title = "Perform ABCI calculations: Data normalization",
