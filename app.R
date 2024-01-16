@@ -682,7 +682,7 @@ ui <- page_fluid(
 server <- function(input, output) {
 
 
-  # Home ------------------------------------------------------------------
+  # Home & About ----------------------------------------------------------
 
   observeEvent(input$get_started, {
     updateNavbarPage(inputId = "navbar", selected = "upload")
@@ -692,6 +692,10 @@ server <- function(input, output) {
   })
   observeEvent(input$about, {
     updateNavbarPage(inputId = "navbar", selected = "about")
+  })
+
+  observeEvent(input$help_from_about, {
+    updateNavbarPage(inputId = "navbar", selected = "help")
   })
 
 
@@ -749,13 +753,13 @@ server <- function(input, output) {
 
   # |- Loading data -------------------------------------------------------
 
-  input_data_raw <- reactiveVal()
+  input_data <- reactiveVal()
 
   # Example data
   observeEvent(input$load_example_data, {
 
     initial_input <- plate_input("example_data/example_data_lucas.xlsx")
-    input_data_raw(initial_input$data)
+    input_data(initial_input$data)
 
     showNotification(
       id = "upload_notification",
@@ -775,7 +779,7 @@ server <- function(input, output) {
   observeEvent(input$load_user_data, {
 
     initial_input <- plate_input(input$load_user_data$datapath)
-    input_data_raw(initial_input$data)
+    input_data(initial_input$data)
 
     showNotification(
       id = "upload_notification",
@@ -796,7 +800,7 @@ server <- function(input, output) {
 
   # drug_info()[[experiment]][[cols/rows]][[name/concentrations]]
   drug_info <- reactive(
-    lapply(input_data_raw(), function(experiment) {
+    lapply(input_data(), function(experiment) {
       list(
         "cols" = list(
           "name" = unique(experiment$cols),
@@ -820,10 +824,10 @@ server <- function(input, output) {
   # |- Create input preview -----------------------------------------------
 
   input_data_preview <- reactive({
-    req(input_data_raw())
+    req(input_data())
 
     # We only show the first replicate in the preview
-    lapply(input_data_raw(), function(experiment) {
+    lapply(input_data(), function(experiment) {
       experiment %>%
         mutate(across(where(is.numeric), ~signif(.x, digits = 4))) %>%
         filter(grepl(x = replicate, pattern = "_p1$")) %>%
@@ -941,7 +945,7 @@ server <- function(input, output) {
 
   # Calculations ----------------------------------------------------------
 
-  observeEvent(input_data_raw(), {
+  observeEvent(input_data(), {
     enable_button(
       "perform_abci_calculations",
       "Click here to analyze the uploaded data"
@@ -952,29 +956,27 @@ server <- function(input, output) {
   # |- Calculations modal -------------------------------------------------
 
   observeEvent(input$perform_abci_calculations, {
-    req(input_data_raw())
+    req(input_data())
     removeNotification(id = "upload_notification")
 
     showModal(modalDialog(
       title = "Perform ABCI calculations: Data normalization",
       size = "l",
 
-      tagList(
-        p(
-          "By default, ShinyABCi will normalize all input data to ",
-          "percentages. If your data has already been normalized, please ",
-          "select the appropriate option below before proceeding."
+      p(
+        "By default, ShinyABCi will normalize all input data to ",
+        "percentages. If your data has already been normalized, please ",
+        "select the appropriate option below before proceeding."
+      ),
+      radioButtons(
+        inputId = "normalize_radio",
+        label = NULL,
+        choices = list(
+          "Normalize my data (becoming range 0-1)" = "run_norm",
+          "My data is already normalized (range 0-1 or 0-100)" = "no_norm"
         ),
-        radioButtons(
-          inputId = "normalize_radio",
-          label = NULL,
-          choices = list(
-            "Normalize my data (becoming range 0-1)" = "run_norm",
-            "My data is already normalized (range 0-1 or 0-100)" = "no_norm"
-          ),
-          selected = "run_norm",
-          width = "inherit"
-        )
+        selected = "run_norm",
+        width = "inherit"
       ),
 
       footer = tagList(
@@ -992,27 +994,19 @@ server <- function(input, output) {
   })
 
 
-  # |- Tidy input ---------------------------------------------------------
-
-  input_data_tidy <- reactiveVal()
-
-  observeEvent(input$confirm_calc, {
-    input_data_raw() %>%
-      bind_rows(.id = "assay") %>%
-      mutate(across(c(cols_conc, rows_conc), forcats::fct_inseq)) %>%
-      input_data_tidy()
-  })
-
-
-  # |- Calculate results --------------------------------------------------
+  # |- Tidy input and calculate results -----------------------------------
 
   abci_results <- reactiveVal()
 
   observeEvent(input$confirm_calc, {
-    req(input_data_tidy())
+    req(input_data())
+
+    input_data_tidy <- input_data() %>%
+      bind_rows(.id = "assay") %>%
+      mutate(across(c(cols_conc, rows_conc), forcats::fct_inseq))
 
     abci_analysis(
-      data = input_data_tidy(),
+      data = input_data_tidy,
       x.drug = "cols_conc",
       y.drug = "rows_conc",
       col.data = "bio",
@@ -1021,28 +1015,9 @@ server <- function(input, output) {
       normalize = ifelse(input$normalize_radio == "run_norm", TRUE, FALSE)
     ) %>%
       abci_results()
-  })
-
-
-  # Results ---------------------------------------------------------------
-
-  observeEvent(input$help_from_results, {
-    updateNavbarPage(inputId = "navbar", selected = "help")
-  })
-
-  observeEvent(input$help_from_legend, {
-    updateNavbarPage(inputId = "navbar", selected = "help")
-  })
-
-
-  # |- Enable and update things -------------------------------------------
-
-  observeEvent(input$confirm_calc, {
-    req(abci_results())
 
     removeModal()
     updateNavbarPage(inputId  = "navbar", selected = "results")
-
     enable_button(
       "results_handler_xlsx",
       "Click here to download your results as an XLSX file"
@@ -1058,6 +1033,20 @@ server <- function(input, output) {
     click("create_plot")
   })
 
+
+  # Results ---------------------------------------------------------------
+
+  observeEvent(input$help_from_results, {
+    updateNavbarPage(inputId = "navbar", selected = "help")
+  })
+
+  observeEvent(input$help_from_legend, {
+    updateNavbarPage(inputId = "navbar", selected = "help")
+  })
+
+
+  # |- Notification with save info ----------------------------------------
+
   observeEvent(input$create_plot, {
     showNotification(
       id = "save_notification",
@@ -1070,67 +1059,6 @@ server <- function(input, output) {
       ))
     )
   }, once = TRUE)
-
-
-  # |- Reset button -------------------------------------------------------
-
-  observeEvent(input$reset, {
-    showModal(
-      modalDialog(
-        title = "Analyze a new dataset",
-        paste0(
-          "Are you sure you want to analyze a new dataset? Doing so will ",
-          "reset the app, meaning any current results and plots will be lost!"
-        ),
-        footer = tagList(
-          tagAppendAttributes(
-            modalButton(label = "Cancel"),
-            class = "btn-outline-secondary"
-          ),
-          actionButton(
-            "confirm_reset",
-            "Reset and start over",
-            class = "btn btn-danger"
-          )
-        )
-      )
-    )
-  })
-
-  observeEvent(input$confirm_reset, {
-    removeModal()
-    shinyjs::reset("load_user_data")
-    input_data_raw(NULL)
-    input_data_tidy(NULL)
-    abci_results(NULL)
-    output$abci_plot <- NULL
-    output$abci_plot_ui <- NULL
-    updateNavbarPage(inputId = "navbar", selected = "upload")
-
-    disable_button(
-      "perform_abci_calculations",
-      "Load your plate data, or our example data, then click here to analyze"
-    )
-    disable_button(
-      "results_handler_xlsx",
-      "Once your data is analyzed, you can download the results here"
-    )
-    disable_button(
-      "create_plot",
-      "Upload and analyze some data to enable visualization"
-    )
-
-    removeNotification(id = "save_notification")
-
-    showNotification(
-      type = "warning",
-      ui = HTML(paste0(
-        "<h4 class='alert-heading'><b>Reset successful</b></h4>",
-        "<p class='mb-0'>All inputs and results have been reset to their ",
-        "original state. Upload another data set to get started.</p>"
-      ))
-    )
-  })
 
 
   # |- Download results ---------------------------------------------------
@@ -2518,10 +2446,64 @@ server <- function(input, output) {
   })
 
 
-  # About -----------------------------------------------------------------
+  # |- Reset button -------------------------------------------------------
 
-  observeEvent(input$help_from_about, {
-    updateNavbarPage(inputId = "navbar", selected = "help")
+  observeEvent(input$reset, {
+    showModal(
+      modalDialog(
+        title = "Analyze a new dataset",
+        paste0(
+          "Are you sure you want to analyze a new dataset? Doing so will ",
+          "reset the app, meaning any current results and plots will be lost!"
+        ),
+        footer = tagList(
+          tagAppendAttributes(
+            modalButton(label = "Cancel"),
+            class = "btn-outline-secondary"
+          ),
+          actionButton(
+            "confirm_reset",
+            "Reset and start over",
+            class = "btn btn-danger"
+          )
+        )
+      )
+    )
+  })
+
+  observeEvent(input$confirm_reset, {
+    removeNotification(id = "save_notification")
+    removeModal()
+
+    shinyjs::reset("load_user_data")
+    input_data(NULL)
+    abci_results(NULL)
+    output$abci_plot <- NULL
+    output$abci_plot_ui <- NULL
+
+    disable_button(
+      "perform_abci_calculations",
+      "Load your plate data, or our example data, then click here to analyze"
+    )
+    disable_button(
+      "results_handler_xlsx",
+      "Once your data is analyzed, you can download the results here"
+    )
+    disable_button(
+      "create_plot",
+      "Upload and analyze some data to enable visualization"
+    )
+
+    updateNavbarPage(inputId = "navbar", selected = "upload")
+
+    showNotification(
+      type = "warning",
+      ui = HTML(paste0(
+        "<h4 class='alert-heading'><b>Reset successful</b></h4>",
+        "<p class='mb-0'>All inputs and results have been reset to their ",
+        "original state. Upload another data set to get started.</p>"
+      ))
+    )
   })
 } # Shiny sever close
 
