@@ -1045,7 +1045,7 @@ server <- function(input, output) {
   })
 
 
-  # |- Notification with save info ----------------------------------------
+  # |- Save info notification ---------------------------------------------
 
   observeEvent(input$create_plot, {
     showNotification(
@@ -1084,16 +1084,12 @@ server <- function(input, output) {
   )
 
 
-  # |- Reactive values/inputs ---------------------------------------------
-
-  plot_type <- reactive(input$plot_tabs)
-
-  abci_plot_data <- reactive(abci_results())
+  # |- Set up reactives ---------------------------------------------------
 
   abci_plot_dims <- reactive({
-    req(abci_plot_data())
+    req(abci_results())
 
-    n_assay <- length(unique(abci_plot_data()$assay))
+    n_assay <- length(unique(abci_results()$assay))
     n_rows <- ceiling(n_assay / 2)
     n_cols <- ifelse(n_assay == 1, 1, 2)
     list(n_cols, n_rows)
@@ -1102,25 +1098,25 @@ server <- function(input, output) {
   axis_titles <- reactive(
     list(
       "cols" = ifelse(
-        length(unique(abci_plot_data()$cols)) == 1,
-        unique(abci_plot_data()$cols),
+        length(unique(abci_results()$cols)) == 1,
+        unique(abci_results()$cols),
         "Drug A"
       ),
       "rows" = ifelse(
-        length(unique(abci_plot_data()$rows)) == 1,
-        unique(abci_plot_data()$rows),
+        length(unique(abci_results()$rows)) == 1,
+        unique(abci_results()$rows),
         "Drug B"
       )
     )
   )
 
-  plot_legend_ui <- reactive(plot_legends[[plot_type()]])
+  plot_legend_ui <- reactive(plot_legends[[input$plot_tabs]])
 
 
   # |-- Line include options ----------------------------------------------
 
   observeEvent(input$plot_line_swap, {
-    req(abci_plot_data())
+    req(abci_results())
 
     line_column <- ifelse(
       input$plot_line_swap,
@@ -1128,7 +1124,7 @@ server <- function(input, output) {
       "rows_conc"
     )
 
-    unique_conc <- abci_plot_data() %>%
+    unique_conc <- abci_results() %>%
       pull(line_column) %>%
       unique()
 
@@ -2218,13 +2214,13 @@ server <- function(input, output) {
   # |- renderPlot calls ---------------------------------------------------
 
   observeEvent(input$create_plot, {
-    req(abci_plot_data())
+    req(abci_results())
 
     output$abci_plot <- renderPlot(
 
       if (isolate(input$plot_tabs) == "dot") {
         plot_dot(
-          data = isolate(abci_plot_data()),
+          data = isolate(abci_results()),
           x.drug = ifelse(
             isolate(input$plot_dot_swap),
             "rows_conc",
@@ -2263,7 +2259,7 @@ server <- function(input, output) {
       } else if (isolate(input$plot_tabs) == "dot_split") {
 
         plot_dot_split(
-          data = isolate(abci_plot_data()),
+          data = isolate(abci_results()),
           x.drug = ifelse(
             isolate(input$plot_dot_split_swap),
             "rows_conc",
@@ -2302,7 +2298,7 @@ server <- function(input, output) {
 
       } else if (isolate(input$plot_tabs) == "tile") {
         plot_tile(
-          data = isolate(abci_plot_data()),
+          data = isolate(abci_results()),
           x.drug = ifelse(
             isolate(input$plot_tile_swap),
             "rows_conc",
@@ -2335,7 +2331,7 @@ server <- function(input, output) {
 
       }  else if (isolate(input$plot_tabs) == "tile_split") {
         plot_tile_split(
-          data = isolate(abci_plot_data()),
+          data = isolate(abci_results()),
           x.drug = ifelse(
             isolate(input$plot_tile_split_swap),
             "rows_conc",
@@ -2369,7 +2365,7 @@ server <- function(input, output) {
 
       } else if (isolate(input$plot_tabs) == "line") {
 
-        if (max(abci_plot_data()$bio_normal) > 1.5) {
+        if (max(abci_results()$bio_normal) > 1.5) {
           showNotification(
             type = "warning",
             duration = 10,
@@ -2380,7 +2376,7 @@ server <- function(input, output) {
           )
         }
         plot_line(
-          data = isolate(abci_plot_data()),
+          data = isolate(abci_results()),
           plot.type = isolate(input$plot_line_type),
           x.drug = ifelse(
             isolate(input$plot_line_swap),
@@ -2416,10 +2412,10 @@ server <- function(input, output) {
   # |- plotOutput call ----------------------------------------------------
 
   observeEvent(input$create_plot, {
-    req(abci_plot_data())
+    req(abci_results())
 
     output_dims <- get_dims(
-      type = plot_type(),
+      type = input$plot_tabs,
       n_cols = abci_plot_dims()[[1]],
       n_rows = abci_plot_dims()[[2]]
     )
