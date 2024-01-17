@@ -1,15 +1,21 @@
 Package: ShinyABCi
-Title: ShinyABCi
-Version: 0.99.261
+Title: A Shiny app to calculate ABCI for checkerboard assays
+Version: 0.99.262
 Authors@R:
   person(given = "Travis",
          family = "Blimkie",
          role = c("aut", "cre"),
          email = "travis@hancocklab.com")
-Description: Welcome to ShinyABCi, an interactive Shiny app providing access to
-  a new method of assessing drug effectiveness when treating biofilms.
+Description: ShinyABCi is a tool to quantify and visualize the in vitro effects
+  of drug combinations. The Anti-Biofilm Combination Index (ABCI) is a metric 
+  designed to assess drug combination therapy in checkerboard assays, without 
+  relying on activity thresholds (e.g. MIC, MBIC, or MBEC), which present 
+  significant challenges when evaluating antibiofilm activity.
+Depends: R (>= 4.0.0)
 License: GPL (>= 3) + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
+URL: https://travis-m-blimkie.shinyapps.io/ShinyABCi
+BugReports: https://github.com/hancockinformatics/ShinyABCi/issues

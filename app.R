@@ -1,11 +1,13 @@
-# Setup chunk -------------------------------------------------------------
+# Setup -------------------------------------------------------------------
 
-library(dplyr)
-library(ggplot2)
-library(openxlsx)
-library(shinyjs)
-library(shiny)
-library(bslib)
+suppressPackageStartupMessages({
+  library(dplyr)
+  library(ggplot2)
+  library(openxlsx)
+  library(shinyjs)
+  library(shiny)
+  library(bslib)
+})
 
 app_version <- gsub(
   x = readLines("DESCRIPTION")[3],
@@ -49,9 +51,6 @@ ui <- page_fluid(
       sizes = "16x16"
     )
   ),
-
-
-  # Navbar page -----------------------------------------------------------
 
   page_navbar(
     id = "navbar",
