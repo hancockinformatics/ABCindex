@@ -28,7 +28,11 @@ ui <- page_fluid(
   ),
 
   useShinyjs(),
-  tags$script(src = "js/client.js"),
+
+  tags$script(HTML(
+    "window.onbeforeunload = function() { return 'Are you sure?'; };"
+  )),
+
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "css/custom.css"),
     tags$link(
