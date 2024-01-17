@@ -945,14 +945,14 @@ server <- function(input, output) {
         title = "ABCI colour palettes",
         easyClose = TRUE,
         size = "m",
-        HTML("<img src='img/abci_palettes_preview.svg' class='center'>"),
+        HTML("<img src='img/colours_abci.svg' class='center'>"),
         footer = modalButton("Close")
       ),
-      "rcolorbrewer" = modalDialog(
+      "lines" = modalDialog(
         title = "Line colour palettes",
         easyClose = TRUE,
         size = "m",
-        HTML("<img src='img/rcolorbrewer_supported_palettes.svg' class='center'>"),
+        HTML("<img src='img/colours_lines.svg' class='center'>"),
         footer = modalButton("Close")
       )
     ),
@@ -973,7 +973,7 @@ server <- function(input, output) {
     showModal(modal_colours$abci)
   })
   observeEvent(input$line_preview_colours, {
-    showModal(modal_colours$rcolorbrewer)
+    showModal(modal_colours$lines)
   })
 
 
