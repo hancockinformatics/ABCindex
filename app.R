@@ -22,7 +22,8 @@ set_ggplot_theme()
 
 ui <- page_fluid(
   theme = bs_add_variables(
-    app_theme
+    app_theme,
+    danger = "#cc002c"
     # primary = "red"
     # "progress-bar-bg" = "orange"
   ),
