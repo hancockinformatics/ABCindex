@@ -1,27 +1,3 @@
-# Load data objects
-size_mapping_N1S2 <- readRDS("data/size_mapping_N1S2.Rds")
-preset_palettes <- readRDS("data/preset_palettes.Rds")
-preset_palettes_split <- readRDS("data/preset_palettes_split.Rds")
-
-# Axis lines drawn on every facet, for all plot types
-line_x <- ggplot2::annotate(
-  "segment",
-  x = -Inf,
-  xend = Inf,
-  y = -Inf,
-  yend = -Inf,
-  linewidth = 2
-)
-line_y <- ggplot2::annotate(
-  "segment",
-  x = -Inf,
-  xend = -Inf,
-  y = -Inf,
-  yend = Inf,
-  linewidth = 2
-)
-
-
 #' sprinter
 #'
 #' @param x Character vector (factor) of numeric values
