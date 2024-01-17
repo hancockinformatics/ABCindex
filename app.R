@@ -60,11 +60,11 @@ ui <- page_fluid(
     window_title = "ShinyABCi",
 
 
-    # |- Home page ------------------------------------------------------
+    # |- Home -------------------------------------------------------------
 
     nav_panel(
       value = "home",
-      title = "ShinyABCi",
+      title = "Home",
 
       div(
         class = "container my-5",
@@ -218,22 +218,22 @@ ui <- page_fluid(
         layout_sidebar(
           sidebar = sidebar(
             id = "results_sidebar",
-            title = "ABCI visualizations and results",
+            title = "ABCI results and visualizations",
             width = "580px",
             open = NA,
 
             p(
               "ABCI is calculated for every combination of concentrations in ",
-              "each of your experiments. Positive ABCI values indicate the ",
+              "each of your experiments, a positive value indicating the ",
               "combination is more effective than either individual drug. ",
-              "Please refer to the ",
-              actionLink("help_from_results", "ABCI help pages"),
-              " to learn more about ABCI."
+              "To learn more about ABCI, please refer to the ",
+              actionLink("help_from_results", "help pages", .noWS = "after"),
+              "."
             ),
 
             HTML(paste0(
-              "<p>Visualize your ABCI results using <b>Dot</b> or <b>Tile</b> ",
-              "plots. The <b>Split</b> versions separate the positive and ",
+              "<p>Visualize the ABCI values using <b>Dot</b> or <b>Tile</b> ",
+              "plots. The <b>Split</b> versions separate positive and ",
               "negative ABCI values into two plots, for visual simplicity. ",
               "Alternatively, the <b>Line</b> plot displays antimicrobial ",
               "activity for all or a subset of concentrations.</p>"
@@ -484,7 +484,7 @@ ui <- page_fluid(
 server <- function(input, output) {
 
 
-  # Home & About ----------------------------------------------------------
+  # Buttons/links to tabs -------------------------------------------------
 
   observeEvent(input$get_started, {
     updateNavbarPage(inputId = "navbar", selected = "upload")
@@ -495,20 +495,21 @@ server <- function(input, output) {
   observeEvent(input$about, {
     updateNavbarPage(inputId = "navbar", selected = "about")
   })
-
   observeEvent(input$help_from_about, {
     updateNavbarPage(inputId = "navbar", selected = "help")
   })
-
-
-  # Upload ----------------------------------------------------------------
-
   observeEvent(input$help_from_upload, {
+    updateNavbarPage(inputId = "navbar", selected = "help")
+  })
+  observeEvent(input$help_from_results, {
+    updateNavbarPage(inputId = "navbar", selected = "help")
+  })
+  observeEvent(input$help_from_legend, {
     updateNavbarPage(inputId = "navbar", selected = "help")
   })
 
 
-  # |- Download the template ----------------------------------------------
+  # Download the template -------------------------------------------------
 
   observeEvent(input$download_template, {
     showModal(modalDialog(
@@ -553,7 +554,7 @@ server <- function(input, output) {
   )
 
 
-  # |- Loading data -------------------------------------------------------
+  # Loading data ----------------------------------------------------------
 
   input_data <- reactiveVal()
 
@@ -597,8 +598,16 @@ server <- function(input, output) {
     )
   })
 
+  # Enable the calculations button
+  observeEvent(input_data(), {
+    enable_button(
+      "perform_abci_calculations",
+      "Click here to analyze the uploaded data"
+    )
+  })
 
-  # |- Gather input info --------------------------------------------------
+
+  # Input summary cards ---------------------------------------------------
 
   # drug_info()[[experiment]][[cols/rows]][[name/concentrations]]
   drug_info <- reactive(
@@ -622,43 +631,6 @@ server <- function(input, output) {
     })
   )
 
-
-  # |- Create input preview -----------------------------------------------
-
-  input_data_preview <- reactive({
-    req(input_data())
-
-    # We only show the first replicate in the preview
-    lapply(input_data(), function(experiment) {
-      experiment %>%
-        mutate(across(where(is.numeric), ~signif(.x, digits = 4))) %>%
-        filter(grepl(x = replicate, pattern = "_p1$")) %>%
-        select(cols_conc, rows_conc, bio) %>%
-        tidyr::pivot_wider(
-          names_from = cols_conc,
-          values_from = bio
-        ) %>%
-        tibble::column_to_rownames("rows_conc")
-    })
-  })
-
-  output$input_data_preview_DT <- DT::renderDataTable(
-    DT::formatStyle(
-      table = DT::datatable(
-        data = input_data_preview()[[input$upload_input_names_selector]],
-        rownames = TRUE,
-        selection = "none",
-        class = "table-striped cell-border",
-        options = list(dom = "t")
-      ),
-      columns = 0,
-      fontWeight = "bold",
-      `text-align` = "right"
-    )
-  )
-
-  # |- Create and render cards --------------------------------------------
-
   output$upload_input_names_card <- renderUI(
     card(
       height = 340,
@@ -669,9 +641,9 @@ server <- function(input, output) {
       ),
       card_body(
         HTML(paste0(
-          "<p>Use the dropdown to choose an experiment to preview. The card ",
-          "to the right displays some information gathered from the ",
-          "experiment, while the table below shows the uploaded data ",
+          "<p>Use the dropdown to choose an experiment to preview; the card ",
+          "to the right displays information gathered from the selected ",
+          "experiment, while the table below shows the corresponding data ",
           "(<b>first replicate only</b>). Make sure everything looks OK ",
           "before proceeding by clicking the button at the bottom of the ",
           "sidebar.</p>"
@@ -745,17 +717,42 @@ server <- function(input, output) {
   })
 
 
-  # Calculations ----------------------------------------------------------
+  # Preview input as table ------------------------------------------------
 
-  observeEvent(input_data(), {
-    enable_button(
-      "perform_abci_calculations",
-      "Click here to analyze the uploaded data"
-    )
+  input_data_preview <- reactive({
+    req(input_data())
+
+    # We only show the first replicate in the preview
+    lapply(input_data(), function(experiment) {
+      experiment %>%
+        mutate(across(where(is.numeric), ~signif(.x, digits = 4))) %>%
+        filter(grepl(x = replicate, pattern = "_p1$")) %>%
+        select(cols_conc, rows_conc, bio) %>%
+        tidyr::pivot_wider(
+          names_from = cols_conc,
+          values_from = bio
+        ) %>%
+        tibble::column_to_rownames("rows_conc")
+    })
   })
 
+  output$input_data_preview_DT <- DT::renderDataTable(
+    DT::formatStyle(
+      table = DT::datatable(
+        data = input_data_preview()[[input$upload_input_names_selector]],
+        rownames = TRUE,
+        selection = "none",
+        class = "table-striped cell-border",
+        options = list(dom = "t")
+      ),
+      columns = 0,
+      fontWeight = "bold",
+      `text-align` = "right"
+    )
+  )
 
-  # |- Calculations modal -------------------------------------------------
+
+  # Calculations modal ----------------------------------------------------
 
   observeEvent(input$perform_abci_calculations, {
     req(input_data())
@@ -796,7 +793,7 @@ server <- function(input, output) {
   })
 
 
-  # |- Tidy input and calculate results -----------------------------------
+  # Tidy input and get results --------------------------------------------
 
   abci_results <- reactiveVal()
 
@@ -836,18 +833,8 @@ server <- function(input, output) {
   })
 
 
-  # Results ---------------------------------------------------------------
 
-  observeEvent(input$help_from_results, {
-    updateNavbarPage(inputId = "navbar", selected = "help")
-  })
-
-  observeEvent(input$help_from_legend, {
-    updateNavbarPage(inputId = "navbar", selected = "help")
-  })
-
-
-  # |- Save info notification ---------------------------------------------
+  # Save info notification ------------------------------------------------
 
   observeEvent(input$create_plot, {
     showNotification(
@@ -863,7 +850,7 @@ server <- function(input, output) {
   }, once = TRUE)
 
 
-  # |- Download results ---------------------------------------------------
+  # Download results ------------------------------------------------------
 
   output$results_handler_xlsx <- downloadHandler(
     filename = function() {
@@ -886,7 +873,7 @@ server <- function(input, output) {
   )
 
 
-  # |- Set up reactives ---------------------------------------------------
+  # Set up Results reactives ----------------------------------------------
 
   abci_plot_dims <- reactive({
     req(abci_results())
@@ -915,7 +902,7 @@ server <- function(input, output) {
   plot_legend_ui <- reactive(plot_legends[[input$plot_tabs]])
 
 
-  # |-- Line include options ----------------------------------------------
+  # |- Line include options -----------------------------------------------
 
   observeEvent(input$plot_line_swap, {
     req(abci_results())
@@ -938,7 +925,7 @@ server <- function(input, output) {
   })
 
 
-  # |-- Preview colours ---------------------------------------------------
+  # |- Preview colours ----------------------------------------------------
 
   modal_colours <- lapply(
     list(
@@ -978,10 +965,9 @@ server <- function(input, output) {
   })
 
 
-  # |- Plot inputs UI -----------------------------------------------------
+  # Plot inputs UI --------------------------------------------------------
 
-
-  # |-- Dot ---------------------------------------------------------------
+  # |- Dot ----------------------------------------------------------------
 
   output$plot_inputs_dot <- renderUI({
     list(
@@ -1178,7 +1164,7 @@ server <- function(input, output) {
   })
 
 
-  # |-- Split dot ---------------------------------------------------------
+  # |- Split dot ----------------------------------------------------------
 
   output$plot_inputs_dot_split <- renderUI({
     list(
@@ -1393,7 +1379,7 @@ server <- function(input, output) {
   })
 
 
-  # |-- Tile --------------------------------------------------------------
+  # |- Tile ---------------------------------------------------------------
 
   output$plot_inputs_tile <- renderUI({
     list(
@@ -1592,7 +1578,7 @@ server <- function(input, output) {
   })
 
 
-  # |-- Split tile --------------------------------------------------------
+  # |- Split tile ---------------------------------------------------------
 
   output$plot_inputs_tile_split <- renderUI({
     list(
@@ -1809,7 +1795,7 @@ server <- function(input, output) {
   })
 
 
-  # |-- Line --------------------------------------------------------------
+  # |- Line ---------------------------------------------------------------
 
   output$plot_inputs_line <- renderUI({
     list(
@@ -2013,7 +1999,7 @@ server <- function(input, output) {
   })
 
 
-  # |- renderPlot calls ---------------------------------------------------
+  # renderPlot calls ------------------------------------------------------
 
   observeEvent(input$create_plot, {
     req(abci_results())
@@ -2211,7 +2197,7 @@ server <- function(input, output) {
   })
 
 
-  # |- plotOutput call ----------------------------------------------------
+  # plotOutput call -------------------------------------------------------
 
   observeEvent(input$create_plot, {
     req(abci_results())
@@ -2244,7 +2230,7 @@ server <- function(input, output) {
   })
 
 
-  # |- Reset button -------------------------------------------------------
+  # Refresh button --------------------------------------------------------
 
   observeEvent(input$reset, {
     showModal(
