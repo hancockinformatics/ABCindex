@@ -1048,7 +1048,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_dot_size_text",
           label = NULL,
-          value = "Biofilm killed %"
+          value = "Biomass reduction %"
         )
       ),
 
@@ -1245,7 +1245,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_dot_split_size_text",
           label = NULL,
-          value = "Biofilm killed %"
+          value = "Biomass reduction %"
         )
       ),
 
@@ -1910,7 +1910,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_line_y_text",
           label = NULL,
-          value = "% Biofilm"
+          value = "% Biomass"
         )
       ),
 
