@@ -9,56 +9,7 @@ suppressPackageStartupMessages({
   library(bslib)
 })
 
-app_version <- gsub(
-  x = readLines("DESCRIPTION")[3],
-  pattern = "^Version\\: ",
-  replacement = ""
-)
-
-app_theme <- bs_theme(version = 5, bootswatch = "cosmo")
-
 set_ggplot_theme()
-
-# Buttons on the Home page
-btn_tibble <- tibble(
-  id = c("get_started", "help_from_home", "about"),
-  class = c("btn-primary", "btn-info", "btn-secondary"),
-  icon = c("play", "circle-question", "circle-info"),
-  label = c("Get started", "Help", "About"),
-  tooltip = c(
-    "Go to the Upload tab to begin",
-    "Learn how to use ShinyABCi",
-    "Learn about ShinyABCi"
-  )
-)
-
-# Links in the About page
-dependency_tibble <- tibble(
-  link = c(
-    "https://rstudio.github.io/bslib/index.html",
-    "https://docs.ropensci.org/readODS/",
-    "https://ycphs.github.io/openxlsx/index.html",
-    "https://shiny.posit.co/",
-    "https://deanattali.com/shinyjs/",
-    "https://www.tidyverse.org/"
-  ),
-  name = c(
-    "bslib",
-    "readODS",
-    "openxlsx",
-    "Shiny",
-    "shinyjs",
-    "tiyverse"
-  ),
-  description = c(
-    "A modern Bootstrap UI toolkit for Shiny",
-    "Read data from ODS files",
-    "Read and write XLSX files",
-    "Easily create and deploy web apps from R",
-    "Extend Shiny functionality with Javascript",
-    "Packages for data manipulation and visualization"
-  )
-)
 
 
 # Define UI ---------------------------------------------------------------
@@ -67,8 +18,6 @@ ui <- page_fluid(
   theme = bs_add_variables(
     app_theme,
     danger = "#cc002c"
-    # primary = "red"
-    # "progress-bar-bg" = "orange"
   ),
 
   useShinyjs(),
@@ -407,9 +356,8 @@ ui <- page_fluid(
             ),
             p(
               class = "lead",
-              "ShinyABCi is written in R, and utilizes the following packages:"
+              "ShinyABCi is written with R, and uses the following packages:"
             ),
-
             div(class = "container", dep_wrapper(dependency_tibble))
           )
         )

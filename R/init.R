@@ -5,6 +5,55 @@ size_mapping_N1S2 <- readRDS("data/size_mapping_N1S2.Rds")
 preset_palettes <- readRDS("data/preset_palettes.Rds")
 preset_palettes_split <- readRDS("data/preset_palettes_split.Rds")
 
+app_version <- gsub(
+  x = readLines("DESCRIPTION")[3],
+  pattern = "^Version\\: ",
+  replacement = ""
+)
+
+app_theme <- bslib::bs_theme(version = 5, bootswatch = "cosmo")
+
+# Buttons on the Home page
+btn_tibble <- dplyr::tibble(
+  id = c("get_started", "help_from_home", "about"),
+  class = c("btn-primary", "btn-info", "btn-secondary"),
+  icon = c("play", "circle-question", "circle-info"),
+  label = c("Get started", "Help", "About"),
+  tooltip = c(
+    "Go to the Upload tab to begin",
+    "Learn how to use ShinyABCi",
+    "Learn about ShinyABCi"
+  )
+)
+
+# Links in the About page
+dependency_tibble <- dplyr::tibble(
+  link = c(
+    "https://rstudio.github.io/bslib/index.html",
+    "https://docs.ropensci.org/readODS/",
+    "https://ycphs.github.io/openxlsx/index.html",
+    "https://shiny.posit.co/",
+    "https://deanattali.com/shinyjs/",
+    "https://www.tidyverse.org/"
+  ),
+  name = c(
+    "bslib",
+    "readODS",
+    "openxlsx",
+    "Shiny",
+    "shinyjs",
+    "tiyverse"
+  ),
+  description = c(
+    "A modern Bootstrap UI toolkit for Shiny",
+    "Read data from ODS files",
+    "Read and write XLSX files",
+    "Easily create and deploy web apps from R",
+    "Extend Shiny functionality with Javascript",
+    "Packages for data manipulation and visualization"
+  )
+)
+
 
 # Axis lines drawn on every facet -----------------------------------------
 
