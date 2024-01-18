@@ -1,24 +1,3 @@
-#' disable_button
-#'
-#' @param id Input ID for the button being modified
-#' @param x Optional 'title' (tooltip) to add to the button. Overrides any
-#'   existing 'title' attribute.
-#'
-disable_button <- function(id, x = NULL) {
-  disable(id)
-
-  if (!is.null(x)) {
-    runjs(paste0(
-      "document.getElementById('",
-      id,
-      "').setAttribute('title', '",
-      x,
-      "');"
-    ))
-  }
-}
-
-
 #' enable_button
 #'
 #' @param id Input ID for the button being modified
@@ -129,7 +108,7 @@ get_dims <- function(type, n_cols, n_rows) {
 }
 
 
-#' set_theme
+#' set_ggplot_theme
 #'
 #' @return None; Sets the default ggplot2 theme
 #'
@@ -153,9 +132,8 @@ set_ggplot_theme <- function() {
 
 #' wrap_selector
 #'
-#' @param label Name for the input object
-#' @param label_title Text to be shown as a tooltip when hovering over the "?"
-#'   icon next to the name
+#' @param label Name displayed for the input object
+#' @param label_title Tooltip content for the name and icon
 #' @param selector A Shiny input, e.g. `selectInput()`, `numericInput()`, etc.
 #'
 #' @return Customized UI wrapper; a two-column row with a name and input
