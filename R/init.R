@@ -113,8 +113,8 @@ tooltips <- list(
     "treatments (e.g., MIC, MBIC, MBEC). Defaults to ≥50% killing."
   ),
   activity_val = paste0(
-    "Draw a line(s) when individual treatments reach the indicated ",
-    "percentage (0.5 = 50% killing). Applies to X and Y axis."
+    "Cutoff value for activity threshold lines (0.5 = 50% killing). Applies ",
+    "to both X and Y axes."
   ),
   swap_x_y = "Turn on to swap the values plotted on the X and Y axis",
   axis_labels =
@@ -166,7 +166,7 @@ plot_legends <- list(
     link_paragraph,
     p(
       style = "font-size:0.75em",
-      "Effects of different combinations of [Drug A] and [Drug B], evaluated ",
+      "Effects of different combinations of [Drug A] and [Drug B] evaluated ",
       "using the Anti-Biofilm Combination Index (ABCI, colour scale) and ",
       "percentage of [biofilm inhibition], relative to the average of the ",
       "untreated control. Results are the average of [X] replicates. Positive ",
@@ -194,7 +194,7 @@ plot_legends <- list(
     link_paragraph,
     p(
       style = "font-size:0.75em",
-      "Effects of different combinations of [Drug A] and [Drug B], evaluated ",
+      "Effects of different combinations of [Drug A] and [Drug B] evaluated ",
       "using the Anti-Biofilm Combination Index (ABCI, colour scale) and ",
       "percentage of [biofilm inhibition], relative to the average of the ",
       "untreated controls. Results are the average of [X] replicates. ",
@@ -208,14 +208,15 @@ plot_legends <- list(
   ),
 
   tile = div(
-    p("The colour of the tiles indicates ABCI: Positive ABCI values indicate ",
+    p(
+      "The colour of the tiles indicates ABCI: Positive ABCI values indicate ",
       "that the combination is more effective than any individual drug on its ",
       "own; negative values indicate that the combination is less effective ",
       "than at least the most active individual drug. Vertical and horizontal ",
       "lines can be added to illustrate the activity thresholds of the ",
-      "individual drugs (e.g. MIC). Activity (% killing) is not depicted: it ",
-      "is recommended to combine this with a line plot for interesting ",
-      "concentrations."
+      "individual drugs (e.g. MIC). Activity (% killing) is not depicted; ",
+      "combining this with a line plot for concentrations of interest is ",
+      "recommendded."
     ),
     link_paragraph,
     p(
@@ -240,9 +241,9 @@ plot_legends <- list(
       "drug. They have been split into two different plots for visually ",
       "simplified illustrations of only positive or negative interactions. ",
       "Vertical and horizontal lines can be added to illustrate the activity ",
-      "thresholds of the individual drugs (e.g. MIC). Activity (% killing) ",
-      "is not depicted: it is recommended to combine this with a line plot ",
-      "for interesting concentrations."
+      "thresholds of the individual drugs (e.g. MIC). Activity (% killing) is ",
+      "not depicted; combining this with a line plot for concentrations of ",
+      "interest is recommendded."
     ),
     link_paragraph,
     p(

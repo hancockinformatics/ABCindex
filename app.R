@@ -22,9 +22,13 @@ ui <- page_fluid(
 
   useShinyjs(),
 
-  tags$script(HTML(
-    "window.onbeforeunload = function() { return 'Are you sure?'; };"
-  )),
+  tags$script(HTML(r"(
+    window.onbeforeunload = () => {
+      if (document.getElementById('shiny-disconnected-overlay') === null) {
+        return 'Are you sure you want to leave?';
+      }
+    };
+  )")),
 
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "css/custom.css"),
@@ -79,17 +83,16 @@ ui <- page_fluid(
 
           make(
             "<p class='lead mb-4'>Here you can calculate ABCIs for your ",
-            "checkerboard data, and visualize the results different plots ",
-            "designed to quickly identify promising interactions and ",
-            "favourable drug ratios.</p>"
+            "checkerboard data and visualize the results in different plots ",
+            "designed to quickly identify promising interactions and
+            favourable drug ratios.</p>"
           ),
 
           make(
-            "<p class='lead mb-4'>Click the Get Started button to upload ",
-            "your data. If you’d like to learn more about how ABCI is ",
-            "calculated, or how to use ShinyABCi, check the Help pages below. ",
-            "For more information, including how to cite ShinyABCi, please ",
-            "refer to the About page.</p>"
+            "<p class='lead mb-4'>Click the Get Started button to upload your ",
+            "data. To learn more about how ABCI is calculated, or how to use ",
+            "ShinyABCi, check the Help pages below. For more information, ",
+            "including how to cite ShinyABCi, please refer to the About page.</p>"
           ),
 
           div(purrr::pmap(btn_tibble, my_btn))
@@ -128,8 +131,12 @@ ui <- page_fluid(
 
             p(
               "Use the link to ",
-              actionLink("load_example_data", "try our example data"),
-              "or check out the ",
+              actionLink(
+                "load_example_data",
+                "try our example data",
+                .noWS = "after"
+              ),
+              ", or check out the ",
               actionLink("help_from_upload", "Help pages"),
               "to learn more about the data types we support."
             ),
@@ -189,15 +196,15 @@ ui <- page_fluid(
 
             p(
               "ABCI is calculated for every combination of concentrations in ",
-              "each of your experiments, a positive value indicating the ",
+              "each of your experiments. Positive ABCI values indicate that the ",
               "combination is more effective than either individual drug. ",
-              "To learn more about ABCI, please refer to the ",
-              actionLink("help_from_results", "help pages", .noWS = "after"),
-              "."
+              "Please refer to the ",
+              actionLink("help_from_results", "Help pages"),
+              "to learn more about ABCI."
             ),
 
             make(
-              "<p>Visualize the ABCI values using <b>Dot</b> or <b>Tile</b> ",
+              "<p>Visualize your ABCI results using <b>Dot</b> or <b>Tile</b> ",
               "plots. The <b>Split</b> versions separate positive and ",
               "negative ABCI values into two plots, for visual simplicity. ",
               "Alternatively, the <b>Line</b> plot displays antimicrobial ",
