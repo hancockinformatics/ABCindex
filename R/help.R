@@ -1,21 +1,16 @@
 #' enable_button
 #'
 #' @param id Input ID for the button being modified
-#' @param x Optional 'title' (tooltip) to add to the button. Overrides any
-#'   existing 'title' attribute.
+#' @param x Optional tooltip content to add to the button. Overrides any
+#'   existing content.
+#'
+#' @details The tooltip should have an ID based on its parent element. E.g. if
+#'   the parent is a button named "confirm_btn", the tooltip's ID must be
+#'   "confirm_btn_tt".
 #'
 enable_button <- function(id, x = NULL) {
   enable(id)
-
-  if (!is.null(x)) {
-    runjs(paste0(
-      "document.getElementById('",
-      id,
-      "').setAttribute('title', '",
-      x,
-      "');"
-    ))
-  }
+  if (!is.null(x)) update_tooltip(id = paste0(id, "_tt"), x)
 }
 
 
@@ -145,9 +140,10 @@ wrap_selector <- function(label, label_title, selector) {
     tags$label(
       class = "col-sm-5 col-form-label",
       div(
-        label,
-        icon("circle-question"),
-        title = label_title
+        span(
+          label,
+          icon("circle-question")
+        ) %>% tooltip(label_title, placement = "right")
       )
     ),
     div(

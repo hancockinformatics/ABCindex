@@ -106,30 +106,26 @@ ui <- page_fluid(
             actionButton(
               inputId = "get_started",
               class = "btn btn-primary btn-lg px-4 me-md-2",
-              label = div(
-                icon("play"),
-                HTML("Get started")
-              ),
+              icon = icon("play"),
+              label = "Get started",
               width = "175px"
-            ),
+            ) %>% tooltip("Go to the Upload tab to begin", placement = "bottom"),
+
             actionButton(
               inputId = "help_from_home",
               class = "btn btn-info btn-lg px-4 me-md-2",
-              label = div(
-                icon("circle-question"),
-                HTML("Help")
-              ),
+              icon = icon("circle-question"),
+              label = "Help",
               width = "175px"
-            ),
+            ) %>% tooltip("Learn how to use ShinyABCi", placement = "bottom"),
+
             actionButton(
               inputId = "about",
               class = "btn btn-secondary btn-lg px-4 me-md-2",
-              label = div(
-                icon("circle-info"),
-                HTML("About")
-              ),
+              icon = icon("circle-info"),
+              label = "About",
               width = "175px"
-            )
+            ) %>% tooltip("Learn about ShinyABCi", placement = "bottom")
           )
         )
       )
@@ -183,13 +179,17 @@ ui <- page_fluid(
               actionButton(
                 inputId = "perform_abci_calculations",
                 class = "btn btn-primary btn-tooltip mt-auto",
-                label = "Perform ABCI calculations",
                 icon = icon("calculator"),
-                title = paste0(
-                  "Upload your plate data, or load our example data, then ",
-                  "click here to analyze"
+                label = "Perform ABCI calculations"
+              ) %>%
+                tooltip(
+                  id = "perform_abci_calculations_tt",
+                  placement = "top",
+                  paste0(
+                    "Upload your plate data, or load our example data, then ",
+                    "click here to analyze"
+                  )
                 )
-              )
             )
           ),
 
@@ -242,10 +242,14 @@ ui <- page_fluid(
               actionButton(
                 inputId = "create_plot",
                 class = "btn btn-info btn-tooltip",
-                label = "Create or update the plot",
                 icon = icon("chart-bar"),
-                title = "Upload and analyze some data to enable visualization"
-              )
+                label = "Create or update the plot"
+              ) %>%
+                tooltip(
+                  id = "create_plot_tt",
+                  placement = "right",
+                  "Upload and analyze data to enable visualization"
+                )
             ),
 
             navset_tab(
@@ -282,20 +286,29 @@ ui <- page_fluid(
             disabled(
               downloadButton(
                 outputId = "results_handler_xlsx",
+                class = "btn btn-success align-items-center",
                 label = "Download results spreadsheet",
-                style = "width: 50%",
-                class = "btn btn-success align-items-center"
-              )
+                style = "width: 50%"
+              ) %>%
+                tooltip(
+                  id = "results_handler_xlsx_tt",
+                  placement = "right",
+                  "Upload and analyze data to download the results"
+                )
             ),
 
             disabled(
               actionButton(
                 inputId = "reset",
                 class = "btn btn-warning",
-                label = "Analyze a new dataset",
                 icon = icon("arrow-rotate-left"),
-                title = "Resets all inputs, results, and plots"
-              )
+                label = "Analyze a new dataset"
+              ) %>%
+                tooltip(
+                  id = "reset_tt",
+                  placement = "top",
+                  "Resets all inputs, results, and plots"
+                )
             )
           ),
           uiOutput("abci_plot_ui")
@@ -457,19 +470,18 @@ ui <- page_fluid(
     nav_item(
       tags$a(
         icon("github"),
-        "Github",
+        "GitHub",
         href = "https://github.com/hancockinformatics/ShinyABCi",
         target = "_blank",
-        rel = "noopener noreferrer",
-        title = "Visit our Github to browse the code or submit an issue."
+        rel = "noopener noreferrer"
       )
     ),
 
     # Divider
     nav_item(
       HTML(paste0(
-        '<div class="vr d-none d-lg-flex h-100 mx-lg-2 text-white"></div>',
-        '<hr class="d-lg-none my-2 text-white-50">'
+        "<div class='vr d-none d-lg-flex h-100 mx-lg-2 text-white'></div>",
+        "<hr class='d-lg-none my-2 text-white-50'>"
       ))
     ),
 
@@ -815,12 +827,14 @@ server <- function(input, output) {
       abci_results()
 
     removeModal()
+
     updateNavbarPage(inputId  = "navbar", selected = "results")
+
+    enable_button("reset")
     enable_button(
       "results_handler_xlsx",
       "Click here to download your results as an XLSX file"
     )
-    enable("reset")
     enable_button(
       "create_plot",
       paste0(
