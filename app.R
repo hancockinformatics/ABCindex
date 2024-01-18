@@ -19,6 +19,47 @@ app_theme <- bs_theme(version = 5, bootswatch = "cosmo")
 
 set_ggplot_theme()
 
+# Buttons on the Home page
+btn_tibble <- tibble(
+  id = c("get_started", "help_from_home", "about"),
+  class = c("btn-primary", "btn-info", "btn-secondary"),
+  icon = c("play", "circle-question", "circle-info"),
+  label = c("Get started", "Help", "About"),
+  tooltip = c(
+    "Go to the Upload tab to begin",
+    "Learn how to use ShinyABCi",
+    "Learn about ShinyABCi"
+  )
+)
+
+# Links in the About page
+dependency_tibble <- tibble(
+  link = c(
+    "https://rstudio.github.io/bslib/index.html",
+    "https://docs.ropensci.org/readODS/",
+    "https://ycphs.github.io/openxlsx/index.html",
+    "https://shiny.posit.co/",
+    "https://deanattali.com/shinyjs/",
+    "https://www.tidyverse.org/"
+  ),
+  name = c(
+    "bslib",
+    "readODS",
+    "openxlsx",
+    "Shiny",
+    "shinyjs",
+    "tiyverse"
+  ),
+  description = c(
+    "A modern Bootstrap UI toolkit for Shiny",
+    "Read data from ODS files",
+    "Read and write XLSX files",
+    "Easily create and deploy web apps from R",
+    "Extend Shiny functionality with Javascript",
+    "Packages for data manipulation and visualization"
+  )
+)
+
 
 # Define UI ---------------------------------------------------------------
 
@@ -77,7 +118,7 @@ ui <- page_fluid(
             "Calculation & visualization of the Anti-Biofilm Combination Index"
           ),
 
-          HTML(paste0(
+          make(
             "<p class='lead mb-4'>Welcome to ShinyABCi, a tool to quantify ",
             "and visualize the <i>in vitro</i> effects of drug combinations. ",
             "The Anti-Biofilm Combination Index (ABCI) is a metric designed ",
@@ -85,48 +126,24 @@ ui <- page_fluid(
             "without relying on activity thresholds (e.g. MIC, MBIC, or ",
             "MBEC), which present significant challenges when evaluating ",
             "antibiofilm activity.</p>"
-          )),
+          ),
 
-          HTML(paste0(
+          make(
             "<p class='lead mb-4'>Here you can calculate ABCIs for your ",
             "checkerboard data, and visualize the results different plots ",
             "designed to quickly identify promising interactions and ",
             "favourable drug ratios.</p>"
-          )),
+          ),
 
-          HTML(paste0(
+          make(
             "<p class='lead mb-4'>Click the Get Started button to upload ",
             "your data. If you’d like to learn more about how ABCI is ",
             "calculated, or how to use ShinyABCi, check the Help pages below. ",
             "For more information, including how to cite ShinyABCi, please ",
             "refer to the About page.</p>"
-          )),
+          ),
 
-          div(
-            actionButton(
-              inputId = "get_started",
-              class = "btn btn-primary btn-lg px-4 me-md-2",
-              icon = icon("play"),
-              label = "Get started",
-              width = "175px"
-            ) %>% tooltip("Go to the Upload tab to begin", placement = "bottom"),
-
-            actionButton(
-              inputId = "help_from_home",
-              class = "btn btn-info btn-lg px-4 me-md-2",
-              icon = icon("circle-question"),
-              label = "Help",
-              width = "175px"
-            ) %>% tooltip("Learn how to use ShinyABCi", placement = "bottom"),
-
-            actionButton(
-              inputId = "about",
-              class = "btn btn-secondary btn-lg px-4 me-md-2",
-              icon = icon("circle-info"),
-              label = "About",
-              width = "175px"
-            ) %>% tooltip("Learn about ShinyABCi", placement = "bottom")
-          )
+          div(purrr::pmap(btn_tibble, my_btn))
         )
       )
     ),
@@ -230,13 +247,13 @@ ui <- page_fluid(
               "."
             ),
 
-            HTML(paste0(
+            make(
               "<p>Visualize the ABCI values using <b>Dot</b> or <b>Tile</b> ",
               "plots. The <b>Split</b> versions separate positive and ",
               "negative ABCI values into two plots, for visual simplicity. ",
               "Alternatively, the <b>Line</b> plot displays antimicrobial ",
               "activity for all or a subset of concentrations.</p>"
-            )),
+            ),
 
             disabled(
               actionButton(
@@ -322,7 +339,6 @@ ui <- page_fluid(
     nav_panel(
       value = "help",
       title = "Help",
-
       includeHTML("www/help/help.html")
     ),
 
@@ -393,70 +409,8 @@ ui <- page_fluid(
               class = "lead",
               "ShinyABCi is written in R, and utilizes the following packages:"
             ),
-            div(
-              class = "container",
-              div(
-                class = "row align-items-start",
-                style = "font-size: 1.1em; font-weight: 300",
-                div(
-                  class = "col",
-                  tags$dl(
-                    tags$dt(a(
-                      href = "https://rstudio.github.io/bslib/index.html",
-                      target = "_blank",
-                      rel = "noopener noreferrer",
-                      "bslib"
-                    )),
-                    tags$dd("A modern Bootstrap UI toolkit for Shiny"),
 
-                    tags$dt(a(
-                      href = "https://docs.ropensci.org/readODS/",
-                      target = "_blank",
-                      rel = "noopener noreferrer",
-                      "readODS"
-                    )),
-                    tags$dd("Read data from ODS files"),
-
-                    tags$dt(a(
-                      href = "https://ycphs.github.io/openxlsx/index.html",
-                      target = "_blank",
-                      rel = "noopener noreferrer",
-                      "openxlsx"
-                    )),
-                    tags$dd("Read and write XLSX files")
-                  )
-                ),
-
-                div(
-                  class = "col",
-                  tags$dl(
-                    tags$dt(a(
-                      href = "https://shiny.posit.co/",
-                      target = "_blank",
-                      rel = "noopener noreferrer",
-                      "shiny"
-                    )),
-                    tags$dd("Easily create and deploy web apps from R"),
-
-                    tags$dt(a(
-                      href = "https://deanattali.com/shinyjs/",
-                      target = "_blank",
-                      rel = "noopener noreferrer",
-                      "shinyjs"
-                    )),
-                    tags$dd("Extend Shiny functionality with Javascript"),
-
-                    tags$dt(a(
-                      href = "https://www.tidyverse.org/",
-                      target = "_blank",
-                      rel = "noopener noreferrer",
-                      "tidyverse"
-                    )),
-                    tags$dd("Packages for data manipulation and visualization"),
-                  )
-                )
-              )
-            )
+            div(class = "container", dep_wrapper(dependency_tibble))
           )
         )
       )
@@ -468,7 +422,7 @@ ui <- page_fluid(
     nav_spacer(),
 
     nav_item(
-      tags$a(
+      a(
         icon("github"),
         "GitHub",
         href = "https://github.com/hancockinformatics/ShinyABCi",
@@ -479,10 +433,10 @@ ui <- page_fluid(
 
     # Divider
     nav_item(
-      HTML(paste0(
+      make(
         "<div class='vr d-none d-lg-flex h-100 mx-lg-2 text-white'></div>",
         "<hr class='d-lg-none my-2 text-white-50'>"
-      ))
+      )
     ),
 
     nav_item(app_version, style = "color: var(--bs-nav-link-color)")
@@ -579,13 +533,13 @@ server <- function(input, output) {
       id = "upload_notification",
       type = initial_input$type,
       duration = ifelse(initial_input$type == "error", 20, 10),
-      ui = HTML(paste0(
+      ui = make(
         "<h4 class='alert-heading'><b>", initial_input$status, "</b></h4>",
         "<p class='mb-0'>",
         initial_input$message,
         initial_input$suggest,
         "</p>"
-      ))
+      )
     )
   })
 
@@ -599,13 +553,13 @@ server <- function(input, output) {
       id = "upload_notification",
       type = initial_input$type,
       duration = ifelse(initial_input$type == "error", 20, 10),
-      ui = HTML(paste0(
+      ui = make(
         "<h4 class='alert-heading'><b>", initial_input$status, "</b></h4>",
         "<p class='mb-0'>",
         initial_input$message,
         initial_input$suggest,
         "</p>"
-      ))
+      )
     )
   })
 
@@ -651,14 +605,14 @@ server <- function(input, output) {
         "Select an uploaded experiment to preview"
       ),
       card_body(
-        HTML(paste0(
+        make(
           "<p>Use the dropdown to choose an experiment to preview; the card ",
           "to the right displays information gathered from the selected ",
           "experiment, while the table below shows the corresponding data ",
           "(<b>first replicate only</b>). Make sure everything looks OK ",
           "before proceeding by clicking the button at the bottom of the ",
           "sidebar.</p>"
-        )),
+        ),
         selectInput(
           inputId = "upload_input_names_selector",
           label = NULL,
@@ -683,27 +637,27 @@ server <- function(input, output) {
       ),
 
       card_body(
-        HTML(paste0(
+        make(
           "<p><b>Treatment in the columns:</b> ",
           experiment_drugs[["cols"]][["name"]],
           "</p>"
-        )),
+        ),
         HTML(paste0(
           "<p><b>Detected concentrations:</b> ",
           paste(experiment_drugs[["cols"]][["concentrations"]], collapse = ", "),
           "</p>"
         )),
         hr(),
-        HTML(paste0(
+        make(
           "<p><b>Treatment in the rows:</b> ",
           experiment_drugs[["rows"]][["name"]],
           "</p>"
-        )),
-        HTML(paste0(
+        ),
+        make(
           "<p><b>Detected concentrations:</b> ",
           paste(experiment_drugs[["rows"]][["concentrations"]], collapse = ", "),
           "</p>"
-        ))
+        )
       )
     )
   })
@@ -854,11 +808,11 @@ server <- function(input, output) {
       id = "save_notification",
       type = "warning",
       duration = 30,
-      ui = HTML(paste0(
+      ui = make(
         "<p class='mb-0'>",
         "You can save the plot by right-clicking on it and selecting ",
         "'Save Image As'.</p>"
-      ))
+      )
     )
   }, once = TRUE)
 
@@ -2249,7 +2203,7 @@ server <- function(input, output) {
     showModal(
       modalDialog(
         title = "Analyze a new dataset",
-        paste0(
+        p(
           "Are you sure you want to refresh this page and analyze a new ",
           "dataset? Doing so will reset the app, meaning any current results ",
           "and plots will be lost!"
