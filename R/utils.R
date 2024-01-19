@@ -60,20 +60,19 @@ make <- function(...) HTML(paste0(...))
 #'
 #' @param id Button ID
 #' @param class Extra class for the button
-#' @param icon Icon to apppear before the label
+#' @param icon Icon to appear before the label
 #' @param label Label or name of the button
-#' @param tooltip Tooltip content
 #'
 #' @return A button element
 #'
-my_btn <- function(id, class, icon, label, tooltip) {
+my_btn <- function(id, class, icon, label) {
   actionButton(
     inputId = id,
     class = paste0("btn btn-lg px-4 me-md-2 ", class),
     icon = icon(icon),
     label = label,
     width = "175px"
-  ) %>% tooltip(tooltip, placement = "bottom")
+  )
 }
 
 

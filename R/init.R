@@ -18,12 +18,7 @@ btn_tibble <- dplyr::tibble(
   id = c("get_started", "help_from_home", "about"),
   class = c("btn-primary", "btn-info", "btn-secondary"),
   icon = c("play", "circle-question", "circle-info"),
-  label = c("Get started", "Help", "About"),
-  tooltip = c(
-    "Go to the Upload tab to begin",
-    "Learn how to use ShinyABCi",
-    "Learn about ShinyABCi"
-  )
+  label = c("Get started", "Help", "About")
 )
 
 # Links in the About page
