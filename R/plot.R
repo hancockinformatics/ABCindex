@@ -1,27 +1,3 @@
-# Load data objects
-size_mapping_N1S2 <- readRDS("data/size_mapping_N1S2.Rds")
-preset_palettes <- readRDS("data/preset_palettes.Rds")
-preset_palettes_split <- readRDS("data/preset_palettes_split.Rds")
-
-# Axis lines drawn on every facet, for all plot types
-line_x <- ggplot2::annotate(
-  "segment",
-  x = -Inf,
-  xend = Inf,
-  y = -Inf,
-  yend = -Inf,
-  linewidth = 2
-)
-line_y <- ggplot2::annotate(
-  "segment",
-  x = -Inf,
-  xend = -Inf,
-  y = -Inf,
-  yend = Inf,
-  linewidth = 2
-)
-
-
 #' sprinter
 #'
 #' @param x Character vector (factor) of numeric values
@@ -301,17 +277,17 @@ plot_dot <- function(
     {if (x.mic.line) geom_vline(
       data = mic.table,
       aes(xintercept = XLAB),
-      linewidth = 2
+      linewidth = 1
     )} +
     {if (y.mic.line) geom_hline(
       data = mic.table,
       aes(yintercept = YLAB),
-      linewidth = 2
+      linewidth = 1
     )} +
 
     # Draw lines to separate 0-concentration values
-    geom_vline(xintercept = 1.5, linewidth = 0.5) +
-    geom_hline(yintercept = 1.5, linewidth = 0.5) +
+    geom_vline(xintercept = 1.5, linewidth = 0.5, linetype = "longdash") +
+    geom_hline(yintercept = 1.5, linewidth = 0.5, linetype = "longdash") +
 
     scale_fill_gradientn(
       colours = preset_palettes$values[[colour.palette]],

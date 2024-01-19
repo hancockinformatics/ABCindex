@@ -1,237 +1,35 @@
-# Setup chunk -------------------------------------------------------------
+# Setup -------------------------------------------------------------------
 
-library(dplyr)
-library(ggplot2)
-library(openxlsx)
-library(shinyjs)
-library(shiny)
-library(bslib)
-
-app_version <- gsub(
-  x = readLines("DESCRIPTION")[3],
-  pattern = "^Version\\: ",
-  replacement = ""
-)
-
-app_theme <- bs_theme(version = 5, bootswatch = "cosmo")
+suppressPackageStartupMessages({
+  library(dplyr)
+  library(ggplot2)
+  library(openxlsx)
+  library(shinyjs)
+  library(shiny)
+  library(bslib)
+})
 
 set_ggplot_theme()
-
-
-# |- Fixed plot inputs ----------------------------------------------------
-
-abci_colours <- preset_palettes[["choices"]]
-abci_colours_split <- preset_palettes_split[["choices"]]
-
-line_colours <- list(
-  Accent = "Accent",
-  Dark = "Dark2",
-  `Set 1` = "Set1",
-  `Set 2` = "Set2",
-  `Set 3` = "Set3"
-)
-
-plot_scales <- c(
-  "Axis labels on every panel" = "free",
-  "Only label the outermost axes" = "fixed"
-)
-
-tooltips <- list(
-  abci_colours = paste0(
-    "Colour palette for the ABCI values, designed to highlight the most ",
-    "relevant differences. Click to see the options."
-  ),
-  x_axis_title = "Title for the X axis; applies to the entire plot",
-  x_axis_digits =
-    "Number of decimal places to show for concentrations on the X axis",
-  y_axis_title = "Title for the Y axis; applies to the entire plot",
-  y_axis_digits =
-    "Number of decimal places to show for concentrations on the Y axis",
-  size_legend = "Title of the size legend in dot plots",
-  draw_activity = paste0(
-    "Include line(s) to indicate activity thresholds for individual ",
-    "treatments (e.g., MIC, MBIC, MBEC). Defaults to ≥50% killing."
-  ),
-  activity_val = paste0(
-    "Draw a line(s) when individual treatments reach the indicated ",
-    "percentage (0.5 = 50% killing). Applies to X and Y axis."
-  ),
-  swap_x_y = "Turn on to swap the values plotted on the X and Y axis",
-  axis_labels =
-    "Across plot panels, should the X and Y axis labels vary or be the same?",
-  low_effect = paste0(
-    "Draw a symbol on tiles with low effect when treatments are combined. ",
-    "Defaults to <50% killing."
-  ),
-  low_effect_val = paste0(
-    "Draw a symbol on combined treatment cells that kill less than the ",
-    "indicated percentage (0.5 = 50% killing)."
-  ),
-  large_effect = paste0(
-    "Outline dots, or draw a symbol on tiles, to highlight combinations with ",
-    "high killing"
-  ),
-  large_effect_val = paste0(
-    "Threshold value used for highlighting combinations with a large effect ",
-    "(0.9 = 90% killing)"
-  ),
-  filter = paste0(
-    "Choose whether to include ABCI values close to 0 (Loose) or hide them ",
-    "(Strict)"
-  ),
-  linear = "Toggle to enable linear/continuous scaling for dot sizes"
-)
-
-
-# |- Plot legends ---------------------------------------------------------
-
-link_paragraph <- p(
-  "You can learn more about how to interpret your data ",
-  actionLink("help_from_legend", "here", .noWS = "after"),
-  ". The text below can be used as a template for a figure legend:"
-)
-
-plot_legends <- list(
-  dot = div(
-    p(
-      "This graph combines ABCI (drug interaction) and activity (% killed). ",
-      "The colour of the tiles indicates ABCI: Positive ABCI values indicate ",
-      "that the combination is more effective than any individual drug on its ",
-      "own; negative values indicate that the combination is less effective ",
-      "than at least the most active individual drug. The size of the dots ",
-      "indicates the percentage of biomass killed. Vertical and horizontal ",
-      "lines can be added to illustrate the activity thresholds of the ",
-      "individual drugs (e.g., MIC)."
-    ),
-    link_paragraph,
-    p(
-      style = "font-size:0.75em",
-      "Effects of different combinations of [Drug A] and [Drug B], evaluated ",
-      "using the Anti-Biofilm Combination Index (ABCI, colour scale) and ",
-      "percentage of [biofilm inhibition], relative to the average of the ",
-      "untreated control. Results are the average of [X] replicates. Positive ",
-      "ABCI values indicate a combination more effective than each individual ",
-      "drug, while negative values indicate a combination less effective than ",
-      "at least the most active individual drug; see materials and methods ",
-      "for ABCI calculation. Vertical and horizontal lines indicate the ",
-      "[MBIC50] of individual drugs. Created with ShinyABCi [Citation]."
-    )
-  ),
-
-  dot_split = div(
-    p(
-      "This graph combines ABCI (drug interaction) and activity (% killed). ",
-      "The colour of the tiles indicates ABCI: Positive ABCI values (top) ",
-      "indicate that the combination is more effective than any individual ",
-      "drug on its own; negative values (bottom) indicate that the ",
-      "combination is less effective than at least the most active individual ",
-      "drug. They have been split into two different plots for visually ",
-      "simplified illustrations of only positive or negative interactions. ",
-      "The size of the dots indicates the percentage of biomass killed. ",
-      "Vertical and horizontal lines can be added to illustrate the activity ",
-      "thresholds of the individual drugs (e.g., MIC)."
-    ),
-    link_paragraph,
-    p(
-      style = "font-size:0.75em",
-      "Effects of different combinations of [Drug A] and [Drug B], evaluated ",
-      "using the Anti-Biofilm Combination Index (ABCI, colour scale) and ",
-      "percentage of [biofilm inhibition], relative to the average of the ",
-      "untreated controls. Results are the average of [X] replicates. ",
-      "Positive ABCI values (top) indicate a combination more effective than ",
-      "each individual drug, while negative values (bottom) indicate a ",
-      "combination less effective than at least the most active individual ",
-      "drug; see materials and methods for ABCI calculation. Vertical and ",
-      "horizontal lines indicate the [MBIC50] of individual drugs. Created ",
-      "with ShinyABCi [Citation]."
-    )
-  ),
-
-  tile = div(
-    p("The colour of the tiles indicates ABCI: Positive ABCI values indicate ",
-      "that the combination is more effective than any individual drug on its ",
-      "own; negative values indicate that the combination is less effective ",
-      "than at least the most active individual drug. Vertical and horizontal ",
-      "lines can be added to illustrate the activity thresholds of the ",
-      "individual drugs (e.g., MIC). Activity (% killing) is not depicted: it ",
-      "is recommended to combine this with a line plot for interesting ",
-      "concentrations."
-    ),
-    link_paragraph,
-    p(
-      style = "font-size:0.75em",
-      "Anti-Biofilm Combination Index (ABCI) [Citation] for combinations of ",
-      "[Drug A] and [Drug B]. Results are the average of [X] replicates. ",
-      "Positive ABCI values indicate a combination more effective than each ",
-      "individual drug, while negative values indicate a combination less ",
-      "effective than at least the most active individual drug; see materials ",
-      "and methods for ABCI calculation. Vertical and horizontal lines ",
-      "indicate the [MBIC50] of individual drugs. Tiles labelled ‘<’ indicate ",
-      "less than [50% biofilm inhibition]. Created with ShinyABCi [Citation]."
-    )
-  ),
-
-  tile_split = div(
-    p(
-      "The colour of the tiles indicates ABCI: Positive ABCI values (top) ",
-      "indicate that the combination is more effective than any individual ",
-      "drug on its own; negative values (bottom) indicate that the ",
-      "combination is less effective than at least the most active individual ",
-      "drug. They have been split into two different plots for visually ",
-      "simplified illustrations of only positive or negative interactions. ",
-      "Vertical and horizontal lines can be added to illustrate the activity ",
-      "thresholds of the individual drugs (e.g., MIC). Activity (% killing) ",
-      "is not depicted: it is recommended to combine this with a line plot ",
-      "for interesting concentrations."
-    ),
-    link_paragraph,
-    p(
-      style = "font-size:0.75em",
-      "Anti-Biofilm Combination Index (ABCI) [Citation] for combinations of ",
-      "[Drug A] and [Drug B]. Results are the average of [X] replicates. ",
-      "Positive ABCI values (top) indicate a combination more effective than ",
-      "each individual drug, while negative values (bottom) indicate a ",
-      "combination less effective than at least the most active individual ",
-      "drug; see materials and methods for ABCI calculation. Vertical and ",
-      "horizontal lines indicate the [MBIC50] of individual drugs. Tiles ",
-      "labelled ‘<’ indicate less than [50% biofilm inhibition]. Created with ",
-      "ShinyABCi [Citation]."
-    )
-  ),
-
-  line = div(
-    p(
-      "This is a simple representation of the percentage of biomass killed ",
-      "by the drug combinations in your assay. We recommend using the ABCI ",
-      "plots to identify which concentrations are the most relevant or ",
-      "representative and choosing a maximum of six for the treatment ",
-      "represented as lines. A vertical line can be added to illustrate the ",
-      "activity threshold (e.g., MIC) of the drug represented on the X axis."
-    ),
-    link_paragraph,
-    p(
-      style = "font-size:0.75em",
-      "Percentage of [biofilm inhibition] of different combinations of [Drug ",
-      "A] and [Drug B], relative to the average of the untreated controls. ",
-      "Results are representative of X replicates; [error bars represent ",
-      "standard deviation]. Vertical lines indicate the [MBIC50] of [Drug A]. ",
-      "Created with ShinyABCi [Citation]."
-    )
-  )
-)
 
 
 # Define UI ---------------------------------------------------------------
 
 ui <- page_fluid(
   theme = bs_add_variables(
-    app_theme
-    # primary = "red"
-    # "progress-bar-bg" = "orange"
+    app_theme,
+    danger = "#cc002c"
   ),
 
   useShinyjs(),
-  tags$script(src = "js/client.js"),
+
+  tags$script(HTML(r"(
+    window.onbeforeunload = () => {
+      if (document.getElementById('shiny-disconnected-overlay') === null) {
+        return 'Are you sure you want to leave?';
+      }
+    };
+  )")),
+
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "css/custom.css"),
     tags$link(
@@ -248,9 +46,6 @@ ui <- page_fluid(
     )
   ),
 
-
-  # Navbar page -----------------------------------------------------------
-
   page_navbar(
     id = "navbar",
     collapsible = TRUE,
@@ -258,11 +53,11 @@ ui <- page_fluid(
     window_title = "ShinyABCi",
 
 
-    # |- Home page ------------------------------------------------------
+    # |- Home -------------------------------------------------------------
 
     nav_panel(
       value = "home",
-      title = "ShinyABCi",
+      title = "Home",
 
       div(
         class = "container my-5",
@@ -276,7 +71,7 @@ ui <- page_fluid(
             "Calculation & visualization of the Anti-Biofilm Combination Index"
           ),
 
-          HTML(paste0(
+          make(
             "<p class='lead mb-4'>Welcome to ShinyABCi, a tool to quantify ",
             "and visualize the <i>in vitro</i> effects of drug combinations. ",
             "The Anti-Biofilm Combination Index (ABCI) is a metric designed ",
@@ -284,52 +79,23 @@ ui <- page_fluid(
             "without relying on activity thresholds (e.g. MIC, MBIC, or ",
             "MBEC), which present significant challenges when evaluating ",
             "antibiofilm activity.</p>"
-          )),
+          ),
 
-          HTML(paste0(
+          make(
             "<p class='lead mb-4'>Here you can calculate ABCIs for your ",
-            "checkerboard data, and visualize the results different plots ",
-            "designed to quickly identify promising interactions and ",
-            "favourable drug ratios.</p>"
-          )),
+            "checkerboard data and visualize the results in different plots ",
+            "designed to quickly identify promising interactions and
+            favourable drug ratios.</p>"
+          ),
 
-          HTML(paste0(
-            "<p class='lead mb-4'>Click the Get Started button to upload ",
-            "your data. If you’d like to learn more about how ABCI is ",
-            "calculated, or how to use ShinyABCi, check the Help pages below. ",
-            "For more information, including how to cite ShinyABCi, please ",
-            "refer to the About page.</p>"
-          )),
+          make(
+            "<p class='lead mb-4'>Click the Get Started button to upload your ",
+            "data. To learn more about how ABCI is calculated, or how to use ",
+            "ShinyABCi, check the Help pages below. For more information, ",
+            "including how to cite ShinyABCi, please refer to the About page.</p>"
+          ),
 
-          div(
-            actionButton(
-              inputId = "get_started",
-              class = "btn btn-primary btn-lg px-4 me-md-2",
-              label = div(
-                icon("play"),
-                HTML("Get started")
-              ),
-              width = "175px"
-            ),
-            actionButton(
-              inputId = "help_from_home",
-              class = "btn btn-info btn-lg px-4 me-md-2",
-              label = div(
-                icon("circle-question"),
-                HTML("Help")
-              ),
-              width = "175px"
-            ),
-            actionButton(
-              inputId = "about",
-              class = "btn btn-secondary btn-lg px-4 me-md-2",
-              label = div(
-                icon("circle-info"),
-                HTML("About")
-              ),
-              width = "175px"
-            )
-          )
+          div(purrr::pmap(btn_tibble, my_btn))
         )
       )
     ),
@@ -365,8 +131,12 @@ ui <- page_fluid(
 
             p(
               "Use the link to ",
-              actionLink("load_example_data", "try our example data"),
-              "or check out the ",
+              actionLink(
+                "load_example_data",
+                "try our example data",
+                .noWS = "after"
+              ),
+              ", or check out the ",
               actionLink("help_from_upload", "Help pages"),
               "to learn more about the data types we support."
             ),
@@ -382,13 +152,17 @@ ui <- page_fluid(
               actionButton(
                 inputId = "perform_abci_calculations",
                 class = "btn btn-primary btn-tooltip mt-auto",
-                label = "Perform ABCI calculations",
                 icon = icon("calculator"),
-                title = paste0(
-                  "Upload your plate data, or load our example data, then ",
-                  "click here to analyze"
+                label = "Perform ABCI calculations"
+              ) %>%
+                tooltip(
+                  id = "perform_abci_calculations_tt",
+                  placement = "top",
+                  paste0(
+                    "Upload your plate data, or load our example data, then ",
+                    "click here to analyze"
+                  )
                 )
-              )
             )
           ),
 
@@ -416,35 +190,39 @@ ui <- page_fluid(
         layout_sidebar(
           sidebar = sidebar(
             id = "results_sidebar",
-            title = "ABCI visualizations and results",
+            title = "ABCI results and visualizations",
             width = "580px",
             open = NA,
 
             p(
               "ABCI is calculated for every combination of concentrations in ",
-              "each of your experiments. Positive ABCI values indicate the ",
+              "each of your experiments. Positive ABCI values indicate that the ",
               "combination is more effective than either individual drug. ",
               "Please refer to the ",
-              actionLink("help_from_results", "ABCI help pages"),
-              " to learn more about ABCI."
+              actionLink("help_from_results", "Help pages"),
+              "to learn more about ABCI."
             ),
 
-            HTML(paste0(
+            make(
               "<p>Visualize your ABCI results using <b>Dot</b> or <b>Tile</b> ",
-              "plots. The <b>Split</b> versions separate the positive and ",
+              "plots. The <b>Split</b> versions separate positive and ",
               "negative ABCI values into two plots, for visual simplicity. ",
               "Alternatively, the <b>Line</b> plot displays antimicrobial ",
               "activity for all or a subset of concentrations.</p>"
-            )),
+            ),
 
             disabled(
               actionButton(
                 inputId = "create_plot",
                 class = "btn btn-info btn-tooltip",
-                label = "Create or update the plot",
                 icon = icon("chart-bar"),
-                title = "Upload and analyze some data to enable visualization"
-              )
+                label = "Create or update the plot"
+              ) %>%
+                tooltip(
+                  id = "create_plot_tt",
+                  placement = "right",
+                  "Upload and analyze data to enable visualization"
+                )
             ),
 
             navset_tab(
@@ -481,20 +259,29 @@ ui <- page_fluid(
             disabled(
               downloadButton(
                 outputId = "results_handler_xlsx",
+                class = "btn btn-success align-items-center",
                 label = "Download results spreadsheet",
-                style = "width: 50%",
-                class = "btn btn-success align-items-center"
-              )
+                style = "width: 50%"
+              ) %>%
+                tooltip(
+                  id = "results_handler_xlsx_tt",
+                  placement = "right",
+                  "Upload and analyze data to download the results"
+                )
             ),
 
             disabled(
               actionButton(
                 inputId = "reset",
                 class = "btn btn-warning",
-                label = "Analyze a new dataset",
                 icon = icon("arrow-rotate-left"),
-                title = "Resets all inputs, results, and plots"
-              )
+                label = "Analyze a new dataset"
+              ) %>%
+                tooltip(
+                  id = "reset_tt",
+                  placement = "top",
+                  "Resets all inputs, results, and plots"
+                )
             )
           ),
           uiOutput("abci_plot_ui")
@@ -508,7 +295,6 @@ ui <- page_fluid(
     nav_panel(
       value = "help",
       title = "Help",
-
       includeHTML("www/help/help.html")
     ),
 
@@ -573,76 +359,13 @@ ui <- page_fluid(
 
             h1(
               class = "display-6 fw-bold text-body-emphasis lh-1 mb-3",
-              "References & resources"
+              "Dependencies"
             ),
             p(
               class = "lead",
-              "ShinyABCi is written in R, and utilizes the following packages:"
+              "ShinyABCi is written with R, and uses the following packages:"
             ),
-            div(
-              class = "container",
-              div(
-                class = "row align-items-start",
-                style = "font-size: 1.1em; font-weight: 300",
-                div(
-                  class = "col",
-                  tags$dl(
-                    tags$dt(a(
-                      href = "https://rstudio.github.io/bslib/index.html",
-                      target = "_blank",
-                      rel = "noopener noreferrer",
-                      "bslib"
-                    )),
-                    tags$dd("A modern Bootstrap UI toolkit for Shiny"),
-
-                    tags$dt(a(
-                      href = "https://docs.ropensci.org/readODS/",
-                      target = "_blank",
-                      rel = "noopener noreferrer",
-                      "readODS"
-                    )),
-                    tags$dd("Read data from ODS files"),
-
-                    tags$dt(a(
-                      href = "https://ycphs.github.io/openxlsx/index.html",
-                      target = "_blank",
-                      rel = "noopener noreferrer",
-                      "openxlsx"
-                    )),
-                    tags$dd("Read and write XLSX files")
-                  )
-                ),
-
-                div(
-                  class = "col",
-                  tags$dl(
-                    tags$dt(a(
-                      href = "https://shiny.posit.co/",
-                      target = "_blank",
-                      rel = "noopener noreferrer",
-                      "shiny"
-                    )),
-                    tags$dd("Easily create and deploy web apps from R"),
-
-                    tags$dt(a(
-                      href = "https://deanattali.com/shinyjs/",
-                      target = "_blank",
-                      rel = "noopener noreferrer",
-                      "shinyjs"
-                    )),
-                    tags$dd("Extend Shiny functionality with Javascript"),
-
-                    tags$dt(a(
-                      href = "https://www.tidyverse.org/",
-                      target = "_blank",
-                      rel = "noopener noreferrer",
-                      "tidyverse"
-                    )),
-                    tags$dd("Packages for data manipulation and visualization"),
-                  )
-                )
-              )
-            )
+            div(class = "container", dep_wrapper(dependency_tibble))
           )
         )
       )
@@ -654,22 +377,21 @@ ui <- page_fluid(
     nav_spacer(),
 
     nav_item(
-      tags$a(
+      a(
         icon("github"),
-        "Github",
+        "GitHub",
         href = "https://github.com/hancockinformatics/ShinyABCi",
         target = "_blank",
-        rel = "noopener noreferrer",
-        title = "Visit our Github to browse the code or submit an issue."
+        rel = "noopener noreferrer"
       )
     ),
 
     # Divider
     nav_item(
-      HTML(paste0(
-        '<div class="vr d-none d-lg-flex h-100 mx-lg-2 text-white"></div>',
-        '<hr class="d-lg-none my-2 text-white-50">'
-      ))
+      make(
+        "<div class='vr d-none d-lg-flex h-100 mx-lg-2 text-white'></div>",
+        "<hr class='d-lg-none my-2 text-white-50'>"
+      )
     ),
 
     nav_item(app_version, style = "color: var(--bs-nav-link-color)")
@@ -682,7 +404,7 @@ ui <- page_fluid(
 server <- function(input, output) {
 
 
-  # Home ------------------------------------------------------------------
+  # Buttons/links to tabs -------------------------------------------------
 
   observeEvent(input$get_started, {
     updateNavbarPage(inputId = "navbar", selected = "upload")
@@ -693,16 +415,21 @@ server <- function(input, output) {
   observeEvent(input$about, {
     updateNavbarPage(inputId = "navbar", selected = "about")
   })
-
-
-  # Upload ----------------------------------------------------------------
-
+  observeEvent(input$help_from_about, {
+    updateNavbarPage(inputId = "navbar", selected = "help")
+  })
   observeEvent(input$help_from_upload, {
+    updateNavbarPage(inputId = "navbar", selected = "help")
+  })
+  observeEvent(input$help_from_results, {
+    updateNavbarPage(inputId = "navbar", selected = "help")
+  })
+  observeEvent(input$help_from_legend, {
     updateNavbarPage(inputId = "navbar", selected = "help")
   })
 
 
-  # |- Download the template ----------------------------------------------
+  # Download the template -------------------------------------------------
 
   observeEvent(input$download_template, {
     showModal(modalDialog(
@@ -747,83 +474,64 @@ server <- function(input, output) {
   )
 
 
-  # |- Example data -------------------------------------------------------
+  # Loading data ----------------------------------------------------------
 
-  input_data_raw <- reactiveVal()
+  input_data <- reactiveVal()
 
+  # Example data
   observeEvent(input$load_example_data, {
-    if (file.exists("example_data/example_data_lucas.xlsx")) {
-      input_1 <- plate_reader("example_data/example_data_lucas.xlsx")
 
-      showNotification(
-        id = "upload_success",
-        type = "message",
-        ui = HTML(paste0(
-          "<h4 class='alert-heading'><b>Upload successful</b></h4>",
-          "<p class='mb-0'>",
-          "The example data was successfully loaded. Use the button at the ",
-          "bottom of the sidebar to proceed to the next step.</p>"
-        ))
-      )
-      input_data_raw(input_1)
+    initial_input <- plate_input("example_data/example_data_lucas.xlsx")
+    input_data(initial_input$data)
 
-    } else {
-      showNotification(
-        type = "error",
-        duration = 20,
-        ui = HTML(paste0(
-          "<h4 class='alert-heading'><b>Error</b></h4>",
-          "<p class='mb-0'>Example data not found! Please upload a dataset ",
-          "to analyze.</p>"
-        ))
+    showNotification(
+      id = "upload_notification",
+      type = initial_input$type,
+      duration = ifelse(initial_input$type == "error", 20, 10),
+      ui = make(
+        "<h4 class='alert-heading'><b>", initial_input$status, "</b></h4>",
+        "<p class='mb-0'>",
+        initial_input$message,
+        initial_input$suggest,
+        "</p>"
       )
-      input_data_raw(NULL)
-    }
+    )
   })
 
-
-  # |- User data ----------------------------------------------------------
-
+  # User data
   observeEvent(input$load_user_data, {
 
-    input_1 <- plate_input(input$load_user_data$datapath)
+    initial_input <- plate_input(input$load_user_data$datapath)
+    input_data(initial_input$data)
 
-    if (input_1$status == "success") {
-      showNotification(
-        id = "upload_success",
-        type = "message",
-        ui = HTML(paste0(
-          "<h4 class='alert-heading'><b>Upload successful</b></h4>",
-          "<p class='mb-0'>",
-          input_1$message,
-          input_1$suggest,
-          "</p>"
-        ))
+    showNotification(
+      id = "upload_notification",
+      type = initial_input$type,
+      duration = ifelse(initial_input$type == "error", 20, 10),
+      ui = make(
+        "<h4 class='alert-heading'><b>", initial_input$status, "</b></h4>",
+        "<p class='mb-0'>",
+        initial_input$message,
+        initial_input$suggest,
+        "</p>"
       )
-      input_data_raw(input_1$data)
+    )
+  })
 
-    } else if (input_1$status == "error") {
-      showNotification(
-        type = "error",
-        duration = 20,
-        ui = HTML(paste0(
-          "<h4 class='alert-heading'><b>Error</b></h4>",
-          "<p class='mb-0'>",
-          input_1$message,
-          input_1$suggest,
-          "</p>"
-        ))
-      )
-      input_data_raw(NULL)
-    }
+  # Enable the calculations button
+  observeEvent(input_data(), {
+    enable_button(
+      "perform_abci_calculations",
+      "Click here to analyze the uploaded data"
+    )
   })
 
 
-  # |- Gather input info --------------------------------------------------
+  # Input summary cards ---------------------------------------------------
 
   # drug_info()[[experiment]][[cols/rows]][[name/concentrations]]
   drug_info <- reactive(
-    lapply(input_data_raw(), function(experiment) {
+    lapply(input_data(), function(experiment) {
       list(
         "cols" = list(
           "name" = unique(experiment$cols),
@@ -843,14 +551,99 @@ server <- function(input, output) {
     })
   )
 
+  output$upload_input_names_card <- renderUI(
+    card(
+      height = 340,
+      class = "mb-0",
+      card_header(
+        class = "bg-dark",
+        "Select an uploaded experiment to preview"
+      ),
+      card_body(
+        make(
+          "<p>Use the dropdown to choose an experiment to preview; the card ",
+          "to the right displays information gathered from the selected ",
+          "experiment, while the table below shows the corresponding data ",
+          "(<b>first replicate only</b>). Make sure everything looks OK ",
+          "before proceeding by clicking the button at the bottom of the ",
+          "sidebar.</p>"
+        ),
+        selectInput(
+          inputId = "upload_input_names_selector",
+          label = NULL,
+          choices = names(input_data_preview()),
+          width = "inherit"
+        )
+      )
+    )
+  )
 
-  # |- Create input preview -----------------------------------------------
+  upload_drug_card <- reactive({
+    experiment_drugs <- drug_info()[[input$upload_input_names_selector]]
+    card(
+      height = 340,
+      class = "mb-0",
+      card_header(
+        class = "bg-dark",
+        paste0(
+          "Treatment information for experiment '",
+          input$upload_input_names_selector, "'"
+        )
+      ),
+
+      card_body(
+        make(
+          "<p><b>Treatment in the columns:</b> ",
+          experiment_drugs[["cols"]][["name"]],
+          "</p>"
+        ),
+        HTML(paste0(
+          "<p><b>Detected concentrations:</b> ",
+          paste(experiment_drugs[["cols"]][["concentrations"]], collapse = ", "),
+          "</p>"
+        )),
+        hr(),
+        make(
+          "<p><b>Treatment in the rows:</b> ",
+          experiment_drugs[["rows"]][["name"]],
+          "</p>"
+        ),
+        make(
+          "<p><b>Detected concentrations:</b> ",
+          paste(experiment_drugs[["rows"]][["concentrations"]], collapse = ", "),
+          "</p>"
+        )
+      )
+    )
+  })
+
+  output$upload_drug_card_UI <- renderUI({
+    req(input_data_preview(), input$upload_input_names_selector)
+    upload_drug_card()
+  })
+
+  output$upload_input_preview <- renderUI({
+    req(input_data_preview(), input$upload_input_names_selector)
+    tagList(
+      card_header(
+        class = "bg-dark",
+        paste0(
+          "Data from the first replicate of experiment '",
+          input$upload_input_names_selector, "'"
+        )
+      ),
+      DT::dataTableOutput("input_data_preview_DT")
+    )
+  })
+
+
+  # Preview input as table ------------------------------------------------
 
   input_data_preview <- reactive({
-    req(input_data_raw())
+    req(input_data())
 
     # We only show the first replicate in the preview
-    lapply(input_data_raw(), function(experiment) {
+    lapply(input_data(), function(experiment) {
       experiment %>%
         mutate(across(where(is.numeric), ~signif(.x, digits = 4))) %>%
         filter(grepl(x = replicate, pattern = "_p1$")) %>%
@@ -878,130 +671,31 @@ server <- function(input, output) {
     )
   )
 
-  # |- Create and render cards --------------------------------------------
 
-  output$upload_input_names_card <- renderUI(
-    card(
-      height = 340,
-      class = "mb-0",
-      card_header(
-        class = "bg-dark",
-        "Select an uploaded experiment to preview"
-      ),
-      card_body(
-        HTML(paste0(
-          "<p>Use the dropdown to choose an experiment to preview. The card ",
-          "to the right displays some information gathered from the ",
-          "experiment, while the table below shows the uploaded data ",
-          "(<b>first replicate only</b>). Make sure everything looks OK ",
-          "before proceeding by clicking the button at the bottom of the ",
-          "sidebar.</p>"
-        )),
-        selectInput(
-          inputId = "upload_input_names_selector",
-          label = NULL,
-          choices = names(input_data_preview()),
-          width = "inherit"
-        )
-      )
-    )
-  )
-
-  upload_drug_card <- reactive({
-    experiment_drugs <- drug_info()[[input$upload_input_names_selector]]
-    card(
-      height = 340,
-      class = "mb-0",
-      card_header(
-        class = "bg-dark",
-        paste0(
-          "Treatment information for experiment '",
-          input$upload_input_names_selector, "'"
-        )
-      ),
-
-      card_body(
-        HTML(paste0(
-          "<p><b>Treatment in the columns:</b> ",
-          experiment_drugs[["cols"]][["name"]],
-          "</p>"
-        )),
-        HTML(paste0(
-          "<p><b>Detected concentrations:</b> ",
-          paste(experiment_drugs[["cols"]][["concentrations"]], collapse = ", "),
-          "</p>"
-        )),
-        hr(),
-        HTML(paste0(
-          "<p><b>Treatment in the rows:</b> ",
-          experiment_drugs[["rows"]][["name"]],
-          "</p>"
-        )),
-        HTML(paste0(
-          "<p><b>Detected concentrations:</b> ",
-          paste(experiment_drugs[["rows"]][["concentrations"]], collapse = ", "),
-          "</p>"
-        ))
-      )
-    )
-  })
-
-  output$upload_drug_card_UI <- renderUI({
-    req(input_data_preview(), input$upload_input_names_selector)
-    upload_drug_card()
-  })
-
-  output$upload_input_preview <- renderUI({
-    req(input_data_preview(), input$upload_input_names_selector)
-    tagList(
-      card_header(
-        class = "bg-dark",
-        paste0(
-          "Data from the first replicate of experiment '",
-          input$upload_input_names_selector, "'"
-        )
-      ),
-      DT::dataTableOutput("input_data_preview_DT")
-    )
-  })
-
-
-  # Calculations ----------------------------------------------------------
-
-  observeEvent(input_data_raw(), {
-    enable_button(
-      "perform_abci_calculations",
-      "Click here to analyze the uploaded data"
-    )
-  })
-
-
-  # |- Calculations modal -------------------------------------------------
+  # Calculations modal ----------------------------------------------------
 
   observeEvent(input$perform_abci_calculations, {
-    req(input_data_raw())
-    removeNotification(id = "upload_success")
+    req(input_data())
+    removeNotification(id = "upload_notification")
 
     showModal(modalDialog(
       title = "Perform ABCI calculations: Data normalization",
       size = "l",
 
-      tagList(
-        p(
-          "By default, ShinyABCi will normalize all input data to ",
-          "percentages. If your data has already been normalized, please ",
-          "select the appropriate option below before proceeding."
+      p(
+        "By default, ShinyABCi will normalize all input data to ",
+        "percentages. If your data has already been normalized, please ",
+        "select the appropriate option below before proceeding."
+      ),
+      radioButtons(
+        inputId = "normalize_radio",
+        label = NULL,
+        choices = list(
+          "Normalize my data (becoming range 0-1)" = "run_norm",
+          "My data is already normalized (range 0-1 or 0-100)" = "no_norm"
         ),
-        radioButtons(
-          inputId = "normalize_radio",
-          label = NULL,
-          choices = list(
-            "Normalize my data (becoming range 0-1)" = "run_norm",
-            "My data is already normalized (range 0-1 or 0-100)" = "no_norm"
-          ),
-          selected = "run_norm",
-          width = "inherit"
-        )
+        selected = "run_norm",
+        width = "inherit"
       ),
 
       footer = tagList(
@@ -1019,27 +713,19 @@ server <- function(input, output) {
   })
 
 
-  # |- Tidy input ---------------------------------------------------------
-
-  input_data_tidy <- reactiveVal()
-
-  observeEvent(input$confirm_calc, {
-    input_data_raw() %>%
-      bind_rows(.id = "assay") %>%
-      mutate(across(c(cols_conc, rows_conc), forcats::fct_inseq)) %>%
-      input_data_tidy()
-  })
-
-
-  # |- Calculate results --------------------------------------------------
+  # Tidy input and get results --------------------------------------------
 
   abci_results <- reactiveVal()
 
   observeEvent(input$confirm_calc, {
-    req(input_data_tidy())
+    req(input_data())
+
+    input_data_tidy <- input_data() %>%
+      bind_rows(.id = "assay") %>%
+      mutate(across(c(cols_conc, rows_conc), forcats::fct_inseq))
 
     abci_analysis(
-      data = input_data_tidy(),
+      data = input_data_tidy,
       x.drug = "cols_conc",
       y.drug = "rows_conc",
       col.data = "bio",
@@ -1048,33 +734,16 @@ server <- function(input, output) {
       normalize = ifelse(input$normalize_radio == "run_norm", TRUE, FALSE)
     ) %>%
       abci_results()
-  })
-
-
-  # Results ---------------------------------------------------------------
-
-  observeEvent(input$help_from_results, {
-    updateNavbarPage(inputId = "navbar", selected = "help")
-  })
-
-  observeEvent(input$help_from_legend, {
-    updateNavbarPage(inputId = "navbar", selected = "help")
-  })
-
-
-  # |- Enable and update things -------------------------------------------
-
-  observeEvent(input$confirm_calc, {
-    req(abci_results())
 
     removeModal()
+
     updateNavbarPage(inputId  = "navbar", selected = "results")
 
+    enable_button("reset")
     enable_button(
       "results_handler_xlsx",
       "Click here to download your results as an XLSX file"
     )
-    enable("reset")
     enable_button(
       "create_plot",
       paste0(
@@ -1085,82 +754,25 @@ server <- function(input, output) {
     click("create_plot")
   })
 
+
+
+  # Save info notification ------------------------------------------------
+
   observeEvent(input$create_plot, {
     showNotification(
       id = "save_notification",
       type = "warning",
       duration = 30,
-      ui = HTML(paste0(
+      ui = make(
         "<p class='mb-0'>",
         "You can save the plot by right-clicking on it and selecting ",
         "'Save Image As'.</p>"
-      ))
+      )
     )
   }, once = TRUE)
 
 
-  # |- Reset button -------------------------------------------------------
-
-  observeEvent(input$reset, {
-    showModal(
-      modalDialog(
-        title = "Analyze a new dataset",
-        paste0(
-          "Are you sure you want to analyze a new dataset? Doing so will ",
-          "reset the app, meaning any current results and plots will be lost!"
-        ),
-        footer = tagList(
-          tagAppendAttributes(
-            modalButton(label = "Cancel"),
-            class = "btn-outline-secondary"
-          ),
-          actionButton(
-            "confirm_reset",
-            "Reset and start over",
-            class = "btn btn-danger"
-          )
-        )
-      )
-    )
-  })
-
-  observeEvent(input$confirm_reset, {
-    removeModal()
-    shinyjs::reset("load_user_data")
-    input_data_raw(NULL)
-    input_data_tidy(NULL)
-    abci_results(NULL)
-    output$abci_plot <- NULL
-    output$abci_plot_ui <- NULL
-    updateNavbarPage(inputId = "navbar", selected = "upload")
-
-    disable_button(
-      "perform_abci_calculations",
-      "Load your plate data, or our example data, then click here to analyze"
-    )
-    disable_button(
-      "results_handler_xlsx",
-      "Once your data is analyzed, you can download the results here"
-    )
-    disable_button(
-      "create_plot",
-      "Upload and analyze some data to enable visualization"
-    )
-
-    removeNotification(id = "save_notification")
-
-    showNotification(
-      type = "warning",
-      ui = HTML(paste0(
-        "<h4 class='alert-heading'><b>Reset successful</b></h4>",
-        "<p class='mb-0'>All inputs and results have been reset to their ",
-        "original state. Upload another data set to get started.</p>"
-      ))
-    )
-  })
-
-
-  # |- Download results ---------------------------------------------------
+  # Download results ------------------------------------------------------
 
   output$results_handler_xlsx <- downloadHandler(
     filename = function() {
@@ -1183,16 +795,12 @@ server <- function(input, output) {
   )
 
 
-  # |- Reactive values/inputs ---------------------------------------------
-
-  plot_type <- reactive(input$plot_tabs)
-
-  abci_plot_data <- reactive(abci_results())
+  # Set up Results reactives ----------------------------------------------
 
   abci_plot_dims <- reactive({
-    req(abci_plot_data())
+    req(abci_results())
 
-    n_assay <- length(unique(abci_plot_data()$assay))
+    n_assay <- length(unique(abci_results()$assay))
     n_rows <- ceiling(n_assay / 2)
     n_cols <- ifelse(n_assay == 1, 1, 2)
     list(n_cols, n_rows)
@@ -1201,25 +809,25 @@ server <- function(input, output) {
   axis_titles <- reactive(
     list(
       "cols" = ifelse(
-        length(unique(abci_plot_data()$cols)) == 1,
-        unique(abci_plot_data()$cols),
+        length(unique(abci_results()$cols)) == 1,
+        unique(abci_results()$cols),
         "Drug A"
       ),
       "rows" = ifelse(
-        length(unique(abci_plot_data()$rows)) == 1,
-        unique(abci_plot_data()$rows),
+        length(unique(abci_results()$rows)) == 1,
+        unique(abci_results()$rows),
         "Drug B"
       )
     )
   )
 
-  plot_legend_ui <- reactive(plot_legends[[plot_type()]])
+  plot_legend_ui <- reactive(plot_legends[[input$plot_tabs]])
 
 
-  # |-- Line include options ----------------------------------------------
+  # |- Line include options -----------------------------------------------
 
   observeEvent(input$plot_line_swap, {
-    req(abci_plot_data())
+    req(abci_results())
 
     line_column <- ifelse(
       input$plot_line_swap,
@@ -1227,7 +835,7 @@ server <- function(input, output) {
       "rows_conc"
     )
 
-    unique_conc <- abci_plot_data() %>%
+    unique_conc <- abci_results() %>%
       pull(line_column) %>%
       unique()
 
@@ -1239,7 +847,7 @@ server <- function(input, output) {
   })
 
 
-  # |-- Preview colours ---------------------------------------------------
+  # |- Preview colours ----------------------------------------------------
 
   modal_colours <- lapply(
     list(
@@ -1247,14 +855,14 @@ server <- function(input, output) {
         title = "ABCI colour palettes",
         easyClose = TRUE,
         size = "m",
-        HTML("<img src='img/abci_palettes_preview.svg' class='center'>"),
+        HTML("<img src='img/colours_abci.svg' class='center'>"),
         footer = modalButton("Close")
       ),
-      "rcolorbrewer" = modalDialog(
+      "lines" = modalDialog(
         title = "Line colour palettes",
         easyClose = TRUE,
         size = "m",
-        HTML("<img src='img/rcolorbrewer_supported_palettes.svg' class='center'>"),
+        HTML("<img src='img/colours_lines.svg' class='center'>"),
         footer = modalButton("Close")
       )
     ),
@@ -1275,14 +883,13 @@ server <- function(input, output) {
     showModal(modal_colours$abci)
   })
   observeEvent(input$line_preview_colours, {
-    showModal(modal_colours$rcolorbrewer)
+    showModal(modal_colours$lines)
   })
 
 
-  # |- Plot inputs UI -----------------------------------------------------
+  # Plot inputs UI --------------------------------------------------------
 
-
-  # |-- Dot ---------------------------------------------------------------
+  # |- Dot ----------------------------------------------------------------
 
   output$plot_inputs_dot <- renderUI({
     list(
@@ -1350,7 +957,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_dot_size_text",
           label = NULL,
-          value = "Biofilm killed %"
+          value = "Biomass reduction %"
         )
       ),
 
@@ -1479,7 +1086,7 @@ server <- function(input, output) {
   })
 
 
-  # |-- Split dot ---------------------------------------------------------
+  # |- Split dot ----------------------------------------------------------
 
   output$plot_inputs_dot_split <- renderUI({
     list(
@@ -1547,7 +1154,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_dot_split_size_text",
           label = NULL,
-          value = "Biofilm killed %"
+          value = "Biomass reduction %"
         )
       ),
 
@@ -1694,7 +1301,7 @@ server <- function(input, output) {
   })
 
 
-  # |-- Tile --------------------------------------------------------------
+  # |- Tile ---------------------------------------------------------------
 
   output$plot_inputs_tile <- renderUI({
     list(
@@ -1893,7 +1500,7 @@ server <- function(input, output) {
   })
 
 
-  # |-- Split tile --------------------------------------------------------
+  # |- Split tile ---------------------------------------------------------
 
   output$plot_inputs_tile_split <- renderUI({
     list(
@@ -2110,7 +1717,7 @@ server <- function(input, output) {
   })
 
 
-  # |-- Line --------------------------------------------------------------
+  # |- Line ---------------------------------------------------------------
 
   output$plot_inputs_line <- renderUI({
     list(
@@ -2212,7 +1819,7 @@ server <- function(input, output) {
         textInput(
           inputId = "plot_line_y_text",
           label = NULL,
-          value = "% Biofilm"
+          value = "% Biomass"
         )
       ),
 
@@ -2314,16 +1921,16 @@ server <- function(input, output) {
   })
 
 
-  # |- renderPlot calls ---------------------------------------------------
+  # renderPlot calls ------------------------------------------------------
 
   observeEvent(input$create_plot, {
-    req(abci_plot_data())
+    req(abci_results())
 
     output$abci_plot <- renderPlot(
 
       if (isolate(input$plot_tabs) == "dot") {
         plot_dot(
-          data = isolate(abci_plot_data()),
+          data = isolate(abci_results()),
           x.drug = ifelse(
             isolate(input$plot_dot_swap),
             "rows_conc",
@@ -2362,7 +1969,7 @@ server <- function(input, output) {
       } else if (isolate(input$plot_tabs) == "dot_split") {
 
         plot_dot_split(
-          data = isolate(abci_plot_data()),
+          data = isolate(abci_results()),
           x.drug = ifelse(
             isolate(input$plot_dot_split_swap),
             "rows_conc",
@@ -2401,7 +2008,7 @@ server <- function(input, output) {
 
       } else if (isolate(input$plot_tabs) == "tile") {
         plot_tile(
-          data = isolate(abci_plot_data()),
+          data = isolate(abci_results()),
           x.drug = ifelse(
             isolate(input$plot_tile_swap),
             "rows_conc",
@@ -2434,7 +2041,7 @@ server <- function(input, output) {
 
       }  else if (isolate(input$plot_tabs) == "tile_split") {
         plot_tile_split(
-          data = isolate(abci_plot_data()),
+          data = isolate(abci_results()),
           x.drug = ifelse(
             isolate(input$plot_tile_split_swap),
             "rows_conc",
@@ -2468,7 +2075,7 @@ server <- function(input, output) {
 
       } else if (isolate(input$plot_tabs) == "line") {
 
-        if (max(abci_plot_data()$bio_normal) > 1.5) {
+        if (max(abci_results()$bio_normal) > 1.5) {
           showNotification(
             type = "warning",
             duration = 10,
@@ -2479,7 +2086,7 @@ server <- function(input, output) {
           )
         }
         plot_line(
-          data = isolate(abci_plot_data()),
+          data = isolate(abci_results()),
           plot.type = isolate(input$plot_line_type),
           x.drug = ifelse(
             isolate(input$plot_line_swap),
@@ -2512,13 +2119,13 @@ server <- function(input, output) {
   })
 
 
-  # |- plotOutput call ----------------------------------------------------
+  # plotOutput call -------------------------------------------------------
 
   observeEvent(input$create_plot, {
-    req(abci_plot_data())
+    req(abci_results())
 
     output_dims <- get_dims(
-      type = plot_type(),
+      type = input$plot_tabs,
       n_cols = abci_plot_dims()[[1]],
       n_rows = abci_plot_dims()[[2]]
     )
@@ -2545,10 +2152,34 @@ server <- function(input, output) {
   })
 
 
-  # About -----------------------------------------------------------------
+  # Refresh button --------------------------------------------------------
 
-  observeEvent(input$help_from_about, {
-    updateNavbarPage(inputId = "navbar", selected = "help")
+  observeEvent(input$reset, {
+    showModal(
+      modalDialog(
+        title = "Analyze a new dataset",
+        p(
+          "Are you sure you want to refresh this page and analyze a new ",
+          "dataset? Doing so will reset the app, meaning any current results ",
+          "and plots will be lost!"
+        ),
+        footer = tagList(
+          tagAppendAttributes(
+            modalButton(label = "Cancel"),
+            class = "btn-outline-secondary"
+          ),
+          actionButton(
+            "confirm_reset",
+            "Refresh and start over",
+            class = "btn btn-danger"
+          )
+        )
+      )
+    )
+  })
+
+  observeEvent(input$confirm_reset, {
+    runjs("window.onbeforeunload = null; location.reload();")
   })
 } # Shiny sever close
 

@@ -77,6 +77,17 @@ plate_input <- function(file, sheet = "all") {
 
   tryCatch(
     {
+
+      if (!file.exists(file)) {
+        list(
+          data = NULL,
+          status = "Error",
+          type = "error",
+          message = "The specified file was not found!",
+          suggest = "Try uploading a different file."
+        )
+      }
+
       x <- plate_reader(file = file, sheet = sheet)
       check_well_result <- check_wells(x)
       check_untreated_result <- check_untreated(x)
@@ -89,7 +100,8 @@ plate_input <- function(file, sheet = "all") {
 
         list(
           data = NULL,
-          status = "error",
+          status = "Error",
+          type = "error",
           message = paste0(
             "Invalid wells (outside A1-H12) were detected in the following ",
             "experiment(s): ",
@@ -104,7 +116,8 @@ plate_input <- function(file, sheet = "all") {
       } else if (is.null(check_well_result)) {
         list(
           data = NULL,
-          status = "error",
+          status = "Error",
+          type = "error",
           message = "An error occurred when trying to import your data. ",
           suggest = paste0(
             "Please ensure your data matches our input requirements, then try ",
@@ -114,7 +127,8 @@ plate_input <- function(file, sheet = "all") {
       } else if (!is.null(check_untreated_result)) {
         list(
           data = NULL,
-          status = "error",
+          status = "Error",
+          type = "error",
           message = paste0(
             "No untreated samples were detected in the following experiment(s): ",
             paste(check_untreated_result, collapse = "; "),
@@ -127,7 +141,8 @@ plate_input <- function(file, sheet = "all") {
       } else {
         list(
           data = x,
-          status = "success",
+          status = "Upload successful",
+          type = "message",
           message = "Your data was successfully loaded. ",
           suggest = "Use the button at the bottom of the sidebar to proceed."
         )
@@ -137,7 +152,8 @@ plate_input <- function(file, sheet = "all") {
     error = function(e) {
       list(
         data = NULL,
-        status = "error",
+        status = "Error",
+        type = "error",
         message = "An error occurred when trying to import your data. ",
         suggest = paste0(
           "Please ensure your data matches our input requirements, then try ",
