@@ -25,25 +25,28 @@ btn_tibble <- dplyr::tibble(
 dependency_tibble <- dplyr::tibble(
   link = c(
     "https://rstudio.github.io/bslib/index.html",
-    "https://docs.ropensci.org/readODS/",
     "https://ycphs.github.io/openxlsx/index.html",
+    "https://docs.ropensci.org/readODS/",
     "https://shiny.posit.co/",
+    "https://github.com/daattali/shinycssloaders",
     "https://deanattali.com/shinyjs/",
     "https://www.tidyverse.org/"
   ),
   name = c(
     "bslib",
-    "readODS",
     "openxlsx",
+    "readODS",
     "Shiny",
+    "shinycssloaders",
     "shinyjs",
     "tiyverse"
   ),
   description = c(
     "A modern Bootstrap UI toolkit for Shiny",
-    "Read data from ODS files",
     "Read and write XLSX files",
+    "Read data from ODS files",
     "Easily create and deploy web apps from R",
+    "Add loading animations to Shiny outputs",
     "Extend Shiny functionality with Javascript",
     "Packages for data manipulation and visualization"
   )
