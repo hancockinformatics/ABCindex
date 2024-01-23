@@ -783,7 +783,6 @@ server <- function(input, output) {
   })
 
 
-
   # Save info notification ------------------------------------------------
 
   observeEvent(input$create_plot, {
@@ -793,6 +792,7 @@ server <- function(input, output) {
       duration = 30,
       ui = make(
         "<p class='mb-0'>",
+        "<h4 class='alert-heading'><b>Saving the plots</b></h4>",
         "You can save the plot by right-clicking on it and selecting ",
         "'Save Image As'.</p>"
       )
