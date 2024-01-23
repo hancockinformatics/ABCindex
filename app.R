@@ -280,6 +280,7 @@ ui <- page_fluid(
                     actionButton(
                       inputId = "restore",
                       class = "btn btn-secondary",
+                      icon = icon("rotate-left"),
                       label = "Restore defaults",
                       width = "100%"
                     ) %>% tooltip(
@@ -295,14 +296,14 @@ ui <- page_fluid(
                     actionButton(
                       inputId = "reset",
                       class = "btn btn-warning",
-                      icon = icon("arrow-rotate-left"),
+                      icon = icon("trash-can"),
                       label = "Analyze a new dataset",
                       width = "100%"
                     ) %>%
                       tooltip(
                         id = "reset_tt",
                         placement = "top",
-                        "Resets all inputs, results, and plots"
+                        "Discard current results and start a new analysis"
                       )
                   )
                 )
