@@ -260,8 +260,8 @@ ui <- page_fluid(
               downloadButton(
                 outputId = "results_handler_xlsx",
                 class = "btn btn-success align-items-center",
-                label = "Download results spreadsheet",
-                style = "width: 50%"
+                label = "Download ABCI results spreadsheet",
+                style = "width: fit-content"
               ) %>%
                 tooltip(
                   id = "results_handler_xlsx_tt",
