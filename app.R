@@ -270,18 +270,43 @@ ui <- page_fluid(
                 )
             ),
 
-            disabled(
-              actionButton(
-                inputId = "reset",
-                class = "btn btn-warning",
-                icon = icon("arrow-rotate-left"),
-                label = "Analyze a new dataset"
-              ) %>%
-                tooltip(
-                  id = "reset_tt",
-                  placement = "top",
-                  "Resets all inputs, results, and plots"
+            div(
+              class = "container",
+              div(
+                class = "row",
+                div(
+                  class = "col ps-md-0",
+                  disabled(
+                    actionButton(
+                      inputId = "restore",
+                      class = "btn btn-secondary",
+                      label = "Restore defaults",
+                      width = "100%"
+                    ) %>% tooltip(
+                      id = "restore_tt",
+                      placement = "top",
+                      "Restores plot inputs to their default state"
+                    )
+                  )
+                ),
+                div(
+                  class = "col pe-md-0",
+                  disabled(
+                    actionButton(
+                      inputId = "reset",
+                      class = "btn btn-warning",
+                      icon = icon("arrow-rotate-left"),
+                      label = "Analyze a new dataset",
+                      width = "100%"
+                    ) %>%
+                      tooltip(
+                        id = "reset_tt",
+                        placement = "top",
+                        "Resets all inputs, results, and plots"
+                      )
+                  )
                 )
+              )
             )
           ),
           uiOutput("abci_plot_ui")
@@ -739,11 +764,6 @@ server <- function(input, output) {
 
     updateNavbarPage(inputId  = "navbar", selected = "results")
 
-    enable_button("reset")
-    enable_button(
-      "results_handler_xlsx",
-      "Click here to download your results as an XLSX file"
-    )
     enable_button(
       "create_plot",
       paste0(
@@ -751,6 +771,13 @@ server <- function(input, output) {
         "changing the inputs"
       )
     )
+    enable_button(
+      "results_handler_xlsx",
+      "Click here to download your results as an XLSX file"
+    )
+    enable_button("restore")
+    enable_button("reset")
+
     click("create_plot")
   })
 
@@ -2155,6 +2182,14 @@ server <- function(input, output) {
         )
       )
     )
+  })
+
+
+  # Restore button --------------------------------------------------------
+
+  observeEvent(input$restore, {
+    shinyjs::reset(id = "results_sidebar")
+    delay(5, click("create_plot"))
   })
 
 
