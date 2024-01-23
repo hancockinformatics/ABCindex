@@ -41,9 +41,11 @@
   padding-right: 16px;
 }
 
-/* Tweak placement and size of modal dialogs */
+/* Give regula modal dialogs the attributes of "modal-dialog-centered" */
 .modal-dialog {
-  top: 15vh;
+  display: flex;
+  align-items: center;
+  min-height: calc(100% - var(--bs-modal-margin) * 2);
 }
 
 /* Increase size of the progress bar when uploading files */

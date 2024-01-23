@@ -435,10 +435,13 @@ server <- function(input, output) {
     showModal(modalDialog(
       title = "Download input template",
       size = "m",
+      easyClose = TRUE,
       p(
         "The template data can be downloaded as either a '.xlsx' or '.ods' ",
         "file using the buttons below."
       ),
+      HTML("<img src='help/input_template.png' class='center'>"),
+      br(),
       downloadButton(
         outputId = "template_handler_xlsx",
         label = "XLSX",
@@ -451,11 +454,10 @@ server <- function(input, output) {
         width = "50px",
         class = "btn btn-success px-4 me-md-2 align-items-center"
       ),
-      easyClose = TRUE,
       footer = tagAppendAttributes(
-        modalButton(label = "Cancel"),
+        modalButton(label = "Close"),
         class = "btn-outline-secondary"
-      ),
+      )
     ))
   })
 
@@ -681,7 +683,6 @@ server <- function(input, output) {
     showModal(modalDialog(
       title = "Perform ABCI calculations: Data normalization",
       size = "l",
-
       p(
         "By default, ShinyABCi will normalize all input data to ",
         "percentages. If your data has already been normalized, please ",
@@ -697,10 +698,9 @@ server <- function(input, output) {
         selected = "run_norm",
         width = "inherit"
       ),
-
       footer = tagList(
         tagAppendAttributes(
-          modalButton(label = "Cancel"),
+          modalButton(label = "Close"),
           class = "btn-outline-secondary"
         ),
         actionButton(
@@ -856,14 +856,20 @@ server <- function(input, output) {
         easyClose = TRUE,
         size = "m",
         HTML("<img src='img/colours_abci.svg' class='center'>"),
-        footer = modalButton("Close")
+        footer = tagAppendAttributes(
+          modalButton(label = "Close"),
+          class = "btn-outline-secondary"
+        ),
       ),
       "lines" = modalDialog(
         title = "Line colour palettes",
         easyClose = TRUE,
         size = "m",
         HTML("<img src='img/colours_lines.svg' class='center'>"),
-        footer = modalButton("Close")
+        footer = tagAppendAttributes(
+          modalButton(label = "Close"),
+          class = "btn-outline-secondary"
+        ),
       )
     ),
     tagAppendAttributes,
@@ -2165,7 +2171,7 @@ server <- function(input, output) {
         ),
         footer = tagList(
           tagAppendAttributes(
-            modalButton(label = "Cancel"),
+            modalButton(label = "Close"),
             class = "btn-outline-secondary"
           ),
           actionButton(
