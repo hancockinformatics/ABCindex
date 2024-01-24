@@ -283,6 +283,7 @@ ui <- page_fluid(
                     actionButton(
                       inputId = "plot_download_button",
                       class = "btn btn-success align-items-center",
+                      icon = icon("floppy-disk"),
                       label = "Download the plot",
                       style = "width: 100%"
                     )
@@ -303,7 +304,7 @@ ui <- page_fluid(
                     ) %>% tooltip(
                       id = "restore_tt",
                       placement = "top",
-                      "Restores plot inputs to their default state"
+                      "Restores all plot inputs to their default state"
                     )
                   )
                 ),
@@ -320,7 +321,7 @@ ui <- page_fluid(
                       tooltip(
                         id = "reset_tt",
                         placement = "top",
-                        "Discard current results and start a new analysis"
+                        "Discard the current results and start a new analysis"
                       )
                   )
                 )
@@ -2196,7 +2197,9 @@ server <- function(input, output) {
   })
 
   output$plot_handler_png <- downloadHandler(
-    filename = "ShinyABCi_plot.png",
+    filename = function() {
+      paste0("ShinyABCi_plot_", input$plot_tabs, ".png")
+    },
     content = function(file) {
       ggsave(
         plot = the_plot(),
@@ -2210,7 +2213,9 @@ server <- function(input, output) {
   )
 
   output$plot_handler_svg <- downloadHandler(
-    filename = "ShinyABCi_plot.svg",
+    filename = function() {
+      paste0("ShinyABCi_plot_", input$plot_tabs, ".svg")
+    },
     content = function(file) {
       ggsave(
         plot = the_plot(),
@@ -2224,7 +2229,9 @@ server <- function(input, output) {
   )
 
   output$plot_handler_tif <- downloadHandler(
-    filename = "ShinyABCi_plot.tiff",
+    filename = function() {
+      paste0("ShinyABCi_plot_", input$plot_tabs, ".tiff")
+    },
     content = function(file) {
       ggsave(
         plot = the_plot(),
