@@ -1,6 +1,7 @@
 # Setup -------------------------------------------------------------------
 
 suppressPackageStartupMessages({
+  library(svglite)
   library(dplyr)
   library(ggplot2)
   library(openxlsx)
@@ -279,10 +280,10 @@ ui <- page_fluid(
                 div(
                   class = "col pe-md-0",
                   disabled(
-                    downloadButton(
-                      outputId = "plot_handler_png",
+                    actionButton(
+                      inputId = "plot_download_button",
                       class = "btn btn-success align-items-center",
-                      label = "PNG",
+                      label = "Download the plot",
                       style = "width: 100%"
                     )
                   )
@@ -792,7 +793,7 @@ server <- function(input, output) {
       "results_handler_xlsx",
       "Click here to download your results as an XLSX file"
     )
-    enable_button("plot_handler_png")
+    enable_button("plot_download_button")
     enable_button("restore")
     enable_button("reset")
 
@@ -2143,8 +2144,66 @@ server <- function(input, output) {
 
   # Download plot button --------------------------------------------------
 
+  observeEvent(input$plot_download_button, {
+    showModal(modalDialog(
+      title = "Download the plot",
+      size = "m",
+      p("Download the plot as any of the following formats:"),
+      downloadButton(
+        outputId = "plot_handler_png",
+        label = "PNG",
+        width = "50px",
+        class = "btn btn-success px-4 me-md-2 align-items-center"
+      ),
+      downloadButton(
+        outputId = "plot_handler_svg",
+        label = "SVG",
+        width = "50px",
+        class = "btn btn-success px-4 me-md-2 align-items-center"
+      ),
+      downloadButton(
+        outputId = "plot_handler_tif",
+        label = "TIFF",
+        width = "50px",
+        class = "btn btn-success px-4 me-md-2 align-items-center"
+      ),
+      footer = tagAppendAttributes(
+        modalButton(label = "Close"),
+        class = "btn-outline-secondary"
+      )
+    ))
+  })
+
   output$plot_handler_png <- downloadHandler(
     filename = "ShinyABCi_plot.png",
+    content = function(file) {
+      ggsave(
+        plot = the_plot(),
+        filename = file,
+        scale = 4,
+        width = output_dims()[1],
+        height = output_dims()[2],
+        units = "px"
+      )
+    }
+  )
+
+  output$plot_handler_svg <- downloadHandler(
+    filename = "ShinyABCi_plot.svg",
+    content = function(file) {
+      ggsave(
+        plot = the_plot(),
+        filename = file,
+        scale = 4,
+        width = output_dims()[1],
+        height = output_dims()[2],
+        units = "px"
+      )
+    }
+  )
+
+  output$plot_handler_tif <- downloadHandler(
+    filename = "ShinyABCi_plot.tiff",
     content = function(file) {
       ggsave(
         plot = the_plot(),
