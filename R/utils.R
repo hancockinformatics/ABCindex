@@ -20,7 +20,7 @@ enable_button <- function(id, x = NULL) {
 #' @param n_cols Number of columns for the output plot
 #' @param n_rows Number of rows for the output plot
 #'
-#' @return Character vector of output width and height, in pixels
+#' @return Numeric vector of output width and height, in pixels
 #'
 get_dims <- function(type, n_cols, n_rows) {
 
@@ -43,7 +43,7 @@ get_dims <- function(type, n_cols, n_rows) {
       "line" = c(1150, 100 + 300 * n_rows)
     )
   }
-  paste0(dims, "px")
+  return(dims)
 }
 
 

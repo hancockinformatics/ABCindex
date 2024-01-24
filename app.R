@@ -256,22 +256,38 @@ ui <- page_fluid(
 
             hr(),
 
-            disabled(
-              downloadButton(
-                outputId = "results_handler_xlsx",
-                class = "btn btn-success align-items-center",
-                label = "Download ABCI results spreadsheet",
-                style = "width: fit-content"
-              ) %>%
-                tooltip(
-                  id = "results_handler_xlsx_tt",
-                  placement = "right",
-                  "Upload and analyze data to download the results"
-                )
-            ),
-
             div(
               class = "container",
+              div(
+                class = "row mb-2",
+                div(
+                  class = "col ps-md-0",
+                  disabled(
+                    downloadButton(
+                      outputId = "results_handler_xlsx",
+                      class = "btn btn-success align-items-center",
+                      label = "Download results spreadsheet",
+                      style = "width: 100%"
+                    ) %>%
+                      tooltip(
+                        id = "results_handler_xlsx_tt",
+                        placement = "right",
+                        "Upload and analyze data to download the results"
+                      )
+                  )
+                ),
+                div(
+                  class = "col pe-md-0",
+                  disabled(
+                    downloadButton(
+                      outputId = "plot_handler_png",
+                      class = "btn btn-success align-items-center",
+                      label = "PNG",
+                      style = "width: 100%"
+                    )
+                  )
+                )
+              ),
               div(
                 class = "row",
                 div(
@@ -776,28 +792,12 @@ server <- function(input, output) {
       "results_handler_xlsx",
       "Click here to download your results as an XLSX file"
     )
+    enable_button("plot_handler_png")
     enable_button("restore")
     enable_button("reset")
 
     click("create_plot")
   })
-
-
-  # Save info notification ------------------------------------------------
-
-  observeEvent(input$create_plot, {
-    showNotification(
-      id = "save_notification",
-      type = "message",
-      duration = 15,
-      ui = make(
-        "<p class='mb-0'>",
-        "<h4 class='alert-heading'><b>Saving the plots</b></h4>",
-        "You can save the plot by right-clicking on it and selecting ",
-        "'Save Image As'.</p>"
-      )
-    )
-  }, once = TRUE)
 
 
   # Download results ------------------------------------------------------
@@ -1426,8 +1426,8 @@ server <- function(input, output) {
           type = 8,
           plotOutput(
             outputId = "abci_plot",
-            width = output_dims()[1],
-            height = output_dims()[2]
+            width = paste0(output_dims()[1], "px"),
+            height = paste0(output_dims()[2], "px")
           )
         ),
         card(
@@ -1440,6 +1440,23 @@ server <- function(input, output) {
       )
     )
   })
+
+
+  # Download plot button --------------------------------------------------
+
+  output$plot_handler_png <- downloadHandler(
+    filename = "ShinyABCi_plot.png",
+    content = function(file) {
+      ggsave(
+        plot = the_plot(),
+        filename = file,
+        scale = 4,
+        width = output_dims()[1],
+        height = output_dims()[2],
+        units = "px"
+      )
+    }
+  )
 
 
   # Restore button --------------------------------------------------------
