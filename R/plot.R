@@ -669,14 +669,10 @@ plot_line <- function(
   data <- data %>%
     mutate(across(all_of(c(x.drug, line.drug)), forcats::fct_inseq))
 
-  data_clean <- if (length(line.include) != 0) {
-    if (line.include[1] != "all") {
-      filter(data, .data[[line.drug]] %in% line.include)
-    } else {
-      data
-    }
+  data_clean <- if (line.include[1] != "all") {
+    filter(data, .data[[line.drug]] %in% line.include)
   } else {
-    return(NULL)
+    data
   }
 
 
