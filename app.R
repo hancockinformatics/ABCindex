@@ -1106,79 +1106,76 @@ server <- function(input, output) {
     }
   })
 
+  the_plot <- eventReactive(input$create_plot, {
+    req(abci_results())
+
+    if (input$plot_tabs == "dot") {
+      plot_dot(
+        data = abci_results(),
+        x.drug = ifelse(input$plot_dot_swap, "rows_conc", "cols_conc"),
+        y.drug = ifelse(input$plot_dot_swap, "cols_conc", "rows_conc"),
+        col.fill = "abci_avg",
+        col.size = "effect_avg",
+        size.range = c(3, 15),
+        linear = input$plot_dot_linear,
+        col.analysis = "assay",
+        n.cols = abci_plot_dims()[[1]],
+        n.rows = abci_plot_dims()[[2]],
+        size.text = input$plot_dot_size_text,
+        scales = input$plot_dot_scales,
+        x.decimal = input$plot_dot_x_decimal,
+        y.decimal = input$plot_dot_y_decimal,
+        x.text = input$plot_dot_x_text,
+        y.text = input$plot_dot_y_text,
+        x.mic.line = ("X" %in% input$plot_dot_mic_lines),
+        y.mic.line = ("Y" %in% input$plot_dot_mic_lines),
+        mic.threshold = input$plot_dot_mic_threshold,
+        large.effect = input$plot_dot_large_toggle,
+        large.effect.val = input$plot_dot_large_value,
+        col.mic = "bio_normal",
+        colour.palette = input$plot_dot_colour_palette
+      ) +
+        {if (abci_plot_dims()[[2]] == 1) {
+          theme(legend.box = "horizontal")
+        }}
+    }
+  })
+
 
   # renderPlot calls ------------------------------------------------------
 
-  observeEvent(input$create_plot, {
-    req(abci_results())
-
-    output$abci_plot <- renderPlot(
-
-      if (isolate(input$plot_tabs) == "dot") {
-        plot_dot(
-          data = abci_results(),
-          x.drug = ifelse(input$plot_dot_swap, "rows_conc", "cols_conc"),
-          y.drug = ifelse(input$plot_dot_swap, "cols_conc", "rows_conc"),
-          col.fill = "abci_avg",
-          col.size = "effect_avg",
-          size.range = c(3, 15),
-          linear = input$plot_dot_linear,
-          col.analysis = "assay",
-          n.cols = abci_plot_dims()[[1]],
-          n.rows = abci_plot_dims()[[2]],
-          size.text = input$plot_dot_size_text,
-          scales = input$plot_dot_scales,
-          x.decimal = input$plot_dot_x_decimal,
-          y.decimal = input$plot_dot_y_decimal,
-          x.text = input$plot_dot_x_text,
-          y.text = input$plot_dot_y_text,
-          x.mic.line = ("X" %in% input$plot_dot_mic_lines),
-          y.mic.line = ("Y" %in% input$plot_dot_mic_lines),
-          mic.threshold = input$plot_dot_mic_threshold,
-          large.effect = input$plot_dot_large_toggle,
-          large.effect.val = input$plot_dot_large_value,
-          col.mic = "bio_normal",
-          colour.palette = input$plot_dot_colour_palette
-        ) +
-          {if (abci_plot_dims()[[2]] == 1) {
-            theme(legend.box = "horizontal")
-          }}
-      }
-    )
-  })
+  output$abci_plot <- renderPlot(the_plot())
 
 
   # plotOutput call -------------------------------------------------------
 
-  observeEvent(input$create_plot, {
-    req(abci_results())
-
-    output_dims <- get_dims(
+  output_dims <- reactive(
+    get_dims(
       type = input$plot_tabs,
       n_cols = abci_plot_dims()[[1]],
       n_rows = abci_plot_dims()[[2]]
     )
+  )
 
-    output$abci_plot_ui <- renderUI(
-      tagList(
-        shinycssloaders::withSpinner(
-          type = 8,
-          plotOutput(
-            outputId = "abci_plot",
-            width = output_dims[1],
-            height = output_dims[2]
-          )
-        ),
-        card(
-          class = "border-0",
-          card_body(
-            plot_legend_ui(),
-            padding = 8
-          )
+  output$abci_plot_ui <- renderUI(
+    tagList(
+      shinycssloaders::withSpinner(
+        type = 8,
+        plotOutput(
+          outputId = "abci_plot",
+          width = output_dims()[1],
+          height = output_dims()[2]
+        )
+      ),
+      card(
+        class = "border-0",
+        card_body(
+          plot_legend_ui(),
+          padding = 8
         )
       )
     )
-  })
+  )
 
 
   # Restore button --------------------------------------------------------
