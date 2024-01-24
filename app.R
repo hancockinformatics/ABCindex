@@ -788,8 +788,8 @@ server <- function(input, output) {
   observeEvent(input$create_plot, {
     showNotification(
       id = "save_notification",
-      type = "warning",
-      duration = 30,
+      type = "message",
+      duration = 15,
       ui = make(
         "<p class='mb-0'>",
         "<h4 class='alert-heading'><b>Saving the plots</b></h4>",
