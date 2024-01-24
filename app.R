@@ -854,30 +854,7 @@ server <- function(input, output) {
   })
 
 
-  # |- Line include options -----------------------------------------------
-
-  # observeEvent(input$plot_line_swap, {
-  #   req(abci_results())
-  #
-  #   line_column <- ifelse(
-  #     input$plot_line_swap,
-  #     "cols_conc",
-  #     "rows_conc"
-  #   )
-  #
-  #   unique_conc <- abci_results() %>%
-  #     pull(line_column) %>%
-  #     unique()
-  #
-  #   updateSelectInput(
-  #     inputId = "plot_line_line_include",
-  #     choices = unique_conc,
-  #     selected = unique_conc
-  #   )
-  # })
-
-
-  # |- Preview colours ----------------------------------------------------
+  # Preview colours -------------------------------------------------------
 
   modal_colours <- lapply(
     list(
@@ -1876,16 +1853,16 @@ server <- function(input, output) {
         accordion_panel(
           title = "Advanced plot options",
 
-          # wrap_selector(
-          #   label = "Swap X and lines",
-          #   label_title =
-          #     "Turn on to swap the values plotted on the X axis and as lines",
-          #   input_switch(
-          #     id = "plot_line_swap",
-          #     label = "Off",
-          #     value = FALSE
-          #   )
-          # ),
+          wrap_selector(
+            label = "Swap X and lines",
+            label_title =
+              "Turn on to swap the values plotted on the X axis and as lines",
+            input_switch(
+              id = "plot_line_swap",
+              label = "Off",
+              value = FALSE
+            )
+          ),
 
           wrap_selector(
             label = "X axis jitter",
@@ -1922,30 +1899,30 @@ server <- function(input, output) {
     )
   )
 
-  # observeEvent(input$plot_line_swap, {
-  #   if (input$plot_line_swap) {
-  #     update_switch("plot_line_swap", label = "On")
-  #     updateTextInput(
-  #       inputId = "plot_line_x_text",
-  #       value = axis_titles()[["rows"]]
-  #     )
-  #     updateTextInput(
-  #       inputId = "plot_line_line_text",
-  #       value = axis_titles()[["cols"]]
-  #     )
-  #
-  #   } else {
-  #     update_switch("plot_line_swap", label = "Off")
-  #     updateTextInput(
-  #       inputId = "plot_line_x_text",
-  #       value = axis_titles()[["cols"]]
-  #     )
-  #     updateTextInput(
-  #       inputId = "plot_line_line_text",
-  #       value = axis_titles()[["rows"]]
-  #     )
-  #   }
-  # })
+  observeEvent(input$plot_line_swap, {
+    if (input$plot_line_swap) {
+      update_switch("plot_line_swap", label = "On")
+      updateTextInput(
+        inputId = "plot_line_x_text",
+        value = axis_titles()[["rows"]]
+      )
+      updateTextInput(
+        inputId = "plot_line_line_text",
+        value = axis_titles()[["cols"]]
+      )
+
+    } else {
+      update_switch("plot_line_swap", label = "Off")
+      updateTextInput(
+        inputId = "plot_line_x_text",
+        value = axis_titles()[["cols"]]
+      )
+      updateTextInput(
+        inputId = "plot_line_line_text",
+        value = axis_titles()[["rows"]]
+      )
+    }
+  })
 
   observeEvent(input$plot_line_jitter_x, {
     if (input$plot_line_jitter_x) {
@@ -1954,6 +1931,37 @@ server <- function(input, output) {
       update_switch("plot_line_jitter_x", label = "Off")
     }
   })
+
+
+  # Line include options --------------------------------------------------
+
+  line_columns <- reactive({
+    if (input$plot_line_swap) {
+      list("rows_conc", "cols_conc")
+    } else {
+      list("cols_conc", "rows_conc")
+    }
+  })
+
+  # observeEvent(input$plot_line_swap, {
+  #   req(abci_results())
+  #
+  #   line_column <- ifelse(
+  #     input$plot_line_swap,
+  #     "cols_conc",
+  #     "rows_conc"
+  #   )
+  #
+  #   unique_conc <- abci_results() %>%
+  #     pull(line_column) %>%
+  #     unique()
+  #
+  #   updateSelectInput(
+  #     inputId = "plot_line_line_include",
+  #     choices = unique_conc,
+  #     selected = unique_conc
+  #   )
+  # })
 
 
   # Create the_plot() -----------------------------------------------------
@@ -2078,8 +2086,8 @@ server <- function(input, output) {
       plot_line(
         data = abci_results(),
         plot.type = input$plot_line_type,
-        x.drug = "cols_conc",
-        line.drug = "rows_conc",
+        x.drug = line_columns()[[1]],
+        line.drug = line_columns()[[2]],
         col.data = "bio_normal",
         col.analysis = "assay",
         line.include = "all",
