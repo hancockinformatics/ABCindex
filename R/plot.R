@@ -144,9 +144,9 @@ plot_dot <- function(
     scales = "free",
     n.rows = NULL,
     n.cols = NULL,
-    size.text = "Biofilm killed %",
-    x.text = "Drug 1",
-    y.text = "Drug 2",
+    size.text = "Biomass reduction %",
+    x.text = "Drug A",
+    y.text = "Drug B",
     x.decimal = 1,
     y.decimal = 1,
     x.mic.line = FALSE,
@@ -369,9 +369,9 @@ plot_dot_split <- function(
     scales = "free",
     n.rows = NULL,
     n.cols = NULL,
-    size.text = "Biofilm killed %",
-    x.text = "Drug 1",
-    y.text = "Drug 2",
+    size.text = "Biomass reduction %",
+    x.text = "Drug A",
+    y.text = "Drug B",
     x.decimal = 1,
     y.decimal = 1,
     x.mic.line = FALSE,
@@ -646,9 +646,9 @@ plot_line <- function(
     scales = "free",
     n.rows = NULL,
     n.cols = NULL,
-    x.text = "Drug 1",
-    y.text = "Measurement",
-    line.text = "Drug 2",
+    x.text = "Drug A",
+    y.text = "% Biomass",
+    line.text = "Drug B",
     x.decimal = 1,
     line.decimal = 1
 ) {
@@ -669,12 +669,12 @@ plot_line <- function(
   data <- data %>%
     mutate(across(all_of(c(x.drug, line.drug)), forcats::fct_inseq))
 
-  data_clean <-
-    if (line.include[1] != "all") {
-      filter(data, .data[[line.drug]] %in% line.include)
-    } else {
-      data
-    }
+  data_clean <- if (line.include[1] != "all") {
+    filter(data, .data[[line.drug]] %in% line.include)
+  } else {
+    data
+  }
+
 
   # When calculating means and standard deviation, make sure to include
   # "col.analysis" as a grouping variable, if it exists.
@@ -875,8 +875,8 @@ plot_tile <- function(
     scales = "free",
     n.rows = NULL,
     n.cols = NULL,
-    x.text = "Drug 1",
-    y.text = "Drug 2",
+    x.text = "Drug A",
+    y.text = "Drug B",
     x.decimal = 1,
     y.decimal = 1,
     low.effect = FALSE,
@@ -1028,8 +1028,8 @@ plot_tile_split <- function(
     scales = "free",
     n.rows = NULL,
     n.cols = NULL,
-    x.text = "Drug 1",
-    y.text = "Drug 2",
+    x.text = "Drug A",
+    y.text = "Drug B",
     x.decimal = 1,
     y.decimal = 1,
     low.effect = FALSE,
