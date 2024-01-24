@@ -2109,6 +2109,13 @@ server <- function(input, output) {
   })
 
 
+  # Update plot on tab switch ---------------------------------------------
+
+  observeEvent(input$plot_tabs, {
+    delay(5, click("create_plot"))
+  })
+
+
   # Render and output the_plot() ------------------------------------------
 
   output$abci_plot <- renderPlot({
