@@ -240,7 +240,8 @@ plot_dot <- function(
         labels = proper_labels,
         guide = guide_legend(
           keyheight = unit(10, "mm"),
-          override.aes = list(fill = "black")
+          override.aes = list(fill = "black"),
+          order = 1
         )
       )
   } else {
@@ -258,7 +259,8 @@ plot_dot <- function(
         labels = proper_labels,
         guide = guide_legend(
           keyheight = unit(10, "mm"),
-          override.aes = list(fill = "black")
+          override.aes = list(fill = "black"),
+          order = 1
         )
       )
   }
@@ -590,7 +592,7 @@ plot_dot_split <- function(
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
       }} +
 
-      theme(legend.key.height = unit(7, "mm"), legend.box = "horizontal")
+      theme(legend.key.height = unit(7, "mm"), legend.box = "vertical")
   })
 
   patchwork::wrap_plots(dot_plots, ncol = 1)
