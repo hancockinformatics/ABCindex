@@ -1965,148 +1965,145 @@ server <- function(input, output) {
   the_plot <- eventReactive(input$create_plot, {
     req(abci_results())
 
-    tryCatch(
-      {
-        if (input$plot_tabs == "dot") {
-          plot_dot(
-            data = abci_results(),
-            x.drug = ifelse(input$plot_dot_swap, "rows_conc", "cols_conc"),
-            y.drug = ifelse(input$plot_dot_swap, "cols_conc", "rows_conc"),
-            col.fill = "abci_avg",
-            col.size = "effect_avg",
-            size.range = c(3, 15),
-            linear = input$plot_dot_linear,
-            col.analysis = "assay",
-            n.cols = abci_plot_dims()[[1]],
-            n.rows = abci_plot_dims()[[2]],
-            size.text = input$plot_dot_size_text,
-            scales = input$plot_dot_scales,
-            x.decimal = input$plot_dot_x_decimal,
-            y.decimal = isolate(input$plot_dot_y_decimal),
-            x.text = input$plot_dot_x_text,
-            y.text = input$plot_dot_y_text,
-            x.mic.line = ("X" %in% input$plot_dot_mic_lines),
-            y.mic.line = ("Y" %in% input$plot_dot_mic_lines),
-            mic.threshold = input$plot_dot_mic_threshold,
-            large.effect = input$plot_dot_large_toggle,
-            large.effect.val = input$plot_dot_large_value,
-            col.mic = "bio_normal",
-            colour.palette = input$plot_dot_colour_palette
-          ) +
-            {if (abci_plot_dims()[[2]] == 1) {
-              theme(legend.box = "horizontal")
-            }}
+    tryCatch({
+      if (input$plot_tabs == "dot") {
+        plot_dot(
+          data = abci_results(),
+          x.drug = ifelse(input$plot_dot_swap, "rows_conc", "cols_conc"),
+          y.drug = ifelse(input$plot_dot_swap, "cols_conc", "rows_conc"),
+          col.fill = "abci_avg",
+          col.size = "effect_avg",
+          size.range = c(3, 15),
+          linear = input$plot_dot_linear,
+          col.analysis = "assay",
+          n.cols = abci_plot_dims()[[1]],
+          n.rows = abci_plot_dims()[[2]],
+          size.text = input$plot_dot_size_text,
+          scales = input$plot_dot_scales,
+          x.decimal = input$plot_dot_x_decimal,
+          y.decimal = isolate(input$plot_dot_y_decimal),
+          x.text = input$plot_dot_x_text,
+          y.text = input$plot_dot_y_text,
+          x.mic.line = ("X" %in% input$plot_dot_mic_lines),
+          y.mic.line = ("Y" %in% input$plot_dot_mic_lines),
+          mic.threshold = input$plot_dot_mic_threshold,
+          large.effect = input$plot_dot_large_toggle,
+          large.effect.val = input$plot_dot_large_value,
+          col.mic = "bio_normal",
+          colour.palette = input$plot_dot_colour_palette
+        ) +
+          {if (abci_plot_dims()[[2]] == 1) {
+            theme(legend.box = "horizontal")
+          }}
 
-        } else if (input$plot_tabs == "dot_split") {
-          plot_dot_split(
-            data = abci_results(),
-            x.drug = ifelse(input$plot_dot_split_swap, "rows_conc", "cols_conc"),
-            y.drug = ifelse(input$plot_dot_split_swap, "cols_conc", "rows_conc"),
-            col.fill = "abci_avg",
-            col.size = "effect_avg",
-            strict = input$plot_dot_split_strict,
-            size.range = c(3, 15),
-            linear = input$plot_dot_split_linear,
-            col.analysis = "assay",
-            n.cols = abci_plot_dims()[[1]],
-            n.rows = abci_plot_dims()[[2]],
-            size.text = input$plot_dot_split_size_text,
-            scales = input$plot_dot_split_scales,
-            x.decimal = input$plot_dot_split_x_decimal,
-            y.decimal = isolate(input$plot_dot_split_y_decimal),
-            x.text = input$plot_dot_split_x_text,
-            y.text = input$plot_dot_split_y_text,
-            x.mic.line = ("X" %in% input$plot_dot_split_mic_lines),
-            y.mic.line = ("Y" %in% input$plot_dot_split_mic_lines),
-            mic.threshold = input$plot_dot_split_mic_threshold,
-            large.effect = input$plot_dot_split_large_toggle,
-            large.effect.val = input$plot_dot_split_large_value,
-            col.mic = "bio_normal",
-            colour.palette = input$plot_dot_split_colour_palette
-          ) +
-            {if (abci_plot_dims()[[2]] == 1) {
-              theme(legend.box = "horizontal")
-            }}
+      } else if (input$plot_tabs == "dot_split") {
+        plot_dot_split(
+          data = abci_results(),
+          x.drug = ifelse(input$plot_dot_split_swap, "rows_conc", "cols_conc"),
+          y.drug = ifelse(input$plot_dot_split_swap, "cols_conc", "rows_conc"),
+          col.fill = "abci_avg",
+          col.size = "effect_avg",
+          strict = input$plot_dot_split_strict,
+          size.range = c(3, 15),
+          linear = input$plot_dot_split_linear,
+          col.analysis = "assay",
+          n.cols = abci_plot_dims()[[1]],
+          n.rows = abci_plot_dims()[[2]],
+          size.text = input$plot_dot_split_size_text,
+          scales = input$plot_dot_split_scales,
+          x.decimal = input$plot_dot_split_x_decimal,
+          y.decimal = isolate(input$plot_dot_split_y_decimal),
+          x.text = input$plot_dot_split_x_text,
+          y.text = input$plot_dot_split_y_text,
+          x.mic.line = ("X" %in% input$plot_dot_split_mic_lines),
+          y.mic.line = ("Y" %in% input$plot_dot_split_mic_lines),
+          mic.threshold = input$plot_dot_split_mic_threshold,
+          large.effect = input$plot_dot_split_large_toggle,
+          large.effect.val = input$plot_dot_split_large_value,
+          col.mic = "bio_normal",
+          colour.palette = input$plot_dot_split_colour_palette
+        ) +
+          {if (abci_plot_dims()[[2]] == 1) {
+            theme(legend.box = "horizontal")
+          }}
 
-        } else if (input$plot_tabs == "tile") {
-          plot_tile(
-            data = abci_results(),
-            x.drug = ifelse(input$plot_tile_swap, "rows_conc", "cols_conc"),
-            y.drug = ifelse(input$plot_tile_swap, "cols_conc", "rows_conc"),
-            col.fill = "abci_avg",
-            col.analysis = "assay",
-            n.cols = abci_plot_dims()[[1]],
-            n.rows = abci_plot_dims()[[2]],
-            scales = input$plot_tile_scales,
-            x.decimal = input$plot_tile_x_decimal,
-            y.decimal = isolate(input$plot_tile_y_decimal),
-            x.text = input$plot_tile_x_text,
-            y.text = input$plot_tile_y_text,
-            x.mic.line = ("X" %in% input$plot_tile_mic_lines),
-            y.mic.line = ("Y" %in% input$plot_tile_mic_lines),
-            mic.threshold = input$plot_tile_mic_threshold,
-            col.mic = "bio_normal",
-            low.effect = input$plot_tile_low_toggle,
-            low.effect.val = input$plot_tile_low_value,
-            large.effect = input$plot_tile_large_toggle,
-            large.effect.val = input$plot_tile_large_value,
-            colour.palette = input$plot_tile_colour_palette
-          )
+      } else if (input$plot_tabs == "tile") {
+        plot_tile(
+          data = abci_results(),
+          x.drug = ifelse(input$plot_tile_swap, "rows_conc", "cols_conc"),
+          y.drug = ifelse(input$plot_tile_swap, "cols_conc", "rows_conc"),
+          col.fill = "abci_avg",
+          col.analysis = "assay",
+          n.cols = abci_plot_dims()[[1]],
+          n.rows = abci_plot_dims()[[2]],
+          scales = input$plot_tile_scales,
+          x.decimal = input$plot_tile_x_decimal,
+          y.decimal = isolate(input$plot_tile_y_decimal),
+          x.text = input$plot_tile_x_text,
+          y.text = input$plot_tile_y_text,
+          x.mic.line = ("X" %in% input$plot_tile_mic_lines),
+          y.mic.line = ("Y" %in% input$plot_tile_mic_lines),
+          mic.threshold = input$plot_tile_mic_threshold,
+          col.mic = "bio_normal",
+          low.effect = input$plot_tile_low_toggle,
+          low.effect.val = input$plot_tile_low_value,
+          large.effect = input$plot_tile_large_toggle,
+          large.effect.val = input$plot_tile_large_value,
+          colour.palette = input$plot_tile_colour_palette
+        )
 
-        } else if (input$plot_tabs == "tile_split") {
-          plot_tile_split(
-            data = abci_results(),
-            x.drug = ifelse(input$plot_tile_split_swap, "rows_conc", "cols_conc"),
-            y.drug = ifelse(input$plot_tile_split_swap, "cols_conc", "rows_conc"),
-            col.fill = "abci_avg",
-            col.analysis = "assay",
-            strict = input$plot_tile_split_strict,
-            n.cols = abci_plot_dims()[[1]],
-            n.rows = abci_plot_dims()[[2]],
-            scales = input$plot_tile_split_scales,
-            x.decimal = input$plot_tile_split_x_decimal,
-            y.decimal = isolate(input$plot_tile_split_y_decimal),
-            x.text = input$plot_tile_split_x_text,
-            y.text = input$plot_tile_split_y_text,
-            x.mic.line = ("X" %in% input$plot_tile_split_mic_lines),
-            y.mic.line = ("Y" %in% input$plot_tile_split_mic_lines),
-            mic.threshold = input$plot_tile_split_mic_threshold,
-            col.mic = "bio_normal",
-            low.effect = input$plot_tile_split_low_toggle,
-            low.effect.val = input$plot_tile_split_low_value,
-            large.effect = input$plot_tile_split_large_toggle,
-            large.effect.val = input$plot_tile_split_large_value,
-            colour.palette = input$plot_tile_split_colour_palette
-          )
-        }
-
-        else if (input$plot_tabs == "line") {
-          plot_line(
-            data = abci_results(),
-            plot.type = input$plot_line_type,
-            x.drug = line_columns()[[1]],
-            line.drug = line_columns()[[2]],
-            col.data = "bio_normal",
-            col.analysis = "assay",
-            line.include = input$plot_line_line_include,
-            n.cols = abci_plot_dims()[[1]],
-            n.rows = abci_plot_dims()[[2]],
-            scales = input$plot_line_scales,
-            x.decimal = input$plot_line_x_decimal,
-            line.decimal = isolate(input$plot_line_line_decimal),
-            x.text = input$plot_line_x_text,
-            y.text = input$plot_line_y_text,
-            line.text = input$plot_line_line_text,
-            x.mic.line = ("X" %in% input$plot_line_mic_lines),
-            mic.threshold = input$plot_line_mic_threshold,
-            jitter.x = input$plot_line_jitter_x,
-            colour.palette = input$plot_line_colour_palette
-          )
-        }
-      },
-      error = function(e) {
-        NULL
+      } else if (input$plot_tabs == "tile_split") {
+        plot_tile_split(
+          data = abci_results(),
+          x.drug = ifelse(input$plot_tile_split_swap, "rows_conc", "cols_conc"),
+          y.drug = ifelse(input$plot_tile_split_swap, "cols_conc", "rows_conc"),
+          col.fill = "abci_avg",
+          col.analysis = "assay",
+          strict = input$plot_tile_split_strict,
+          n.cols = abci_plot_dims()[[1]],
+          n.rows = abci_plot_dims()[[2]],
+          scales = input$plot_tile_split_scales,
+          x.decimal = input$plot_tile_split_x_decimal,
+          y.decimal = isolate(input$plot_tile_split_y_decimal),
+          x.text = input$plot_tile_split_x_text,
+          y.text = input$plot_tile_split_y_text,
+          x.mic.line = ("X" %in% input$plot_tile_split_mic_lines),
+          y.mic.line = ("Y" %in% input$plot_tile_split_mic_lines),
+          mic.threshold = input$plot_tile_split_mic_threshold,
+          col.mic = "bio_normal",
+          low.effect = input$plot_tile_split_low_toggle,
+          low.effect.val = input$plot_tile_split_low_value,
+          large.effect = input$plot_tile_split_large_toggle,
+          large.effect.val = input$plot_tile_split_large_value,
+          colour.palette = input$plot_tile_split_colour_palette
+        )
       }
+
+      else if (input$plot_tabs == "line") {
+        plot_line(
+          data = abci_results(),
+          plot.type = input$plot_line_type,
+          x.drug = line_columns()[[1]],
+          line.drug = line_columns()[[2]],
+          col.data = "bio_normal",
+          col.analysis = "assay",
+          line.include = input$plot_line_line_include,
+          n.cols = abci_plot_dims()[[1]],
+          n.rows = abci_plot_dims()[[2]],
+          scales = input$plot_line_scales,
+          x.decimal = input$plot_line_x_decimal,
+          line.decimal = isolate(input$plot_line_line_decimal),
+          x.text = input$plot_line_x_text,
+          y.text = input$plot_line_y_text,
+          line.text = input$plot_line_line_text,
+          x.mic.line = ("X" %in% input$plot_line_mic_lines),
+          mic.threshold = input$plot_line_mic_threshold,
+          jitter.x = input$plot_line_jitter_x,
+          colour.palette = input$plot_line_colour_palette
+        )
+      }
+    },
+    error = function(e) NULL
     )
   })
 
