@@ -823,7 +823,7 @@ server <- function(input, output) {
   )
 
 
-  # Set up Results reactives ----------------------------------------------
+  # Set up misc. plot reactives -------------------------------------------
 
   abci_plot_dims <- reactive({
     req(abci_results())
@@ -1772,19 +1772,19 @@ server <- function(input, output) {
         )
       ),
 
-      # wrap_selector(
-      #   label = "Included values",
-      #   label_title = paste0(
-      #     "Concentrations to include in the plot as lines. Six or fewer is ",
-      #     "recommended."
-      #   ),
-      #   selectInput(
-      #     inputId = "plot_line_line_include",
-      #     label = NULL,
-      #     multiple = TRUE,
-      #     choices = c()
-      #   )
-      # ),
+      wrap_selector(
+        label = "Included values",
+        label_title = paste0(
+          "Concentrations to include in the plot as lines. Six or fewer is ",
+          "recommended."
+        ),
+        selectInput(
+          inputId = "plot_line_line_include",
+          label = NULL,
+          multiple = TRUE,
+          choices = c()
+        )
+      ),
 
       wrap_selector(
         label = "Line title",
@@ -1933,35 +1933,30 @@ server <- function(input, output) {
   })
 
 
-  # Line include options --------------------------------------------------
+  # Line include and swap options -----------------------------------------
 
   line_columns <- reactive({
-    if (input$plot_line_swap) {
-      list("rows_conc", "cols_conc")
-    } else {
-      list("cols_conc", "rows_conc")
+    if (!is.null(input$plot_line_swap)) {
+      if (input$plot_line_swap) {
+        list("rows_conc", "cols_conc")
+      } else {
+        list("cols_conc", "rows_conc")
+      }
     }
   })
 
-  # observeEvent(input$plot_line_swap, {
-  #   req(abci_results())
-  #
-  #   line_column <- ifelse(
-  #     input$plot_line_swap,
-  #     "cols_conc",
-  #     "rows_conc"
-  #   )
-  #
-  #   unique_conc <- abci_results() %>%
-  #     pull(line_column) %>%
-  #     unique()
-  #
-  #   updateSelectInput(
-  #     inputId = "plot_line_line_include",
-  #     choices = unique_conc,
-  #     selected = unique_conc
-  #   )
-  # })
+  observe({
+    req(abci_results(), line_columns())
+    concs <- abci_results() %>%
+      pull(line_columns()[[2]]) %>%
+      unique()
+
+    updateSelectInput(
+      inputId = "plot_line_line_include",
+      choices = concs,
+      selected = concs
+    )
+  })
 
 
   # Create the_plot() -----------------------------------------------------
@@ -2090,7 +2085,7 @@ server <- function(input, output) {
         line.drug = line_columns()[[2]],
         col.data = "bio_normal",
         col.analysis = "assay",
-        line.include = "all",
+        line.include = input$plot_line_line_include,
         n.cols = abci_plot_dims()[[1]],
         n.rows = abci_plot_dims()[[2]],
         scales = input$plot_line_scales,
