@@ -1,6 +1,7 @@
 # Setup -------------------------------------------------------------------
 
 suppressPackageStartupMessages({
+  library(svglite)
   library(dplyr)
   library(ggplot2)
   library(openxlsx)
@@ -256,22 +257,38 @@ ui <- page_fluid(
 
             hr(),
 
-            disabled(
-              downloadButton(
-                outputId = "results_handler_xlsx",
-                class = "btn btn-success align-items-center",
-                label = "Download ABCI results spreadsheet",
-                style = "width: fit-content"
-              ) %>%
-                tooltip(
-                  id = "results_handler_xlsx_tt",
-                  placement = "right",
-                  "Upload and analyze data to download the results"
-                )
-            ),
-
             div(
               class = "container",
+              div(
+                class = "row mb-2",
+                div(
+                  class = "col ps-md-0",
+                  disabled(
+                    downloadButton(
+                      outputId = "results_handler_xlsx",
+                      class = "btn btn-success align-items-center",
+                      label = "Download results spreadsheet",
+                      style = "width: 100%"
+                    ) %>%
+                      tooltip(
+                        id = "results_handler_xlsx_tt",
+                        placement = "right",
+                        "Upload and analyze data to download the results"
+                      )
+                  )
+                ),
+                div(
+                  class = "col pe-md-0",
+                  disabled(
+                    actionButton(
+                      inputId = "plot_download_button",
+                      class = "btn btn-success align-items-center",
+                      label = "Download the plot",
+                      style = "width: 100%"
+                    )
+                  )
+                )
+              ),
               div(
                 class = "row",
                 div(
@@ -776,28 +793,12 @@ server <- function(input, output) {
       "results_handler_xlsx",
       "Click here to download your results as an XLSX file"
     )
+    enable_button("plot_download_button")
     enable_button("restore")
     enable_button("reset")
 
     click("create_plot")
   })
-
-
-  # Save info notification ------------------------------------------------
-
-  observeEvent(input$create_plot, {
-    showNotification(
-      id = "save_notification",
-      type = "message",
-      duration = 15,
-      ui = make(
-        "<p class='mb-0'>",
-        "<h4 class='alert-heading'><b>Saving the plots</b></h4>",
-        "You can save the plot by right-clicking on it and selecting ",
-        "'Save Image As'.</p>"
-      )
-    )
-  }, once = TRUE)
 
 
   # Download results ------------------------------------------------------
@@ -823,7 +824,7 @@ server <- function(input, output) {
   )
 
 
-  # Set up Results reactives ----------------------------------------------
+  # Set up misc. plot reactives -------------------------------------------
 
   abci_plot_dims <- reactive({
     req(abci_results())
@@ -849,33 +850,12 @@ server <- function(input, output) {
     )
   )
 
-  plot_legend_ui <- reactive(plot_legends[[input$plot_tabs]])
-
-
-  # |- Line include options -----------------------------------------------
-
-  observeEvent(input$plot_line_swap, {
-    req(abci_results())
-
-    line_column <- ifelse(
-      input$plot_line_swap,
-      "cols_conc",
-      "rows_conc"
-    )
-
-    unique_conc <- abci_results() %>%
-      pull(line_column) %>%
-      unique()
-
-    updateSelectInput(
-      inputId = "plot_line_line_include",
-      choices = unique_conc,
-      selected = unique_conc
-    )
+  plot_legend_ui <- eventReactive(input$create_plot, {
+    plot_legends[[input$plot_tabs]]
   })
 
 
-  # |- Preview colours ----------------------------------------------------
+  # Preview colours -------------------------------------------------------
 
   modal_colours <- lapply(
     list(
@@ -904,16 +884,16 @@ server <- function(input, output) {
     class = "modal-dialog-centered"
   )
 
-  observeEvent(input$tile_preview_colours, {
-    showModal(modal_colours$abci)
-  })
-  observeEvent(input$tile_split_preview_colours, {
-    showModal(modal_colours$abci)
-  })
   observeEvent(input$dot_preview_colours, {
     showModal(modal_colours$abci)
   })
   observeEvent(input$dot_split_preview_colours, {
+    showModal(modal_colours$abci)
+  })
+  observeEvent(input$tile_preview_colours, {
+    showModal(modal_colours$abci)
+  })
+  observeEvent(input$tile_split_preview_colours, {
     showModal(modal_colours$abci)
   })
   observeEvent(input$line_preview_colours, {
@@ -925,9 +905,9 @@ server <- function(input, output) {
 
   # |- Dot ----------------------------------------------------------------
 
-  output$plot_inputs_dot <- renderUI({
-    list(
-      br(),
+  output$plot_inputs_dot <- renderUI(
+    div(
+      class = "pt-3",
       wrap_selector(
         label = actionLink("dot_preview_colours", label = "ABCI colours"),
         label_title = tooltips$abci_colours,
@@ -1076,7 +1056,7 @@ server <- function(input, output) {
         )
       )
     )
-  })
+  )
 
   observeEvent(input$plot_dot_swap, {
     if (input$plot_dot_swap) {
@@ -1089,7 +1069,6 @@ server <- function(input, output) {
         inputId = "plot_dot_y_text",
         value = axis_titles()[["cols"]]
       )
-
     } else {
       update_switch("plot_dot_swap", label = "Off")
       updateTextInput(
@@ -1122,9 +1101,9 @@ server <- function(input, output) {
 
   # |- Split dot ----------------------------------------------------------
 
-  output$plot_inputs_dot_split <- renderUI({
-    list(
-      br(),
+  output$plot_inputs_dot_split <- renderUI(
+    div(
+      class = "pt-3",
       wrap_selector(
         label = actionLink("dot_split_preview_colours", label = "ABCI colours"),
         label_title = tooltips$abci_colours,
@@ -1283,7 +1262,7 @@ server <- function(input, output) {
         )
       )
     )
-  })
+  )
 
   observeEvent(input$plot_dot_split_swap, {
     if (input$plot_dot_split_swap) {
@@ -1337,9 +1316,9 @@ server <- function(input, output) {
 
   # |- Tile ---------------------------------------------------------------
 
-  output$plot_inputs_tile <- renderUI({
-    list(
-      br(),
+  output$plot_inputs_tile <- renderUI(
+    div(
+      class = "pt-3",
       wrap_selector(
         label = actionLink("tile_preview_colours", label = "ABCI colours"),
         label_title = tooltips$abci_colours,
@@ -1490,7 +1469,7 @@ server <- function(input, output) {
         )
       )
     )
-  })
+  )
 
   observeEvent(input$plot_tile_low_toggle, {
     if (input$plot_tile_low_toggle) {
@@ -1536,9 +1515,9 @@ server <- function(input, output) {
 
   # |- Split tile ---------------------------------------------------------
 
-  output$plot_inputs_tile_split <- renderUI({
-    list(
-      br(),
+  output$plot_inputs_tile_split <- renderUI(
+    div(
+      class = "pt-3",
       wrap_selector(
         label = actionLink("tile_split_preview_colours", label = "ABCI colours"),
         label_title = tooltips$abci_colours,
@@ -1699,7 +1678,7 @@ server <- function(input, output) {
         )
       )
     )
-  })
+  )
 
   observeEvent(input$plot_tile_split_swap, {
     if (input$plot_tile_split_swap) {
@@ -1753,9 +1732,9 @@ server <- function(input, output) {
 
   # |- Line ---------------------------------------------------------------
 
-  output$plot_inputs_line <- renderUI({
-    list(
-      br(),
+  output$plot_inputs_line <- renderUI(
+    div(
+      class = "pt-3",
       wrap_selector(
         label = "Graph type",
         label_title = "Determine how replicates are plotted",
@@ -1919,7 +1898,7 @@ server <- function(input, output) {
         )
       )
     )
-  })
+  )
 
   observeEvent(input$plot_line_swap, {
     if (input$plot_line_swap) {
@@ -1955,235 +1934,308 @@ server <- function(input, output) {
   })
 
 
-  # renderPlot calls ------------------------------------------------------
+  # Line include and swap options -----------------------------------------
 
-  observeEvent(input$create_plot, {
-    req(abci_results())
-
-    output$abci_plot <- renderPlot(
-
-      if (isolate(input$plot_tabs) == "dot") {
-        plot_dot(
-          data = isolate(abci_results()),
-          x.drug = ifelse(
-            isolate(input$plot_dot_swap),
-            "rows_conc",
-            "cols_conc"
-          ),
-          y.drug = ifelse(
-            isolate(input$plot_dot_swap),
-            "cols_conc",
-            "rows_conc"
-          ),
-          col.fill = "abci_avg",
-          col.size = "effect_avg",
-          size.range = c(3, 15),
-          linear = isolate(input$plot_dot_linear),
-          col.analysis = "assay",
-          n.cols = abci_plot_dims()[[1]],
-          n.rows = abci_plot_dims()[[2]],
-          size.text = isolate(input$plot_dot_size_text),
-          scales = isolate(input$plot_dot_scales),
-          x.decimal = isolate(input$plot_dot_x_decimal),
-          y.decimal = isolate(input$plot_dot_y_decimal),
-          x.text = isolate(input$plot_dot_x_text),
-          y.text = isolate(input$plot_dot_y_text),
-          x.mic.line = ("X" %in% isolate(input$plot_dot_mic_lines)),
-          y.mic.line = ("Y" %in% isolate(input$plot_dot_mic_lines)),
-          mic.threshold = isolate(input$plot_dot_mic_threshold),
-          large.effect = isolate(input$plot_dot_large_toggle),
-          large.effect.val = isolate(input$plot_dot_large_value),
-          col.mic = "bio_normal",
-          colour.palette = isolate(input$plot_dot_colour_palette)
-        ) +
-          {if (abci_plot_dims()[[2]] == 1) {
-            theme(legend.box = "horizontal")
-          }}
-
-      } else if (isolate(input$plot_tabs) == "dot_split") {
-
-        plot_dot_split(
-          data = isolate(abci_results()),
-          x.drug = ifelse(
-            isolate(input$plot_dot_split_swap),
-            "rows_conc",
-            "cols_conc"
-          ),
-          y.drug = ifelse(
-            isolate(input$plot_dot_split_swap),
-            "cols_conc",
-            "rows_conc"
-          ),
-          col.fill = "abci_avg",
-          col.size = "effect_avg",
-          strict = isolate(input$plot_dot_split_strict),
-          size.range = c(3, 15),
-          linear = isolate(input$plot_dot_split_linear),
-          col.analysis = "assay",
-          n.cols = abci_plot_dims()[[1]],
-          n.rows = abci_plot_dims()[[2]],
-          size.text = isolate(input$plot_dot_split_size_text),
-          scales = isolate(input$plot_dot_split_scales),
-          x.decimal = isolate(input$plot_dot_split_x_decimal),
-          y.decimal = isolate(input$plot_dot_split_y_decimal),
-          x.text = isolate(input$plot_dot_split_x_text),
-          y.text = isolate(input$plot_dot_split_y_text),
-          x.mic.line = ("X" %in% isolate(input$plot_dot_split_mic_lines)),
-          y.mic.line = ("Y" %in% isolate(input$plot_dot_split_mic_lines)),
-          mic.threshold = isolate(input$plot_dot_split_mic_threshold),
-          large.effect = isolate(input$plot_dot_split_large_toggle),
-          large.effect.val = isolate(input$plot_dot_split_large_value),
-          col.mic = "bio_normal",
-          colour.palette = isolate(input$plot_dot_split_colour_palette)
-        ) +
-          {if (abci_plot_dims()[[2]] == 1) {
-            theme(legend.box = "horizontal")
-          }}
-
-      } else if (isolate(input$plot_tabs) == "tile") {
-        plot_tile(
-          data = isolate(abci_results()),
-          x.drug = ifelse(
-            isolate(input$plot_tile_swap),
-            "rows_conc",
-            "cols_conc"
-          ),
-          y.drug = ifelse(
-            isolate(input$plot_tile_swap),
-            "cols_conc",
-            "rows_conc"
-          ),
-          col.fill = "abci_avg",
-          col.analysis = "assay",
-          n.cols = abci_plot_dims()[[1]],
-          n.rows = abci_plot_dims()[[2]],
-          scales = isolate(input$plot_tile_scales),
-          x.decimal = isolate(input$plot_tile_x_decimal),
-          y.decimal = isolate(input$plot_tile_y_decimal),
-          x.text = isolate(input$plot_tile_x_text),
-          y.text = isolate(input$plot_tile_y_text),
-          x.mic.line = ("X" %in% isolate(input$plot_tile_mic_lines)),
-          y.mic.line = ("Y" %in% isolate(input$plot_tile_mic_lines)),
-          mic.threshold = isolate(input$plot_tile_mic_threshold),
-          col.mic = "bio_normal",
-          low.effect = isolate(input$plot_tile_low_toggle),
-          low.effect.val = isolate(input$plot_tile_low_value),
-          large.effect = isolate(input$plot_tile_large_toggle),
-          large.effect.val = isolate(input$plot_tile_large_value),
-          colour.palette = isolate(input$plot_tile_colour_palette)
-        )
-
-      }  else if (isolate(input$plot_tabs) == "tile_split") {
-        plot_tile_split(
-          data = isolate(abci_results()),
-          x.drug = ifelse(
-            isolate(input$plot_tile_split_swap),
-            "rows_conc",
-            "cols_conc"
-          ),
-          y.drug = ifelse(
-            isolate(input$plot_tile_split_swap),
-            "cols_conc",
-            "rows_conc"
-          ),
-          col.fill = "abci_avg",
-          col.analysis = "assay",
-          strict = isolate(input$plot_tile_split_strict),
-          n.cols = 2,
-          n.rows = 2,
-          scales = isolate(input$plot_tile_split_scales),
-          x.decimal = isolate(input$plot_tile_split_x_decimal),
-          y.decimal = isolate(input$plot_tile_split_y_decimal),
-          x.text = isolate(input$plot_tile_split_x_text),
-          y.text = isolate(input$plot_tile_split_y_text),
-          x.mic.line = ("X" %in% isolate(input$plot_tile_split_mic_lines)),
-          y.mic.line = ("Y" %in% isolate(input$plot_tile_split_mic_lines)),
-          mic.threshold = isolate(input$plot_tile_split_mic_threshold),
-          col.mic = "bio_normal",
-          low.effect = isolate(input$plot_tile_split_low_toggle),
-          low.effect.val = isolate(input$plot_tile_split_low_value),
-          large.effect = isolate(input$plot_tile_split_large_toggle),
-          large.effect.val = isolate(input$plot_tile_split_large_value),
-          colour.palette = isolate(input$plot_tile_split_colour_palette)
-        )
-
-      } else if (isolate(input$plot_tabs) == "line") {
-
-        if (max(abci_results()$bio_normal) > 1.5) {
-          showNotification(
-            type = "warning",
-            duration = 10,
-            ui = HTML(paste0(
-              "<p class='mb-0'>Values on the Y axis greater than 150% have ",
-              "been reduced to maintain legibility.</p>"
-            ))
-          )
-        }
-        plot_line(
-          data = isolate(abci_results()),
-          plot.type = isolate(input$plot_line_type),
-          x.drug = ifelse(
-            isolate(input$plot_line_swap),
-            "rows_conc",
-            "cols_conc"
-          ),
-          line.drug = ifelse(
-            isolate(input$plot_line_swap),
-            "cols_conc",
-            "rows_conc"
-          ),
-          col.data = "bio_normal",
-          col.analysis = "assay",
-          line.include = isolate(input$plot_line_line_include),
-          n.cols = abci_plot_dims()[[1]],
-          n.rows = abci_plot_dims()[[2]],
-          scales = isolate(input$plot_line_scales),
-          x.decimal = isolate(input$plot_line_x_decimal),
-          line.decimal = isolate(input$plot_line_line_decimal),
-          x.text = isolate(input$plot_line_x_text),
-          y.text = isolate(input$plot_line_y_text),
-          line.text = isolate(input$plot_line_line_text),
-          x.mic.line = ("X" %in% isolate(input$plot_line_mic_lines)),
-          mic.threshold = isolate(input$plot_line_mic_threshold),
-          jitter.x = isolate(input$plot_line_jitter_x),
-          colour.palette = isolate(input$plot_line_colour_palette)
-        )
+  line_columns <- reactive({
+    if (!is.null(input$plot_line_swap)) {
+      if (input$plot_line_swap) {
+        list("rows_conc", "cols_conc")
+      } else {
+        list("cols_conc", "rows_conc")
       }
+    }
+  })
+
+  observe({
+    req(abci_results(), line_columns())
+    concs <- abci_results() %>%
+      pull(line_columns()[[2]]) %>%
+      unique()
+
+    updateSelectInput(
+      inputId = "plot_line_line_include",
+      choices = concs,
+      selected = concs
     )
   })
 
 
-  # plotOutput call -------------------------------------------------------
+  # Create the_plot() -----------------------------------------------------
 
-  observeEvent(input$create_plot, {
+  the_plot <- eventReactive(input$create_plot, {
     req(abci_results())
 
-    output_dims <- get_dims(
+    tryCatch({
+      if (input$plot_tabs == "dot") {
+        plot_dot(
+          data = abci_results(),
+          x.drug = ifelse(input$plot_dot_swap, "rows_conc", "cols_conc"),
+          y.drug = ifelse(input$plot_dot_swap, "cols_conc", "rows_conc"),
+          col.fill = "abci_avg",
+          col.size = "effect_avg",
+          size.range = c(3, 15),
+          linear = input$plot_dot_linear,
+          col.analysis = "assay",
+          n.cols = abci_plot_dims()[[1]],
+          n.rows = abci_plot_dims()[[2]],
+          size.text = input$plot_dot_size_text,
+          scales = input$plot_dot_scales,
+          x.decimal = input$plot_dot_x_decimal,
+          y.decimal = isolate(input$plot_dot_y_decimal),
+          x.text = input$plot_dot_x_text,
+          y.text = input$plot_dot_y_text,
+          x.mic.line = ("X" %in% input$plot_dot_mic_lines),
+          y.mic.line = ("Y" %in% input$plot_dot_mic_lines),
+          mic.threshold = input$plot_dot_mic_threshold,
+          large.effect = input$plot_dot_large_toggle,
+          large.effect.val = input$plot_dot_large_value,
+          col.mic = "bio_normal",
+          colour.palette = input$plot_dot_colour_palette
+        ) +
+          {if (abci_plot_dims()[[2]] == 1) {
+            theme(legend.box = "horizontal")
+          }}
+
+      } else if (input$plot_tabs == "dot_split") {
+        plot_dot_split(
+          data = abci_results(),
+          x.drug = ifelse(input$plot_dot_split_swap, "rows_conc", "cols_conc"),
+          y.drug = ifelse(input$plot_dot_split_swap, "cols_conc", "rows_conc"),
+          col.fill = "abci_avg",
+          col.size = "effect_avg",
+          strict = input$plot_dot_split_strict,
+          size.range = c(3, 15),
+          linear = input$plot_dot_split_linear,
+          col.analysis = "assay",
+          n.cols = abci_plot_dims()[[1]],
+          n.rows = abci_plot_dims()[[2]],
+          size.text = input$plot_dot_split_size_text,
+          scales = input$plot_dot_split_scales,
+          x.decimal = input$plot_dot_split_x_decimal,
+          y.decimal = isolate(input$plot_dot_split_y_decimal),
+          x.text = input$plot_dot_split_x_text,
+          y.text = input$plot_dot_split_y_text,
+          x.mic.line = ("X" %in% input$plot_dot_split_mic_lines),
+          y.mic.line = ("Y" %in% input$plot_dot_split_mic_lines),
+          mic.threshold = input$plot_dot_split_mic_threshold,
+          large.effect = input$plot_dot_split_large_toggle,
+          large.effect.val = input$plot_dot_split_large_value,
+          col.mic = "bio_normal",
+          colour.palette = input$plot_dot_split_colour_palette
+        ) +
+          {if (abci_plot_dims()[[2]] == 1) {
+            theme(legend.box = "horizontal")
+          }}
+
+      } else if (input$plot_tabs == "tile") {
+        plot_tile(
+          data = abci_results(),
+          x.drug = ifelse(input$plot_tile_swap, "rows_conc", "cols_conc"),
+          y.drug = ifelse(input$plot_tile_swap, "cols_conc", "rows_conc"),
+          col.fill = "abci_avg",
+          col.analysis = "assay",
+          n.cols = abci_plot_dims()[[1]],
+          n.rows = abci_plot_dims()[[2]],
+          scales = input$plot_tile_scales,
+          x.decimal = input$plot_tile_x_decimal,
+          y.decimal = isolate(input$plot_tile_y_decimal),
+          x.text = input$plot_tile_x_text,
+          y.text = input$plot_tile_y_text,
+          x.mic.line = ("X" %in% input$plot_tile_mic_lines),
+          y.mic.line = ("Y" %in% input$plot_tile_mic_lines),
+          mic.threshold = input$plot_tile_mic_threshold,
+          col.mic = "bio_normal",
+          low.effect = input$plot_tile_low_toggle,
+          low.effect.val = input$plot_tile_low_value,
+          large.effect = input$plot_tile_large_toggle,
+          large.effect.val = input$plot_tile_large_value,
+          colour.palette = input$plot_tile_colour_palette
+        )
+
+      } else if (input$plot_tabs == "tile_split") {
+        plot_tile_split(
+          data = abci_results(),
+          x.drug = ifelse(input$plot_tile_split_swap, "rows_conc", "cols_conc"),
+          y.drug = ifelse(input$plot_tile_split_swap, "cols_conc", "rows_conc"),
+          col.fill = "abci_avg",
+          col.analysis = "assay",
+          strict = input$plot_tile_split_strict,
+          n.cols = abci_plot_dims()[[1]],
+          n.rows = abci_plot_dims()[[2]],
+          scales = input$plot_tile_split_scales,
+          x.decimal = input$plot_tile_split_x_decimal,
+          y.decimal = isolate(input$plot_tile_split_y_decimal),
+          x.text = input$plot_tile_split_x_text,
+          y.text = input$plot_tile_split_y_text,
+          x.mic.line = ("X" %in% input$plot_tile_split_mic_lines),
+          y.mic.line = ("Y" %in% input$plot_tile_split_mic_lines),
+          mic.threshold = input$plot_tile_split_mic_threshold,
+          col.mic = "bio_normal",
+          low.effect = input$plot_tile_split_low_toggle,
+          low.effect.val = input$plot_tile_split_low_value,
+          large.effect = input$plot_tile_split_large_toggle,
+          large.effect.val = input$plot_tile_split_large_value,
+          colour.palette = input$plot_tile_split_colour_palette
+        )
+      }
+
+      else if (input$plot_tabs == "line") {
+        plot_line(
+          data = abci_results(),
+          plot.type = input$plot_line_type,
+          x.drug = line_columns()[[1]],
+          line.drug = line_columns()[[2]],
+          col.data = "bio_normal",
+          col.analysis = "assay",
+          line.include = input$plot_line_line_include,
+          n.cols = abci_plot_dims()[[1]],
+          n.rows = abci_plot_dims()[[2]],
+          scales = input$plot_line_scales,
+          x.decimal = input$plot_line_x_decimal,
+          line.decimal = isolate(input$plot_line_line_decimal),
+          x.text = input$plot_line_x_text,
+          y.text = input$plot_line_y_text,
+          line.text = input$plot_line_line_text,
+          x.mic.line = ("X" %in% input$plot_line_mic_lines),
+          mic.threshold = input$plot_line_mic_threshold,
+          jitter.x = input$plot_line_jitter_x,
+          colour.palette = input$plot_line_colour_palette
+        )
+      }
+    },
+    error = function(e) NULL
+    )
+  })
+
+
+  # Render and output the_plot() ------------------------------------------
+
+  output$abci_plot <- renderPlot({
+    input$create_plot
+    if (is.null(the_plot())) {
+      showNotification(
+        type = "error",
+        duration = 20,
+        ui = make(
+          "<h4 class='alert-heading'><b>Error</b></h4>",
+          "<p class='mb-0'>",
+          "We were unable to draw a plot with the specified parameters. ",
+          "Try changing the inputs in the sidebar, then update the plot.",
+          "</p>"
+        )
+      )
+    } else {
+      the_plot()
+    }
+  })
+
+  output_dims <- eventReactive(input$create_plot, {
+    get_dims(
       type = input$plot_tabs,
       n_cols = abci_plot_dims()[[1]],
       n_rows = abci_plot_dims()[[2]]
     )
+  })
 
+  observeEvent(input$create_plot, {
     output$abci_plot_ui <- renderUI(
       tagList(
         shinycssloaders::withSpinner(
           type = 8,
           plotOutput(
             outputId = "abci_plot",
-            width = output_dims[1],
-            height = output_dims[2]
+            width = paste0(output_dims()[1], "px"),
+            height = paste0(output_dims()[2], "px")
           )
         ),
         card(
           class = "border-0",
           card_body(
-            isolate(plot_legend_ui()),
+            plot_legend_ui(),
             padding = 8
           )
         )
       )
     )
   })
+
+
+  # Download plot button --------------------------------------------------
+
+  observeEvent(input$plot_download_button, {
+    showModal(modalDialog(
+      title = "Download the plot",
+      size = "m",
+      p(
+        "Use the buttons below to download the current plot as a PNG, SVG, or ",
+        "TIFF image."
+      ),
+      downloadButton(
+        outputId = "plot_handler_png",
+        label = "PNG",
+        width = "50px",
+        class = "btn btn-success px-4 me-md-2 align-items-center"
+      ),
+      downloadButton(
+        outputId = "plot_handler_svg",
+        label = "SVG",
+        width = "50px",
+        class = "btn btn-success px-4 me-md-2 align-items-center"
+      ),
+      downloadButton(
+        outputId = "plot_handler_tif",
+        label = "TIFF",
+        width = "50px",
+        class = "btn btn-success px-4 me-md-2 align-items-center"
+      ),
+      footer = tagAppendAttributes(
+        modalButton(label = "Close"),
+        class = "btn-outline-secondary"
+      )
+    ))
+  })
+
+  output$plot_handler_png <- downloadHandler(
+    filename = "ShinyABCi_plot.png",
+    content = function(file) {
+      ggsave(
+        plot = the_plot(),
+        filename = file,
+        scale = 4,
+        width = output_dims()[1],
+        height = output_dims()[2],
+        units = "px"
+      )
+    }
+  )
+
+  output$plot_handler_svg <- downloadHandler(
+    filename = "ShinyABCi_plot.svg",
+    content = function(file) {
+      ggsave(
+        plot = the_plot(),
+        filename = file,
+        scale = 4,
+        width = output_dims()[1],
+        height = output_dims()[2],
+        units = "px"
+      )
+    }
+  )
+
+  output$plot_handler_tif <- downloadHandler(
+    filename = "ShinyABCi_plot.tiff",
+    content = function(file) {
+      ggsave(
+        plot = the_plot(),
+        filename = file,
+        scale = 4,
+        width = output_dims()[1],
+        height = output_dims()[2],
+        units = "px"
+      )
+    }
+  )
 
 
   # Restore button --------------------------------------------------------
