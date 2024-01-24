@@ -231,12 +231,12 @@ ui <- page_fluid(
                 title = "Dot",
                 value = "dot",
                 uiOutput("plot_inputs_dot")
+              ),
+              nav_panel(
+                title = "Split Dot",
+                value = "dot_split",
+                uiOutput("plot_inputs_dot_split")
               )
-              # nav_panel(
-              #   title = "Split Dot",
-              #   value = "dot_split",
-              #   uiOutput("plot_inputs_dot_split")
-              # ),
               # nav_panel(
               #   title = "Tile",
               #   value = "tile",
@@ -849,7 +849,9 @@ server <- function(input, output) {
     )
   )
 
-  plot_legend_ui <- reactive(plot_legends[[input$plot_tabs]])
+  plot_legend_ui <- eventReactive(input$create_plot, {
+    plot_legends[[input$plot_tabs]]
+  })
 
 
   # |- Line include options -----------------------------------------------
@@ -905,6 +907,9 @@ server <- function(input, output) {
   )
 
   observeEvent(input$dot_preview_colours, {
+    showModal(modal_colours$abci)
+  })
+  observeEvent(input$dot_split_preview_colours, {
     showModal(modal_colours$abci)
   })
 
@@ -1106,6 +1111,224 @@ server <- function(input, output) {
     }
   })
 
+
+  # |- Split dot ----------------------------------------------------------
+
+  output$plot_inputs_dot_split <- renderUI(
+    div(
+      class = "pt-3",
+      wrap_selector(
+        label = actionLink("dot_split_preview_colours", label = "ABCI colours"),
+        label_title = tooltips$abci_colours,
+        selectInput(
+          inputId = "plot_dot_split_colour_palette",
+          label = NULL,
+          selected = "RYB",
+          choices = abci_colours_split
+        )
+      ),
+
+      wrap_selector(
+        label = "X axis title",
+        label_title = tooltips$x_axis_title,
+        textInput(
+          inputId = "plot_dot_split_x_text",
+          label = NULL,
+          value = axis_titles()[["cols"]]
+        )
+      ),
+
+      wrap_selector(
+        label = "X axis digits",
+        label_title = tooltips$x_axis_digits,
+        numericInput(
+          inputId = "plot_dot_split_x_decimal",
+          label = NULL,
+          value = 2,
+          min = 1,
+          max = 4,
+          step = 1
+        )
+      ),
+
+      wrap_selector(
+        label = "Y axis title",
+        label_title = tooltips$y_axis_title,
+        textInput(
+          inputId = "plot_dot_split_y_text",
+          label = NULL,
+          value = axis_titles()[["rows"]]
+        )
+      ),
+
+      wrap_selector(
+        label = "Y axis digits",
+        label_title = tooltips$y_axis_digits,
+        numericInput(
+          inputId = "plot_dot_split_y_decimal",
+          label = NULL,
+          value = 2,
+          min = 1,
+          max = 4,
+          step = 1
+        )
+      ),
+
+      wrap_selector(
+        label = "Size legend title",
+        label_title = tooltips$size_legend,
+        textInput(
+          inputId = "plot_dot_split_size_text",
+          label = NULL,
+          value = "Biomass reduction %"
+        )
+      ),
+
+      wrap_selector(
+        label = "Draw activity threshold",
+        label_title = tooltips$draw_activity,
+        checkboxGroupInput(
+          inputId = "plot_dot_split_mic_lines",
+          label = NULL,
+          inline = TRUE,
+          choices = c("X", "Y")
+        )
+      ),
+
+      br(),
+      accordion(
+        open = FALSE,
+        accordion_panel(
+          title = "Advanced plot options",
+
+          wrap_selector(
+            label = "Swap X and Y",
+            label_title = tooltips$swap_x_y,
+            input_switch(
+              id = "plot_dot_split_swap",
+              label = "Off",
+              value = FALSE
+            )
+          ),
+
+          wrap_selector(
+            label = "Filter stringency",
+            label_title = tooltips$filter,
+            input_switch(
+              id = "plot_dot_split_strict",
+              label = "Strict",
+              value = TRUE
+            )
+          ),
+
+          wrap_selector(
+            label = "Linear size scaling",
+            label_title = "Enable linear size scaling of dots",
+            input_switch(
+              id = "plot_dot_split_linear",
+              label = "Off",
+              value = FALSE
+            )
+          ),
+
+          wrap_selector(
+            label = "Axis labels",
+            label_title = tooltips$axis_labels,
+            selectInput(
+              inputId = "plot_dot_split_scales",
+              label = NULL,
+              selected = "free",
+              choices = plot_scales
+            )
+          ),
+
+          wrap_selector(
+            label = "Activity threshold",
+            label_title = tooltips$activity_val,
+            numericInput(
+              inputId = "plot_dot_split_mic_threshold",
+              label = NULL,
+              value = 0.5
+            )
+          ),
+
+          wrap_selector(
+            label = "Highlight large effect",
+            label_title = tooltips$large_effect,
+            input_switch(
+              id = "plot_dot_split_large_toggle",
+              label = "Off",
+              value = FALSE
+            )
+          ),
+
+          wrap_selector(
+            label = "Large effect threshold",
+            label_title = tooltips$large_effect_val,
+            numericInput(
+              inputId = "plot_dot_split_large_value",
+              label = NULL,
+              value = 0.9,
+              min = 0
+            )
+          )
+        )
+      )
+    )
+  )
+
+  observeEvent(input$plot_dot_split_swap, {
+    if (input$plot_dot_split_swap) {
+      update_switch("plot_dot_split_swap", label = "On")
+      updateTextInput(
+        inputId = "plot_dot_split_x_text",
+        value = axis_titles()[["rows"]]
+      )
+      updateTextInput(
+        inputId = "plot_dot_split_y_text",
+        value = axis_titles()[["cols"]]
+      )
+
+    } else {
+      update_switch("plot_dot_split_swap", label = "Off")
+      updateTextInput(
+        inputId = "plot_dot_split_x_text",
+        value = axis_titles()[["cols"]]
+      )
+      updateTextInput(
+        inputId = "plot_dot_split_y_text",
+        value = axis_titles()[["rows"]]
+      )
+    }
+  })
+
+  observeEvent(input$plot_dot_split_strict, {
+    if (input$plot_dot_split_strict) {
+      update_switch("plot_dot_split_strict", label = "Strict")
+    } else {
+      update_switch("plot_dot_split_strict", label = "Loose")
+    }
+  })
+
+  observeEvent(input$plot_dot_split_linear, {
+    if (input$plot_dot_split_linear) {
+      update_switch("plot_dot_split_linear", label = "On")
+    } else {
+      update_switch("plot_dot_split_linear", label = "Off")
+    }
+  })
+
+  observeEvent(input$plot_dot_split_large_toggle, {
+    if (input$plot_dot_split_large_toggle) {
+      update_switch("plot_dot_split_large_toggle", label = "On")
+    } else {
+      update_switch("plot_dot_split_large_toggle", label = "Off")
+    }
+  })
+
+
+  # renderPlot calls ------------------------------------------------------
+
   the_plot <- eventReactive(input$create_plot, {
     req(abci_results())
 
@@ -1124,7 +1347,7 @@ server <- function(input, output) {
         size.text = input$plot_dot_size_text,
         scales = input$plot_dot_scales,
         x.decimal = input$plot_dot_x_decimal,
-        y.decimal = input$plot_dot_y_decimal,
+        y.decimal = isolate(input$plot_dot_y_decimal),
         x.text = input$plot_dot_x_text,
         y.text = input$plot_dot_y_text,
         x.mic.line = ("X" %in% input$plot_dot_mic_lines),
@@ -1138,44 +1361,85 @@ server <- function(input, output) {
         {if (abci_plot_dims()[[2]] == 1) {
           theme(legend.box = "horizontal")
         }}
+
+    } else if (input$plot_tabs == "dot_split") {
+      plot_dot_split(
+        data = abci_results(),
+        x.drug = ifelse(
+          input$plot_dot_split_swap,
+          "rows_conc",
+          "cols_conc"
+        ),
+        y.drug = ifelse(
+          input$plot_dot_split_swap,
+          "cols_conc",
+          "rows_conc"
+        ),
+        col.fill = "abci_avg",
+        col.size = "effect_avg",
+        strict = input$plot_dot_split_strict,
+        size.range = c(3, 15),
+        linear = input$plot_dot_split_linear,
+        col.analysis = "assay",
+        n.cols = abci_plot_dims()[[1]],
+        n.rows = abci_plot_dims()[[2]],
+        size.text = input$plot_dot_split_size_text,
+        scales = input$plot_dot_split_scales,
+        x.decimal = input$plot_dot_split_x_decimal,
+        y.decimal = isolate(input$plot_dot_split_y_decimal),
+        x.text = input$plot_dot_split_x_text,
+        y.text = input$plot_dot_split_y_text,
+        x.mic.line = ("X" %in% input$plot_dot_split_mic_lines),
+        y.mic.line = ("Y" %in% input$plot_dot_split_mic_lines),
+        mic.threshold = input$plot_dot_split_mic_threshold,
+        large.effect = input$plot_dot_split_large_toggle,
+        large.effect.val = input$plot_dot_split_large_value,
+        col.mic = "bio_normal",
+        colour.palette = input$plot_dot_split_colour_palette
+      ) +
+        {if (abci_plot_dims()[[2]] == 1) {
+          theme(legend.box = "horizontal")
+        }}
     }
   })
 
-
-  # renderPlot calls ------------------------------------------------------
-
-  output$abci_plot <- renderPlot(the_plot())
+  output$abci_plot <- renderPlot({
+    input$create_plot
+    the_plot()
+  })
 
 
   # plotOutput call -------------------------------------------------------
 
-  output_dims <- reactive(
+  output_dims <- eventReactive(input$create_plot, {
     get_dims(
       type = input$plot_tabs,
       n_cols = abci_plot_dims()[[1]],
       n_rows = abci_plot_dims()[[2]]
     )
-  )
+  })
 
-  output$abci_plot_ui <- renderUI(
-    tagList(
-      shinycssloaders::withSpinner(
-        type = 8,
-        plotOutput(
-          outputId = "abci_plot",
-          width = output_dims()[1],
-          height = output_dims()[2]
-        )
-      ),
-      card(
-        class = "border-0",
-        card_body(
-          plot_legend_ui(),
-          padding = 8
+  observeEvent(input$create_plot, {
+    output$abci_plot_ui <- renderUI(
+      tagList(
+        shinycssloaders::withSpinner(
+          type = 8,
+          plotOutput(
+            outputId = "abci_plot",
+            width = output_dims()[1],
+            height = output_dims()[2]
+          )
+        ),
+        card(
+          class = "border-0",
+          card_body(
+            plot_legend_ui(),
+            padding = 8
+          )
         )
       )
     )
-  )
+  })
 
 
   # Restore button --------------------------------------------------------
