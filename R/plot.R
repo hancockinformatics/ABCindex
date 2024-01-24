@@ -669,12 +669,16 @@ plot_line <- function(
   data <- data %>%
     mutate(across(all_of(c(x.drug, line.drug)), forcats::fct_inseq))
 
-  data_clean <-
+  data_clean <- if (length(line.include) != 0) {
     if (line.include[1] != "all") {
       filter(data, .data[[line.drug]] %in% line.include)
     } else {
       data
     }
+  } else {
+    return(NULL)
+  }
+
 
   # When calculating means and standard deviation, make sure to include
   # "col.analysis" as a grouping variable, if it exists.

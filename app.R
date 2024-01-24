@@ -2108,7 +2108,21 @@ server <- function(input, output) {
 
   output$abci_plot <- renderPlot({
     input$create_plot
-    the_plot()
+    if (is.null(the_plot())) {
+      showNotification(
+        type = "error",
+        duration = 20,
+        ui = make(
+          "<h4 class='alert-heading'><b>Error</b></h4>",
+          "<p class='mb-0'>",
+          "We were unable to draw a plot with the specified parameters. ",
+          "Try changing the inputs in the sidebar, then update the plot.",
+          "</p>"
+        )
+      )
+    } else {
+      the_plot()
+    }
   })
 
   output_dims <- eventReactive(input$create_plot, {
@@ -2148,7 +2162,10 @@ server <- function(input, output) {
     showModal(modalDialog(
       title = "Download the plot",
       size = "m",
-      p("Download the plot as any of the following formats:"),
+      p(
+        "Use the buttons below to download the current plot as a PNG, SVG, or ",
+        "TIFF image."
+      ),
       downloadButton(
         outputId = "plot_handler_png",
         label = "PNG",
