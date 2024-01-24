@@ -246,12 +246,12 @@ ui <- page_fluid(
                 title = "Split Tile",
                 value = "tile_split",
                 uiOutput("plot_inputs_tile_split")
+              ),
+              nav_panel(
+                title = "Line",
+                value = "line",
+                uiOutput("plot_inputs_line")
               )
-              # nav_panel(
-              #   title = "Line",
-              #   value = "line",
-              #   uiOutput("plot_inputs_line")
-              # )
             ) %>% tagAppendAttributes(class = "nav-justified"),
 
             hr(),
@@ -917,6 +917,9 @@ server <- function(input, output) {
   })
   observeEvent(input$tile_split_preview_colours, {
     showModal(modal_colours$abci)
+  })
+  observeEvent(input$line_preview_colours, {
+    showModal(modal_colours$lines)
   })
 
 
@@ -1749,6 +1752,210 @@ server <- function(input, output) {
   })
 
 
+  # |- Line ---------------------------------------------------------------
+
+  output$plot_inputs_line <- renderUI(
+    div(
+      class = "pt-3",
+      wrap_selector(
+        label = "Graph type",
+        label_title = "Determine how replicates are plotted",
+        radioButtons(
+          inputId = "plot_line_type",
+          label = NULL,
+          inline = TRUE,
+          choices = c(
+            "Replicates" = "replicates",
+            "Mean" = "mean",
+            "Mean±SD" = "mean_sd"
+          )
+        )
+      ),
+
+      wrap_selector(
+        label = "X axis title",
+        label_title = tooltips$x_axis_title,
+        textInput(
+          inputId = "plot_line_x_text",
+          label = NULL,
+          value = axis_titles()[["cols"]]
+        )
+      ),
+
+      wrap_selector(
+        label = "X axis digits",
+        label_title = tooltips$x_axis_digits,
+        numericInput(
+          inputId = "plot_line_x_decimal",
+          label = NULL,
+          value = 2,
+          min = 1,
+          max = 4,
+          step = 1
+        )
+      ),
+
+      # wrap_selector(
+      #   label = "Included values",
+      #   label_title = paste0(
+      #     "Concentrations to include in the plot as lines. Six or fewer is ",
+      #     "recommended."
+      #   ),
+      #   selectInput(
+      #     inputId = "plot_line_line_include",
+      #     label = NULL,
+      #     multiple = TRUE,
+      #     choices = c()
+      #   )
+      # ),
+
+      wrap_selector(
+        label = "Line title",
+        label_title = "Title for the line/colour legend",
+        textInput(
+          inputId = "plot_line_line_text",
+          label = NULL,
+          value = axis_titles()[["rows"]]
+        )
+      ),
+
+      wrap_selector(
+        label = "Line digits",
+        label_title = paste0(
+          "Number of decimal places to show for concentrations of the ",
+          "treatment plotted as different lines"
+        ),
+        numericInput(
+          inputId = "plot_line_line_decimal",
+          label = NULL,
+          value = 1,
+          min = 1,
+          max = 4,
+          step = 1
+        )
+      ),
+
+      wrap_selector(
+        label = actionLink("line_preview_colours", label = "Line colours"),
+        label_title = paste0(
+          "Colour palette to map to concentrations, each as a separate line. ",
+          "Click the preview the options."
+        ),
+        selectInput(
+          inputId = "plot_line_colour_palette",
+          label = NULL,
+          choices = line_colours
+        )
+      ),
+
+      wrap_selector(
+        label = "Y axis title",
+        label_title = tooltips$y_axis_title,
+        textInput(
+          inputId = "plot_line_y_text",
+          label = NULL,
+          value = "% Biomass"
+        )
+      ),
+
+      wrap_selector(
+        label = "Draw activity threshold",
+        label_title = tooltips$draw_activity,
+        checkboxGroupInput(
+          inputId = "plot_line_mic_lines",
+          label = NULL,
+          inline = TRUE,
+          choices = c("X"),
+          selected = c("X")
+        )
+      ),
+
+      br(),
+      accordion(
+        open = FALSE,
+        accordion_panel(
+          title = "Advanced plot options",
+
+          # wrap_selector(
+          #   label = "Swap X and lines",
+          #   label_title =
+          #     "Turn on to swap the values plotted on the X axis and as lines",
+          #   input_switch(
+          #     id = "plot_line_swap",
+          #     label = "Off",
+          #     value = FALSE
+          #   )
+          # ),
+
+          wrap_selector(
+            label = "X axis jitter",
+            label_title =
+              "Nudge values along the X axis to prevent overlapping lines",
+            input_switch(
+              id = "plot_line_jitter_x",
+              label = "On",
+              value = TRUE
+            )
+          ),
+
+          wrap_selector(
+            label = "Axis labels",
+            label_title = tooltips$axis_labels,
+            selectInput(
+              inputId = "plot_line_scales",
+              label = NULL,
+              choices = plot_scales
+            )
+          ),
+
+          wrap_selector(
+            label = "Activity threshold",
+            label_title = tooltips$activity_val,
+            numericInput(
+              inputId = "plot_line_mic_threshold",
+              label = NULL,
+              value = 0.5
+            )
+          )
+        )
+      )
+    )
+  )
+
+  # observeEvent(input$plot_line_swap, {
+  #   if (input$plot_line_swap) {
+  #     update_switch("plot_line_swap", label = "On")
+  #     updateTextInput(
+  #       inputId = "plot_line_x_text",
+  #       value = axis_titles()[["rows"]]
+  #     )
+  #     updateTextInput(
+  #       inputId = "plot_line_line_text",
+  #       value = axis_titles()[["cols"]]
+  #     )
+  #
+  #   } else {
+  #     update_switch("plot_line_swap", label = "Off")
+  #     updateTextInput(
+  #       inputId = "plot_line_x_text",
+  #       value = axis_titles()[["cols"]]
+  #     )
+  #     updateTextInput(
+  #       inputId = "plot_line_line_text",
+  #       value = axis_titles()[["rows"]]
+  #     )
+  #   }
+  # })
+
+  observeEvent(input$plot_line_jitter_x, {
+    if (input$plot_line_jitter_x) {
+      update_switch("plot_line_jitter_x", label = "On")
+    } else {
+      update_switch("plot_line_jitter_x", label = "Off")
+    }
+  })
+
+
   # Create the_plot() -----------------------------------------------------
 
   the_plot <- eventReactive(input$create_plot, {
@@ -1864,6 +2071,30 @@ server <- function(input, output) {
         large.effect = input$plot_tile_split_large_toggle,
         large.effect.val = input$plot_tile_split_large_value,
         colour.palette = input$plot_tile_split_colour_palette
+      )
+    }
+
+    else if (input$plot_tabs == "line") {
+      plot_line(
+        data = abci_results(),
+        plot.type = input$plot_line_type,
+        x.drug = "cols_conc",
+        line.drug = "rows_conc",
+        col.data = "bio_normal",
+        col.analysis = "assay",
+        line.include = "all",
+        n.cols = abci_plot_dims()[[1]],
+        n.rows = abci_plot_dims()[[2]],
+        scales = input$plot_line_scales,
+        x.decimal = input$plot_line_x_decimal,
+        line.decimal = isolate(input$plot_line_line_decimal),
+        x.text = input$plot_line_x_text,
+        y.text = input$plot_line_y_text,
+        line.text = input$plot_line_line_text,
+        x.mic.line = ("X" %in% input$plot_line_mic_lines),
+        mic.threshold = input$plot_line_mic_threshold,
+        jitter.x = input$plot_line_jitter_x,
+        colour.palette = input$plot_line_colour_palette
       )
     }
   })
