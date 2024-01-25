@@ -443,26 +443,24 @@ server <- function(input, output) {
   # Buttons/links to tabs -------------------------------------------------
 
   observeEvent(input$get_started, {
-    updateNavbarPage(inputId = "navbar", selected = "upload")
-  })
-  observeEvent(input$help_from_home, {
-    updateNavbarPage(inputId = "navbar", selected = "help")
+    nav_select(id = "navbar", selected = "upload")
   })
   observeEvent(input$about, {
-    updateNavbarPage(inputId = "navbar", selected = "about")
+    nav_select(id = "navbar", selected = "about")
   })
-  observeEvent(input$help_from_about, {
-    updateNavbarPage(inputId = "navbar", selected = "help")
-  })
-  observeEvent(input$help_from_upload, {
-    updateNavbarPage(inputId = "navbar", selected = "help")
-  })
-  observeEvent(input$help_from_results, {
-    updateNavbarPage(inputId = "navbar", selected = "help")
-  })
-  observeEvent(input$help_from_legend, {
-    updateNavbarPage(inputId = "navbar", selected = "help")
-  })
+
+  observe(nav_select(id = "navbar", selected = "help")) %>%
+    bindEvent(
+      input$help_from_home,
+      input$help_from_about,
+      input$help_from_upload,
+      input$help_from_results,
+      ignoreInit = TRUE
+    )
+  observeEvent(
+    input$help_from_legend,
+    nav_select(id = "navbar", selected = "help")
+  )
 
 
   # Download the template -------------------------------------------------
@@ -772,7 +770,7 @@ server <- function(input, output) {
 
     removeModal()
 
-    updateNavbarPage(inputId  = "navbar", selected = "results")
+    nav_select(id = "navbar", selected = "results")
 
     enable_button(
       "create_plot",
@@ -876,18 +874,15 @@ server <- function(input, output) {
     class = "modal-dialog-centered"
   )
 
-  observeEvent(input$dot_preview_colours, {
+  observeEvent({
+    input$dot_preview_colours
+    input$dot_split_preview_colours
+    input$tile_preview_colours
+    input$tile_split_preview_colours
+  }, {
     showModal(modal_colours$abci)
   })
-  observeEvent(input$dot_split_preview_colours, {
-    showModal(modal_colours$abci)
-  })
-  observeEvent(input$tile_preview_colours, {
-    showModal(modal_colours$abci)
-  })
-  observeEvent(input$tile_split_preview_colours, {
-    showModal(modal_colours$abci)
-  })
+
   observeEvent(input$line_preview_colours, {
     showModal(modal_colours$lines)
   })
@@ -2097,13 +2092,6 @@ server <- function(input, output) {
     },
     error = function(e) NULL
     )
-  })
-
-
-  # Update plot on tab switch ---------------------------------------------
-
-  observeEvent(input$plot_tabs, {
-    delay(5, click("create_plot"))
   })
 
 
