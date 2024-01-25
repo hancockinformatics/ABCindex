@@ -16,10 +16,7 @@ set_ggplot_theme()
 # Define UI ---------------------------------------------------------------
 
 ui <- page_fluid(
-  theme = bs_add_variables(
-    app_theme,
-    danger = "#cc002c"
-  ),
+  theme = bs_add_variables(app_theme, danger = "#cc002c"),
 
   useShinyjs(),
 

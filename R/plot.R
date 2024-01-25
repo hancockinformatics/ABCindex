@@ -3,7 +3,7 @@
 #' @param x Character vector (factor) of numeric values
 #' @param n Desired number of decimal places
 #'
-#' @return Character vector of labels for x or y axes
+#' @return Character vector of labels for x or y axis
 #'
 sprinter <- function(x, n) {
   sprintf(paste0("%.", n, "f"), as.numeric(x))
