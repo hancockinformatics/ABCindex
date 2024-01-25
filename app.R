@@ -416,23 +416,19 @@ ui <- page_fluid(
 
     nav_spacer(),
 
-    nav_item(
-      a(
-        icon("github"),
-        "GitHub",
-        href = "https://github.com/hancockinformatics/ShinyABCi",
-        target = "_blank",
-        rel = "noopener noreferrer"
-      )
-    ),
+    nav_item(a(
+      icon("github"),
+      "GitHub",
+      href = "https://github.com/hancockinformatics/ShinyABCi",
+      target = "_blank",
+      rel = "noopener noreferrer"
+    )),
 
     # Divider
-    nav_item(
-      HTML(paste0(
-        "<div class='vr d-none d-lg-flex h-100 mx-lg-2 text-white'></div>",
-        "<hr class='d-lg-none my-2 text-white-50'>"
-      ))
-    ),
+    nav_item(HTML(paste0(
+      "<div class='vr d-none d-lg-flex h-100 mx-lg-2 text-white'></div>",
+      "<hr class='d-lg-none my-2 text-white-50'>"
+    ))),
 
     nav_item(app_version, style = "color: var(--bs-nav-link-color)")
   )
@@ -752,7 +748,7 @@ server <- function(input, output) {
   })
 
 
-  # Tidy input and get results --------------------------------------------
+  # Calculate ABCI, trigger app changes -----------------------------------
 
   abci_results <- reactiveVal()
 
@@ -2248,36 +2244,31 @@ server <- function(input, output) {
 
   # Restore button --------------------------------------------------------
 
-  observeEvent(input$restore, {
-    shinyjs::reset(id = "results_sidebar")
-    delay(5, click("create_plot"))
-  })
+  observeEvent(input$restore, shinyjs::reset(id = "results_sidebar"))
 
 
   # Refresh button --------------------------------------------------------
 
   observeEvent(input$reset, {
-    showModal(
-      modalDialog(
-        title = "Analyze a new dataset",
-        p(r"(
-          Are you sure you want to refresh this page and analyze a new dataset?
-          Doing so will reset the app, meaning any current results and plots
-          will be lost!
+    showModal(modalDialog(
+      title = "Analyze a new dataset",
+      p(r"(
+        Are you sure you want to refresh this page and analyze a new dataset?
+        Doing so will reset the app, meaning any current results and plots
+        will be lost!
         )"),
-        footer = tagList(
-          tagAppendAttributes(
-            modalButton(label = "Close"),
-            class = "btn-outline-secondary"
-          ),
-          actionButton(
-            "confirm_reset",
-            "Refresh and start over",
-            class = "btn btn-danger"
-          )
+      footer = tagList(
+        tagAppendAttributes(
+          modalButton(label = "Close"),
+          class = "btn-outline-secondary"
+        ),
+        actionButton(
+          "confirm_reset",
+          "Refresh and start over",
+          class = "btn btn-danger"
         )
       )
-    )
+    ))
   })
 
   observeEvent(input$confirm_reset, {
