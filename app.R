@@ -2,9 +2,9 @@
 
 suppressPackageStartupMessages({
   library(svglite)
+  library(openxlsx)
   library(dplyr)
   library(ggplot2)
-  library(openxlsx)
   library(shinyjs)
   library(shiny)
   library(bslib)
@@ -1016,7 +1016,9 @@ server <- function(input, output) {
             numericInput(
               inputId = "plot_dot_mic_threshold",
               label = NULL,
-              value = 0.5
+              value = 0.5,
+              min = 0,
+              step = 0.1
             )
           ),
 
@@ -1037,7 +1039,8 @@ server <- function(input, output) {
               inputId = "plot_dot_large_value",
               label = NULL,
               value = 0.9,
-              min = 0
+              min = 0,
+              step = 0.1
             )
           )
         )
@@ -1222,7 +1225,9 @@ server <- function(input, output) {
             numericInput(
               inputId = "plot_dot_split_mic_threshold",
               label = NULL,
-              value = 0.5
+              value = 0.5,
+              min = 0,
+              step = 0.1
             )
           ),
 
@@ -1243,7 +1248,8 @@ server <- function(input, output) {
               inputId = "plot_dot_split_large_value",
               label = NULL,
               value = 0.9,
-              min = 0
+              min = 0,
+              step = 0.1
             )
           )
         )
@@ -1333,10 +1339,10 @@ server <- function(input, output) {
         numericInput(
           inputId = "plot_tile_x_decimal",
           label = NULL,
-          min = 0,
-          max = 5,
-          step = 1,
-          value = 2
+          value = 2,
+          min = 1,
+          max = 4,
+          step = 1
         )
       ),
 
@@ -1356,10 +1362,10 @@ server <- function(input, output) {
         numericInput(
           inputId = "plot_tile_y_decimal",
           label = NULL,
-          min = 0,
-          max = 5,
-          step = 1,
-          value = 2
+          value = 2,
+          min = 1,
+          max = 4,
+          step = 1
         )
       ),
 
@@ -1418,7 +1424,9 @@ server <- function(input, output) {
             numericInput(
               inputId = "plot_tile_mic_threshold",
               label = NULL,
-              value = 0.5
+              value = 0.5,
+              min = 0,
+              step = 0.1
             )
           ),
 
@@ -1429,7 +1437,8 @@ server <- function(input, output) {
               inputId = "plot_tile_low_value",
               label = NULL,
               value = 0.5,
-              min = 0
+              min = 0,
+              step = 0.1
             )
           ),
 
@@ -1450,7 +1459,8 @@ server <- function(input, output) {
               inputId = "plot_tile_large_value",
               label = NULL,
               value = 0.9,
-              min = 0
+              min = 0,
+              step = 0.1
             )
           )
         )
@@ -1626,7 +1636,9 @@ server <- function(input, output) {
             numericInput(
               inputId = "plot_tile_split_mic_threshold",
               label = NULL,
-              value = 0.5
+              value = 0.5,
+              min = 0,
+              step = 0.1
             )
           ),
 
@@ -1659,7 +1671,8 @@ server <- function(input, output) {
               inputId = "plot_tile_split_large_value",
               label = NULL,
               value = 0.9,
-              min = 0
+              min = 0,
+              step = 0.1
             )
           )
         )
@@ -1793,7 +1806,7 @@ server <- function(input, output) {
         numericInput(
           inputId = "plot_line_line_decimal",
           label = NULL,
-          value = 1,
+          value = 2,
           min = 1,
           max = 4,
           step = 1
@@ -1879,7 +1892,9 @@ server <- function(input, output) {
             numericInput(
               inputId = "plot_line_mic_threshold",
               label = NULL,
-              value = 0.5
+              value = 0.5,
+              min = 0,
+              step = 0.1
             )
           )
         )
