@@ -67,13 +67,8 @@ abci_analysis <- function(
       cli::cli_progress_along(data.split, "Calculating ABCi values"),
       function(i) {
 
-        df <- data.split[[i]]
-        nm <- names(data.split[i])
-
-        message("\nExperiment: ", nm)
-
         abci_analysis_single(
-          data = df,
+          data = data.split[[i]],
           x.drug = x.drug,
           y.drug = y.drug,
           col.data = col.data,
@@ -135,11 +130,8 @@ abci_analysis_single <- function(
       across(all_of(c(x.drug, y.drug)), forcats::fct_inseq)
     )
 
-  message("\tNormalize is set to ", normalize)
-
   if (!normalize) {
     if (max(data_clean[[col.data]]) >= 50) {
-      message("\tDivinding by 100")
       data_clean[[col.data]] <- data_clean[[col.data]] / 100
     }
   }
@@ -158,7 +150,6 @@ abci_analysis_single <- function(
   # - The "effect" column is calculated as ("baseline" - "bio_normal"), again
   #   with a floor of 0
   data_effect <- if (is.null(col.reps)) {
-    message("\tNo replicates")
 
     baseline <- data_clean %>%
       filter(.data[[x.drug]] == "0" & .data[[y.drug]] == "0") %>%
@@ -195,7 +186,6 @@ abci_analysis_single <- function(
 
   } else {
     data_split <- split(x = data_clean, f = data_clean[col.reps])
-    message("\t", length(data_split), " replicates")
 
     lapply(data_split, function(x) {
 
@@ -234,7 +224,7 @@ abci_analysis_single <- function(
     }) %>% bind_rows()
   }
 
-  # Get the reference "effect" for each drug, which is the (average) effect at
+  # Get the "reference effect" for each drug, which is the (average) effect at
   # each concentration, when the other drug has a concentration of 0
   data_reference_x <- data_effect %>%
     filter(.data[[y.drug]] == "0") %>%

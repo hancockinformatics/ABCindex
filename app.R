@@ -439,6 +439,8 @@ ui <- page_fluid(
 
 server <- function(input, output) {
 
+  message("\n==> Start...")
+
 
   # Buttons/links to tabs -------------------------------------------------
 
@@ -2288,5 +2290,4 @@ server <- function(input, output) {
 
 # Run the application -----------------------------------------------------
 
-message("\n==> Start...")
 shinyApp(ui = ui, server = server)
