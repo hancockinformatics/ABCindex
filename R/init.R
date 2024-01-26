@@ -63,6 +63,7 @@ line_x <- ggplot2::annotate(
   yend = -Inf,
   linewidth = 2
 )
+
 line_y <- ggplot2::annotate(
   "segment",
   x = -Inf,

@@ -47,15 +47,6 @@ get_dims <- function(type, n_cols, n_rows) {
 }
 
 
-#' make
-#'
-#' @param ... Characters to paste together and wrap with `HTML()`
-#'
-#' @return HTML text with desired content
-#'
-make <- function(...) HTML(paste0(...))
-
-
 #' my_btn
 #'
 #' @param id Button ID

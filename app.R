@@ -2,9 +2,9 @@
 
 suppressPackageStartupMessages({
   library(svglite)
+  library(openxlsx)
   library(dplyr)
   library(ggplot2)
-  library(openxlsx)
   library(shinyjs)
   library(shiny)
   library(bslib)
@@ -16,10 +16,7 @@ set_ggplot_theme()
 # Define UI ---------------------------------------------------------------
 
 ui <- page_fluid(
-  theme = bs_add_variables(
-    app_theme,
-    danger = "#cc002c"
-  ),
+  theme = bs_add_variables(app_theme, danger = "#cc002c"),
 
   useShinyjs(),
 
@@ -72,29 +69,28 @@ ui <- page_fluid(
             "Calculation & visualization of the Anti-Biofilm Combination Index"
           ),
 
-          make(
-            "<p class='lead mb-4'>Welcome to ShinyABCi, a tool to quantify ",
-            "and visualize the <i>in vitro</i> effects of drug combinations. ",
-            "The Anti-Biofilm Combination Index (ABCI) is a metric designed ",
-            "to assess drug combination therapy in checkerboard assays, ",
-            "without relying on activity thresholds (e.g. MIC, MBIC, or ",
-            "MBEC), which present significant challenges when evaluating ",
-            "antibiofilm activity.</p>"
-          ),
+          HTML(r"(
+            <p class='lead mb-4'>Welcome to ShinyABCi, a tool to quantify and
+            visualize the <i>in vitro</i> effects of drug combinations. The
+            Anti-Biofilm Combination Index (ABCI) is a metric designed to assess
+            drug combination therapy in checkerboard assays, without relying on
+            activity thresholds (e.g. MIC, MBIC, or MBEC), which present
+            significant challenges when evaluating antibiofilm activity.</p>
+          )"),
 
-          make(
-            "<p class='lead mb-4'>Here you can calculate ABCIs for your ",
-            "checkerboard data and visualize the results in different plots ",
-            "designed to quickly identify promising interactions and
-            favourable drug ratios.</p>"
-          ),
+          HTML(r"(
+            <p class='lead mb-4'>Here you can calculate ABCIs for your
+            checkerboard data and visualize the results in different plots
+            designed to quickly identify promising interactions and favourable
+            drug ratios.</p>
+          )"),
 
-          make(
-            "<p class='lead mb-4'>Click the Get Started button to upload your ",
-            "data. To learn more about how ABCI is calculated, or how to use ",
-            "ShinyABCi, check the Help pages below. For more information, ",
-            "including how to cite ShinyABCi, please refer to the About page.</p>"
-          ),
+          HTML(r"(
+            <p class='lead mb-4'>Click the Get Started button to upload your
+            data. To learn more about how ABCI is calculated, or how to use
+            ShinyABCi, check the Help pages below. For more information,
+            including how to cite ShinyABCi, please refer to the About page.</p>
+          )"),
 
           div(purrr::pmap(btn_tibble, my_btn))
         )
@@ -125,7 +121,7 @@ ui <- page_fluid(
               "Each sheet/experiment will be analyzed independently, becoming ",
               "separate panels in the final plots, while replicates within an ",
               "experiment will be averaged. You can use the link to ",
-              actionLink("download_template", label = "download a template"),
+              actionLink("download_template", "download a template"),
               "of the input format. If required, subtract any 'blank' wells ",
               "before uploading your data."
             ),
@@ -204,13 +200,13 @@ ui <- page_fluid(
               "to learn more about ABCI."
             ),
 
-            make(
-              "<p>Visualize your ABCI results using <b>Dot</b> or <b>Tile</b> ",
-              "plots. The <b>Split</b> versions separate positive and ",
-              "negative ABCI values into two plots, for visual simplicity. ",
-              "Alternatively, the <b>Line</b> plot displays antimicrobial ",
-              "activity for all or a subset of concentrations.</p>"
-            ),
+            HTML(r"(
+              <p>Visualize your ABCI results using <b>Dot</b> or <b>Tile</b>
+              plots. The <b>Split</b> versions separate positive and
+              negative ABCI values into two plots, for visual simplicity.
+              Alternatively, the <b>Line</b> plot displays antimicrobial
+              activity for all or a subset of concentrations.</p>
+            )"),
 
             disabled(
               actionButton(
@@ -283,6 +279,7 @@ ui <- page_fluid(
                     actionButton(
                       inputId = "plot_download_button",
                       class = "btn btn-success align-items-center",
+                      icon = icon("floppy-disk"),
                       label = "Download the plot",
                       style = "width: 100%"
                     )
@@ -303,7 +300,7 @@ ui <- page_fluid(
                     ) %>% tooltip(
                       id = "restore_tt",
                       placement = "top",
-                      "Restores plot inputs to their default state"
+                      "Restores all plot inputs to their default state"
                     )
                   )
                 ),
@@ -320,7 +317,7 @@ ui <- page_fluid(
                       tooltip(
                         id = "reset_tt",
                         placement = "top",
-                        "Discard current results and start a new analysis"
+                        "Discard the current results and start a new analysis"
                       )
                   )
                 )
@@ -419,23 +416,19 @@ ui <- page_fluid(
 
     nav_spacer(),
 
-    nav_item(
-      a(
-        icon("github"),
-        "GitHub",
-        href = "https://github.com/hancockinformatics/ShinyABCi",
-        target = "_blank",
-        rel = "noopener noreferrer"
-      )
-    ),
+    nav_item(a(
+      icon("github"),
+      "GitHub",
+      href = "https://github.com/hancockinformatics/ShinyABCi",
+      target = "_blank",
+      rel = "noopener noreferrer"
+    )),
 
     # Divider
-    nav_item(
-      make(
-        "<div class='vr d-none d-lg-flex h-100 mx-lg-2 text-white'></div>",
-        "<hr class='d-lg-none my-2 text-white-50'>"
-      )
-    ),
+    nav_item(HTML(paste0(
+      "<div class='vr d-none d-lg-flex h-100 mx-lg-2 text-white'></div>",
+      "<hr class='d-lg-none my-2 text-white-50'>"
+    ))),
 
     nav_item(app_version, style = "color: var(--bs-nav-link-color)")
   )
@@ -450,26 +443,24 @@ server <- function(input, output) {
   # Buttons/links to tabs -------------------------------------------------
 
   observeEvent(input$get_started, {
-    updateNavbarPage(inputId = "navbar", selected = "upload")
-  })
-  observeEvent(input$help_from_home, {
-    updateNavbarPage(inputId = "navbar", selected = "help")
+    nav_select(id = "navbar", selected = "upload")
   })
   observeEvent(input$about, {
-    updateNavbarPage(inputId = "navbar", selected = "about")
+    nav_select(id = "navbar", selected = "about")
   })
-  observeEvent(input$help_from_about, {
-    updateNavbarPage(inputId = "navbar", selected = "help")
-  })
-  observeEvent(input$help_from_upload, {
-    updateNavbarPage(inputId = "navbar", selected = "help")
-  })
-  observeEvent(input$help_from_results, {
-    updateNavbarPage(inputId = "navbar", selected = "help")
-  })
-  observeEvent(input$help_from_legend, {
-    updateNavbarPage(inputId = "navbar", selected = "help")
-  })
+
+  observe(nav_select(id = "navbar", selected = "help")) %>%
+    bindEvent(
+      input$help_from_home,
+      input$help_from_about,
+      input$help_from_upload,
+      input$help_from_results,
+      ignoreInit = TRUE
+    )
+  observeEvent(
+    input$help_from_legend,
+    nav_select(id = "navbar", selected = "help")
+  )
 
 
   # Download the template -------------------------------------------------
@@ -533,13 +524,13 @@ server <- function(input, output) {
       id = "upload_notification",
       type = initial_input$type,
       duration = ifelse(initial_input$type == "error", 20, 10),
-      ui = make(
+      ui = HTML(paste0(
         "<h4 class='alert-heading'><b>", initial_input$status, "</b></h4>",
         "<p class='mb-0'>",
         initial_input$message,
         initial_input$suggest,
         "</p>"
-      )
+      ))
     )
   })
 
@@ -553,13 +544,13 @@ server <- function(input, output) {
       id = "upload_notification",
       type = initial_input$type,
       duration = ifelse(initial_input$type == "error", 20, 10),
-      ui = make(
+      ui = HTML(paste0(
         "<h4 class='alert-heading'><b>", initial_input$status, "</b></h4>",
         "<p class='mb-0'>",
         initial_input$message,
         initial_input$suggest,
         "</p>"
-      )
+      ))
     )
   })
 
@@ -605,14 +596,13 @@ server <- function(input, output) {
         "Select an uploaded experiment to preview"
       ),
       card_body(
-        make(
-          "<p>Use the dropdown to choose an experiment to preview; the card ",
-          "to the right displays information gathered from the selected ",
-          "experiment, while the table below shows the corresponding data ",
-          "(<b>first replicate only</b>). Make sure everything looks OK ",
-          "before proceeding by clicking the button at the bottom of the ",
-          "sidebar.</p>"
-        ),
+        HTML(r"(
+          <p>Use the dropdown to choose an experiment to preview; the card to
+          the right displays information gathered from the selected experiment,
+          while the table below shows the corresponding data (<b>first replicate
+          only</b>). Make sure everything looks OK before proceeding by clicking
+          the button at the bottom of the sidebar.</p>
+        )"),
         selectInput(
           inputId = "upload_input_names_selector",
           label = NULL,
@@ -637,27 +627,27 @@ server <- function(input, output) {
       ),
 
       card_body(
-        make(
+        HTML(paste0(
           "<p><b>Treatment in the columns:</b> ",
           experiment_drugs[["cols"]][["name"]],
           "</p>"
-        ),
+        )),
         HTML(paste0(
           "<p><b>Detected concentrations:</b> ",
           paste(experiment_drugs[["cols"]][["concentrations"]], collapse = ", "),
           "</p>"
         )),
         hr(),
-        make(
+        HTML(paste0(
           "<p><b>Treatment in the rows:</b> ",
           experiment_drugs[["rows"]][["name"]],
           "</p>"
-        ),
-        make(
+        )),
+        HTML(paste0(
           "<p><b>Detected concentrations:</b> ",
           paste(experiment_drugs[["rows"]][["concentrations"]], collapse = ", "),
           "</p>"
-        )
+        ))
       )
     )
   })
@@ -726,11 +716,11 @@ server <- function(input, output) {
     showModal(modalDialog(
       title = "Perform ABCI calculations: Data normalization",
       size = "l",
-      p(
-        "By default, ShinyABCi will normalize all input data to ",
-        "percentages. If your data has already been normalized, please ",
-        "select the appropriate option below before proceeding."
-      ),
+      p(r"(
+        By default, ShinyABCi will normalize all input data to percentages. If
+        your data has already been normalized, please select the appropriate
+        option below before proceeding.
+      )"),
       radioButtons(
         inputId = "normalize_radio",
         label = NULL,
@@ -756,7 +746,7 @@ server <- function(input, output) {
   })
 
 
-  # Tidy input and get results --------------------------------------------
+  # Calculate ABCI, trigger app changes -----------------------------------
 
   abci_results <- reactiveVal()
 
@@ -780,7 +770,7 @@ server <- function(input, output) {
 
     removeModal()
 
-    updateNavbarPage(inputId  = "navbar", selected = "results")
+    nav_select(id = "navbar", selected = "results")
 
     enable_button(
       "create_plot",
@@ -884,18 +874,15 @@ server <- function(input, output) {
     class = "modal-dialog-centered"
   )
 
-  observeEvent(input$dot_preview_colours, {
+  observeEvent({
+    input$dot_preview_colours
+    input$dot_split_preview_colours
+    input$tile_preview_colours
+    input$tile_split_preview_colours
+  }, {
     showModal(modal_colours$abci)
   })
-  observeEvent(input$dot_split_preview_colours, {
-    showModal(modal_colours$abci)
-  })
-  observeEvent(input$tile_preview_colours, {
-    showModal(modal_colours$abci)
-  })
-  observeEvent(input$tile_split_preview_colours, {
-    showModal(modal_colours$abci)
-  })
+
   observeEvent(input$line_preview_colours, {
     showModal(modal_colours$lines)
   })
@@ -1029,7 +1016,9 @@ server <- function(input, output) {
             numericInput(
               inputId = "plot_dot_mic_threshold",
               label = NULL,
-              value = 0.5
+              value = 0.5,
+              min = 0,
+              step = 0.1
             )
           ),
 
@@ -1050,7 +1039,8 @@ server <- function(input, output) {
               inputId = "plot_dot_large_value",
               label = NULL,
               value = 0.9,
-              min = 0
+              min = 0,
+              step = 0.1
             )
           )
         )
@@ -1235,7 +1225,9 @@ server <- function(input, output) {
             numericInput(
               inputId = "plot_dot_split_mic_threshold",
               label = NULL,
-              value = 0.5
+              value = 0.5,
+              min = 0,
+              step = 0.1
             )
           ),
 
@@ -1256,7 +1248,8 @@ server <- function(input, output) {
               inputId = "plot_dot_split_large_value",
               label = NULL,
               value = 0.9,
-              min = 0
+              min = 0,
+              step = 0.1
             )
           )
         )
@@ -1346,10 +1339,10 @@ server <- function(input, output) {
         numericInput(
           inputId = "plot_tile_x_decimal",
           label = NULL,
-          min = 0,
-          max = 5,
-          step = 1,
-          value = 2
+          value = 2,
+          min = 1,
+          max = 4,
+          step = 1
         )
       ),
 
@@ -1369,10 +1362,10 @@ server <- function(input, output) {
         numericInput(
           inputId = "plot_tile_y_decimal",
           label = NULL,
-          min = 0,
-          max = 5,
-          step = 1,
-          value = 2
+          value = 2,
+          min = 1,
+          max = 4,
+          step = 1
         )
       ),
 
@@ -1431,7 +1424,9 @@ server <- function(input, output) {
             numericInput(
               inputId = "plot_tile_mic_threshold",
               label = NULL,
-              value = 0.5
+              value = 0.5,
+              min = 0,
+              step = 0.1
             )
           ),
 
@@ -1442,7 +1437,8 @@ server <- function(input, output) {
               inputId = "plot_tile_low_value",
               label = NULL,
               value = 0.5,
-              min = 0
+              min = 0,
+              step = 0.1
             )
           ),
 
@@ -1463,7 +1459,8 @@ server <- function(input, output) {
               inputId = "plot_tile_large_value",
               label = NULL,
               value = 0.9,
-              min = 0
+              min = 0,
+              step = 0.1
             )
           )
         )
@@ -1639,7 +1636,9 @@ server <- function(input, output) {
             numericInput(
               inputId = "plot_tile_split_mic_threshold",
               label = NULL,
-              value = 0.5
+              value = 0.5,
+              min = 0,
+              step = 0.1
             )
           ),
 
@@ -1672,7 +1671,8 @@ server <- function(input, output) {
               inputId = "plot_tile_split_large_value",
               label = NULL,
               value = 0.9,
-              min = 0
+              min = 0,
+              step = 0.1
             )
           )
         )
@@ -1806,7 +1806,7 @@ server <- function(input, output) {
         numericInput(
           inputId = "plot_line_line_decimal",
           label = NULL,
-          value = 1,
+          value = 2,
           min = 1,
           max = 4,
           step = 1
@@ -1892,7 +1892,9 @@ server <- function(input, output) {
             numericInput(
               inputId = "plot_line_mic_threshold",
               label = NULL,
-              value = 0.5
+              value = 0.5,
+              min = 0,
+              step = 0.1
             )
           )
         )
@@ -2116,13 +2118,12 @@ server <- function(input, output) {
       showNotification(
         type = "error",
         duration = 20,
-        ui = make(
-          "<h4 class='alert-heading'><b>Error</b></h4>",
-          "<p class='mb-0'>",
-          "We were unable to draw a plot with the specified parameters. ",
-          "Try changing the inputs in the sidebar, then update the plot.",
-          "</p>"
-        )
+        ui = HTML(r"(
+          <h4 class='alert-heading'><b>Error</b></h4>
+          <p class='mb-0'>
+          We were unable to draw a plot with the specified parameters.
+          Try changing the inputs in the sidebar, then update the plot.</p>
+        )")
       )
     } else {
       the_plot()
@@ -2196,7 +2197,9 @@ server <- function(input, output) {
   })
 
   output$plot_handler_png <- downloadHandler(
-    filename = "ShinyABCi_plot.png",
+    filename = function() {
+      paste0("ShinyABCi_plot_", input$plot_tabs, ".png")
+    },
     content = function(file) {
       ggsave(
         plot = the_plot(),
@@ -2210,7 +2213,9 @@ server <- function(input, output) {
   )
 
   output$plot_handler_svg <- downloadHandler(
-    filename = "ShinyABCi_plot.svg",
+    filename = function() {
+      paste0("ShinyABCi_plot_", input$plot_tabs, ".svg")
+    },
     content = function(file) {
       ggsave(
         plot = the_plot(),
@@ -2224,7 +2229,9 @@ server <- function(input, output) {
   )
 
   output$plot_handler_tif <- downloadHandler(
-    filename = "ShinyABCi_plot.tiff",
+    filename = function() {
+      paste0("ShinyABCi_plot_", input$plot_tabs, ".tiff")
+    },
     content = function(file) {
       ggsave(
         plot = the_plot(),
@@ -2240,36 +2247,31 @@ server <- function(input, output) {
 
   # Restore button --------------------------------------------------------
 
-  observeEvent(input$restore, {
-    shinyjs::reset(id = "results_sidebar")
-    delay(5, click("create_plot"))
-  })
+  observeEvent(input$restore, shinyjs::reset(id = "results_sidebar"))
 
 
   # Refresh button --------------------------------------------------------
 
   observeEvent(input$reset, {
-    showModal(
-      modalDialog(
-        title = "Analyze a new dataset",
-        p(
-          "Are you sure you want to refresh this page and analyze a new ",
-          "dataset? Doing so will reset the app, meaning any current results ",
-          "and plots will be lost!"
+    showModal(modalDialog(
+      title = "Analyze a new dataset",
+      p(r"(
+        Are you sure you want to refresh this page and analyze a new dataset?
+        Doing so will reset the app, meaning any current results and plots
+        will be lost!
+        )"),
+      footer = tagList(
+        tagAppendAttributes(
+          modalButton(label = "Close"),
+          class = "btn-outline-secondary"
         ),
-        footer = tagList(
-          tagAppendAttributes(
-            modalButton(label = "Close"),
-            class = "btn-outline-secondary"
-          ),
-          actionButton(
-            "confirm_reset",
-            "Refresh and start over",
-            class = "btn btn-danger"
-          )
+        actionButton(
+          "confirm_reset",
+          "Refresh and start over",
+          class = "btn btn-danger"
         )
       )
-    )
+    ))
   })
 
   observeEvent(input$confirm_reset, {
