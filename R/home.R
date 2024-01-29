@@ -71,7 +71,7 @@ server_home <- function(id) {
   moduleServer(id, function(input, output, session) {
     observeEvent(
       input$get_started,
-      nav_select(id = "navbar", selected = "upload")
+      nav_select(id = "navbar", selected = NS(id, "upload"))
     )
     observeEvent(
       input$help_from_home,

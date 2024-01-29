@@ -57,6 +57,8 @@ abci_ui <- page_fluid(
     window_title = "ShinyABCi",
 
     ui_home("main"),
+    ui_upload("main"),
+    ui_results("main"),
     ui_help("main"),
     ui_about("main"),
 
@@ -81,9 +83,16 @@ abci_ui <- page_fluid(
 )
 
 
+# Server ------------------------------------------------------------------
+
 abci_server <- function(input, output, session) {
   server_home("main")
+  abci_result <- server_upload("main")
+  server_results("main", data = abci_result)
   server_about("main")
 }
+
+
+# Run ---------------------------------------------------------------------
 
 shinyApp(abci_ui, abci_server)
