@@ -89,9 +89,10 @@ abci_ui <- page_fluid(
 
 abci_server <- function(input, output, session) {
   server_home("main")
+  server_about("main")
+
   abci_result <- server_upload("main")
   server_results("main", data = abci_result)
-  server_about("main")
 }
 
 

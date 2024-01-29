@@ -1658,27 +1658,27 @@ ui_results <- function(id) {
               title = "Dot",
               value = NS(id, "dot"),
               uiOutput(NS(id, "plot_inputs_dot"))
+            ),
+            nav_panel(
+              title = "Split Dot",
+              value = NS(id, "dot_split"),
+              uiOutput(NS(id, "plot_inputs_dot_split"))
+            ),
+            nav_panel(
+              title = "Tile",
+              value = NS(id, "tile"),
+              uiOutput(NS(id, "plot_inputs_tile"))
+            ),
+            nav_panel(
+              title = "Split Tile",
+              value = NS(id, "tile_split"),
+              uiOutput(NS(id, "plot_inputs_tile_split"))
+            ),
+            nav_panel(
+              title = "Line",
+              value = NS(id, "line"),
+              uiOutput(NS(id, "plot_inputs_line"))
             )
-            # nav_panel(
-            #   title = "Split Dot",
-            #   value = NS(id, "dot_split"),
-            #   uiOutput(NS(id, "plot_inputs_dot_split"))
-            # ),
-            # nav_panel(
-            #   title = "Tile",
-            #   value = NS(id, "tile"),
-            #   uiOutput(NS(id, "plot_inputs_tile"))
-            # ),
-            # nav_panel(
-            #   title = "Split Tile",
-            #   value = NS(id, "tile_split"),
-            #   uiOutput(NS(id, "plot_inputs_tile_split"))
-            # ),
-            # nav_panel(
-            #   title = "Line",
-            #   value = NS(id, "line"),
-            #   uiOutput(NS(id, "plot_inputs_line"))
-            # )
           ) %>% tagAppendAttributes(class = "nav-justified"),
 
           hr(),
@@ -1852,6 +1852,10 @@ server_results <- function(id, data) {
     )
 
     observeEvent(input$dot_preview_colours, showModal(modal_colours$abci))
+    observeEvent(input$dot_split_preview_colours, showModal(modal_colours$abci))
+    observeEvent(input$tile_preview_colours, showModal(modal_colours$abci))
+    observeEvent(input$tile_split_preview_colours, showModal(modal_colours$abci))
+    observeEvent(input$line_preview_colours, showModal(modal_colours$lines))
 
 
     # Plot inputs UI --------------------------------------------------------
@@ -2057,6 +2061,892 @@ server_results <- function(id, data) {
       } else {
         update_switch("plot_dot_large_toggle", label = "Off")
       }
+    })
+
+
+    # |- Split dot ----------------------------------------------------------
+
+    output$plot_inputs_dot_split <- renderUI(
+      div(
+        class = "pt-3",
+        wrap_selector(
+          label = actionLink(
+            NS(id, "dot_split_preview_colours"),
+            label = "ABCI colours"
+          ),
+          label_title = tooltips$abci_colours,
+          selectInput(
+            inputId = NS(id, "plot_dot_split_colour_palette"),
+            label = NULL,
+            selected = "RYB",
+            choices = abci_colours_split
+          )
+        ),
+
+        wrap_selector(
+          label = "X axis title",
+          label_title = tooltips$x_axis_title,
+          textInput(
+            inputId = NS(id, "plot_dot_split_x_text"),
+            label = NULL,
+            value = axis_titles()[["cols"]]
+          )
+        ),
+
+        wrap_selector(
+          label = "X axis digits",
+          label_title = tooltips$x_axis_digits,
+          numericInput(
+            inputId = NS(id, "plot_dot_split_x_decimal"),
+            label = NULL,
+            value = 2,
+            min = 1,
+            max = 4,
+            step = 1
+          )
+        ),
+
+        wrap_selector(
+          label = "Y axis title",
+          label_title = tooltips$y_axis_title,
+          textInput(
+            inputId = NS(id, "plot_dot_split_y_text"),
+            label = NULL,
+            value = axis_titles()[["rows"]]
+          )
+        ),
+
+        wrap_selector(
+          label = "Y axis digits",
+          label_title = tooltips$y_axis_digits,
+          numericInput(
+            inputId = NS(id, "plot_dot_split_y_decimal"),
+            label = NULL,
+            value = 2,
+            min = 1,
+            max = 4,
+            step = 1
+          )
+        ),
+
+        wrap_selector(
+          label = "Size legend title",
+          label_title = tooltips$size_legend,
+          textInput(
+            inputId = NS(id, "plot_dot_split_size_text"),
+            label = NULL,
+            value = "Biomass reduction %"
+          )
+        ),
+
+        wrap_selector(
+          label = "Draw activity threshold",
+          label_title = tooltips$draw_activity,
+          checkboxGroupInput(
+            inputId = NS(id, "plot_dot_split_mic_lines"),
+            label = NULL,
+            inline = TRUE,
+            choices = c("X", "Y")
+          )
+        ),
+
+        br(),
+        accordion(
+          open = FALSE,
+          accordion_panel(
+            title = "Advanced plot options",
+
+            wrap_selector(
+              label = "Swap X and Y",
+              label_title = tooltips$swap_x_y,
+              input_switch(
+                id = NS(id, "plot_dot_split_swap"),
+                label = "Off",
+                value = FALSE
+              )
+            ),
+
+            wrap_selector(
+              label = "Filter stringency",
+              label_title = tooltips$filter,
+              input_switch(
+                id = NS(id, "plot_dot_split_strict"),
+                label = "Strict",
+                value = TRUE
+              )
+            ),
+
+            wrap_selector(
+              label = "Linear size scaling",
+              label_title = "Enable linear size scaling of dots",
+              input_switch(
+                id = NS(id, "plot_dot_split_linear"),
+                label = "Off",
+                value = FALSE
+              )
+            ),
+
+            wrap_selector(
+              label = "Axis labels",
+              label_title = tooltips$axis_labels,
+              selectInput(
+                inputId = NS(id, "plot_dot_split_scales"),
+                label = NULL,
+                selected = "free",
+                choices = plot_scales
+              )
+            ),
+
+            wrap_selector(
+              label = "Activity threshold",
+              label_title = tooltips$activity_val,
+              numericInput(
+                inputId = NS(id, "plot_dot_split_mic_threshold"),
+                label = NULL,
+                value = 0.5,
+                min = 0,
+                step = 0.1
+              )
+            ),
+
+            wrap_selector(
+              label = "Highlight large effect",
+              label_title = tooltips$large_effect,
+              input_switch(
+                id = NS(id, "plot_dot_split_large_toggle"),
+                label = "Off",
+                value = FALSE
+              )
+            ),
+
+            wrap_selector(
+              label = "Large effect threshold",
+              label_title = tooltips$large_effect_val,
+              numericInput(
+                inputId = NS(id, "plot_dot_split_large_value"),
+                label = NULL,
+                value = 0.9,
+                min = 0,
+                step = 0.1
+              )
+            )
+          )
+        )
+      )
+    )
+
+    observeEvent(input$plot_dot_split_swap, {
+      if (input$plot_dot_split_swap) {
+        update_switch("plot_dot_split_swap", label = "On")
+        updateTextInput(
+          inputId = "plot_dot_split_x_text",
+          value = axis_titles()[["rows"]]
+        )
+        updateTextInput(
+          inputId = "plot_dot_split_y_text",
+          value = axis_titles()[["cols"]]
+        )
+
+      } else {
+        update_switch("plot_dot_split_swap", label = "Off")
+        updateTextInput(
+          inputId = "plot_dot_split_x_text",
+          value = axis_titles()[["cols"]]
+        )
+        updateTextInput(
+          inputId = "plot_dot_split_y_text",
+          value = axis_titles()[["rows"]]
+        )
+      }
+    })
+
+    observeEvent(input$plot_dot_split_strict, {
+      if (input$plot_dot_split_strict) {
+        update_switch("plot_dot_split_strict", label = "Strict")
+      } else {
+        update_switch("plot_dot_split_strict", label = "Loose")
+      }
+    })
+
+    observeEvent(input$plot_dot_split_linear, {
+      if (input$plot_dot_split_linear) {
+        update_switch("plot_dot_split_linear", label = "On")
+      } else {
+        update_switch("plot_dot_split_linear", label = "Off")
+      }
+    })
+
+    observeEvent(input$plot_dot_split_large_toggle, {
+      if (input$plot_dot_split_large_toggle) {
+        update_switch("plot_dot_split_large_toggle", label = "On")
+      } else {
+        update_switch("plot_dot_split_large_toggle", label = "Off")
+      }
+    })
+
+
+    # |- Tile ---------------------------------------------------------------
+
+    output$plot_inputs_tile <- renderUI(
+      div(
+        class = "pt-3",
+        wrap_selector(
+          label = actionLink(
+            NS(id, "tile_preview_colours"),
+            label = "ABCI colours"
+          ),
+          label_title = tooltips$abci_colours,
+          selectInput(
+            inputId = NS(id, "plot_tile_colour_palette"),
+            label = NULL,
+            selected = "A_RYB",
+            choices = abci_colours
+          )
+        ),
+
+        wrap_selector(
+          label = "X axis title",
+          label_title = tooltips$x_axis_title,
+          textInput(
+            inputId = NS(id, "plot_tile_x_text"),
+            label = NULL,
+            value = axis_titles()[["cols"]]
+          )
+        ),
+
+        wrap_selector(
+          label = "X axis digits",
+          label_title = tooltips$x_axis_digits,
+          numericInput(
+            inputId = NS(id, "plot_tile_x_decimal"),
+            label = NULL,
+            value = 2,
+            min = 1,
+            max = 4,
+            step = 1
+          )
+        ),
+
+        wrap_selector(
+          label = "Y axis title",
+          label_title = tooltips$y_axis_title,
+          textInput(
+            inputId = NS(id, "plot_tile_y_text"),
+            label = NULL,
+            value = axis_titles()[["rows"]]
+          )
+        ),
+
+        wrap_selector(
+          label = "Y axis digits",
+          label_title = tooltips$y_axis_digits,
+          numericInput(
+            inputId = NS(id, "plot_tile_y_decimal"),
+            label = NULL,
+            value = 2,
+            min = 1,
+            max = 4,
+            step = 1
+          )
+        ),
+
+        wrap_selector(
+          label = "Draw activity threshold",
+          label_title = tooltips$draw_activity,
+          checkboxGroupInput(
+            inputId = NS(id, "plot_tile_mic_lines"),
+            label = NULL,
+            inline = TRUE,
+            choices = c("X", "Y"),
+            selected = c("X", "Y")
+          )
+        ),
+
+        wrap_selector(
+          label = "Highlight low effect",
+          label_title = tooltips$low_effect,
+          input_switch(
+            id = NS(id, "plot_tile_low_toggle"),
+            label = "On",
+            value = TRUE
+          )
+        ),
+
+        br(),
+
+        accordion(
+          open = FALSE,
+          accordion_panel(
+            title = "Advanced plot options",
+
+            wrap_selector(
+              label = "Swap X and Y",
+              label_title = tooltips$swap_x_y,
+              input_switch(
+                id = NS(id, "plot_tile_swap"),
+                label = "Off",
+                value = FALSE
+              )
+            ),
+
+            wrap_selector(
+              label = "Axis labels",
+              label_title = tooltips$axis_labels,
+              selectInput(
+                inputId = NS(id, "plot_tile_scales"),
+                label = NULL,
+                choices = plot_scales
+              )
+            ),
+
+            wrap_selector(
+              label = "Activity threshold",
+              label_title = tooltips$activity_val,
+              numericInput(
+                inputId = NS(id, "plot_tile_mic_threshold"),
+                label = NULL,
+                value = 0.5,
+                min = 0,
+                step = 0.1
+              )
+            ),
+
+            wrap_selector(
+              label = "Low effect threshold",
+              label_title = tooltips$low_effect_val,
+              numericInput(
+                inputId = NS(id, "plot_tile_low_value"),
+                label = NULL,
+                value = 0.5,
+                min = 0,
+                step = 0.1
+              )
+            ),
+
+            wrap_selector(
+              label = "Highlight large effect",
+              label_title = tooltips$large_effect,
+              input_switch(
+                id = NS(id, "plot_tile_large_toggle"),
+                label = "Off",
+                value = FALSE
+              )
+            ),
+
+            wrap_selector(
+              label = "Large effect threshold",
+              label_title = tooltips$large_effect_val,
+              numericInput(
+                inputId = NS(id, "plot_tile_large_value"),
+                label = NULL,
+                value = 0.9,
+                min = 0,
+                step = 0.1
+              )
+            )
+          )
+        )
+      )
+    )
+
+    observeEvent(input$plot_tile_low_toggle, {
+      if (input$plot_tile_low_toggle) {
+        update_switch("plot_tile_low_toggle", label = "On")
+      } else {
+        update_switch("plot_tile_low_toggle", label = "Off")
+      }
+    })
+
+    observeEvent(input$plot_tile_large_toggle, {
+      if (input$plot_tile_large_toggle) {
+        update_switch("plot_tile_large_toggle", label = "On")
+      } else {
+        update_switch("plot_tile_large_toggle", label = "Off")
+      }
+    })
+
+    observeEvent(input$plot_tile_swap, {
+      if (input$plot_tile_swap) {
+        update_switch("plot_tile_swap", label = "On")
+        updateTextInput(
+          inputId = "plot_tile_x_text",
+          value = axis_titles()[["rows"]]
+        )
+        updateTextInput(
+          inputId = "plot_tile_y_text",
+          value = axis_titles()[["cols"]]
+        )
+
+      } else {
+        update_switch("plot_tile_swap", label = "Off")
+        updateTextInput(
+          inputId = "plot_tile_x_text",
+          value = axis_titles()[["cols"]]
+        )
+        updateTextInput(
+          inputId = "plot_tile_y_text",
+          value = axis_titles()[["rows"]]
+        )
+      }
+    })
+
+
+    # |- Split tile ---------------------------------------------------------
+
+    output$plot_inputs_tile_split <- renderUI(
+      div(
+        class = "pt-3",
+        wrap_selector(
+          label = actionLink(
+            NS(id, "tile_split_preview_colours"),
+            label = "ABCI colours"
+          ),
+          label_title = tooltips$abci_colours,
+          selectInput(
+            inputId = NS(id, "plot_tile_split_colour_palette"),
+            label = NULL,
+            selected = "RYB",
+            choices = abci_colours_split
+          )
+        ),
+
+        wrap_selector(
+          label = "X axis title",
+          label_title = tooltips$x_axis_title,
+          textInput(
+            inputId = NS(id, "plot_tile_split_x_text"),
+            label = NULL,
+            value = axis_titles()[["cols"]]
+          )
+        ),
+
+        wrap_selector(
+          label = "X axis digits",
+          label_title = tooltips$x_axis_digits,
+          numericInput(
+            inputId = NS(id, "plot_tile_split_x_decimal"),
+            label = NULL,
+            value = 2,
+            min = 1,
+            max = 4,
+            step = 1
+          )
+        ),
+
+        wrap_selector(
+          label = "Y axis title",
+          label_title = tooltips$y_axis_title,
+          textInput(
+            inputId = NS(id, "plot_tile_split_y_text"),
+            label = NULL,
+            value = axis_titles()[["rows"]]
+          )
+        ),
+
+        wrap_selector(
+          label = "Y axis digits",
+          label_title = tooltips$y_axis_digits,
+          numericInput(
+            inputId = NS(id, "plot_tile_split_y_decimal"),
+            label = NULL,
+            value = 2,
+            min = 1,
+            max = 4,
+            step = 1
+          )
+        ),
+
+        wrap_selector(
+          label = "Draw activity threshold",
+          label_title = tooltips$draw_activity,
+          checkboxGroupInput(
+            inputId = NS(id, "plot_tile_split_mic_lines"),
+            label = NULL,
+            inline = TRUE,
+            choices = c("X", "Y"),
+            selected = c("X", "Y")
+          )
+        ),
+
+        wrap_selector(
+          label = "Highlight low effect",
+          label_title = tooltips$low_effect,
+          input_switch(
+            id = NS(id, "plot_tile_split_low_toggle"),
+            label = "On",
+            value = TRUE
+          )
+        ),
+
+        br(),
+        accordion(
+          open = FALSE,
+          accordion_panel(
+            title = "Advanced plot options",
+
+            wrap_selector(
+              label = "Swap X and Y",
+              label_title = tooltips$swap_x_y,
+              input_switch(
+                id = NS(id, "plot_tile_split_swap"),
+                label = "Off",
+                value = FALSE
+              )
+            ),
+
+            wrap_selector(
+              label = "Filter stringency",
+              label_title = tooltips$filter,
+              input_switch(
+                id = NS(id, "plot_tile_split_strict"),
+                label = "Strict",
+                value = TRUE
+              )
+            ),
+
+            wrap_selector(
+              label = "Axis labels",
+              label_title = tooltips$axis_labels,
+              selectInput(
+                inputId = NS(id, "plot_tile_split_scales"),
+                label = NULL,
+                choices = plot_scales
+              )
+            ),
+
+            wrap_selector(
+              label = "Activity threshold",
+              label_title = tooltips$activity_val,
+              numericInput(
+                inputId = NS(id, "plot_tile_split_mic_threshold"),
+                label = NULL,
+                value = 0.5,
+                min = 0,
+                step = 0.1
+              )
+            ),
+
+            wrap_selector(
+              label = "Low effect threshold",
+              label_title = tooltips$low_effect_val,
+              numericInput(
+                inputId = NS(id, "plot_tile_split_low_value"),
+                label = NULL,
+                value = 0.5,
+                min = 0,
+                step = 0.1
+              )
+            ),
+
+            wrap_selector(
+              label = "Highlight large effect",
+              label_title = tooltips$large_effect,
+              input_switch(
+                id = NS(id, "plot_tile_split_large_toggle"),
+                label = "Off",
+                value = FALSE
+              )
+            ),
+
+            wrap_selector(
+              label = "Large effect threshold",
+              label_title = tooltips$large_effect_val,
+              numericInput(
+                inputId = NS(id, "plot_tile_split_large_value"),
+                label = NULL,
+                value = 0.9,
+                min = 0,
+                step = 0.1
+              )
+            )
+          )
+        )
+      )
+    )
+
+    observeEvent(input$plot_tile_split_swap, {
+      if (input$plot_tile_split_swap) {
+        update_switch("plot_tile_split_swap", label = "On")
+        updateTextInput(
+          inputId = "plot_tile_split_x_text",
+          value = axis_titles()[["rows"]]
+        )
+        updateTextInput(
+          inputId = "plot_tile_split_y_text",
+          value = axis_titles()[["cols"]]
+        )
+
+      } else {
+        update_switch("plot_tile_split_swap", label = "Off")
+        updateTextInput(
+          inputId = "plot_tile_split_x_text",
+          value = axis_titles()[["cols"]]
+        )
+        updateTextInput(
+          inputId = "plot_tile_split_y_text",
+          value = axis_titles()[["rows"]]
+        )
+      }
+    })
+
+    observeEvent(input$plot_tile_split_strict, {
+      if (input$plot_tile_split_strict) {
+        update_switch("plot_tile_split_strict", label = "Strict")
+      } else {
+        update_switch("plot_tile_split_strict", label = "Loose")
+      }
+    })
+
+    observeEvent(input$plot_tile_split_low_toggle, {
+      if (input$plot_tile_split_low_toggle) {
+        update_switch("plot_tile_split_low_toggle", label = "On")
+      } else {
+        update_switch("plot_tile_split_low_toggle", label = "Off")
+      }
+    })
+
+    observeEvent(input$plot_tile_split_large_toggle, {
+      if (input$plot_tile_split_large_toggle) {
+        update_switch("plot_tile_split_large_toggle", label = "On")
+      } else {
+        update_switch("plot_tile_split_large_toggle", label = "Off")
+      }
+    })
+
+
+    # |- Line ---------------------------------------------------------------
+
+    output$plot_inputs_line <- renderUI(
+      div(
+        class = "pt-3",
+        wrap_selector(
+          label = "Graph type",
+          label_title = "Determine how replicates are plotted",
+          radioButtons(
+            inputId = NS(id, "plot_line_type"),
+            label = NULL,
+            inline = TRUE,
+            choices = c(
+              "Replicates" = "replicates",
+              "Mean" = "mean",
+              "Mean±SD" = "mean_sd"
+            )
+          )
+        ),
+
+        wrap_selector(
+          label = "X axis title",
+          label_title = tooltips$x_axis_title,
+          textInput(
+            inputId = NS(id, "plot_line_x_text"),
+            label = NULL,
+            value = axis_titles()[["cols"]]
+          )
+        ),
+
+        wrap_selector(
+          label = "X axis digits",
+          label_title = tooltips$x_axis_digits,
+          numericInput(
+            inputId = NS(id, "plot_line_x_decimal"),
+            label = NULL,
+            value = 2,
+            min = 1,
+            max = 4,
+            step = 1
+          )
+        ),
+
+        wrap_selector(
+          label = "Included values",
+          label_title = paste0(
+            "Concentrations to include in the plot as lines. Six or fewer is ",
+            "recommended."
+          ),
+          selectInput(
+            inputId = NS(id, "plot_line_line_include"),
+            label = NULL,
+            multiple = TRUE,
+            choices = c()
+          )
+        ),
+
+        wrap_selector(
+          label = "Line title",
+          label_title = "Title for the line/colour legend",
+          textInput(
+            inputId = NS(id, "plot_line_line_text"),
+            label = NULL,
+            value = axis_titles()[["rows"]]
+          )
+        ),
+
+        wrap_selector(
+          label = "Line digits",
+          label_title = paste0(
+            "Number of decimal places to show for concentrations of the ",
+            "treatment plotted as different lines"
+          ),
+          numericInput(
+            inputId = NS(id, "plot_line_line_decimal"),
+            label = NULL,
+            value = 2,
+            min = 1,
+            max = 4,
+            step = 1
+          )
+        ),
+
+        wrap_selector(
+          label = actionLink(
+            NS(id, "line_preview_colours"),
+            label = "Line colours"
+          ),
+          label_title = paste0(
+            "Colour palette to map to concentrations, each as a separate line. ",
+            "Click the preview the options."
+          ),
+          selectInput(
+            inputId = NS(id, "plot_line_colour_palette"),
+            label = NULL,
+            choices = line_colours
+          )
+        ),
+
+        wrap_selector(
+          label = "Y axis title",
+          label_title = tooltips$y_axis_title,
+          textInput(
+            inputId = NS(id, "plot_line_y_text"),
+            label = NULL,
+            value = "% Biomass"
+          )
+        ),
+
+        wrap_selector(
+          label = "Draw activity threshold",
+          label_title = tooltips$draw_activity,
+          checkboxGroupInput(
+            inputId = NS(id, "plot_line_mic_lines"),
+            label = NULL,
+            inline = TRUE,
+            choices = c("X"),
+            selected = c("X")
+          )
+        ),
+
+        br(),
+        accordion(
+          open = FALSE,
+          accordion_panel(
+            title = "Advanced plot options",
+
+            wrap_selector(
+              label = "Swap X and lines",
+              label_title =
+                "Turn on to swap the values plotted on the X axis and as lines",
+              input_switch(
+                id = NS(id, "plot_line_swap"),
+                label = "Off",
+                value = FALSE
+              )
+            ),
+
+            wrap_selector(
+              label = "X axis jitter",
+              label_title =
+                "Nudge values along the X axis to prevent overlapping lines",
+              input_switch(
+                id = NS(id, "plot_line_jitter_x"),
+                label = "On",
+                value = TRUE
+              )
+            ),
+
+            wrap_selector(
+              label = "Axis labels",
+              label_title = tooltips$axis_labels,
+              selectInput(
+                inputId = NS(id, "plot_line_scales"),
+                label = NULL,
+                choices = plot_scales
+              )
+            ),
+
+            wrap_selector(
+              label = "Activity threshold",
+              label_title = tooltips$activity_val,
+              numericInput(
+                inputId = NS(id, "plot_line_mic_threshold"),
+                label = NULL,
+                value = 0.5,
+                min = 0,
+                step = 0.1
+              )
+            )
+          )
+        )
+      )
+    )
+
+    observeEvent(input$plot_line_swap, {
+      if (input$plot_line_swap) {
+        update_switch("plot_line_swap", label = "On")
+        updateTextInput(
+          inputId = "plot_line_x_text",
+          value = axis_titles()[["rows"]]
+        )
+        updateTextInput(
+          inputId = "plot_line_line_text",
+          value = axis_titles()[["cols"]]
+        )
+
+      } else {
+        update_switch("plot_line_swap", label = "Off")
+        updateTextInput(
+          inputId = "plot_line_x_text",
+          value = axis_titles()[["cols"]]
+        )
+        updateTextInput(
+          inputId = "plot_line_line_text",
+          value = axis_titles()[["rows"]]
+        )
+      }
+    })
+
+    observeEvent(input$plot_line_jitter_x, {
+      if (input$plot_line_jitter_x) {
+        update_switch("plot_line_jitter_x", label = "On")
+      } else {
+        update_switch("plot_line_jitter_x", label = "Off")
+      }
+    })
+
+
+    # Line include and swap options -----------------------------------------
+
+    line_columns <- reactive({
+      if (!is.null(input$plot_line_swap)) {
+        if (input$plot_line_swap) {
+          list("rows_conc", "cols_conc")
+        } else {
+          list("cols_conc", "rows_conc")
+        }
+      }
+    })
+
+    observe({
+      req(data(), line_columns())
+
+      concs <- data() %>%
+        pull(line_columns()[[2]]) %>%
+        unique()
+
+      updateSelectInput(
+        inputId = "plot_line_line_include",
+        choices = concs,
+        selected = concs
+      )
     })
 
 
@@ -2361,7 +3251,7 @@ server_results <- function(id, data) {
 
     observeEvent(
       input$restore,
-      shinyjs::reset(id = NS(id, "results_sidebar"))
+      shinyjs::reset(id = "results_sidebar")
     )
 
 
