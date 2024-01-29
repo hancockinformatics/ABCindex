@@ -690,9 +690,6 @@ ui_upload <- function(id) {
 server_upload <- function(id) {
   moduleServer(id, function(input, output, session) {
 
-
-    # Go to Help ----------------------------------------------------------
-
     observeEvent(
       input$help_from_upload,
       nav_select(id = "navbar", selected = NS(id, "help"))
@@ -1031,6 +1028,7 @@ server_upload <- function(id) {
       click("create_plot")
     })
 
+    # From here we transition to the "Results" tab; see "R/5_results.R"
     reactive(abci_results())
   })
 }

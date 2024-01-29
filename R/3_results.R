@@ -1760,6 +1760,7 @@ ui_results <- function(id) {
   )
 }
 
+
 server_results <- function(id, data) {
   moduleServer(id, function(input, output, session) {
 
@@ -1767,6 +1768,7 @@ server_results <- function(id, data) {
       input$help_from_results,
       nav_select(id = "navbar", selected = NS(id, "help"))
     )
+
 
     # Download results ------------------------------------------------------
 
@@ -3189,7 +3191,7 @@ server_results <- function(id, data) {
     output$plot_handler_png <- downloadHandler(
       filename = function() {
         paste0(
-          "ShinyABCi_plot_",
+          "shinyABCi_plot_",
           gsub(x = input$plot_tabs, pattern = "main-", replacement = ""),
           ".png"
         )
@@ -3209,7 +3211,7 @@ server_results <- function(id, data) {
     output$plot_handler_svg <- downloadHandler(
       filename = function() {
         paste0(
-          "ShinyABCi_plot_",
+          "shinyABCi_plot_",
           gsub(x = input$plot_tabs, pattern = "main-", replacement = ""),
           ".svg"
         )
@@ -3229,7 +3231,7 @@ server_results <- function(id, data) {
     output$plot_handler_tiff <- downloadHandler(
       filename = function() {
         paste0(
-          "ShinyABCi_plot_",
+          "shinyABCi_plot_",
           gsub(x = input$plot_tabs, pattern = "main-", replacement = ""),
           ".tiff"
         )
@@ -3249,10 +3251,7 @@ server_results <- function(id, data) {
 
     # Restore button --------------------------------------------------------
 
-    observeEvent(
-      input$restore,
-      shinyjs::reset(id = "results_sidebar")
-    )
+    observeEvent(input$restore, shinyjs::reset(id = "results_sidebar"))
 
 
     # Refresh button --------------------------------------------------------
@@ -3261,9 +3260,9 @@ server_results <- function(id, data) {
       showModal(modalDialog(
         title = "Analyze a new dataset",
         p(r"(
-        Are you sure you want to refresh this page and analyze a new dataset?
-        Doing so will reset the app, meaning any current results and plots
-        will be lost!
+          Are you sure you want to refresh this page and analyze a new dataset?
+          Doing so will reset the app, meaning any current results and plots
+          will be lost!
         )"),
         footer = tagList(
           tagAppendAttributes(
@@ -3271,9 +3270,9 @@ server_results <- function(id, data) {
             class = "btn-outline-secondary"
           ),
           actionButton(
-            NS(id, "confirm_reset"),
-            "Refresh and start over",
-            class = "btn btn-danger"
+            inputId = NS(id, "confirm_reset"),
+            class = "btn btn-danger",
+            label = "Refresh and start over"
           )
         )
       ))

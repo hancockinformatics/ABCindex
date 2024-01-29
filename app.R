@@ -28,13 +28,13 @@ abci_ui <- page_fluid(
 
   useShinyjs(),
 
-  # tags$script(HTML(r"(
-  #   window.onbeforeunload = () => {
-  #     if (document.getElementById('shiny-disconnected-overlay') === null) {
-  #       return 'Are you sure you want to leave?';
-  #     }
-  #   };
-  # )")),
+  tags$script(HTML(r"(
+    window.onbeforeunload = () => {
+      if (document.getElementById('shiny-disconnected-overlay') === null) {
+        return 'Are you sure you want to leave?';
+      }
+    };
+  )")),
 
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "css/custom.css"),
