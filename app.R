@@ -439,6 +439,8 @@ ui <- page_fluid(
 
 server <- function(input, output) {
 
+  message("\n==> Start...")
+
 
   # Buttons/links to tabs -------------------------------------------------
 
@@ -513,12 +515,14 @@ server <- function(input, output) {
   # Loading data ----------------------------------------------------------
 
   input_data <- reactiveVal()
+  input_order <- reactiveVal()
 
   # Example data
   observeEvent(input$load_example_data, {
 
     initial_input <- plate_input("example_data/example_data_lucas.xlsx")
     input_data(initial_input$data)
+    input_order(initial_input$order)
 
     showNotification(
       id = "upload_notification",
@@ -539,6 +543,7 @@ server <- function(input, output) {
 
     initial_input <- plate_input(input$load_user_data$datapath)
     input_data(initial_input$data)
+    input_order(initial_input$order)
 
     showNotification(
       id = "upload_notification",
@@ -755,7 +760,10 @@ server <- function(input, output) {
 
     input_data_tidy <- input_data() %>%
       bind_rows(.id = "assay") %>%
-      mutate(across(c(cols_conc, rows_conc), forcats::fct_inseq))
+      mutate(
+        assay = factor(assay, levels = input_order()),
+        across(c(cols_conc, rows_conc), forcats::fct_inseq)
+      )
 
     abci_analysis(
       data = input_data_tidy,
@@ -2282,5 +2290,4 @@ server <- function(input, output) {
 
 # Run the application -----------------------------------------------------
 
-message("\n==> Start...")
 shinyApp(ui = ui, server = server)

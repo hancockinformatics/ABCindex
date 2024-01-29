@@ -169,10 +169,12 @@ plot_dot <- function(
 
   # Fix up the variable being mapped to size. Define labels and breaks.
   data <- data %>%
+    group_by(.data[[col.analysis]]) %>%
     mutate(
       across(all_of(c(x.drug, y.drug)), forcats::fct_inseq),
       reference = ceiling(scales::rescale(.data[[col.size]], to = c(0, 100)))
     ) %>%
+    ungroup() %>%
     left_join(size_mapping, by = "reference")
 
   proper_labels <- seq(0, 100, 20)
@@ -394,10 +396,12 @@ plot_dot_split <- function(
 
   # Fix up the variable being mapped to size. Define labels and breaks.
   data <- data %>%
+    group_by(.data[[col.analysis]]) %>%
     mutate(
       across(all_of(c(x.drug, y.drug)), forcats::fct_inseq),
       reference = ceiling(scales::rescale(.data[[col.size]], to = c(0, 100)))
     ) %>%
+    ungroup() %>%
     left_join(size_mapping, by = "reference")
 
   proper_labels <- seq(0, 100, 20)

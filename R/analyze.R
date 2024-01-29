@@ -125,7 +125,10 @@ abci_analysis_single <- function(
 
   # Make sure drug concentrations are properly ordered factors
   data_clean <- data %>%
-    mutate(across(all_of(c(x.drug, y.drug)), forcats::fct_inseq))
+    mutate(
+      across(all_of(c(x.drug, y.drug)), forcats::fct_drop),
+      across(all_of(c(x.drug, y.drug)), forcats::fct_inseq)
+    )
 
   if (!normalize) {
     if (max(data_clean[[col.data]]) >= 50) {
@@ -221,7 +224,7 @@ abci_analysis_single <- function(
     }) %>% bind_rows()
   }
 
-  # Get the reference "effect" for each drug, which is the (average) effect at
+  # Get the "reference effect" for each drug, which is the (average) effect at
   # each concentration, when the other drug has a concentration of 0
   data_reference_x <- data_effect %>%
     filter(.data[[y.drug]] == "0") %>%

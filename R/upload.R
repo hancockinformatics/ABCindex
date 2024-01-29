@@ -81,6 +81,7 @@ plate_input <- function(file, sheet = "all") {
       if (!file.exists(file)) {
         list(
           data = NULL,
+          order = NULL,
           status = "Error",
           type = "error",
           message = "The specified file was not found!",
@@ -89,8 +90,11 @@ plate_input <- function(file, sheet = "all") {
       }
 
       x <- plate_reader(file = file, sheet = sheet)
-      check_well_result <- check_wells(x)
-      check_untreated_result <- check_untreated(x)
+      x_data <- x$data
+      x_order <- x$order
+
+      check_well_result <- check_wells(x_data)
+      check_untreated_result <- check_untreated(x_data)
 
 
       # Silent failures, such as bad wells, or anything else that doesn't
@@ -100,6 +104,7 @@ plate_input <- function(file, sheet = "all") {
 
         list(
           data = NULL,
+          order = NULL,
           status = "Error",
           type = "error",
           message = paste0(
@@ -116,6 +121,7 @@ plate_input <- function(file, sheet = "all") {
       } else if (is.null(check_well_result)) {
         list(
           data = NULL,
+          order = NULL,
           status = "Error",
           type = "error",
           message = "An error occurred when trying to import your data. ",
@@ -127,6 +133,7 @@ plate_input <- function(file, sheet = "all") {
       } else if (!is.null(check_untreated_result)) {
         list(
           data = NULL,
+          order = NULL,
           status = "Error",
           type = "error",
           message = paste0(
@@ -140,7 +147,8 @@ plate_input <- function(file, sheet = "all") {
 
       } else {
         list(
-          data = x,
+          data = x_data,
+          order = x_order,
           status = "Upload successful",
           type = "message",
           message = "Your data was successfully loaded. ",
@@ -152,6 +160,7 @@ plate_input <- function(file, sheet = "all") {
     error = function(e) {
       list(
         data = NULL,
+        order = NULL,
         status = "Error",
         type = "error",
         message = "An error occurred when trying to import your data. ",
@@ -206,7 +215,10 @@ plate_reader <- function(file, sheet = "all") {
     }
   ) %>% purrr::set_names(all_sheets)
 
-  return(all_data)
+  return(list(
+    "data" = all_data,
+    "order" = all_sheets
+  ))
 }
 
 
