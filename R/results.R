@@ -328,6 +328,8 @@ find_mic <- function(
 #'
 get_dims <- function(type, n_cols, n_rows) {
 
+  type <- gsub(x = type, pattern = "main-", replacement = "")
+
   dims <- if (n_cols == 1) {
     switch(
       type,
@@ -1629,12 +1631,12 @@ ui_results <- function(id) {
           ),
 
           HTML(r"(
-              <p>Visualize your ABCI results using <b>Dot</b> or <b>Tile</b>
-              plots. The <b>Split</b> versions separate positive and
-              negative ABCI values into two plots, for visual simplicity.
-              Alternatively, the <b>Line</b> plot displays antimicrobial
-              activity for all or a subset of concentrations.</p>
-            )"),
+            <p>Visualize your ABCI results using <b>Dot</b> or <b>Tile</b>
+            plots. The <b>Split</b> versions separate positive and
+            negative ABCI values into two plots, for visual simplicity.
+            Alternatively, the <b>Line</b> plot displays antimicrobial
+            activity for all or a subset of concentrations.</p>
+          )"),
 
           disabled(
             actionButton(
@@ -1656,27 +1658,27 @@ ui_results <- function(id) {
               title = "Dot",
               value = NS(id, "dot"),
               uiOutput(NS(id, "plot_inputs_dot"))
-            ),
-            nav_panel(
-              title = "Split Dot",
-              value = NS(id, "dot_split"),
-              uiOutput(NS(id, "plot_inputs_dot_split"))
-            ),
-            nav_panel(
-              title = "Tile",
-              value = NS(id, "tile"),
-              uiOutput(NS(id, "plot_inputs_tile"))
-            ),
-            nav_panel(
-              title = "Split Tile",
-              value = NS(id, "tile_split"),
-              uiOutput(NS(id, "plot_inputs_tile_split"))
-            ),
-            nav_panel(
-              title = "Line",
-              value = NS(id, "line"),
-              uiOutput(NS(id, "plot_inputs_line"))
             )
+            # nav_panel(
+            #   title = "Split Dot",
+            #   value = NS(id, "dot_split"),
+            #   uiOutput(NS(id, "plot_inputs_dot_split"))
+            # ),
+            # nav_panel(
+            #   title = "Tile",
+            #   value = NS(id, "tile"),
+            #   uiOutput(NS(id, "plot_inputs_tile"))
+            # ),
+            # nav_panel(
+            #   title = "Split Tile",
+            #   value = NS(id, "tile_split"),
+            #   uiOutput(NS(id, "plot_inputs_tile_split"))
+            # ),
+            # nav_panel(
+            #   title = "Line",
+            #   value = NS(id, "line"),
+            #   uiOutput(NS(id, "plot_inputs_line"))
+            # )
           ) %>% tagAppendAttributes(class = "nav-justified"),
 
           hr(),
@@ -1760,9 +1762,636 @@ ui_results <- function(id) {
 
 server_results <- function(id, data) {
   moduleServer(id, function(input, output, session) {
+
     observeEvent(
       input$help_from_results,
       nav_select(id = "navbar", selected = NS(id, "help"))
+    )
+
+    # Download results ------------------------------------------------------
+
+    output$results_handler_xlsx <- downloadHandler(
+      filename = function() {
+        paste0(
+          "shinyABCi_",
+          ifelse(
+            test = is.null(input$load_user_data),
+            yes = "example_data",
+            no = tools::file_path_sans_ext(input$load_user_data$name)
+          ),
+          "_results.xlsx"
+        )
+      },
+      content = function(file) {
+        writer_xlsx(
+          x = data(),
+          filename = file
+        )
+      }
+    )
+
+
+    # Set up misc. plot reactives -------------------------------------------
+
+    abci_plot_dims <- reactive({
+      req(data())
+
+      n_assay <- length(unique(data()$assay))
+      n_rows <- ceiling(n_assay / 2)
+      n_cols <- ifelse(n_assay == 1, 1, 2)
+      list(n_cols, n_rows)
+    })
+
+    axis_titles <- reactive(
+      list(
+        "cols" = ifelse(
+          length(unique(data()$cols)) == 1,
+          unique(data()$cols),
+          "Drug A"
+        ),
+        "rows" = ifelse(
+          length(unique(data()$rows)) == 1,
+          unique(data()$rows),
+          "Drug B"
+        )
+      )
+    )
+
+    plot_legend_ui <- eventReactive(input$create_plot, {
+      plot_legends[[input$plot_tabs]]
+    })
+
+
+    # Preview colours -------------------------------------------------------
+
+    modal_colours <- lapply(
+      list(
+        "abci" = modalDialog(
+          title = "ABCI colour palettes",
+          easyClose = TRUE,
+          size = "m",
+          HTML("<img src='img/colours_abci.svg' class='center'>"),
+          footer = tagAppendAttributes(
+            modalButton(label = "Close"),
+            class = "btn-outline-secondary"
+          ),
+        ),
+        "lines" = modalDialog(
+          title = "Line colour palettes",
+          easyClose = TRUE,
+          size = "m",
+          HTML("<img src='img/colours_lines.svg' class='center'>"),
+          footer = tagAppendAttributes(
+            modalButton(label = "Close"),
+            class = "btn-outline-secondary"
+          ),
+        )
+      ),
+      tagAppendAttributes,
+      class = "modal-dialog-centered"
+    )
+
+    observeEvent(input$dot_preview_colours, showModal(modal_colours$abci))
+
+
+    # Plot inputs UI --------------------------------------------------------
+
+    # |- Dot ----------------------------------------------------------------
+
+    output$plot_inputs_dot <- renderUI(
+      div(
+        class = "pt-3",
+        wrap_selector(
+          label = actionLink(
+            NS(id, "dot_preview_colours"),
+            label = "ABCI colours"
+          ),
+          label_title = tooltips$abci_colours,
+          selectInput(
+            inputId = NS(id, "plot_dot_colour_palette"),
+            label = NULL,
+            selected = "A_RYB",
+            choices = abci_colours
+          )
+        ),
+
+        wrap_selector(
+          label = "X axis title",
+          label_title = tooltips$x_axis_title,
+          textInput(
+            inputId = NS(id, "plot_dot_x_text"),
+            label = NULL,
+            value = axis_titles()[["cols"]]
+          )
+        ),
+
+        wrap_selector(
+          label = "X axis digits",
+          label_title = tooltips$x_axis_digits,
+          numericInput(
+            inputId = NS(id, "plot_dot_x_decimal"),
+            label = NULL,
+            value = 2,
+            min = 1,
+            max = 4,
+            step = 1
+          )
+        ),
+
+        wrap_selector(
+          label = "Y axis title",
+          label_title = tooltips$y_axis_title,
+          textInput(
+            inputId = NS(id, "plot_dot_y_text"),
+            label = NULL,
+            value = axis_titles()[["rows"]]
+          )
+        ),
+
+        wrap_selector(
+          label = "Y axis digits",
+          label_title = tooltips$y_axis_digits,
+          numericInput(
+            inputId = NS(id, "plot_dot_y_decimal"),
+            label = NULL,
+            value = 2,
+            min = 1,
+            max = 4,
+            step = 1
+          )
+        ),
+
+        wrap_selector(
+          label = "Size legend title",
+          label_title = tooltips$size_legend,
+          textInput(
+            inputId = NS(id, "plot_dot_size_text"),
+            label = NULL,
+            value = "Biomass reduction %"
+          )
+        ),
+
+        wrap_selector(
+          label = "Draw activity threshold",
+          label_title = tooltips$draw_activity,
+          checkboxGroupInput(
+            inputId = NS(id, "plot_dot_mic_lines"),
+            label = NULL,
+            inline = TRUE,
+            choices = c("X", "Y")
+          )
+        ),
+
+        br(),
+
+        accordion(
+          open = FALSE,
+
+          accordion_panel(
+            title = "Advanced plot options",
+
+            wrap_selector(
+              label = "Swap X and Y",
+              label_title = tooltips$swap_x_y,
+              input_switch(
+                id = NS(id, "plot_dot_swap"),
+                label = "Off",
+                value = FALSE
+              )
+            ),
+
+            wrap_selector(
+              label = "Linear size scaling",
+              label_title = "Enable linear size scaling of dots",
+              input_switch(
+                id = NS(id, "plot_dot_linear"),
+                label = "Off",
+                value = FALSE
+              )
+            ),
+
+            wrap_selector(
+              label = "Axis labels",
+              label_title = tooltips$axis_labels,
+              selectInput(
+                inputId = NS(id, "plot_dot_scales"),
+                label = NULL,
+                selected = "free",
+                choices = plot_scales
+              )
+            ),
+
+            wrap_selector(
+              label = "Activity threshold",
+              label_title = tooltips$activity_val,
+              numericInput(
+                inputId = NS(id, "plot_dot_mic_threshold"),
+                label = NULL,
+                value = 0.5,
+                min = 0,
+                step = 0.1
+              )
+            ),
+
+            wrap_selector(
+              label = "Highlight large effect",
+              label_title = tooltips$large_effect,
+              input_switch(
+                id = NS(id, "plot_dot_large_toggle"),
+                label = "Off",
+                value = FALSE
+              )
+            ),
+
+            wrap_selector(
+              label = "Large effect threshold",
+              label_title = tooltips$large_effect_val,
+              numericInput(
+                inputId = NS(id, "plot_dot_large_value"),
+                label = NULL,
+                value = 0.9,
+                min = 0,
+                step = 0.1
+              )
+            )
+          )
+        )
+      )
+    )
+
+    observeEvent(input$plot_dot_swap, {
+      if (input$plot_dot_swap) {
+        update_switch("plot_dot_swap", label = "On")
+        updateTextInput(
+          inputId = "plot_dot_x_text",
+          value = axis_titles()[["rows"]]
+        )
+        updateTextInput(
+          inputId = "plot_dot_y_text",
+          value = axis_titles()[["cols"]]
+        )
+      } else {
+        update_switch("plot_dot_swap", label = "Off")
+        updateTextInput(
+          inputId = "plot_dot_x_text",
+          value = axis_titles()[["cols"]]
+        )
+        updateTextInput(
+          inputId = "plot_dot_y_text",
+          value = axis_titles()[["rows"]]
+        )
+      }
+    })
+
+    observeEvent(input$plot_dot_linear, {
+      if (input$plot_dot_linear) {
+        update_switch("plot_dot_linear", label = "On")
+      } else {
+        update_switch("plot_dot_linear", label = "Off")
+      }
+    })
+
+    observeEvent(input$plot_dot_large_toggle, {
+      if (input$plot_dot_large_toggle) {
+        update_switch("plot_dot_large_toggle", label = "On")
+      } else {
+        update_switch("plot_dot_large_toggle", label = "Off")
+      }
+    })
+
+
+    # Create the_plot() -----------------------------------------------------
+
+    the_plot <- eventReactive(input$create_plot, {
+      req(data())
+
+      tryCatch(
+        {
+          if (input$plot_tabs == "main-dot") {
+            plot_dot(
+              data = data(),
+              x.drug = ifelse(input$plot_dot_swap, "rows_conc", "cols_conc"),
+              y.drug = ifelse(input$plot_dot_swap, "cols_conc", "rows_conc"),
+              col.fill = "abci_avg",
+              col.size = "effect_avg",
+              size.range = c(3, 15),
+              linear = input$plot_dot_linear,
+              col.analysis = "assay",
+              n.cols = abci_plot_dims()[[1]],
+              n.rows = abci_plot_dims()[[2]],
+              size.text = input$plot_dot_size_text,
+              scales = input$plot_dot_scales,
+              x.decimal = input$plot_dot_x_decimal,
+              y.decimal = isolate(input$plot_dot_y_decimal),
+              x.text = input$plot_dot_x_text,
+              y.text = input$plot_dot_y_text,
+              x.mic.line = ("X" %in% input$plot_dot_mic_lines),
+              y.mic.line = ("Y" %in% input$plot_dot_mic_lines),
+              mic.threshold = input$plot_dot_mic_threshold,
+              large.effect = input$plot_dot_large_toggle,
+              large.effect.val = input$plot_dot_large_value,
+              col.mic = "bio_normal",
+              colour.palette = input$plot_dot_colour_palette
+            ) +
+              {if (abci_plot_dims()[[2]] == 1) {
+                theme(legend.box = "horizontal")
+              }}
+
+          } else if (input$plot_tabs == "main-dot_split") {
+            plot_dot_split(
+              data = data(),
+              x.drug = ifelse(input$plot_dot_split_swap, "rows_conc", "cols_conc"),
+              y.drug = ifelse(input$plot_dot_split_swap, "cols_conc", "rows_conc"),
+              col.fill = "abci_avg",
+              col.size = "effect_avg",
+              strict = input$plot_dot_split_strict,
+              size.range = c(3, 15),
+              linear = input$plot_dot_split_linear,
+              col.analysis = "assay",
+              n.cols = abci_plot_dims()[[1]],
+              n.rows = abci_plot_dims()[[2]],
+              size.text = input$plot_dot_split_size_text,
+              scales = input$plot_dot_split_scales,
+              x.decimal = input$plot_dot_split_x_decimal,
+              y.decimal = isolate(input$plot_dot_split_y_decimal),
+              x.text = input$plot_dot_split_x_text,
+              y.text = input$plot_dot_split_y_text,
+              x.mic.line = ("X" %in% input$plot_dot_split_mic_lines),
+              y.mic.line = ("Y" %in% input$plot_dot_split_mic_lines),
+              mic.threshold = input$plot_dot_split_mic_threshold,
+              large.effect = input$plot_dot_split_large_toggle,
+              large.effect.val = input$plot_dot_split_large_value,
+              col.mic = "bio_normal",
+              colour.palette = input$plot_dot_split_colour_palette
+            ) +
+              {if (abci_plot_dims()[[2]] == 1) {
+                theme(legend.box = "horizontal")
+              }}
+
+          } else if (input$plot_tabs == "main-tile") {
+            plot_tile(
+              data = data(),
+              x.drug = ifelse(input$plot_tile_swap, "rows_conc", "cols_conc"),
+              y.drug = ifelse(input$plot_tile_swap, "cols_conc", "rows_conc"),
+              col.fill = "abci_avg",
+              col.analysis = "assay",
+              n.cols = abci_plot_dims()[[1]],
+              n.rows = abci_plot_dims()[[2]],
+              scales = input$plot_tile_scales,
+              x.decimal = input$plot_tile_x_decimal,
+              y.decimal = isolate(input$plot_tile_y_decimal),
+              x.text = input$plot_tile_x_text,
+              y.text = input$plot_tile_y_text,
+              x.mic.line = ("X" %in% input$plot_tile_mic_lines),
+              y.mic.line = ("Y" %in% input$plot_tile_mic_lines),
+              mic.threshold = input$plot_tile_mic_threshold,
+              col.mic = "bio_normal",
+              low.effect = input$plot_tile_low_toggle,
+              low.effect.val = input$plot_tile_low_value,
+              large.effect = input$plot_tile_large_toggle,
+              large.effect.val = input$plot_tile_large_value,
+              colour.palette = input$plot_tile_colour_palette
+            )
+
+          } else if (input$plot_tabs == "main-tile_split") {
+            plot_tile_split(
+              data = data(),
+              x.drug = ifelse(input$plot_tile_split_swap, "rows_conc", "cols_conc"),
+              y.drug = ifelse(input$plot_tile_split_swap, "cols_conc", "rows_conc"),
+              col.fill = "abci_avg",
+              col.analysis = "assay",
+              strict = input$plot_tile_split_strict,
+              n.cols = abci_plot_dims()[[1]],
+              n.rows = abci_plot_dims()[[2]],
+              scales = input$plot_tile_split_scales,
+              x.decimal = input$plot_tile_split_x_decimal,
+              y.decimal = isolate(input$plot_tile_split_y_decimal),
+              x.text = input$plot_tile_split_x_text,
+              y.text = input$plot_tile_split_y_text,
+              x.mic.line = ("X" %in% input$plot_tile_split_mic_lines),
+              y.mic.line = ("Y" %in% input$plot_tile_split_mic_lines),
+              mic.threshold = input$plot_tile_split_mic_threshold,
+              col.mic = "bio_normal",
+              low.effect = input$plot_tile_split_low_toggle,
+              low.effect.val = input$plot_tile_split_low_value,
+              large.effect = input$plot_tile_split_large_toggle,
+              large.effect.val = input$plot_tile_split_large_value,
+              colour.palette = input$plot_tile_split_colour_palette
+            )
+          }
+
+          else if (input$plot_tabs == "main-line") {
+            plot_line(
+              data = data(),
+              plot.type = input$plot_line_type,
+              x.drug = line_columns()[[1]],
+              line.drug = line_columns()[[2]],
+              col.data = "bio_normal",
+              col.analysis = "assay",
+              line.include = input$plot_line_line_include,
+              n.cols = abci_plot_dims()[[1]],
+              n.rows = abci_plot_dims()[[2]],
+              scales = input$plot_line_scales,
+              x.decimal = input$plot_line_x_decimal,
+              line.decimal = isolate(input$plot_line_line_decimal),
+              x.text = input$plot_line_x_text,
+              y.text = input$plot_line_y_text,
+              line.text = input$plot_line_line_text,
+              x.mic.line = ("X" %in% input$plot_line_mic_lines),
+              mic.threshold = input$plot_line_mic_threshold,
+              jitter.x = input$plot_line_jitter_x,
+              colour.palette = input$plot_line_colour_palette
+            )
+          }
+        },
+        error = function(e) NULL
+      )
+    })
+
+
+    # Render and output the_plot() ------------------------------------------
+
+    output$abci_plot <- renderPlot({
+      input$create_plot
+      if (is.null(the_plot())) {
+        showNotification(
+          type = "error",
+          duration = 20,
+          ui = HTML(r"(
+            <h4 class='alert-heading'><b>Error</b></h4>
+            <p class='mb-0'>
+            We were unable to draw a plot with the specified parameters.
+            Try changing the inputs in the sidebar, then update the plot.</p>
+          )")
+        )
+      } else {
+        the_plot()
+      }
+    })
+
+    output_dims <- eventReactive(input$create_plot, {
+      get_dims(
+        type = input$plot_tabs,
+        n_cols = abci_plot_dims()[[1]],
+        n_rows = abci_plot_dims()[[2]]
+      )
+    })
+
+    observeEvent(input$create_plot, {
+
+      output$abci_plot_ui <- renderUI(
+        tagList(
+          shinycssloaders::withSpinner(
+            type = 8,
+            plotOutput(
+              outputId = NS(id, "abci_plot"),
+              width = paste0(output_dims()[1], "px"),
+              height = paste0(output_dims()[2], "px")
+            )
+          ),
+          card(
+            class = "border-0",
+            card_body(
+              plot_legend_ui(),
+              padding = 8
+            )
+          )
+        )
+      )
+    })
+
+
+    # Download plot button --------------------------------------------------
+
+    observeEvent(input$plot_download_button, {
+      showModal(modalDialog(
+        title = "Download the plot",
+        size = "m",
+        p(
+          "Use the buttons below to download the current plot as a PNG, SVG, or ",
+          "TIFF image."
+        ),
+        downloadButton(
+          outputId = NS(id, "plot_handler_png"),
+          label = "PNG",
+          width = "50px",
+          class = "btn btn-success px-4 me-md-2 align-items-center"
+        ),
+        downloadButton(
+          outputId = NS(id, "plot_handler_svg"),
+          label = "SVG",
+          width = "50px",
+          class = "btn btn-success px-4 me-md-2 align-items-center"
+        ),
+        downloadButton(
+          outputId = NS(id, "plot_handler_tiff"),
+          label = "TIFF",
+          width = "50px",
+          class = "btn btn-success px-4 me-md-2 align-items-center"
+        ),
+        footer = tagAppendAttributes(
+          modalButton(label = "Close"),
+          class = "btn-outline-secondary"
+        )
+      ))
+    })
+
+    output$plot_handler_png <- downloadHandler(
+      filename = function() {
+        paste0(
+          "ShinyABCi_plot_",
+          gsub(x = input$plot_tabs, pattern = "main-", replacement = ""),
+          ".png"
+        )
+      },
+      content = function(file) {
+        ggsave(
+          plot = the_plot(),
+          filename = file,
+          scale = 4,
+          width = output_dims()[1],
+          height = output_dims()[2],
+          units = "px"
+        )
+      }
+    )
+
+    output$plot_handler_svg <- downloadHandler(
+      filename = function() {
+        paste0(
+          "ShinyABCi_plot_",
+          gsub(x = input$plot_tabs, pattern = "main-", replacement = ""),
+          ".svg"
+        )
+      },
+      content = function(file) {
+        ggsave(
+          plot = the_plot(),
+          filename = file,
+          scale = 4,
+          width = output_dims()[1],
+          height = output_dims()[2],
+          units = "px"
+        )
+      }
+    )
+
+    output$plot_handler_tiff <- downloadHandler(
+      filename = function() {
+        paste0(
+          "ShinyABCi_plot_",
+          gsub(x = input$plot_tabs, pattern = "main-", replacement = ""),
+          ".tiff"
+        )
+      },
+      content = function(file) {
+        ggsave(
+          plot = the_plot(),
+          filename = file,
+          scale = 4,
+          width = output_dims()[1],
+          height = output_dims()[2],
+          units = "px"
+        )
+      }
+    )
+
+
+    # Restore button --------------------------------------------------------
+
+    observeEvent(
+      input$restore,
+      shinyjs::reset(id = NS(id, "results_sidebar"))
+    )
+
+
+    # Refresh button --------------------------------------------------------
+
+    observeEvent(input$reset, {
+      showModal(modalDialog(
+        title = "Analyze a new dataset",
+        p(r"(
+        Are you sure you want to refresh this page and analyze a new dataset?
+        Doing so will reset the app, meaning any current results and plots
+        will be lost!
+        )"),
+        footer = tagList(
+          tagAppendAttributes(
+            modalButton(label = "Close"),
+            class = "btn-outline-secondary"
+          ),
+          actionButton(
+            NS(id, "confirm_reset"),
+            "Refresh and start over",
+            class = "btn btn-danger"
+          )
+        )
+      ))
+    })
+
+    observeEvent(
+      input$confirm_reset,
+      runjs("window.onbeforeunload = null; location.reload();")
     )
   })
 }

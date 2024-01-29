@@ -985,7 +985,7 @@ server_upload <- function(id) {
     })
 
 
-    # Calculate ABCI, trigger app changes -----------------------------------
+    # Calculate ABCI, trigger updates -------------------------------------
 
     abci_results <- reactiveVal()
 
@@ -1028,7 +1028,7 @@ server_upload <- function(id) {
       enable_button("plot_download_button")
       enable_button("restore")
       enable_button("reset")
-      # click("create_plot")
+      click("create_plot")
     })
 
     reactive(abci_results())
