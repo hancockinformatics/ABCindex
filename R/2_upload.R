@@ -635,8 +635,10 @@ abci_analysis_single <- function(
 # Module ------------------------------------------------------------------
 
 ui_upload <- function(id) {
+  ns <- NS(id)
+
   nav_panel(
-    value = NS(id, "upload"),
+    value = ns("upload"),
     title = "Upload",
 
     card(
@@ -656,7 +658,7 @@ ui_upload <- function(id) {
             "Each sheet/experiment will be analyzed independently, becoming ",
             "separate panels in the final plots, while replicates within an ",
             "experiment will be averaged. You can use the link to ",
-            actionLink(NS(id, "download_template"), "download a template"),
+            actionLink(ns("download_template"), "download a template"),
             "of the input format. If required, subtract any 'blank' wells ",
             "before uploading your data."
           ),
@@ -664,17 +666,17 @@ ui_upload <- function(id) {
           p(
             "Use the link to ",
             actionLink(
-              NS(id, "load_example_data"),
+              ns("load_example_data"),
               "try our example data",
               .noWS = "after"
             ),
             ", or check out the ",
-            actionLink(NS(id, "help_from_upload"), "Help pages"),
+            actionLink(ns("help_from_upload"), "Help pages"),
             "to learn more about the data types we support."
           ),
 
           fileInput(
-            inputId = NS(id, "load_user_data"),
+            inputId = ns("load_user_data"),
             label = NULL,
             buttonLabel = list(icon("upload"), "Upload plate data..."),
             accept = c("xls", ".xls", "xlsx", ".xlsx", "ods", ".ods")
@@ -682,13 +684,13 @@ ui_upload <- function(id) {
 
           disabled(
             actionButton(
-              inputId = NS(id, "perform_abci_calculations"),
+              inputId = ns("perform_abci_calculations"),
               class = "btn btn-primary btn-tooltip mt-auto",
               icon = icon("calculator"),
               label = "Perform ABCI calculations"
             ) %>%
               tooltip(
-                id = NS(id, "perform_abci_calculations_tt"),
+                id = ns("perform_abci_calculations_tt"),
                 placement = "top",
                 paste0(
                   "Upload your plate data, or load our example data, then ",
@@ -701,10 +703,10 @@ ui_upload <- function(id) {
         layout_column_wrap(
           width = 1/2,
           fill = FALSE,
-          uiOutput(NS(id, "upload_input_names_card")),
-          uiOutput(NS(id, "upload_drug_card_UI"))
+          uiOutput(ns("upload_input_names_card")),
+          uiOutput(ns("upload_drug_card_UI"))
         ),
-        uiOutput(NS(id, "upload_input_preview"))
+        uiOutput(ns("upload_input_preview"))
       )
     )
   )
@@ -713,10 +715,11 @@ ui_upload <- function(id) {
 
 server_upload <- function(id) {
   moduleServer(id, function(input, output, session) {
+    ns <- NS(id)
 
     observeEvent(
       input$help_from_upload,
-      nav_select(id = "navbar", selected = NS(id, "help"))
+      nav_select(id = "navbar", selected = ns("help"))
     )
 
 
@@ -734,13 +737,13 @@ server_upload <- function(id) {
         HTML("<img src='help/input_template.png' class='center'>"),
         br(),
         downloadButton(
-          outputId = NS(id, "template_handler_xlsx"),
+          outputId = ns("template_handler_xlsx"),
           label = "XLSX",
           width = "50px",
           class = "btn btn-success px-4 me-md-2 align-items-center"
         ),
         downloadButton(
-          outputId = NS(id, "template_handler_ods"),
+          outputId = ns("template_handler_ods"),
           label = "ODS",
           width = "50px",
           class = "btn btn-success px-4 me-md-2 align-items-center"
@@ -780,7 +783,7 @@ server_upload <- function(id) {
       input_order(initial_input$order)
 
       showNotification(
-        id = NS(id, "upload_notification"),
+        id = ns("upload_notification"),
         type = initial_input$type,
         duration = ifelse(initial_input$type == "error", 20, 10),
         ui = HTML(paste0(
@@ -801,7 +804,7 @@ server_upload <- function(id) {
       input_order(initial_input$order)
 
       showNotification(
-        id = NS(id, "upload_notification"),
+        id = ns("upload_notification"),
         type = initial_input$type,
         duration = ifelse(initial_input$type == "error", 20, 10),
         ui = HTML(paste0(
@@ -864,7 +867,7 @@ server_upload <- function(id) {
           the button at the bottom of the sidebar.</p>
         )"),
         selectInput(
-          inputId = NS(id, "upload_input_names_selector"),
+          inputId = ns("upload_input_names_selector"),
           label = NULL,
           choices = names(input_data_preview()),
           width = "inherit"
@@ -927,7 +930,7 @@ server_upload <- function(id) {
             input$upload_input_names_selector, "'"
           )
         ),
-        DT::dataTableOutput(NS(id, "input_data_preview_DT"))
+        DT::dataTableOutput(ns("input_data_preview_DT"))
       )
     })
 
@@ -971,7 +974,7 @@ server_upload <- function(id) {
 
     observeEvent(input$perform_abci_calculations, {
       req(input_data())
-      removeNotification(NS(id, "upload_notification"))
+      removeNotification(ns("upload_notification"))
 
       showModal(modalDialog(
         title = "Perform ABCI calculations: Data normalization",
@@ -982,7 +985,7 @@ server_upload <- function(id) {
           option below before proceeding.
         )"),
         radioButtons(
-          inputId = NS(id, "normalize_radio"),
+          inputId = ns("normalize_radio"),
           label = NULL,
           choices = list(
             "Normalize my data (becoming range 0-1)" = "run_norm",
@@ -997,7 +1000,7 @@ server_upload <- function(id) {
             class = "btn-outline-secondary"
           ),
           actionButton(
-            inputId = NS(id, "confirm_calc"),
+            inputId = ns("confirm_calc"),
             label = "Calculate ABCI values",
             class = "btn btn-primary"
           )
@@ -1033,7 +1036,7 @@ server_upload <- function(id) {
 
       removeModal()
 
-      nav_select(id = "navbar", selected = NS(id, "results"))
+      nav_select(id = "navbar", selected = ns("results"))
 
       enable_button(
         "create_plot",

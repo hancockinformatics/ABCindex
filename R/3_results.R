@@ -1607,8 +1607,10 @@ writer_xlsx <- function(x, filename) {
 # Module ------------------------------------------------------------------
 
 ui_results <- function(id) {
+  ns <- NS(id)
+
   nav_panel(
-    value = NS(id, "results"),
+    value = ns("results"),
     title = "Results",
 
     card(
@@ -1616,7 +1618,7 @@ ui_results <- function(id) {
 
       layout_sidebar(
         sidebar = sidebar(
-          id = NS(id, "results_sidebar"),
+          id = ns("results_sidebar"),
           title = "ABCI results and visualizations",
           width = "580px",
           open = NA,
@@ -1626,7 +1628,7 @@ ui_results <- function(id) {
             "each of your experiments. Positive ABCI values indicate that the ",
             "combination is more effective than either individual drug. ",
             "Please refer to the ",
-            actionLink(NS(id, "help_from_results"), "Help pages"),
+            actionLink(ns("help_from_results"), "Help pages"),
             "to learn more about ABCI."
           ),
 
@@ -1640,44 +1642,44 @@ ui_results <- function(id) {
 
           disabled(
             actionButton(
-              inputId = NS(id, "create_plot"),
+              inputId = ns("create_plot"),
               class = "btn btn-info btn-tooltip",
               icon = icon("chart-bar"),
               label = "Create or update the plot"
             ) %>%
               tooltip(
-                id = NS(id, "create_plot_tt"),
+                id = ns("create_plot_tt"),
                 placement = "right",
                 "Upload and analyze data to enable visualization"
               )
           ),
 
           navset_tab(
-            id = NS(id, "plot_tabs"),
+            id = ns("plot_tabs"),
             nav_panel(
               title = "Dot",
-              value = NS(id, "dot"),
-              uiOutput(NS(id, "plot_inputs_dot"))
+              value = ns("dot"),
+              uiOutput(ns("plot_inputs_dot"))
             ),
             nav_panel(
               title = "Split Dot",
-              value = NS(id, "dot_split"),
-              uiOutput(NS(id, "plot_inputs_dot_split"))
+              value = ns("dot_split"),
+              uiOutput(ns("plot_inputs_dot_split"))
             ),
             nav_panel(
               title = "Tile",
-              value = NS(id, "tile"),
-              uiOutput(NS(id, "plot_inputs_tile"))
+              value = ns("tile"),
+              uiOutput(ns("plot_inputs_tile"))
             ),
             nav_panel(
               title = "Split Tile",
-              value = NS(id, "tile_split"),
-              uiOutput(NS(id, "plot_inputs_tile_split"))
+              value = ns("tile_split"),
+              uiOutput(ns("plot_inputs_tile_split"))
             ),
             nav_panel(
               title = "Line",
-              value = NS(id, "line"),
-              uiOutput(NS(id, "plot_inputs_line"))
+              value = ns("line"),
+              uiOutput(ns("plot_inputs_line"))
             )
           ) %>% tagAppendAttributes(class = "nav-justified"),
 
@@ -1691,13 +1693,13 @@ ui_results <- function(id) {
                 class = "col ps-md-0",
                 disabled(
                   downloadButton(
-                    outputId = NS(id, "results_handler_xlsx"),
+                    outputId = ns("results_handler_xlsx"),
                     class = "btn btn-success align-items-center",
                     label = "Download results spreadsheet",
                     style = "width: 100%"
                   ) %>%
                     tooltip(
-                      id = NS(id, "results_handler_xlsx_tt"),
+                      id = ns("results_handler_xlsx_tt"),
                       placement = "right",
                       "Upload and analyze data to download the results"
                     )
@@ -1707,7 +1709,7 @@ ui_results <- function(id) {
                 class = "col pe-md-0",
                 disabled(
                   actionButton(
-                    inputId = NS(id, "plot_download_button"),
+                    inputId = ns("plot_download_button"),
                     class = "btn btn-success align-items-center",
                     icon = icon("floppy-disk"),
                     label = "Download the plot",
@@ -1722,13 +1724,13 @@ ui_results <- function(id) {
                 class = "col ps-md-0",
                 disabled(
                   actionButton(
-                    inputId = NS(id, "restore"),
+                    inputId = ns("restore"),
                     class = "btn btn-secondary",
                     icon = icon("rotate-left"),
                     label = "Restore defaults",
                     width = "100%"
                   ) %>% tooltip(
-                    id = NS(id, "restore_tt"),
+                    id = ns("restore_tt"),
                     placement = "top",
                     "Restores all plot inputs to their default state"
                   )
@@ -1738,14 +1740,14 @@ ui_results <- function(id) {
                 class = "col pe-md-0",
                 disabled(
                   actionButton(
-                    inputId = NS(id, "reset"),
+                    inputId = ns("reset"),
                     class = "btn btn-warning",
                     icon = icon("trash-can"),
                     label = "Analyze a new dataset",
                     width = "100%"
                   ) %>%
                     tooltip(
-                      id = NS(id, "reset_tt"),
+                      id = ns("reset_tt"),
                       placement = "top",
                       "Discard the current results and start a new analysis"
                     )
@@ -1754,7 +1756,7 @@ ui_results <- function(id) {
             )
           )
         ),
-        uiOutput(NS(id, "abci_plot_ui"))
+        uiOutput(ns("abci_plot_ui"))
       )
     )
   )
@@ -1763,10 +1765,11 @@ ui_results <- function(id) {
 
 server_results <- function(id, data) {
   moduleServer(id, function(input, output, session) {
+    ns <- NS(id)
 
     observeEvent(
       input$help_from_results,
-      nav_select(id = "navbar", selected = NS(id, "help"))
+      nav_select(id = "navbar", selected = ns("help"))
     )
 
 
@@ -1869,12 +1872,12 @@ server_results <- function(id, data) {
         class = "pt-3",
         wrap_selector(
           label = actionLink(
-            NS(id, "dot_preview_colours"),
+            ns("dot_preview_colours"),
             label = "ABCI colours"
           ),
           label_title = tooltips$abci_colours,
           selectInput(
-            inputId = NS(id, "plot_dot_colour_palette"),
+            inputId = ns("plot_dot_colour_palette"),
             label = NULL,
             selected = "A_RYB",
             choices = abci_colours
@@ -1885,7 +1888,7 @@ server_results <- function(id, data) {
           label = "X axis title",
           label_title = tooltips$x_axis_title,
           textInput(
-            inputId = NS(id, "plot_dot_x_text"),
+            inputId = ns("plot_dot_x_text"),
             label = NULL,
             value = axis_titles()[["cols"]]
           )
@@ -1895,7 +1898,7 @@ server_results <- function(id, data) {
           label = "X axis digits",
           label_title = tooltips$x_axis_digits,
           numericInput(
-            inputId = NS(id, "plot_dot_x_decimal"),
+            inputId = ns("plot_dot_x_decimal"),
             label = NULL,
             value = 2,
             min = 1,
@@ -1908,7 +1911,7 @@ server_results <- function(id, data) {
           label = "Y axis title",
           label_title = tooltips$y_axis_title,
           textInput(
-            inputId = NS(id, "plot_dot_y_text"),
+            inputId = ns("plot_dot_y_text"),
             label = NULL,
             value = axis_titles()[["rows"]]
           )
@@ -1918,7 +1921,7 @@ server_results <- function(id, data) {
           label = "Y axis digits",
           label_title = tooltips$y_axis_digits,
           numericInput(
-            inputId = NS(id, "plot_dot_y_decimal"),
+            inputId = ns("plot_dot_y_decimal"),
             label = NULL,
             value = 2,
             min = 1,
@@ -1931,7 +1934,7 @@ server_results <- function(id, data) {
           label = "Size legend title",
           label_title = tooltips$size_legend,
           textInput(
-            inputId = NS(id, "plot_dot_size_text"),
+            inputId = ns("plot_dot_size_text"),
             label = NULL,
             value = "Biomass reduction %"
           )
@@ -1941,7 +1944,7 @@ server_results <- function(id, data) {
           label = "Draw activity threshold",
           label_title = tooltips$draw_activity,
           checkboxGroupInput(
-            inputId = NS(id, "plot_dot_mic_lines"),
+            inputId = ns("plot_dot_mic_lines"),
             label = NULL,
             inline = TRUE,
             choices = c("X", "Y")
@@ -1960,7 +1963,7 @@ server_results <- function(id, data) {
               label = "Swap X and Y",
               label_title = tooltips$swap_x_y,
               input_switch(
-                id = NS(id, "plot_dot_swap"),
+                id = ns("plot_dot_swap"),
                 label = "Off",
                 value = FALSE
               )
@@ -1970,7 +1973,7 @@ server_results <- function(id, data) {
               label = "Linear size scaling",
               label_title = "Enable linear size scaling of dots",
               input_switch(
-                id = NS(id, "plot_dot_linear"),
+                id = ns("plot_dot_linear"),
                 label = "Off",
                 value = FALSE
               )
@@ -1980,7 +1983,7 @@ server_results <- function(id, data) {
               label = "Axis labels",
               label_title = tooltips$axis_labels,
               selectInput(
-                inputId = NS(id, "plot_dot_scales"),
+                inputId = ns("plot_dot_scales"),
                 label = NULL,
                 selected = "free",
                 choices = plot_scales
@@ -1991,7 +1994,7 @@ server_results <- function(id, data) {
               label = "Activity threshold",
               label_title = tooltips$activity_val,
               numericInput(
-                inputId = NS(id, "plot_dot_mic_threshold"),
+                inputId = ns("plot_dot_mic_threshold"),
                 label = NULL,
                 value = 0.5,
                 min = 0,
@@ -2003,7 +2006,7 @@ server_results <- function(id, data) {
               label = "Highlight large effect",
               label_title = tooltips$large_effect,
               input_switch(
-                id = NS(id, "plot_dot_large_toggle"),
+                id = ns("plot_dot_large_toggle"),
                 label = "Off",
                 value = FALSE
               )
@@ -2013,7 +2016,7 @@ server_results <- function(id, data) {
               label = "Large effect threshold",
               label_title = tooltips$large_effect_val,
               numericInput(
-                inputId = NS(id, "plot_dot_large_value"),
+                inputId = ns("plot_dot_large_value"),
                 label = NULL,
                 value = 0.9,
                 min = 0,
@@ -2073,12 +2076,12 @@ server_results <- function(id, data) {
         class = "pt-3",
         wrap_selector(
           label = actionLink(
-            NS(id, "dot_split_preview_colours"),
+            ns("dot_split_preview_colours"),
             label = "ABCI colours"
           ),
           label_title = tooltips$abci_colours,
           selectInput(
-            inputId = NS(id, "plot_dot_split_colour_palette"),
+            inputId = ns("plot_dot_split_colour_palette"),
             label = NULL,
             selected = "RYB",
             choices = abci_colours_split
@@ -2089,7 +2092,7 @@ server_results <- function(id, data) {
           label = "X axis title",
           label_title = tooltips$x_axis_title,
           textInput(
-            inputId = NS(id, "plot_dot_split_x_text"),
+            inputId = ns("plot_dot_split_x_text"),
             label = NULL,
             value = axis_titles()[["cols"]]
           )
@@ -2099,7 +2102,7 @@ server_results <- function(id, data) {
           label = "X axis digits",
           label_title = tooltips$x_axis_digits,
           numericInput(
-            inputId = NS(id, "plot_dot_split_x_decimal"),
+            inputId = ns("plot_dot_split_x_decimal"),
             label = NULL,
             value = 2,
             min = 1,
@@ -2112,7 +2115,7 @@ server_results <- function(id, data) {
           label = "Y axis title",
           label_title = tooltips$y_axis_title,
           textInput(
-            inputId = NS(id, "plot_dot_split_y_text"),
+            inputId = ns("plot_dot_split_y_text"),
             label = NULL,
             value = axis_titles()[["rows"]]
           )
@@ -2122,7 +2125,7 @@ server_results <- function(id, data) {
           label = "Y axis digits",
           label_title = tooltips$y_axis_digits,
           numericInput(
-            inputId = NS(id, "plot_dot_split_y_decimal"),
+            inputId = ns("plot_dot_split_y_decimal"),
             label = NULL,
             value = 2,
             min = 1,
@@ -2135,7 +2138,7 @@ server_results <- function(id, data) {
           label = "Size legend title",
           label_title = tooltips$size_legend,
           textInput(
-            inputId = NS(id, "plot_dot_split_size_text"),
+            inputId = ns("plot_dot_split_size_text"),
             label = NULL,
             value = "Biomass reduction %"
           )
@@ -2145,7 +2148,7 @@ server_results <- function(id, data) {
           label = "Draw activity threshold",
           label_title = tooltips$draw_activity,
           checkboxGroupInput(
-            inputId = NS(id, "plot_dot_split_mic_lines"),
+            inputId = ns("plot_dot_split_mic_lines"),
             label = NULL,
             inline = TRUE,
             choices = c("X", "Y")
@@ -2162,7 +2165,7 @@ server_results <- function(id, data) {
               label = "Swap X and Y",
               label_title = tooltips$swap_x_y,
               input_switch(
-                id = NS(id, "plot_dot_split_swap"),
+                id = ns("plot_dot_split_swap"),
                 label = "Off",
                 value = FALSE
               )
@@ -2172,7 +2175,7 @@ server_results <- function(id, data) {
               label = "Filter stringency",
               label_title = tooltips$filter,
               input_switch(
-                id = NS(id, "plot_dot_split_strict"),
+                id = ns("plot_dot_split_strict"),
                 label = "Strict",
                 value = TRUE
               )
@@ -2182,7 +2185,7 @@ server_results <- function(id, data) {
               label = "Linear size scaling",
               label_title = "Enable linear size scaling of dots",
               input_switch(
-                id = NS(id, "plot_dot_split_linear"),
+                id = ns("plot_dot_split_linear"),
                 label = "Off",
                 value = FALSE
               )
@@ -2192,7 +2195,7 @@ server_results <- function(id, data) {
               label = "Axis labels",
               label_title = tooltips$axis_labels,
               selectInput(
-                inputId = NS(id, "plot_dot_split_scales"),
+                inputId = ns("plot_dot_split_scales"),
                 label = NULL,
                 selected = "free",
                 choices = plot_scales
@@ -2203,7 +2206,7 @@ server_results <- function(id, data) {
               label = "Activity threshold",
               label_title = tooltips$activity_val,
               numericInput(
-                inputId = NS(id, "plot_dot_split_mic_threshold"),
+                inputId = ns("plot_dot_split_mic_threshold"),
                 label = NULL,
                 value = 0.5,
                 min = 0,
@@ -2215,7 +2218,7 @@ server_results <- function(id, data) {
               label = "Highlight large effect",
               label_title = tooltips$large_effect,
               input_switch(
-                id = NS(id, "plot_dot_split_large_toggle"),
+                id = ns("plot_dot_split_large_toggle"),
                 label = "Off",
                 value = FALSE
               )
@@ -2225,7 +2228,7 @@ server_results <- function(id, data) {
               label = "Large effect threshold",
               label_title = tooltips$large_effect_val,
               numericInput(
-                inputId = NS(id, "plot_dot_split_large_value"),
+                inputId = ns("plot_dot_split_large_value"),
                 label = NULL,
                 value = 0.9,
                 min = 0,
@@ -2294,12 +2297,12 @@ server_results <- function(id, data) {
         class = "pt-3",
         wrap_selector(
           label = actionLink(
-            NS(id, "tile_preview_colours"),
+            ns("tile_preview_colours"),
             label = "ABCI colours"
           ),
           label_title = tooltips$abci_colours,
           selectInput(
-            inputId = NS(id, "plot_tile_colour_palette"),
+            inputId = ns("plot_tile_colour_palette"),
             label = NULL,
             selected = "A_RYB",
             choices = abci_colours
@@ -2310,7 +2313,7 @@ server_results <- function(id, data) {
           label = "X axis title",
           label_title = tooltips$x_axis_title,
           textInput(
-            inputId = NS(id, "plot_tile_x_text"),
+            inputId = ns("plot_tile_x_text"),
             label = NULL,
             value = axis_titles()[["cols"]]
           )
@@ -2320,7 +2323,7 @@ server_results <- function(id, data) {
           label = "X axis digits",
           label_title = tooltips$x_axis_digits,
           numericInput(
-            inputId = NS(id, "plot_tile_x_decimal"),
+            inputId = ns("plot_tile_x_decimal"),
             label = NULL,
             value = 2,
             min = 1,
@@ -2333,7 +2336,7 @@ server_results <- function(id, data) {
           label = "Y axis title",
           label_title = tooltips$y_axis_title,
           textInput(
-            inputId = NS(id, "plot_tile_y_text"),
+            inputId = ns("plot_tile_y_text"),
             label = NULL,
             value = axis_titles()[["rows"]]
           )
@@ -2343,7 +2346,7 @@ server_results <- function(id, data) {
           label = "Y axis digits",
           label_title = tooltips$y_axis_digits,
           numericInput(
-            inputId = NS(id, "plot_tile_y_decimal"),
+            inputId = ns("plot_tile_y_decimal"),
             label = NULL,
             value = 2,
             min = 1,
@@ -2356,7 +2359,7 @@ server_results <- function(id, data) {
           label = "Draw activity threshold",
           label_title = tooltips$draw_activity,
           checkboxGroupInput(
-            inputId = NS(id, "plot_tile_mic_lines"),
+            inputId = ns("plot_tile_mic_lines"),
             label = NULL,
             inline = TRUE,
             choices = c("X", "Y"),
@@ -2368,7 +2371,7 @@ server_results <- function(id, data) {
           label = "Highlight low effect",
           label_title = tooltips$low_effect,
           input_switch(
-            id = NS(id, "plot_tile_low_toggle"),
+            id = ns("plot_tile_low_toggle"),
             label = "On",
             value = TRUE
           )
@@ -2385,7 +2388,7 @@ server_results <- function(id, data) {
               label = "Swap X and Y",
               label_title = tooltips$swap_x_y,
               input_switch(
-                id = NS(id, "plot_tile_swap"),
+                id = ns("plot_tile_swap"),
                 label = "Off",
                 value = FALSE
               )
@@ -2395,7 +2398,7 @@ server_results <- function(id, data) {
               label = "Axis labels",
               label_title = tooltips$axis_labels,
               selectInput(
-                inputId = NS(id, "plot_tile_scales"),
+                inputId = ns("plot_tile_scales"),
                 label = NULL,
                 choices = plot_scales
               )
@@ -2405,7 +2408,7 @@ server_results <- function(id, data) {
               label = "Activity threshold",
               label_title = tooltips$activity_val,
               numericInput(
-                inputId = NS(id, "plot_tile_mic_threshold"),
+                inputId = ns("plot_tile_mic_threshold"),
                 label = NULL,
                 value = 0.5,
                 min = 0,
@@ -2417,7 +2420,7 @@ server_results <- function(id, data) {
               label = "Low effect threshold",
               label_title = tooltips$low_effect_val,
               numericInput(
-                inputId = NS(id, "plot_tile_low_value"),
+                inputId = ns("plot_tile_low_value"),
                 label = NULL,
                 value = 0.5,
                 min = 0,
@@ -2429,7 +2432,7 @@ server_results <- function(id, data) {
               label = "Highlight large effect",
               label_title = tooltips$large_effect,
               input_switch(
-                id = NS(id, "plot_tile_large_toggle"),
+                id = ns("plot_tile_large_toggle"),
                 label = "Off",
                 value = FALSE
               )
@@ -2439,7 +2442,7 @@ server_results <- function(id, data) {
               label = "Large effect threshold",
               label_title = tooltips$large_effect_val,
               numericInput(
-                inputId = NS(id, "plot_tile_large_value"),
+                inputId = ns("plot_tile_large_value"),
                 label = NULL,
                 value = 0.9,
                 min = 0,
@@ -2500,12 +2503,12 @@ server_results <- function(id, data) {
         class = "pt-3",
         wrap_selector(
           label = actionLink(
-            NS(id, "tile_split_preview_colours"),
+            ns("tile_split_preview_colours"),
             label = "ABCI colours"
           ),
           label_title = tooltips$abci_colours,
           selectInput(
-            inputId = NS(id, "plot_tile_split_colour_palette"),
+            inputId = ns("plot_tile_split_colour_palette"),
             label = NULL,
             selected = "RYB",
             choices = abci_colours_split
@@ -2516,7 +2519,7 @@ server_results <- function(id, data) {
           label = "X axis title",
           label_title = tooltips$x_axis_title,
           textInput(
-            inputId = NS(id, "plot_tile_split_x_text"),
+            inputId = ns("plot_tile_split_x_text"),
             label = NULL,
             value = axis_titles()[["cols"]]
           )
@@ -2526,7 +2529,7 @@ server_results <- function(id, data) {
           label = "X axis digits",
           label_title = tooltips$x_axis_digits,
           numericInput(
-            inputId = NS(id, "plot_tile_split_x_decimal"),
+            inputId = ns("plot_tile_split_x_decimal"),
             label = NULL,
             value = 2,
             min = 1,
@@ -2539,7 +2542,7 @@ server_results <- function(id, data) {
           label = "Y axis title",
           label_title = tooltips$y_axis_title,
           textInput(
-            inputId = NS(id, "plot_tile_split_y_text"),
+            inputId = ns("plot_tile_split_y_text"),
             label = NULL,
             value = axis_titles()[["rows"]]
           )
@@ -2549,7 +2552,7 @@ server_results <- function(id, data) {
           label = "Y axis digits",
           label_title = tooltips$y_axis_digits,
           numericInput(
-            inputId = NS(id, "plot_tile_split_y_decimal"),
+            inputId = ns("plot_tile_split_y_decimal"),
             label = NULL,
             value = 2,
             min = 1,
@@ -2562,7 +2565,7 @@ server_results <- function(id, data) {
           label = "Draw activity threshold",
           label_title = tooltips$draw_activity,
           checkboxGroupInput(
-            inputId = NS(id, "plot_tile_split_mic_lines"),
+            inputId = ns("plot_tile_split_mic_lines"),
             label = NULL,
             inline = TRUE,
             choices = c("X", "Y"),
@@ -2574,7 +2577,7 @@ server_results <- function(id, data) {
           label = "Highlight low effect",
           label_title = tooltips$low_effect,
           input_switch(
-            id = NS(id, "plot_tile_split_low_toggle"),
+            id = ns("plot_tile_split_low_toggle"),
             label = "On",
             value = TRUE
           )
@@ -2590,7 +2593,7 @@ server_results <- function(id, data) {
               label = "Swap X and Y",
               label_title = tooltips$swap_x_y,
               input_switch(
-                id = NS(id, "plot_tile_split_swap"),
+                id = ns("plot_tile_split_swap"),
                 label = "Off",
                 value = FALSE
               )
@@ -2600,7 +2603,7 @@ server_results <- function(id, data) {
               label = "Filter stringency",
               label_title = tooltips$filter,
               input_switch(
-                id = NS(id, "plot_tile_split_strict"),
+                id = ns("plot_tile_split_strict"),
                 label = "Strict",
                 value = TRUE
               )
@@ -2610,7 +2613,7 @@ server_results <- function(id, data) {
               label = "Axis labels",
               label_title = tooltips$axis_labels,
               selectInput(
-                inputId = NS(id, "plot_tile_split_scales"),
+                inputId = ns("plot_tile_split_scales"),
                 label = NULL,
                 choices = plot_scales
               )
@@ -2620,7 +2623,7 @@ server_results <- function(id, data) {
               label = "Activity threshold",
               label_title = tooltips$activity_val,
               numericInput(
-                inputId = NS(id, "plot_tile_split_mic_threshold"),
+                inputId = ns("plot_tile_split_mic_threshold"),
                 label = NULL,
                 value = 0.5,
                 min = 0,
@@ -2632,7 +2635,7 @@ server_results <- function(id, data) {
               label = "Low effect threshold",
               label_title = tooltips$low_effect_val,
               numericInput(
-                inputId = NS(id, "plot_tile_split_low_value"),
+                inputId = ns("plot_tile_split_low_value"),
                 label = NULL,
                 value = 0.5,
                 min = 0,
@@ -2644,7 +2647,7 @@ server_results <- function(id, data) {
               label = "Highlight large effect",
               label_title = tooltips$large_effect,
               input_switch(
-                id = NS(id, "plot_tile_split_large_toggle"),
+                id = ns("plot_tile_split_large_toggle"),
                 label = "Off",
                 value = FALSE
               )
@@ -2654,7 +2657,7 @@ server_results <- function(id, data) {
               label = "Large effect threshold",
               label_title = tooltips$large_effect_val,
               numericInput(
-                inputId = NS(id, "plot_tile_split_large_value"),
+                inputId = ns("plot_tile_split_large_value"),
                 label = NULL,
                 value = 0.9,
                 min = 0,
@@ -2725,7 +2728,7 @@ server_results <- function(id, data) {
           label = "Graph type",
           label_title = "Determine how replicates are plotted",
           radioButtons(
-            inputId = NS(id, "plot_line_type"),
+            inputId = ns("plot_line_type"),
             label = NULL,
             inline = TRUE,
             choices = c(
@@ -2740,7 +2743,7 @@ server_results <- function(id, data) {
           label = "X axis title",
           label_title = tooltips$x_axis_title,
           textInput(
-            inputId = NS(id, "plot_line_x_text"),
+            inputId = ns("plot_line_x_text"),
             label = NULL,
             value = axis_titles()[["cols"]]
           )
@@ -2750,7 +2753,7 @@ server_results <- function(id, data) {
           label = "X axis digits",
           label_title = tooltips$x_axis_digits,
           numericInput(
-            inputId = NS(id, "plot_line_x_decimal"),
+            inputId = ns("plot_line_x_decimal"),
             label = NULL,
             value = 2,
             min = 1,
@@ -2766,7 +2769,7 @@ server_results <- function(id, data) {
             "recommended."
           ),
           selectInput(
-            inputId = NS(id, "plot_line_line_include"),
+            inputId = ns("plot_line_line_include"),
             label = NULL,
             multiple = TRUE,
             choices = c()
@@ -2777,7 +2780,7 @@ server_results <- function(id, data) {
           label = "Line title",
           label_title = "Title for the line/colour legend",
           textInput(
-            inputId = NS(id, "plot_line_line_text"),
+            inputId = ns("plot_line_line_text"),
             label = NULL,
             value = axis_titles()[["rows"]]
           )
@@ -2790,7 +2793,7 @@ server_results <- function(id, data) {
             "treatment plotted as different lines"
           ),
           numericInput(
-            inputId = NS(id, "plot_line_line_decimal"),
+            inputId = ns("plot_line_line_decimal"),
             label = NULL,
             value = 2,
             min = 1,
@@ -2801,7 +2804,7 @@ server_results <- function(id, data) {
 
         wrap_selector(
           label = actionLink(
-            NS(id, "line_preview_colours"),
+            ns("line_preview_colours"),
             label = "Line colours"
           ),
           label_title = paste0(
@@ -2809,7 +2812,7 @@ server_results <- function(id, data) {
             "Click the preview the options."
           ),
           selectInput(
-            inputId = NS(id, "plot_line_colour_palette"),
+            inputId = ns("plot_line_colour_palette"),
             label = NULL,
             choices = line_colours
           )
@@ -2819,7 +2822,7 @@ server_results <- function(id, data) {
           label = "Y axis title",
           label_title = tooltips$y_axis_title,
           textInput(
-            inputId = NS(id, "plot_line_y_text"),
+            inputId = ns("plot_line_y_text"),
             label = NULL,
             value = "% Biomass"
           )
@@ -2829,7 +2832,7 @@ server_results <- function(id, data) {
           label = "Draw activity threshold",
           label_title = tooltips$draw_activity,
           checkboxGroupInput(
-            inputId = NS(id, "plot_line_mic_lines"),
+            inputId = ns("plot_line_mic_lines"),
             label = NULL,
             inline = TRUE,
             choices = c("X"),
@@ -2848,7 +2851,7 @@ server_results <- function(id, data) {
               label_title =
                 "Turn on to swap the values plotted on the X axis and as lines",
               input_switch(
-                id = NS(id, "plot_line_swap"),
+                id = ns("plot_line_swap"),
                 label = "Off",
                 value = FALSE
               )
@@ -2859,7 +2862,7 @@ server_results <- function(id, data) {
               label_title =
                 "Nudge values along the X axis to prevent overlapping lines",
               input_switch(
-                id = NS(id, "plot_line_jitter_x"),
+                id = ns("plot_line_jitter_x"),
                 label = "On",
                 value = TRUE
               )
@@ -2869,7 +2872,7 @@ server_results <- function(id, data) {
               label = "Axis labels",
               label_title = tooltips$axis_labels,
               selectInput(
-                inputId = NS(id, "plot_line_scales"),
+                inputId = ns("plot_line_scales"),
                 label = NULL,
                 choices = plot_scales
               )
@@ -2879,7 +2882,7 @@ server_results <- function(id, data) {
               label = "Activity threshold",
               label_title = tooltips$activity_val,
               numericInput(
-                inputId = NS(id, "plot_line_mic_threshold"),
+                inputId = ns("plot_line_mic_threshold"),
                 label = NULL,
                 value = 0.5,
                 min = 0,
@@ -2959,7 +2962,7 @@ server_results <- function(id, data) {
 
       tryCatch(
         {
-          if (input$plot_tabs == "main-dot") {
+          if (input$plot_tabs == ns("dot")) {
             plot_dot(
               data = data(),
               x.drug = ifelse(input$plot_dot_swap, "rows_conc", "cols_conc"),
@@ -2989,7 +2992,7 @@ server_results <- function(id, data) {
                 theme(legend.box = "horizontal")
               }}
 
-          } else if (input$plot_tabs == "main-dot_split") {
+          } else if (input$plot_tabs == ns("dot_split")) {
             plot_dot_split(
               data = data(),
               x.drug = ifelse(input$plot_dot_split_swap, "rows_conc", "cols_conc"),
@@ -3020,7 +3023,7 @@ server_results <- function(id, data) {
                 theme(legend.box = "horizontal")
               }}
 
-          } else if (input$plot_tabs == "main-tile") {
+          } else if (input$plot_tabs == ns("tile")) {
             plot_tile(
               data = data(),
               x.drug = ifelse(input$plot_tile_swap, "rows_conc", "cols_conc"),
@@ -3045,7 +3048,7 @@ server_results <- function(id, data) {
               colour.palette = input$plot_tile_colour_palette
             )
 
-          } else if (input$plot_tabs == "main-tile_split") {
+          } else if (input$plot_tabs == ns("tile_split")) {
             plot_tile_split(
               data = data(),
               x.drug = ifelse(input$plot_tile_split_swap, "rows_conc", "cols_conc"),
@@ -3072,7 +3075,7 @@ server_results <- function(id, data) {
             )
           }
 
-          else if (input$plot_tabs == "main-line") {
+          else if (input$plot_tabs == ns("line")) {
             plot_line(
               data = data(),
               plot.type = input$plot_line_type,
@@ -3136,7 +3139,7 @@ server_results <- function(id, data) {
           shinycssloaders::withSpinner(
             type = 8,
             plotOutput(
-              outputId = NS(id, "abci_plot"),
+              outputId = ns("abci_plot"),
               width = paste0(output_dims()[1], "px"),
               height = paste0(output_dims()[2], "px")
             )
@@ -3164,19 +3167,19 @@ server_results <- function(id, data) {
           "TIFF image."
         ),
         downloadButton(
-          outputId = NS(id, "plot_handler_png"),
+          outputId = ns("plot_handler_png"),
           label = "PNG",
           width = "50px",
           class = "btn btn-success px-4 me-md-2 align-items-center"
         ),
         downloadButton(
-          outputId = NS(id, "plot_handler_svg"),
+          outputId = ns("plot_handler_svg"),
           label = "SVG",
           width = "50px",
           class = "btn btn-success px-4 me-md-2 align-items-center"
         ),
         downloadButton(
-          outputId = NS(id, "plot_handler_tiff"),
+          outputId = ns("plot_handler_tiff"),
           label = "TIFF",
           width = "50px",
           class = "btn btn-success px-4 me-md-2 align-items-center"
@@ -3270,7 +3273,7 @@ server_results <- function(id, data) {
             class = "btn-outline-secondary"
           ),
           actionButton(
-            inputId = NS(id, "confirm_reset"),
+            inputId = ns("confirm_reset"),
             class = "btn btn-danger",
             label = "Refresh and start over"
           )

@@ -86,8 +86,10 @@ dep_wrapper <- function(x) {
 # Module ------------------------------------------------------------------
 
 ui_about <- function(id) {
+  ns <- NS(id)
+
   nav_panel(
-    value = NS(id, "about"),
+    value = ns("about"),
     title = "About",
 
     div(
@@ -122,7 +124,7 @@ ui_about <- function(id) {
             class = "lead",
             "Detailed information, covering the usage of the app, and ",
             "interpretation and calculation of ABCI values, can be found ",
-            actionLink(NS(id, "help_from_about"), "here", .noWS = "after"), "."
+            actionLink(ns("help_from_about"), "here", .noWS = "after"), "."
           ),
 
           h1(
@@ -160,9 +162,11 @@ ui_about <- function(id) {
 
 server_about <- function(id) {
   moduleServer(id, function(input, output, session) {
+    ns <- NS(id)
+
     observeEvent(
       input$help_from_about,
-      nav_select(id = "navbar", selected = NS(id, "help"))
+      nav_select(id = "navbar", selected = ns("help"))
     )
   })
 }

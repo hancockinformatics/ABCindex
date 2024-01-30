@@ -1,6 +1,8 @@
 ui_home <- function(id) {
+  ns <- NS(id)
+
   nav_panel(
-    value = NS(id, "home"),
+    value = ns("home"),
     title = "Home",
 
     div(
@@ -40,21 +42,21 @@ ui_home <- function(id) {
 
         div(
           actionButton(
-            inputId = NS(id, "get_started"),
+            inputId = ns("get_started"),
             class = "btn btn-lg btn-primary px-4 me-md-2",
             icon = icon("play"),
             label = "Get started",
             width = "175px"
           ),
           actionButton(
-            inputId = NS(id, "help_from_home"),
+            inputId = ns("help_from_home"),
             class = "btn btn-lg btn-info px-4 me-md-2 ",
             icon = icon("circle-question"),
             label = "Help",
             width = "175px"
           ),
           actionButton(
-            inputId = NS(id, "about"),
+            inputId = ns("about"),
             class = "btn btn-lg btn-secondary px-4 me-md-2",
             icon = icon("circle-info"),
             label = "About",
@@ -69,17 +71,19 @@ ui_home <- function(id) {
 
 server_home <- function(id) {
   moduleServer(id, function(input, output, session) {
+    ns <- NS(id)
+
     observeEvent(
       input$get_started,
-      nav_select(id = "navbar", selected = NS(id, "upload"))
+      nav_select(id = "navbar", selected = ns("upload"))
     )
     observeEvent(
       input$help_from_home,
-      nav_select(id = "navbar", selected = NS(id, "help"))
+      nav_select(id = "navbar", selected = ns("help"))
     )
     observeEvent(
       input$about,
-      nav_select(id = "navbar", selected = NS(id, "about"))
+      nav_select(id = "navbar", selected = ns("about"))
     )
   })
 }
