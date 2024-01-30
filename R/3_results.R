@@ -1793,7 +1793,7 @@ server_results <- function(id, data) {
     )
 
 
-    # Set up misc. plot reactives -------------------------------------------
+    # Set up plotting reactives -------------------------------------------
 
     abci_plot_dims <- reactive({
       req(data())

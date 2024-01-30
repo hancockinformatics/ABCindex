@@ -29,6 +29,14 @@ check_wells <- function(data_list) {
 }
 
 
+#' check_untreated
+#'
+#' @param data_list A list of data frames (tibbles), from `plate_reader()` to
+#'   check for validity
+#'
+#' @return A list of experiments that are missing untreated samples in the rows
+#'   or columns.
+#'
 check_untreated <- function(data_list) {
   check_results <- purrr::map(
     data_list,
@@ -57,6 +65,22 @@ check_untreated <- function(data_list) {
       )
     })
   }
+}
+
+
+#' enable_button
+#'
+#' @param id Input ID for the button being modified
+#' @param x Optional tooltip content to add to the button. Overrides any
+#'   existing content.
+#'
+#' @details The tooltip should have an ID based on its parent element. E.g. if
+#'   the parent is a button named "confirm_btn", the tooltip's ID must be
+#'   "confirm_btn_tt".
+#'
+enable_button <- function(id, x = NULL) {
+  enable(id)
+  if (!is.null(x)) update_tooltip(id = paste0(id, "_tt"), x)
 }
 
 
