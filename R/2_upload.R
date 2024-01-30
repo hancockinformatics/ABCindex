@@ -1055,7 +1055,7 @@ server_upload <- function(id) {
       click("create_plot")
     })
 
-    # From here we transition to the "Results" tab; see "R/5_results.R"
+    # From here we transition to the "Results" tab; see "R/3_results.R"
     reactive(abci_results())
   })
 }
