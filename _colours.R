@@ -31,7 +31,7 @@ preset_palettes <- list(
 saveRDS(preset_palettes, "data/preset_palettes.Rds")
 
 
-# Split plots -------------------------------------------------------------
+# Split palettes ----------------------------------------------------------
 
 split_values <- list(
   "up" = abci_colour_table %>%
