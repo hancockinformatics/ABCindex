@@ -496,6 +496,7 @@ plot_dot <- function(
       )
 
     } else {
+      analysis_levels <- levels(data[[col.analysis]])
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
@@ -510,7 +511,10 @@ plot_dot <- function(
       })
 
       mic.table <- do.call(rbind, mic.table.split)
-      mic.table[, col.analysis] <- rownames(mic.table)
+      mic.table[, col.analysis] <- factor(
+        rownames(mic.table),
+        levels = analysis_levels
+      )
       rownames(mic.table) <- NULL
     }
   }
@@ -722,6 +726,7 @@ plot_dot_split <- function(
       )
 
     } else {
+      analysis_levels <- levels(data[[col.analysis]])
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
@@ -736,7 +741,10 @@ plot_dot_split <- function(
       })
 
       mic.table <- do.call(rbind, mic.table.split)
-      mic.table[, col.analysis] <- rownames(mic.table)
+      mic.table[, col.analysis] <- factor(
+        rownames(mic.table),
+        levels = analysis_levels
+      )
       rownames(mic.table) <- NULL
     }
   }
@@ -1013,6 +1021,7 @@ plot_line <- function(
       )
 
     } else {
+      analysis_levels <- levels(data[[col.analysis]])
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
@@ -1027,7 +1036,10 @@ plot_line <- function(
       })
 
       mic.table <- do.call(rbind, mic.table.split)
-      mic.table[, col.analysis] <- rownames(mic.table)
+      mic.table[, col.analysis] <- factor(
+        rownames(mic.table),
+        levels = analysis_levels
+      )
       rownames(mic.table) <- NULL
     }
   }
@@ -1213,6 +1225,7 @@ plot_tile <- function(
       )
 
     } else {
+      analysis_levels <- levels(data[[col.analysis]])
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
@@ -1227,7 +1240,10 @@ plot_tile <- function(
       })
 
       mic.table <- do.call(rbind, mic.table.split)
-      mic.table[, col.analysis] <- rownames(mic.table)
+      mic.table[, col.analysis] <- factor(
+        rownames(mic.table),
+        levels = analysis_levels
+      )
       rownames(mic.table) <- NULL
     }
   }
@@ -1365,6 +1381,7 @@ plot_tile_split <- function(
       )
 
     } else {
+      analysis_levels <- levels(data[[col.analysis]])
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
@@ -1379,7 +1396,10 @@ plot_tile_split <- function(
       })
 
       mic.table <- do.call(rbind, mic.table.split)
-      mic.table[, col.analysis] <- rownames(mic.table)
+      mic.table[, col.analysis] <- factor(
+        rownames(mic.table),
+        levels = analysis_levels
+      )
       rownames(mic.table) <- NULL
     }
   }
