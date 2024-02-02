@@ -3,14 +3,12 @@
   margin-bottom: 0;
 }
 
-/* Set the width of the file button to match the "Load example data" button */
-.btn-file {
-  width: 180px;
-}
-
-/* Increase font size in large buttons */
-.btn-lg {
-  font-size: 22px;
+/* Extra large buttons */
+.btn-xl, .btn-group-xl > .btn {
+  --bs-btn-padding-y: 0.5rem;
+  --bs-btn-padding-x: 1rem;
+  --bs-btn-font-size: 1.5rem;
+  --bs-btn-border-radius: var(--bs-border-radius-lg);
 }
 
 /* Allow disabled buttons to have tooltips */
@@ -41,7 +39,7 @@
   padding-right: 16px;
 }
 
-/* Give regula modal dialogs the attributes of "modal-dialog-centered" */
+/* Give regular modal dialogs the attributes of "modal-dialog-centered" */
 .modal-dialog {
   display: flex;
   align-items: center;

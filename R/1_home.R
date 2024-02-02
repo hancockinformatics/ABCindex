@@ -43,21 +43,21 @@ ui_home <- function(id) {
         div(
           actionButton(
             inputId = ns("get_started"),
-            class = "btn btn-lg btn-primary px-4 me-md-2",
+            class = "btn-xl btn-primary px-2 me-md-2",
             icon = icon("play"),
             label = "Get started",
             width = "175px"
           ),
           actionButton(
             inputId = ns("help_from_home"),
-            class = "btn btn-lg btn-info px-4 me-md-2 ",
+            class = "btn-xl btn-info px-2 me-md-2 ",
             icon = icon("circle-question"),
             label = "Help",
             width = "175px"
           ),
           actionButton(
             inputId = ns("about"),
-            class = "btn btn-lg btn-secondary px-4 me-md-2",
+            class = "btn-xl btn-secondary px-2 me-md-2",
             icon = icon("circle-info"),
             label = "About",
             width = "175px"

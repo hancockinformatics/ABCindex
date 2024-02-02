@@ -75,10 +75,10 @@ abci_ui <- page_fluid(
     )),
 
     # Divider
-    nav_item(HTML(paste0(
-      "<div class='vr d-none d-lg-flex h-100 mx-lg-2 text-white'></div>",
-      "<hr class='d-lg-none my-2 text-white-50'>"
-    ))),
+    nav_item(tagList(
+      div(class = "vr d-none d-sm-flex h-100 mx-sm-2 text-white"),
+      hr(class = "d-lg-none my-2 text-white-50")
+    )),
 
     nav_item(app_version, style = "color: var(--bs-nav-link-color)")
   )

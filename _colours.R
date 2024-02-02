@@ -3,7 +3,7 @@ library(dplyr)
 
 # Standard palettes -------------------------------------------------------
 
-abci_colour_table <- read.csv("data/ColourScale.csv")
+abci_colour_table <- read.csv("data/colour_scale.csv")
 
 palettes_choices <- list(
   "Default ABCI palettes" = list(
