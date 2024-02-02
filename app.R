@@ -10,7 +10,12 @@ suppressPackageStartupMessages({
   library(bslib)
 })
 
-app_theme <- bs_theme(version = 5, preset = "cosmo")
+app_theme <- bs_theme(
+  version = 5,
+  bootswatch = "cosmo",
+  base_font = font_google("Roboto"),
+  danger = "#cc002c"
+)
 
 app_version <- gsub(
   x = readLines("DESCRIPTION")[3],
@@ -24,8 +29,7 @@ set_ggplot_theme()
 # UI ----------------------------------------------------------------------
 
 abci_ui <- page_fluid(
-  theme = bs_add_variables(app_theme, danger = "#cc002c"),
-
+  theme = app_theme,
   useShinyjs(),
 
   tags$script(HTML(r"(

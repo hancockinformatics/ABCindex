@@ -1710,11 +1710,11 @@ ui_results <- function(id) {
             div(
               class = "row mb-2",
               div(
-                class = "col ps-md-0",
+                class = "col ps-0",
                 disabled(
                   downloadButton(
                     outputId = ns("results_handler_xlsx"),
-                    class = "btn btn-success align-items-center",
+                    class = "btn btn-success align-items-center px-1",
                     label = "Download results spreadsheet",
                     style = "width: 100%"
                   ) %>%
@@ -1726,7 +1726,7 @@ ui_results <- function(id) {
                 )
               ),
               div(
-                class = "col pe-md-0",
+                class = "col pe-0",
                 disabled(
                   actionButton(
                     inputId = ns("plot_download_button"),
@@ -1741,7 +1741,7 @@ ui_results <- function(id) {
             div(
               class = "row",
               div(
-                class = "col ps-md-0",
+                class = "col ps-0",
                 disabled(
                   actionButton(
                     inputId = ns("restore"),
@@ -1757,7 +1757,7 @@ ui_results <- function(id) {
                 )
               ),
               div(
-                class = "col pe-md-0",
+                class = "col pe-0",
                 disabled(
                   actionButton(
                     inputId = ns("reset"),
