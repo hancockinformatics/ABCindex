@@ -18,7 +18,7 @@ app_theme <- bs_theme(
 )
 
 app_version <- gsub(
-  x = readLines("DESCRIPTION")[3],
+  x = grep("^Version\\: ", readLines("DESCRIPTION"), value = TRUE),
   pattern = "^Version\\: ",
   replacement = ""
 )

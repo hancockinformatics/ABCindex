@@ -95,7 +95,7 @@ ui_about <- function(id) {
     div(
       class = "container col-xxl-6 px-4 pt-5",
       div(
-        class = "row flex-lg-row align-items-center g-5 py-5",
+        class = "row flex-lg-row align-items-center g-5 pt-5 pb-2",
         div(
           class = "mt-0",
           h1(
