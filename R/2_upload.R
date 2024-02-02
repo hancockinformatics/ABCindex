@@ -665,12 +665,8 @@ ui_upload <- function(id) {
 
           p(
             "Use the link to ",
-            actionLink(
-              ns("load_example_data"),
-              "try our example data",
-              .noWS = "after"
-            ),
-            ", or check out the ",
+            actionLink(ns("load_example_data"), "try our example data"),
+            " or check out the ",
             actionLink(ns("help_from_upload"), "Help pages"),
             "to learn more about the data types we support."
           ),
