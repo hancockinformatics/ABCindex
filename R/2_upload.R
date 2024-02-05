@@ -1043,7 +1043,11 @@ server_upload <- function(id) {
       )
       enable_button(
         "results_handler_xlsx",
-        "Click here to download your results as an XLSX file"
+        "Save your results as an XLSX spreadsheet"
+      )
+      enable_button(
+        "plot_download_button",
+        "Save the current plot as a PNG, SVG, or TIFF"
       )
       enable_button("plot_download_button")
       enable_button("restore")
