@@ -353,40 +353,6 @@ get_dims <- function(type, n_cols, n_rows) {
 }
 
 
-#' set_ggplot_theme
-#'
-#' @return None; Sets the default ggplot2 theme
-#'
-set_ggplot_theme <- function() {
-  theme_set(
-    theme_classic(base_size = 24) +
-      theme(
-        text = element_text(family = "Helvetica"),
-        axis.title = element_text(face = "bold"),
-        axis.text = element_text(colour = "black", face = "bold"),
-        panel.spacing = unit(5, "mm"),
-        strip.background = element_blank(),
-        strip.text = element_text(face = "bold", size = 24),
-        legend.title = element_text(face = "bold"),
-        legend.key.height = unit(15, "mm"),
-        legend.text.align = 1
-      )
-  )
-}
-
-
-#' sprinter
-#'
-#' @param x Character vector (factor) of numeric values
-#' @param n Desired number of decimal places
-#'
-#' @return Character vector of labels for x or y axis
-#'
-sprinter <- function(x, n) {
-  sprintf(paste0("%.", n, "f"), as.numeric(x))
-}
-
-
 #' plot_dot
 #'
 #' @param data Data frame, as output by `abci_analysis()`
@@ -1539,6 +1505,40 @@ plot_tile_split <- function(
 }
 
 
+#' set_ggplot_theme
+#'
+#' @return None; Sets the default ggplot2 theme
+#'
+set_ggplot_theme <- function() {
+  theme_set(
+    theme_classic(base_size = 24) +
+      theme(
+        text = element_text(family = "Helvetica"),
+        axis.title = element_text(face = "bold"),
+        axis.text = element_text(colour = "black", face = "bold"),
+        panel.spacing = unit(5, "mm"),
+        strip.background = element_blank(),
+        strip.text = element_text(face = "bold", size = 24),
+        legend.title = element_text(face = "bold"),
+        legend.key.height = unit(15, "mm"),
+        legend.text.align = 1
+      )
+  )
+}
+
+
+#' sprinter
+#'
+#' @param x Character vector (factor) of numeric values
+#' @param n Desired number of decimal places
+#'
+#' @return Character vector of labels for x or y axis
+#'
+sprinter <- function(x, n) {
+  sprintf(paste0("%.", n, "f"), as.numeric(x))
+}
+
+
 #' wrap_selector
 #'
 #' @param label Name displayed for the input object
@@ -1552,7 +1552,7 @@ wrap_selector <- function(label, label_title, selector) {
     class = "form-group row",
     style = "margin-bottom: 0.2rem;",
     tags$label(
-      class = "col-sm-5 col-form-label",
+      class = "col-sm-5 col-form-label pe-0",
       div(
         span(
           label,
@@ -1560,10 +1560,7 @@ wrap_selector <- function(label, label_title, selector) {
         ) %>% tooltip(label_title, placement = "right")
       )
     ),
-    div(
-      class = "col-sm-7",
-      selector
-    )
+    div(class = "col-sm-7", selector)
   )
 }
 
@@ -1715,13 +1712,13 @@ ui_results <- function(id) {
                   downloadButton(
                     outputId = ns("results_handler_xlsx"),
                     class = "btn btn-success align-items-center px-1",
-                    label = "Download results spreadsheet",
+                    label = "Save results spreadsheet",
                     style = "width: 100%"
                   ) %>%
                     tooltip(
                       id = ns("results_handler_xlsx_tt"),
                       placement = "right",
-                      "Upload and analyze data to download the results"
+                      "Upload and analyze data to save the results"
                     )
                 )
               ),
@@ -1732,9 +1729,14 @@ ui_results <- function(id) {
                     inputId = ns("plot_download_button"),
                     class = "btn btn-success align-items-center",
                     icon = icon("floppy-disk"),
-                    label = "Download the plot",
+                    label = "Save the plot",
                     style = "width: 100%"
-                  )
+                  ) %>%
+                    tooltip(
+                      id = ns("plot_download_button_tt"),
+                      placement = "right",
+                      "Upload and analyze data to save a plot"
+                    )
                 )
               )
             ),
