@@ -81,6 +81,10 @@ tooltips <- list(
     "Threshold value used for highlighting combinations with a large effect ",
     "(0.9 = 90% killing)"
   ),
+  abci_val = paste0(
+    "When highlighting combinations with a large effect, only those with an ",
+    "ABCI value above this number will be included."
+  ),
   filter = paste0(
     "Choose whether to include ABCI values close to 0 (Loose) or hide them ",
     "(Strict)"
@@ -353,40 +357,6 @@ get_dims <- function(type, n_cols, n_rows) {
 }
 
 
-#' set_ggplot_theme
-#'
-#' @return None; Sets the default ggplot2 theme
-#'
-set_ggplot_theme <- function() {
-  theme_set(
-    theme_classic(base_size = 24) +
-      theme(
-        text = element_text(family = "Helvetica"),
-        axis.title = element_text(face = "bold"),
-        axis.text = element_text(colour = "black", face = "bold"),
-        panel.spacing = unit(5, "mm"),
-        strip.background = element_blank(),
-        strip.text = element_text(face = "bold", size = 24),
-        legend.title = element_text(face = "bold"),
-        legend.key.height = unit(15, "mm"),
-        legend.text.align = 1
-      )
-  )
-}
-
-
-#' sprinter
-#'
-#' @param x Character vector (factor) of numeric values
-#' @param n Desired number of decimal places
-#'
-#' @return Character vector of labels for x or y axis
-#'
-sprinter <- function(x, n) {
-  sprintf(paste0("%.", n, "f"), as.numeric(x))
-}
-
-
 #' plot_dot
 #'
 #' @param data Data frame, as output by `abci_analysis()`
@@ -416,6 +386,8 @@ sprinter <- function(x, n) {
 #'   Defaults to FALSE.
 #' @param large.effect.val Threshold for highlighting large effect. Defaults to
 #'   0.9.
+#' @param abci.val When highlight large effect, only include combinations with
+#'   above a certain ABCI value. Defaults to 0.1.
 #' @param colour.palette One of the pre-made palettes for ABCI colour
 #' @param size_mapping Data frame of values to use for size scaling. Currently
 #'   only supports the one object, "size_mapping_N1S2".
@@ -445,6 +417,7 @@ plot_dot <- function(
     mic.threshold = 0.5,
     large.effect = FALSE,
     large.effect.val = 0.9,
+    abci.val = 0.1,
     colour.palette = "A_RYB",
     size_mapping = size_mapping_N1S2
 ) {
@@ -478,7 +451,12 @@ plot_dot <- function(
   if (!large.effect) {
     data <- mutate(data, large_chr = rep(0))
   } else {
-    data <- mutate(data, large_chr = ifelse(effect_avg > 0.9, 1, 0))
+    data <- data %>% mutate(
+      large_chr = ifelse(
+        (effect_avg > large.effect.val & data[[col.fill]] > abci.val),
+        yes = 1,
+        no = 0)
+    )
   }
 
   # MIC calculation, which is converted from a concentration to a position on
@@ -496,6 +474,7 @@ plot_dot <- function(
       )
 
     } else {
+      analysis_levels <- levels(data[[col.analysis]])
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
@@ -510,7 +489,10 @@ plot_dot <- function(
       })
 
       mic.table <- do.call(rbind, mic.table.split)
-      mic.table[, col.analysis] <- rownames(mic.table)
+      mic.table[, col.analysis] <- factor(
+        rownames(mic.table),
+        levels = analysis_levels
+      )
       rownames(mic.table) <- NULL
     }
   }
@@ -642,6 +624,8 @@ plot_dot <- function(
 #'   Defaults to FALSE.
 #' @param large.effect.val Threshold for highlighting large effect. Defaults to
 #'   0.9.
+#' @param abci.val When highlight large effect, only include combinations with
+#'   above a certain ABCI value. Defaults to 0.1.
 #' @param colour.palette One of the pre-made palettes for ABCI colour
 #' @param size_mapping Data frame of values to use for size scaling. Currently
 #'   only supports the one object `size_mapping_N1S2`.
@@ -672,6 +656,7 @@ plot_dot_split <- function(
     mic.threshold = 0.5,
     large.effect = FALSE,
     large.effect.val = 0.9,
+    abci.val = 0.1,
     colour.palette = "A_RYB",
     size_mapping = size_mapping_N1S2
 ) {
@@ -705,7 +690,13 @@ plot_dot_split <- function(
   if (!large.effect) {
     data <- mutate(data, large_chr = rep(0))
   } else {
-    data <- mutate(data, large_chr = ifelse(effect_avg > 0.9, 1, 0))
+    data <- data %>%
+      mutate(
+        large_chr = ifelse(
+          (effect_avg > large.effect.val & data[[col.fill]] > abci.val),
+          yes = 1,
+          no = 0)
+      )
   }
 
   # MICs are calculated by `get_mic()` and converted to positions on the axes
@@ -722,6 +713,7 @@ plot_dot_split <- function(
       )
 
     } else {
+      analysis_levels <- levels(data[[col.analysis]])
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
@@ -736,7 +728,10 @@ plot_dot_split <- function(
       })
 
       mic.table <- do.call(rbind, mic.table.split)
-      mic.table[, col.analysis] <- rownames(mic.table)
+      mic.table[, col.analysis] <- factor(
+        rownames(mic.table),
+        levels = analysis_levels
+      )
       rownames(mic.table) <- NULL
     }
   }
@@ -1013,6 +1008,7 @@ plot_line <- function(
       )
 
     } else {
+      analysis_levels <- levels(data[[col.analysis]])
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
@@ -1027,7 +1023,10 @@ plot_line <- function(
       })
 
       mic.table <- do.call(rbind, mic.table.split)
-      mic.table[, col.analysis] <- rownames(mic.table)
+      mic.table[, col.analysis] <- factor(
+        rownames(mic.table),
+        levels = analysis_levels
+      )
       rownames(mic.table) <- NULL
     }
   }
@@ -1150,6 +1149,12 @@ plot_line <- function(
 #'   labeled? Defaults to FALSE.
 #' @param low.effect.val Threshold for determining which low-effect combinations
 #'   to label. Defaults to 0.5
+#' @param large.effect Should combinations with a large effect be highlighted?
+#'   Defaults to FALSE.
+#' @param large.effect.val Threshold for highlighting large effect. Defaults to
+#'   0.9.
+#' @param abci.val When highlight large effect, only include combinations with
+#'   above a certain ABCI value. Defaults to 0.1.
 #' @param x.mic.line Logical; Include MIC line for the drug on the x-axis?
 #'   Defaults to FALSE.
 #' @param y.mic.line Logical; Include MIC line for the drug on the y-axis?
@@ -1177,6 +1182,7 @@ plot_tile <- function(
     low.effect.val = 0.5,
     large.effect = FALSE,
     large.effect.val = 0.9,
+    abci.val = 0.1,
     x.mic.line = FALSE,
     y.mic.line = FALSE,
     col.mic,
@@ -1195,7 +1201,11 @@ plot_tile <- function(
   data <- data %>% mutate(
     across(all_of(c(x.drug, y.drug)), forcats::fct_inseq),
     low_chr = ifelse(effect_avg < low.effect.val, "<", ""),
-    large_chr = ifelse(effect_avg > large.effect.val, "✱", "")
+    large_chr = ifelse(
+      (effect_avg > large.effect.val & data[[col.fill]] > abci.val),
+      yes = "✱",
+      no = ""
+    )
   )
 
   # MICs are calculated by `get_mic()` as concentrations and converted to
@@ -1213,6 +1223,7 @@ plot_tile <- function(
       )
 
     } else {
+      analysis_levels <- levels(data[[col.analysis]])
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
@@ -1227,7 +1238,10 @@ plot_tile <- function(
       })
 
       mic.table <- do.call(rbind, mic.table.split)
-      mic.table[, col.analysis] <- rownames(mic.table)
+      mic.table[, col.analysis] <- factor(
+        rownames(mic.table),
+        levels = analysis_levels
+      )
       rownames(mic.table) <- NULL
     }
   }
@@ -1302,6 +1316,12 @@ plot_tile <- function(
 #'   labeled? Defaults to FALSE.
 #' @param low.effect.val Threshold for determining which low-effect combinations
 #'   to label. Defaults to 0.5
+#' @param large.effect Should combinations with a large effect be highlighted?
+#'   Defaults to FALSE.
+#' @param large.effect.val Threshold for highlighting large effect. Defaults to
+#'   0.9.
+#' @param abci.val When highlight large effect, only include combinations with
+#'   above a certain ABCI value. Defaults to 0.1.
 #' @param x.mic.line Logical; Include MIC line for the drug on the x-axis?
 #'   Defaults to FALSE.
 #' @param y.mic.line Logical; Include MIC line for the drug on the y-axis?
@@ -1330,6 +1350,7 @@ plot_tile_split <- function(
     low.effect.val = 0.5,
     large.effect = FALSE,
     large.effect.val = 0.9,
+    abci.val = 0.1,
     x.mic.line = FALSE,
     y.mic.line = FALSE,
     col.mic,
@@ -1348,7 +1369,10 @@ plot_tile_split <- function(
   data <- data %>% mutate(
     across(all_of(c(x.drug, y.drug)), forcats::fct_inseq),
     low_chr = ifelse(effect_avg < low.effect.val, "<", ""),
-    large_chr = ifelse(effect_avg > large.effect.val, "✱", "")
+    large_chr = ifelse(
+      (effect_avg > large.effect.val & data[[col.fill]] > abci.val),
+      yes = "✱",
+      no = "")
   )
 
   # MICs are calculated by `find_mic()`
@@ -1365,6 +1389,7 @@ plot_tile_split <- function(
       )
 
     } else {
+      analysis_levels <- levels(data[[col.analysis]])
       data.split <- split(x = data, f = data[col.analysis])
 
       mic.table.split <- lapply(data.split, function(d) {
@@ -1379,7 +1404,10 @@ plot_tile_split <- function(
       })
 
       mic.table <- do.call(rbind, mic.table.split)
-      mic.table[, col.analysis] <- rownames(mic.table)
+      mic.table[, col.analysis] <- factor(
+        rownames(mic.table),
+        levels = analysis_levels
+      )
       rownames(mic.table) <- NULL
     }
   }
@@ -1519,6 +1547,40 @@ plot_tile_split <- function(
 }
 
 
+#' set_ggplot_theme
+#'
+#' @return None; Sets the default ggplot2 theme
+#'
+set_ggplot_theme <- function() {
+  theme_set(
+    theme_classic(base_size = 24) +
+      theme(
+        text = element_text(family = "Helvetica"),
+        axis.title = element_text(face = "bold"),
+        axis.text = element_text(colour = "black", face = "bold"),
+        panel.spacing = unit(5, "mm"),
+        strip.background = element_blank(),
+        strip.text = element_text(face = "bold", size = 24),
+        legend.title = element_text(face = "bold"),
+        legend.key.height = unit(15, "mm"),
+        legend.text.align = 1
+      )
+  )
+}
+
+
+#' sprinter
+#'
+#' @param x Character vector (factor) of numeric values
+#' @param n Desired number of decimal places
+#'
+#' @return Character vector of labels for x or y axis
+#'
+sprinter <- function(x, n) {
+  sprintf(paste0("%.", n, "f"), as.numeric(x))
+}
+
+
 #' wrap_selector
 #'
 #' @param label Name displayed for the input object
@@ -1532,7 +1594,7 @@ wrap_selector <- function(label, label_title, selector) {
     class = "form-group row",
     style = "margin-bottom: 0.2rem;",
     tags$label(
-      class = "col-sm-5 col-form-label",
+      class = "col-sm-5 col-form-label pe-0",
       div(
         span(
           label,
@@ -1540,10 +1602,7 @@ wrap_selector <- function(label, label_title, selector) {
         ) %>% tooltip(label_title, placement = "right")
       )
     ),
-    div(
-      class = "col-sm-7",
-      selector
-    )
+    div(class = "col-sm-7", selector)
   )
 }
 
@@ -1690,38 +1749,43 @@ ui_results <- function(id) {
             div(
               class = "row mb-2",
               div(
-                class = "col ps-md-0",
+                class = "col ps-0",
                 disabled(
                   downloadButton(
                     outputId = ns("results_handler_xlsx"),
-                    class = "btn btn-success align-items-center",
-                    label = "Download results spreadsheet",
+                    class = "btn btn-success align-items-center px-1",
+                    label = "Save results spreadsheet",
                     style = "width: 100%"
                   ) %>%
                     tooltip(
                       id = ns("results_handler_xlsx_tt"),
                       placement = "right",
-                      "Upload and analyze data to download the results"
+                      "Upload and analyze data to save the results"
                     )
                 )
               ),
               div(
-                class = "col pe-md-0",
+                class = "col pe-0",
                 disabled(
                   actionButton(
                     inputId = ns("plot_download_button"),
                     class = "btn btn-success align-items-center",
                     icon = icon("floppy-disk"),
-                    label = "Download the plot",
+                    label = "Save the plot",
                     style = "width: 100%"
-                  )
+                  ) %>%
+                    tooltip(
+                      id = ns("plot_download_button_tt"),
+                      placement = "right",
+                      "Upload and analyze data to save a plot"
+                    )
                 )
               )
             ),
             div(
               class = "row",
               div(
-                class = "col ps-md-0",
+                class = "col ps-0",
                 disabled(
                   actionButton(
                     inputId = ns("restore"),
@@ -1737,7 +1801,7 @@ ui_results <- function(id) {
                 )
               ),
               div(
-                class = "col pe-md-0",
+                class = "col pe-0",
                 disabled(
                   actionButton(
                     inputId = ns("reset"),
@@ -1821,6 +1885,9 @@ server_results <- function(id, data) {
         )
       )
     )
+
+    # Need to namespace the names of "plot_legends"!
+    plot_legends <- purrr::set_names(plot_legends, ~ns(.x))
 
     plot_legend_ui <- eventReactive(input$create_plot, {
       plot_legends[[input$plot_tabs]]
@@ -2021,6 +2088,19 @@ server_results <- function(id, data) {
                 value = 0.9,
                 min = 0,
                 step = 0.1
+              )
+            ),
+
+            wrap_selector(
+              label = "Large effect ABCI",
+              label_title = tooltips$abci_val,
+              numericInput(
+                inputId = ns("plot_dot_large_abci"),
+                label = NULL,
+                value = 0.1,
+                min = 0,
+                step = 0.1,
+                max = 1
               )
             )
           )
@@ -2233,6 +2313,19 @@ server_results <- function(id, data) {
                 value = 0.9,
                 min = 0,
                 step = 0.1
+              )
+            ),
+
+            wrap_selector(
+              label = "Large effect ABCI",
+              label_title = tooltips$abci_val,
+              numericInput(
+                inputId = ns("plot_dot_split_large_abci"),
+                label = NULL,
+                value = 0.1,
+                min = 0,
+                step = 0.1,
+                max = 1
               )
             )
           )
@@ -2448,6 +2541,19 @@ server_results <- function(id, data) {
                 min = 0,
                 step = 0.1
               )
+            ),
+
+            wrap_selector(
+              label = "Large effect ABCI",
+              label_title = tooltips$abci_val,
+              numericInput(
+                inputId = ns("plot_tile_large_abci"),
+                label = NULL,
+                value = 0.1,
+                min = 0,
+                step = 0.1,
+                max = 1
+              )
             )
           )
         )
@@ -2662,6 +2768,19 @@ server_results <- function(id, data) {
                 value = 0.9,
                 min = 0,
                 step = 0.1
+              )
+            ),
+
+            wrap_selector(
+              label = "Large effect ABCI",
+              label_title = tooltips$abci_val,
+              numericInput(
+                inputId = ns("plot_tile_split_large_abci"),
+                label = NULL,
+                value = 0.1,
+                min = 0,
+                step = 0.1,
+                max = 1
               )
             )
           )
@@ -2985,6 +3104,7 @@ server_results <- function(id, data) {
               mic.threshold = input$plot_dot_mic_threshold,
               large.effect = input$plot_dot_large_toggle,
               large.effect.val = input$plot_dot_large_value,
+              abci.val = input$plot_dot_large_abci,
               col.mic = "bio_normal",
               colour.palette = input$plot_dot_colour_palette
             ) +
@@ -3016,6 +3136,7 @@ server_results <- function(id, data) {
               mic.threshold = input$plot_dot_split_mic_threshold,
               large.effect = input$plot_dot_split_large_toggle,
               large.effect.val = input$plot_dot_split_large_value,
+              abci.val = input$plot_dot_split_large_abci,
               col.mic = "bio_normal",
               colour.palette = input$plot_dot_split_colour_palette
             ) +
@@ -3045,6 +3166,7 @@ server_results <- function(id, data) {
               low.effect.val = input$plot_tile_low_value,
               large.effect = input$plot_tile_large_toggle,
               large.effect.val = input$plot_tile_large_value,
+              abci.val = input$plot_tile_large_abci,
               colour.palette = input$plot_tile_colour_palette
             )
 
@@ -3071,6 +3193,7 @@ server_results <- function(id, data) {
               low.effect.val = input$plot_tile_split_low_value,
               large.effect = input$plot_tile_split_large_toggle,
               large.effect.val = input$plot_tile_split_large_value,
+              abci.val = input$plot_tile_split_large_abci,
               colour.palette = input$plot_tile_split_colour_palette
             )
           }

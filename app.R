@@ -10,10 +10,15 @@ suppressPackageStartupMessages({
   library(bslib)
 })
 
-app_theme <- bs_theme(version = 5, preset = "cosmo")
+app_theme <- bs_theme(
+  version = 5,
+  bootswatch = "cosmo",
+  base_font = font_google("Inter"),
+  danger = "#cc002c"
+)
 
 app_version <- gsub(
-  x = readLines("DESCRIPTION")[3],
+  x = grep("^Version\\: ", readLines("DESCRIPTION"), value = TRUE),
   pattern = "^Version\\: ",
   replacement = ""
 )
@@ -24,8 +29,7 @@ set_ggplot_theme()
 # UI ----------------------------------------------------------------------
 
 abci_ui <- page_fluid(
-  theme = bs_add_variables(app_theme, danger = "#cc002c"),
-
+  theme = app_theme,
   useShinyjs(),
 
   tags$script(HTML(r"(
@@ -75,10 +79,10 @@ abci_ui <- page_fluid(
     )),
 
     # Divider
-    nav_item(HTML(paste0(
-      "<div class='vr d-none d-lg-flex h-100 mx-lg-2 text-white'></div>",
-      "<hr class='d-lg-none my-2 text-white-50'>"
-    ))),
+    nav_item(tagList(
+      div(class = "vr d-none d-sm-flex h-100 mx-sm-2 text-white"),
+      hr(class = "d-lg-none my-2 text-white-50")
+    )),
 
     nav_item(app_version, style = "color: var(--bs-nav-link-color)")
   )
