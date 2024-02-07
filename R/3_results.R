@@ -1886,6 +1886,9 @@ server_results <- function(id, data) {
       )
     )
 
+    # Need to namespace the names of "plot_legends"!
+    plot_legends <- purrr::set_names(plot_legends, ~ns(.x))
+
     plot_legend_ui <- eventReactive(input$create_plot, {
       plot_legends[[input$plot_tabs]]
     })
