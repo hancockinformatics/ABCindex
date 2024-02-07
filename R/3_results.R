@@ -3238,7 +3238,7 @@ server_results <- function(id, data) {
           ui = HTML(r"(
             <h4 class='alert-heading'><b>Error</b></h4>
             <p class='mb-0'>
-            We were unable to draw a plot with the specified parameters.
+            Uh-oh! We were unable to draw a plot with the specified parameters.
             Try changing the inputs in the sidebar, then update the plot.</p>
           )")
         )
@@ -3256,7 +3256,6 @@ server_results <- function(id, data) {
     })
 
     observeEvent(input$create_plot, {
-
       output$abci_plot_ui <- renderUI(
         tagList(
           shinycssloaders::withSpinner(
