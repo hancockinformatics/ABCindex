@@ -81,6 +81,10 @@ tooltips <- list(
     "Threshold value used for highlighting combinations with a large effect ",
     "(0.9 = 90% killing)"
   ),
+  abci_val = paste0(
+    "When highlighting combinations with a large effect, only those with an ",
+    "ABCI value above this number will be included."
+  ),
   filter = paste0(
     "Choose whether to include ABCI values close to 0 (Loose) or hide them ",
     "(Strict)"
@@ -2086,7 +2090,7 @@ server_results <- function(id, data) {
 
             wrap_selector(
               label = "Large effect ABCI",
-              label_title = "Fix me!",
+              label_title = tooltips$abci_val,
               numericInput(
                 inputId = ns("plot_dot_large_abci"),
                 label = NULL,
@@ -2311,7 +2315,7 @@ server_results <- function(id, data) {
 
             wrap_selector(
               label = "Large effect ABCI",
-              label_title = "Fix me!",
+              label_title = tooltips$abci_val,
               numericInput(
                 inputId = ns("plot_dot_split_large_abci"),
                 label = NULL,
@@ -2538,7 +2542,7 @@ server_results <- function(id, data) {
 
             wrap_selector(
               label = "Large effect ABCI",
-              label_title = "Fix me!",
+              label_title = tooltips$abci_val,
               numericInput(
                 inputId = ns("plot_tile_large_abci"),
                 label = NULL,
@@ -2766,7 +2770,7 @@ server_results <- function(id, data) {
 
             wrap_selector(
               label = "Large effect ABCI",
-              label_title = "Fix me!",
+              label_title = tooltips$abci_val,
               numericInput(
                 inputId = ns("plot_tile_split_large_abci"),
                 label = NULL,
