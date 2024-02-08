@@ -60,7 +60,7 @@ abci_ui <- page_fluid(
     id = "main-navbar",
     collapsible = TRUE,
     bg = bs_get_variables(app_theme, varnames = "primary"),
-    window_title = "ShinyABCi",
+    window_title = "ABCindex",
 
     ui_home("main"),
     ui_upload("main"),
@@ -73,7 +73,7 @@ abci_ui <- page_fluid(
     nav_item(a(
       icon("github"),
       "GitHub",
-      href = "https://github.com/hancockinformatics/ShinyABCi",
+      href = "https://github.com/hancockinformatics/ABCindex",
       target = "_blank",
       rel = "noopener noreferrer"
     )),

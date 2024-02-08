@@ -752,16 +752,16 @@ server_upload <- function(id) {
     })
 
     output$template_handler_xlsx <- downloadHandler(
-      filename = "shinyABCi_data_template.xlsx",
+      filename = "ABCindex_data_template.xlsx",
       content = function(file) {
-        file.copy("example_data/shinyABCi_data_template.xlsx", file)
+        file.copy("example_data/ABCindex_data_template.xlsx", file)
       }
     )
 
     output$template_handler_ods <- downloadHandler(
-      filename = "shinyABCi_data_template.ods",
+      filename = "ABCindex_data_template.ods",
       content = function(file) {
-        file.copy("example_data/shinyABCi_data_template.ods", file)
+        file.copy("example_data/ABCindex_data_template.ods", file)
       }
     )
 
@@ -774,7 +774,7 @@ server_upload <- function(id) {
     # Example data
     observeEvent(input$load_example_data, {
 
-      initial_input <- plate_input("example_data/example_data_lucas.xlsx")
+      initial_input <- plate_input("example_data/example_data.xlsx")
       input_data(initial_input$data)
       input_order(initial_input$order)
 
@@ -976,7 +976,7 @@ server_upload <- function(id) {
         title = "Perform ABCI calculations: Data normalization",
         size = "l",
         p(r"(
-          By default, ShinyABCi will normalize all input data to percentages. If
+          By default, ABCindex will normalize all input data to percentages. If
           your data has already been normalized, please select the appropriate
           option below before proceeding.
         )"),
