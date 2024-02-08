@@ -69,9 +69,10 @@ ui_home <- function(id) {
       class = "text-center mt-auto",
       HTML(paste0(
         "<p class='border-top pt-3 my-0'><small>2024 R.E.W Hancock Lab. The ",
-        "Hancock Lab at <a href='https://www.ubc.ca/'>UBC Vancouver</a> ",
-        "acknowledges we are located on the traditional, ancestral and ",
-        "unceded territory of the Musqueam people.</small></p>"
+        "Hancock Lab at <a target='_blank' rel='noopener noreferrer'",
+        "href='https://www.ubc.ca/'>UBC Vancouver</a> acknowledges we are ",
+        "located on the traditional, ancestral and unceded territory of the ",
+        "Musqueam people.</small></p>"
       ))
     )
   )
