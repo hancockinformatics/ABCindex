@@ -1672,26 +1672,23 @@ ui_results <- function(id) {
     value = ns("results"),
     title = "Results",
 
-    card(
-      min_height = "90vh",
+    layout_sidebar(
+      sidebar = sidebar(
+        id = ns("results_sidebar"),
+        title = "ABCI results and visualizations",
+        width = "580px",
+        open = NA,
 
-      layout_sidebar(
-        sidebar = sidebar(
-          id = ns("results_sidebar"),
-          title = "ABCI results and visualizations",
-          width = "580px",
-          open = NA,
+        p(
+          "ABCI is calculated for every combination of concentrations in ",
+          "each of your experiments. Positive ABCI values indicate that the ",
+          "combination is more effective than either individual drug. ",
+          "Please refer to the ",
+          actionLink(ns("help_from_results"), "Help pages"),
+          "to learn more about ABCI."
+        ),
 
-          p(
-            "ABCI is calculated for every combination of concentrations in ",
-            "each of your experiments. Positive ABCI values indicate that the ",
-            "combination is more effective than either individual drug. ",
-            "Please refer to the ",
-            actionLink(ns("help_from_results"), "Help pages"),
-            "to learn more about ABCI."
-          ),
-
-          HTML(r"(
+        HTML(r"(
             <p>Visualize your ABCI results using <b>Dot</b> or <b>Tile</b>
             plots. The <b>Split</b> versions separate positive and
             negative ABCI values into two plots, for visual simplicity.
@@ -1699,129 +1696,128 @@ ui_results <- function(id) {
             activity for all or a subset of concentrations.</p>
           )"),
 
-          disabled(
-            actionButton(
-              inputId = ns("create_plot"),
-              class = "btn btn-info btn-tooltip",
-              icon = icon("chart-bar"),
-              label = "Create or update the plot"
-            ) %>%
-              tooltip(
-                id = ns("create_plot_tt"),
-                placement = "right",
-                "Upload and analyze data to enable visualization"
-              )
-          ),
-
-          navset_tab(
-            id = ns("plot_tabs"),
-            nav_panel(
-              title = "Dot",
-              value = ns("dot"),
-              uiOutput(ns("plot_inputs_dot"))
-            ),
-            nav_panel(
-              title = "Split Dot",
-              value = ns("dot_split"),
-              uiOutput(ns("plot_inputs_dot_split"))
-            ),
-            nav_panel(
-              title = "Tile",
-              value = ns("tile"),
-              uiOutput(ns("plot_inputs_tile"))
-            ),
-            nav_panel(
-              title = "Split Tile",
-              value = ns("tile_split"),
-              uiOutput(ns("plot_inputs_tile_split"))
-            ),
-            nav_panel(
-              title = "Line",
-              value = ns("line"),
-              uiOutput(ns("plot_inputs_line"))
+        disabled(
+          actionButton(
+            inputId = ns("create_plot"),
+            class = "btn btn-info btn-tooltip",
+            icon = icon("chart-bar"),
+            label = "Create or update the plot"
+          ) %>%
+            tooltip(
+              id = ns("create_plot_tt"),
+              placement = "right",
+              "Upload and analyze data to enable visualization"
             )
-          ) %>% tagAppendAttributes(class = "nav-justified"),
+        ),
 
-          hr(),
+        navset_tab(
+          id = ns("plot_tabs"),
+          nav_panel(
+            title = "Dot",
+            value = ns("dot"),
+            uiOutput(ns("plot_inputs_dot"))
+          ),
+          nav_panel(
+            title = "Split Dot",
+            value = ns("dot_split"),
+            uiOutput(ns("plot_inputs_dot_split"))
+          ),
+          nav_panel(
+            title = "Tile",
+            value = ns("tile"),
+            uiOutput(ns("plot_inputs_tile"))
+          ),
+          nav_panel(
+            title = "Split Tile",
+            value = ns("tile_split"),
+            uiOutput(ns("plot_inputs_tile_split"))
+          ),
+          nav_panel(
+            title = "Line",
+            value = ns("line"),
+            uiOutput(ns("plot_inputs_line"))
+          )
+        ) %>% tagAppendAttributes(class = "nav-justified"),
 
+        hr(),
+
+        div(
+          class = "container",
           div(
-            class = "container",
+            class = "row mb-2",
             div(
-              class = "row mb-2",
-              div(
-                class = "col ps-0",
-                disabled(
-                  downloadButton(
-                    outputId = ns("results_handler_xlsx"),
-                    class = "btn btn-success align-items-center px-1",
-                    label = "Save results spreadsheet",
-                    style = "width: 100%"
-                  ) %>%
-                    tooltip(
-                      id = ns("results_handler_xlsx_tt"),
-                      placement = "right",
-                      "Upload and analyze data to save the results"
-                    )
-                )
-              ),
-              div(
-                class = "col pe-0",
-                disabled(
-                  actionButton(
-                    inputId = ns("plot_download_button"),
-                    class = "btn btn-success align-items-center",
-                    icon = icon("floppy-disk"),
-                    label = "Save the plot",
-                    style = "width: 100%"
-                  ) %>%
-                    tooltip(
-                      id = ns("plot_download_button_tt"),
-                      placement = "right",
-                      "Upload and analyze data to save a plot"
-                    )
+              class = "col ps-0",
+              disabled(
+                downloadButton(
+                  outputId = ns("results_handler_xlsx"),
+                  class = "btn btn-success align-items-center px-1",
+                  label = "Save results spreadsheet",
+                  style = "width: 100%"
+                ) %>%
+                  tooltip(
+                    id = ns("results_handler_xlsx_tt"),
+                    placement = "right",
+                    "Upload and analyze data to save the results"
+                  )
+              )
+            ),
+            div(
+              class = "col pe-0",
+              disabled(
+                actionButton(
+                  inputId = ns("plot_download_button"),
+                  class = "btn btn-success align-items-center",
+                  icon = icon("floppy-disk"),
+                  label = "Save the plot",
+                  style = "width: 100%"
+                ) %>%
+                  tooltip(
+                    id = ns("plot_download_button_tt"),
+                    placement = "right",
+                    "Upload and analyze data to save a plot"
+                  )
+              )
+            )
+          ),
+          div(
+            class = "row",
+            div(
+              class = "col ps-0",
+              disabled(
+                actionButton(
+                  inputId = ns("restore"),
+                  class = "btn btn-secondary",
+                  icon = icon("rotate-left"),
+                  label = "Restore defaults",
+                  width = "100%"
+                ) %>% tooltip(
+                  id = ns("restore_tt"),
+                  placement = "top",
+                  "Restores all plot inputs to their default state"
                 )
               )
             ),
             div(
-              class = "row",
-              div(
-                class = "col ps-0",
-                disabled(
-                  actionButton(
-                    inputId = ns("restore"),
-                    class = "btn btn-secondary",
-                    icon = icon("rotate-left"),
-                    label = "Restore defaults",
-                    width = "100%"
-                  ) %>% tooltip(
-                    id = ns("restore_tt"),
+              class = "col pe-0",
+              disabled(
+                actionButton(
+                  inputId = ns("reset"),
+                  class = "btn btn-warning",
+                  icon = icon("trash-can"),
+                  label = "Analyze a new dataset",
+                  width = "100%"
+                ) %>%
+                  tooltip(
+                    id = ns("reset_tt"),
                     placement = "top",
-                    "Restores all plot inputs to their default state"
+                    "Discard the current results and start a new analysis"
                   )
-                )
-              ),
-              div(
-                class = "col pe-0",
-                disabled(
-                  actionButton(
-                    inputId = ns("reset"),
-                    class = "btn btn-warning",
-                    icon = icon("trash-can"),
-                    label = "Analyze a new dataset",
-                    width = "100%"
-                  ) %>%
-                    tooltip(
-                      id = ns("reset_tt"),
-                      placement = "top",
-                      "Discard the current results and start a new analysis"
-                    )
-                )
               )
             )
           )
-        ),
-        uiOutput(ns("abci_plot_ui"))
-      )
+        )
+      ),
+      uiOutput(ns("abci_plot_ui"))
     )
   )
 }

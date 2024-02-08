@@ -28,64 +28,51 @@ set_ggplot_theme()
 
 # UI ----------------------------------------------------------------------
 
-abci_ui <- page_fluid(
+abci_ui <- page_navbar(
+  id = "main-navbar",
+  window_title = "ABCindex",
   theme = app_theme,
-  useShinyjs(),
+  bg = bs_get_variables(app_theme, varnames = "secondary"),
 
-  tags$script(HTML(r"(
-    window.onbeforeunload = () => {
-      if (document.getElementById('shiny-disconnected-overlay') === null) {
-        return 'Are you sure you want to leave?';
-      }
-    };
-  )")),
-
-  tags$head(
+  header = tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "css/custom.css"),
     tags$link(
       rel = "icon",
-      type = "image/svg",
-      href = "img/hancock_lab_logo_32.svg",
-      sizes = "32x32"
+      href = "img/hancock_lab_logo_32.svg"
     ),
-    tags$link(
-      rel = "icon",
-      type = "image/svg",
-      href = "img/hancock_lab_logo_16.svg",
-      sizes = "16x16"
-    )
+    tags$script(HTML(r"(
+        window.onbeforeunload = () => {
+          if (document.getElementById('shiny-disconnected-overlay') === null) {
+            return 'Are you sure you want to leave?';
+          }
+        };
+      )")),
+    useShinyjs()
   ),
 
-  page_navbar(
-    id = "main-navbar",
-    collapsible = TRUE,
-    bg = bs_get_variables(app_theme, varnames = "primary"),
-    window_title = "ABCindex",
+  ui_home("main"),
+  ui_upload("main"),
+  ui_results("main"),
+  ui_help("main"),
+  ui_about("main"),
 
-    ui_home("main"),
-    ui_upload("main"),
-    ui_results("main"),
-    ui_help("main"),
-    ui_about("main"),
+  nav_spacer(),
 
-    nav_spacer(),
+  nav_item(a(
+    icon("github"),
+    "GitHub",
+    href = "https://github.com/hancockinformatics/ABCindex",
+    target = "_blank",
+    rel = "noopener noreferrer"
+  )),
 
-    nav_item(a(
-      icon("github"),
-      "GitHub",
-      href = "https://github.com/hancockinformatics/ABCindex",
-      target = "_blank",
-      rel = "noopener noreferrer"
-    )),
+  # Divider
+  nav_item(tagList(
+    div(class = "vr d-none d-sm-flex h-100 mx-sm-2 text-white"),
+    hr(class = "d-lg-none my-2 text-white-50")
+  )),
 
-    # Divider
-    nav_item(tagList(
-      div(class = "vr d-none d-sm-flex h-100 mx-sm-2 text-white"),
-      hr(class = "d-lg-none my-2 text-white-50")
-    )),
-
-    nav_item(app_version, style = "color: var(--bs-nav-link-color)")
-  )
+  nav_item(app_version, style = "color: var(--bs-nav-link-color)")
 )
 
 

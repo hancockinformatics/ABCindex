@@ -640,70 +640,65 @@ ui_upload <- function(id) {
   nav_panel(
     value = ns("upload"),
     title = "Upload",
+    layout_sidebar(
+      sidebar = sidebar(
+        title = "Upload your plate data",
+        class = "d-flex",
+        width = "580px",
+        style = "width: inherit",
+        open = NA,
 
-    card(
-      min_height = "90vh",
+        p(
+          "Select an '.xlsx' or '.ods' spreadsheet containing any number ",
+          "of checkerboard experiments, each with one or more replicates. ",
+          "Each sheet/experiment will be analyzed independently, becoming ",
+          "separate panels in the final plots, while replicates within an ",
+          "experiment will be averaged. You can use the link to ",
+          actionLink(ns("download_template"), "download a template"),
+          "of the input format. If required, subtract any 'blank' wells ",
+          "before uploading your data."
+        ),
 
-      layout_sidebar(
-        sidebar = sidebar(
-          title = "Upload your plate data",
-          class = "d-flex",
-          width = "580px",
-          style = "width: inherit",
-          open = NA,
+        p(
+          "Use the link to ",
+          actionLink(ns("load_example_data"), "try our example data"),
+          " or check out the ",
+          actionLink(ns("help_from_upload"), "Help pages"),
+          "to learn more about the data types we support."
+        ),
 
-          p(
-            "Select an '.xlsx' or '.ods' spreadsheet containing any number ",
-            "of checkerboard experiments, each with one or more replicates. ",
-            "Each sheet/experiment will be analyzed independently, becoming ",
-            "separate panels in the final plots, while replicates within an ",
-            "experiment will be averaged. You can use the link to ",
-            actionLink(ns("download_template"), "download a template"),
-            "of the input format. If required, subtract any 'blank' wells ",
-            "before uploading your data."
-          ),
+        fileInput(
+          inputId = ns("load_user_data"),
+          label = NULL,
+          buttonLabel = list(icon("upload"), "Upload plate data..."),
+          accept = c("xls", ".xls", "xlsx", ".xlsx", "ods", ".ods")
+        ),
 
-          p(
-            "Use the link to ",
-            actionLink(ns("load_example_data"), "try our example data"),
-            " or check out the ",
-            actionLink(ns("help_from_upload"), "Help pages"),
-            "to learn more about the data types we support."
-          ),
-
-          fileInput(
-            inputId = ns("load_user_data"),
-            label = NULL,
-            buttonLabel = list(icon("upload"), "Upload plate data..."),
-            accept = c("xls", ".xls", "xlsx", ".xlsx", "ods", ".ods")
-          ),
-
-          disabled(
-            actionButton(
-              inputId = ns("perform_abci_calculations"),
-              class = "btn btn-primary btn-tooltip mt-auto",
-              icon = icon("calculator"),
-              label = "Perform ABCI calculations"
-            ) %>%
-              tooltip(
-                id = ns("perform_abci_calculations_tt"),
-                placement = "top",
-                paste0(
-                  "Upload your plate data, or load our example data, then ",
-                  "click here to analyze"
-                )
+        disabled(
+          actionButton(
+            inputId = ns("perform_abci_calculations"),
+            class = "btn btn-primary btn-tooltip mt-auto",
+            icon = icon("calculator"),
+            label = "Perform ABCI calculations"
+          ) %>%
+            tooltip(
+              id = ns("perform_abci_calculations_tt"),
+              placement = "top",
+              paste0(
+                "Upload your plate data, or load our example data, then ",
+                "click here to analyze"
               )
-          )
-        ),
+            )
+        )
+      ),
 
-        layout_column_wrap(
-          width = 1/2,
-          fill = FALSE,
-          uiOutput(ns("upload_input_names_card")),
-          uiOutput(ns("upload_drug_card_UI"))
-        ),
-        uiOutput(ns("upload_input_preview"))
-      )
+      layout_column_wrap(
+        width = 1/2,
+        fill = FALSE,
+        uiOutput(ns("upload_input_names_card")),
+        uiOutput(ns("upload_drug_card_UI"))
+      ),
+      uiOutput(ns("upload_input_preview"))
     )
   )
 }
