@@ -6,7 +6,7 @@ ui_home <- function(id) {
     title = "Home",
 
     div(
-      class = "container my-5",
+      class = "container mt-5 mb-auto",
       div(
         class = "row p-4 pb-lg-5 pe-lg-0 pt-lg-5 rounded-3 border shadow-lg text-center",
 
@@ -50,7 +50,7 @@ ui_home <- function(id) {
           ),
           actionButton(
             inputId = ns("help_from_home"),
-            class = "btn-xl btn-info px-2 me-md-2 ",
+            class = "btn-xl btn-secondary px-2 me-md-2 ",
             icon = icon("circle-question"),
             label = "Help",
             width = "200px"
@@ -64,6 +64,15 @@ ui_home <- function(id) {
           )
         )
       )
+    ),
+    tags$footer(
+      class = "text-center mt-auto",
+      HTML(paste0(
+        "<p class='border-top pt-3 my-0'><small>2024 R.E.W Hancock Lab. The ",
+        "Hancock Lab at <a href='https://www.ubc.ca/'>UBC Vancouver</a> ",
+        "acknowledges we are located on the traditional, ancestral and ",
+        "unceded territory of the Musqueam people.</small></p>"
+      ))
     )
   )
 }
