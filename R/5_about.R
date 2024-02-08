@@ -104,7 +104,7 @@ ui_about <- function(id) {
           ),
           p(
             class = "lead",
-            "ShinyABCi is an R Shiny app that facilitates the calculation ",
+            "ABCindex is an R Shiny app that facilitates the calculation ",
             "of the Anti-Biofilm Combination Index (ABCI). The metric was ",
             "created by Lucas Pedraz, and the app was developed by Travis ",
             "Blimkie, all at the ",
@@ -136,7 +136,7 @@ ui_about <- function(id) {
             "If you encounter any bugs or experience any issues, you can ",
             "let us know by submitting an issue at our ",
             a(
-              href = "https://github.com/hancockinformatics/ShinyABCi",
+              href = "https://github.com/hancockinformatics/ABCindex",
               target = "_blank",
               rel = "noopener noreferrer",
               "Github page",
@@ -150,7 +150,7 @@ ui_about <- function(id) {
           ),
           p(
             class = "lead",
-            "ShinyABCi is written with R, and uses the following packages:"
+            "ABCindex is written with R, and uses the following packages:"
           ),
           div(class = "container", dep_wrapper(dependency_tibble))
         )

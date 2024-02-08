@@ -124,7 +124,7 @@ plot_legends <- list(
       "drug, while negative values indicate a combination less effective than ",
       "at least the most active individual drug; see materials and methods ",
       "for ABCI calculation. Vertical and horizontal lines indicate the ",
-      "[MBIC50] of individual drugs. Created with ShinyABCi [Citation]."
+      "[MBIC50] of individual drugs. Created with ABCindex [Citation]."
     )
   ),
 
@@ -153,7 +153,7 @@ plot_legends <- list(
       "combination less effective than at least the most active individual ",
       "drug; see materials and methods for ABCI calculation. Vertical and ",
       "horizontal lines indicate the [MBIC50] of individual drugs. Created ",
-      "with ShinyABCi [Citation]."
+      "with ABCindex [Citation]."
     )
   ),
 
@@ -178,7 +178,7 @@ plot_legends <- list(
       "effective than at least the most active individual drug; see materials ",
       "and methods for ABCI calculation. Vertical and horizontal lines ",
       "indicate the [MBIC50] of individual drugs. Tiles labelled ‘<’ indicate ",
-      "less than [50% biofilm inhibition]. Created with ShinyABCi [Citation]."
+      "less than [50% biofilm inhibition]. Created with ABCindex [Citation]."
     )
   ),
 
@@ -206,7 +206,7 @@ plot_legends <- list(
       "drug; see materials and methods for ABCI calculation. Vertical and ",
       "horizontal lines indicate the [MBIC50] of individual drugs. Tiles ",
       "labelled ‘<’ indicate less than [50% biofilm inhibition]. Created with ",
-      "ShinyABCi [Citation]."
+      "ABCindex [Citation]."
     )
   ),
 
@@ -226,7 +226,7 @@ plot_legends <- list(
       "A] and [Drug B], relative to the average of the untreated controls. ",
       "Results are representative of X replicates; [error bars represent ",
       "standard deviation]. Vertical lines indicate the [MBIC50] of [Drug A]. ",
-      "Created with ShinyABCi [Citation]."
+      "Created with ABCindex [Citation]."
     )
   )
 )
@@ -1842,7 +1842,7 @@ server_results <- function(id, data) {
     output$results_handler_xlsx <- downloadHandler(
       filename = function() {
         paste0(
-          "shinyABCi_",
+          "ABCindex_",
           ifelse(
             test = is.null(input$load_user_data),
             yes = "example_data",
@@ -3316,7 +3316,7 @@ server_results <- function(id, data) {
     output$plot_handler_png <- downloadHandler(
       filename = function() {
         paste0(
-          "shinyABCi_plot_",
+          "ABCindex_plot_",
           gsub(x = input$plot_tabs, pattern = "main-", replacement = ""),
           ".png"
         )
@@ -3336,7 +3336,7 @@ server_results <- function(id, data) {
     output$plot_handler_svg <- downloadHandler(
       filename = function() {
         paste0(
-          "shinyABCi_plot_",
+          "ABCindex_plot_",
           gsub(x = input$plot_tabs, pattern = "main-", replacement = ""),
           ".svg"
         )
@@ -3356,7 +3356,7 @@ server_results <- function(id, data) {
     output$plot_handler_tiff <- downloadHandler(
       filename = function() {
         paste0(
-          "shinyABCi_plot_",
+          "ABCindex_plot_",
           gsub(x = input$plot_tabs, pattern = "main-", replacement = ""),
           ".tiff"
         )

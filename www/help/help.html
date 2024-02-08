@@ -3,21 +3,21 @@
 <div class="container col-xxl-6 px-4 pt-1">
   <div class="row flex-lg-row align-items-center pt-5 pb-2">
 
-    <h1 class="display-3 fw-bold text-body-emphasis lh-1 mb-3">ShinyABCi help</h1>
+    <h1 class="display-3 fw-bold text-body-emphasis lh-1 mb-3">ABCindex help</h1>
     <p class="lead">
       The first section covers the use of the app. Click
       <a href="#anchor-calc">here</a> to jump to the next section, which details
       the calculation of the ABCI values.
     </p>
 
-    <h1 id="anchor-howto">How to use ShinyABCi</h1>
+    <h1 id="anchor-howto">How to use ABCindex</h1>
     <p class="lead">
       Interpretation and visualization of checkerboard assays.
     </p>
 
     <h3>1. Prepare your data</h3>
     <p>
-      ShinyABCi takes any form of checkerboard assay data (e.g. crystal
+      ABCindex takes any form of checkerboard assay data (e.g. crystal
       violet or TTC) in the same format produced by microplate readers. Data can
       be provided as direct measurements (absorbance, fluorescence) or relative
       measurements (percentage of untreated or relative to an external control).
@@ -60,7 +60,7 @@
     <img src="help/input_preview.png" alt="Input preview" style="width: 880px; height: 460px" class="center">
     <p>
       After clicking "Perform ABCI calculations", a dialogue window will appear
-      with two options for data normalization. By default, ShinyABCi will assume
+      with two options for data normalization. By default, ABCindex will assume
       your data is direct observations (e.g., absorbance units or relative
       fluorescence units) and convert them into percentages relative to the
       average of the untreated wells (both concentrations equal to zero). This
@@ -76,7 +76,7 @@
     </p>
 
     <h3 class="mt-4">3. Create plots from your results</h3>
-    <p>ShinyABCi lets you visualize two types of information:</p>
+    <p>ABCindex lets you visualize two types of information:</p>
     <ul>
       <li>
         <b>Drug interaction (Anti-Biofilm Combination Index)</b>. Positive
@@ -95,7 +95,7 @@
       </li>
     </ul>
     <p>
-      The recommended plot for ShinyABCi results is the <b>dot plot</b>, which
+      The recommended plot for ABCindex results is the <b>dot plot</b>, which
       depicts both ABCI values (as colours) and antimicrobial activity (as dot
       sizes). You can also use <b>tile plots</b> to represent only ABCIs; in
       that case, we recommend choosing the drug concentrations you are most
@@ -134,7 +134,7 @@
         <div id="a1_c1" class="accordion-collapse collapse" data-bs-parent="#accordion1">
           <div class="accordion-body">
             <p>
-              ShinyABCi represents ABCI values using continuous non-linear
+              ABCindex represents ABCI values using continuous non-linear
               palettes designed to highlight the most biologically relevant
               differences. Negative ABCIs are represented with little colour
               variation, as any drug interaction with less antimicrobial
@@ -142,7 +142,7 @@
               antagonistic behaviour.
             </p>
             <p>
-              Default ShinyABCi palettes (A) provide a colour gradient for
+              Default ABCindex palettes (A) provide a colour gradient for
               positive ABCIs with a contrasting colour for low positives to
               improve the discoverability of positive interactions that fall
               short of formal synergy. Accentuate high ABCI  palettes (B) move
@@ -152,7 +152,7 @@
               drug interactions are positive or negative.
             </p>
             <p>
-              <b>We are colourblind friendly</b>. All ShinyABCi palettes are
+              <b>We are colourblind friendly</b>. All ABCindex palettes are
               designed, to the best of our knowledge, to be accessible for
               people with protanopia, deuteranopia, or tritanopia.
             </p>
@@ -227,7 +227,7 @@
               represent only those in the line plot.
             </p>
             <p>
-              By default, ShinyABCi's line plots gently nudge some values along
+              By default, ABCindex's line plots gently nudge some values along
               the X axis to prevent overlapping lines. This can be disabled by
               toggling off the "X axis jitter" in the advanced options box.
             </p>
@@ -243,11 +243,11 @@
 
     <h1 class="mt-3" id="anchor-calc">ABCI calculations</h1>
     <p class="lead">
-      Information about the Anti-Biofilm Combination Index and how ShinyABCi
+      Information about the Anti-Biofilm Combination Index and how ABCindex
       calculates and plots the data.
     </p>
 
-    <h3>Rationale behind ShinyABCi</h3>
+    <h3>Rationale behind ABCindex</h3>
     <p>
       Placeholder text.
     </p>
@@ -350,7 +350,7 @@
       </tr>
     </table>
 
-    <h3 class="mt-4">Data processing in ShinyABCi</h3>
+    <h3 class="mt-4">Data processing in ABCindex</h3>
     <p>
       Placeholder text.
     </p>
@@ -377,13 +377,13 @@
       <div class="accordion-item">
         <h2 class="accordion-header">
           <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#a2_c2" aria-expanded="false" aria-controls="a2_c2">
-            Dot size scaling in ShinyABCi plots
+            Dot size scaling in ABCindex plots
           </button>
         </h2>
         <div id="a2_c2" class="accordion-collapse collapse" data-bs-parent="#accordion2">
           <div class="accordion-body">
             <p>
-              By default, ShinyABCi's dot plots represent antimicrobial activity
+              By default, ABCindex's dot plots represent antimicrobial activity
               (percentage of biomass killed) using a continuous non-linear scale
               designed to highlight the most biologically relevant differences.
               More specifically, while preserving some degree of granularity all
@@ -391,7 +391,7 @@
               difference between ±50% killing (often considered the threshold
               between "active" and "inactive") and the difference between ±85%
               killing. We consider that last difference to be of the utmost
-              importance, given that ShinyABCi is primarily intended for
+              importance, given that ABCindex is primarily intended for
               antibiofilm assays, in which complete eradication is often hard to
               achieve and one of the main reasons to attempt combination
               therapies. Non-linear scaling can be disabled by toggling "Linear
@@ -399,7 +399,7 @@
             </p>
             <p>
               Below, you can see the exact relationship between the percentage
-              of biofilm killed and the default dot size used by ShinyABCi.
+              of biofilm killed and the default dot size used by ABCindex.
             </p>
             <img src="help/dot_size_scaling.png" alt="Dot size scaling" style="width: 450px; height: 337px" class="center">
           </div>

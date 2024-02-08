@@ -10,7 +10,7 @@ ui_home <- function(id) {
       div(
         class = "row p-4 pb-lg-5 pe-lg-0 pt-lg-5 rounded-3 border shadow-lg text-center",
 
-        h1(class = "display-3 fw-bold text-body-emphasis", "ShinyABCi"),
+        h1(class = "display-3 fw-bold text-body-emphasis", "ABCindex"),
 
         h1(
           class = "display-6 mb-4",
@@ -18,7 +18,7 @@ ui_home <- function(id) {
         ),
 
         HTML(r"(
-          <p class='lead mb-4'>Welcome to ShinyABCi, a tool to quantify and
+          <p class='lead mb-4'>Welcome to ABCindex, a tool to quantify and
           visualize the <i>in vitro</i> effects of drug combinations. The
           Anti-Biofilm Combination Index (ABCI) is a metric designed to assess
           drug combination therapy in checkerboard assays, without relying on
@@ -36,8 +36,8 @@ ui_home <- function(id) {
         HTML(r"(
           <p class='lead mb-4'>Click the Get Started button to upload your
           data. To learn more about how ABCI is calculated, or how to use
-          ShinyABCi, check the Help pages below. For more information,
-          including how to cite ShinyABCi, please refer to the About page.</p>
+          ABCindex, check the Help pages below. For more information,
+          including how to cite ABCindex, please refer to the About page.</p>
         )"),
 
         div(
