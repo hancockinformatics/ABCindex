@@ -1817,7 +1817,8 @@ ui_results <- function(id) {
           )
         )
       ),
-      uiOutput(ns("abci_plot_ui"))
+      uiOutput(ns("abci_plot_ui")),
+      abci_footer
     )
   )
 }

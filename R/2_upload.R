@@ -698,7 +698,8 @@ ui_upload <- function(id) {
         uiOutput(ns("upload_input_names_card")),
         uiOutput(ns("upload_drug_card_UI"))
       ),
-      uiOutput(ns("upload_input_preview"))
+      uiOutput(ns("upload_input_preview")),
+      abci_footer
     )
   )
 }

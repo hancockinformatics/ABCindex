@@ -35,19 +35,16 @@ abci_ui <- page_navbar(
   bg = bs_get_variables(app_theme, varnames = "secondary"),
 
   header = tags$head(
-    tags$link(rel = "stylesheet", type = "text/css", href = "css/custom.css"),
-    tags$link(
-      rel = "icon",
-      href = "img/hancock_lab_logo_32.svg"
-    ),
+    useShinyjs(),
+    tags$link(rel = "stylesheet", href = "css/custom.css"),
+    tags$link(rel = "icon", href = "img/hancock_lab_logo_32.svg"),
     tags$script(HTML(r"(
-        window.onbeforeunload = () => {
-          if (document.getElementById('shiny-disconnected-overlay') === null) {
-            return 'Are you sure you want to leave?';
-          }
-        };
-      )")),
-    useShinyjs()
+      window.onbeforeunload = () => {
+        if (document.getElementById('shiny-disconnected-overlay') === null) {
+          return 'Are you sure you want to leave?';
+        }
+      };
+    )"))
   ),
 
   ui_home("main"),
