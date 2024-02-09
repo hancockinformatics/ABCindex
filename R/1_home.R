@@ -22,6 +22,15 @@ panel_shortcuts <- dplyr::tibble(
 
 # Functions ---------------------------------------------------------------
 
+#' special_button
+#'
+#' @param id ID for the button
+#' @param class Class for the button, appended to "btn-"
+#' @param icon Icon for the button
+#' @param label Label for the button
+#'
+#' @return A Shiny button object
+#'
 special_button <- function(id, class, icon, label) {
   actionButton(
     inputId = id,
@@ -100,7 +109,7 @@ home_buttons_server <- function(id) {
       input$get_started,
       nav_select(id = "navbar", selected = ns("upload"))
     )
-    # `selected` is not in ns() since the Help panel isn't a module
+    # `selected` is not wrapped with ns() since the Help panel isn't a module
     observeEvent(
       input$help,
       nav_select(id = "navbar", selected = "help")
