@@ -913,7 +913,7 @@ server_upload <- function(id) {
 
     output$upload_input_preview <- renderUI({
       req(input_data_preview(), input$upload_input_names_selector)
-      tagList(
+      card(
         card_header(
           class = "bg-dark",
           paste0(
