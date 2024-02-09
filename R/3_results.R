@@ -899,7 +899,7 @@ plot_dot_split <- function(
 #' @param line.include Values (concentrations) of `line.drug` to include in the
 #'   plot. Applies to all facets, and defaults to "all".
 #' @param plot.type Type of graph, either "replicates", "mean", or "mean_sd"
-#' @param jitter.x Logical; Should points be jittered along the x axis? Defaults
+#' @param jitter.x Logical; Should points have jitter along the x axis? Defaults
 #'   to TRUE.
 #' @param x.mic.line Logical; should a line be drawn to indicate MIC of the
 #'   compound on the x-axis? Defaults to FALSE.
@@ -1665,7 +1665,7 @@ writer_xlsx <- function(x, filename) {
 
 # Module ------------------------------------------------------------------
 
-ui_results <- function(id) {
+panel_results <- function(id) {
   ns <- NS(id)
 
   nav_panel(
@@ -3229,15 +3229,11 @@ server_results <- function(id, data) {
     output$abci_plot <- renderPlot({
       input$create_plot
       if (is.null(the_plot())) {
-        showNotification(
+        notify(
           type = "error",
-          duration = 20,
-          ui = HTML(r"(
-            <h4 class='alert-heading'><b>Error</b></h4>
-            <p class='mb-0'>
-            Uh-oh! We were unable to draw a plot with the specified parameters.
-            Try changing the inputs in the sidebar, then update the plot.</p>
-          )")
+          status = "Error",
+          message = "We were unable to draw a plot with the specified parameters.",
+          suggest = "Try changing the inputs in the sidebar, then update the plot."
         )
       } else {
         the_plot()

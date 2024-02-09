@@ -47,19 +47,15 @@ abci_ui <- page_navbar(
     )"))
   ),
 
-  # Home page, with buttons to other panels
   panel_home("main"),
-  ui_upload("main"),
-  ui_results("main"),
-
-  # Help panel
+  panel_upload("main"),
+  panel_results("main"),
   nav_panel(
     value = "help",
     title = "Help",
     includeHTML("www/help/help.html"),
     div(class = "pb-3", abci_footer)
   ),
-
   panel_about("main"),
 
   nav_spacer(),

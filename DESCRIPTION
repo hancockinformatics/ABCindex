@@ -1,6 +1,6 @@
 Package: ABCindex
 Title: A Shiny app to calculate ABCI for checkerboard assays
-Version: 0.99.510
+Version: 0.99.511
 Authors@R:
   person(given = "Travis",
          family = "Blimkie",

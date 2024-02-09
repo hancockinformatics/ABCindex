@@ -1,361 +1,5 @@
 # Functions ---------------------------------------------------------------
 
-#' check_wells
-#'
-#' @param data_list A list of data frames (tibbles), from `plate_reader()` to
-#'   check for validity
-#'
-#' @return A list of experiments that have invalid wells (valid being A1 through
-#'   H12)
-#'
-check_wells <- function(data_list) {
-  valid_wells <- unlist(lapply(
-    seq(1, 12),
-    function(n) paste0(LETTERS[seq(1, 8)], n)
-  ))
-
-  purrr::imap(
-    data_list,
-    function(x, nm) {
-      ifelse(
-        test = !all(x$well %in% valid_wells),
-        yes = 1,
-        no = 0
-      )
-    }
-  ) %>%
-    purrr::discard(~.x == 0) %>%
-    names()
-}
-
-
-#' check_untreated
-#'
-#' @param data_list A list of data frames (tibbles), from `plate_reader()` to
-#'   check for validity
-#'
-#' @return A list of experiments that are missing untreated samples in the rows
-#'   or columns.
-#'
-check_untreated <- function(data_list) {
-  check_results <- purrr::map(
-    data_list,
-    function(x) {
-      checklist <- c()
-
-      if (!"0" %in% x$cols_conc) {
-        checklist <- append(checklist, "columns")
-      }
-      if (!"0" %in% x$rows_conc) {
-        checklist <- append(checklist, "rows")
-      }
-      return(checklist)
-    }
-  ) %>% purrr::compact()
-
-  if (length(check_results) == 0) {
-    return(NULL)
-  } else {
-    purrr::imap(check_results, function(x, nm) {
-      paste0(
-        nm,
-        " (",
-        paste(x, collapse = ", "),
-        ")"
-      )
-    })
-  }
-}
-
-
-#' enable_button
-#'
-#' @param id Input ID for the button being modified
-#' @param x Optional tooltip content to add to the button. Overrides any
-#'   existing content.
-#'
-#' @details The tooltip should have an ID based on its parent element. E.g. if
-#'   the parent is a button named "confirm_btn", the tooltip's ID must be
-#'   "confirm_btn_tt".
-#'
-enable_button <- function(id, x = NULL) {
-  enable(id)
-  if (!is.null(x)) update_tooltip(id = paste0(id, "_tt"), x)
-}
-
-
-#' plate_reader
-#'
-#' @param file Path to a spreadsheet, containing one or more sheets within, each
-#'   with data in a 96 well-type format
-#' @param sheet Either the specific name(s) of one or more sheets to read data
-#'   from, or "all" to read all sheets.
-#'
-#' @return A list of data frames (tibbles), one for each sheet, with the
-#'   following columns:
-#'   \item{replicate}{Denotes different plates within the same sheet. Always
-#'   included, even with only one replicate.}
-#'   \item{well}{Well ID for each row in the data}
-#'   \item{cols}{The compound in the columns (1-12)}
-#'   \item{cols_conc}{Concentration of compound in a column}
-#'   \item{rows}{The compound in the rows (A-H)}
-#'   \item{rows_conc}{Concentration of compound in a row}
-#'   \item{bio}{The measured values contained within the wells, for a specific
-#'   row-column combination}
-#'
-plate_reader <- function(file, sheet = "all") {
-  options("cli.progress_show_after" = 0)
-
-  file_ext <- substr(tolower(tools::file_ext(file)), 1, 3)
-
-  if (sheet == "all") {
-    all_sheets <- switch(
-      file_ext,
-      "xls" = openxlsx::getSheetNames(file),
-      "ods" = readODS::ods_sheets(file)
-    )
-  } else {
-    all_sheets <- sheet
-  }
-
-  all_data <- lapply(
-    cli::cli_progress_along(all_sheets, "Loading plate data"),
-    function(i) {
-      plate_reader_single(file = file, sheet = all_sheets[i], ext = file_ext)
-    }
-  ) %>% purrr::set_names(all_sheets)
-
-  return(list(
-    "data" = all_data,
-    "order" = all_sheets
-  ))
-}
-
-
-#' plate_reader_single
-#'
-#' @param file Path to a spreadsheet, containing one or more sheets within, each
-#'   with data in a 96 well-type format
-#' @param sheet The name of a sheet to read data from
-#' @param ext File extension to determine how the data is read
-#'
-#' @return A data frame (tibble), one for each plate detected, with the
-#'   following columns:
-#'   \item{replicate}{Denotes different plates within the same sheet. Always
-#'   included, even with only one replicate.}
-#'   \item{well}{Well ID for each row in the data}
-#'   \item{cols}{The compound in the columns (1-12)}
-#'   \item{cols_conc}{Concentration of compound in a column}
-#'   \item{rows}{The compound in the rows (A-H)}
-#'   \item{rows_conc}{Concentration of compound in a row}
-#'   \item{bio}{The measured values contained within the wells, for a specific
-#'   row-column combination}
-#'
-plate_reader_single <- function(file, sheet, ext) {
-
-  suppressMessages(
-    d0 <- switch(
-      ext,
-      "ods" = readODS::read_ods(file, sheet, col_names = FALSE),
-      "xls" = openxlsx::read.xlsx(
-        file,
-        sheet,
-        colNames = FALSE,
-        skipEmptyRows = FALSE
-      )
-    )
-  )
-
-  d1 <- janitor::clean_names(d0)
-
-  # The "tbl_id" column defines groups of rows, each group being one plate, by
-  # finding intervals between the empty rows
-  d2 <- mutate(
-    d1,
-    tbl_id = as.factor(findInterval(seq(nrow(d1)), which(is.na(d1[, 3]))))
-  )
-
-  # Split the single data frame into multiple, one data frame per plate, and
-  # discard empty data frames (the empty rows used for splitting)
-  d3 <- split(x = d1, f = d2$tbl_id) %>%
-    purrr::discard(~nrow(.x) == 1)
-
-  # Remove rows or columns which are entirely NA
-  d4 <- lapply(d3, function(x) {
-    y <- as.data.frame(x[rowSums(is.na(x)) != ncol(x), ])
-    y[, colSums(is.na(y)) != nrow(y)]
-  })
-
-  d5 <- lapply(d4, function(x) {
-
-    # Figure out which wells contain data; these will be added as a column later
-    plate_cols <- which(!is.na(x[2, ])) - 2
-    plate_rows <- LETTERS[which(!is.na(x[, 2])) - 2]
-
-    wells <- lapply(plate_rows, function(r) {
-      lapply(plate_cols, function(c) {
-        paste0(r, c)
-      })
-    }) %>% unlist()
-
-    # Subset x to remove the row/column which identifies the compounds
-    df1 <- x[2:nrow(x), 2:ncol(x)]
-
-    # Identify which rows/columns we want to keep - those that are either assay
-    # data, or blanks, identified by removing NAs. Also keep the first
-    # row/column, which holds the concentrations.
-    df2 <- df1[c(1, which(!is.na(df1[, 1]))), c(1, which(!is.na(df1[1, ])))]
-
-    # Drop the first row (contains concentrations) from the assay data
-    df3 <- df2[-1, ]
-
-    colnames(df3) <- c("rows_conc", na.omit(as.numeric(df2[1, ])))
-
-    df4 <- df3 %>%
-      as_tibble() %>%
-      mutate(across(everything(), as.character)) %>%
-      tidyr::pivot_longer(
-        -rows_conc,
-        names_to = "cols_conc",
-        values_to = "bio"
-      ) %>%
-      mutate(rows = x[3, 1], cols = x[1, 3], .before = 1)
-
-    levels_rows <- sort(unique(as.numeric(df4$rows_conc)))
-    levels_cols <- sort(unique(as.numeric(df4$cols_conc)))
-
-    df4 %>%
-      mutate(
-        well = wells,
-        rows_conc = factor(rows_conc, levels = levels_rows),
-        cols_conc = factor(cols_conc, levels = levels_cols),
-        bio = as.numeric(bio)
-      ) %>%
-      select(well, starts_with("cols"), starts_with("rows"), bio)
-  }) %>%
-    purrr::set_names(~paste0(sheet, "_p", seq(length(.x)))) %>%
-    bind_rows(.id = "replicate")
-
-  return(d5)
-}
-
-
-#' plate_input
-#'
-#' @param file Path to a spreadsheet, containing one or more sheets within, each
-#'   with data in a 96 well-type format
-#' @param sheet Either the specific name(s) of one or more sheets to read data
-#'   from, or "all" to read all sheets.
-#'
-#' @return A list with the following named elements:
-#'   \item{data}{List of data frames (tibbles) containing input experiments (on
-#'   success), or NULL on failure.}
-#'   \item{status}{Character indicating "success" or "error"}
-#'   \item{message}{Character providing some basic information based on the
-#'   status and input/output}
-#'   \item{suggest}{Character providing a hint of how the user should proceed}
-#'
-plate_input <- function(file, sheet = "all") {
-
-  tryCatch(
-    {
-
-      if (!file.exists(file)) {
-        list(
-          data = NULL,
-          order = NULL,
-          status = "Error",
-          type = "error",
-          message = "The specified file was not found!",
-          suggest = "Try uploading a different file."
-        )
-      }
-
-      x <- plate_reader(file = file, sheet = sheet)
-      x_data <- x$data
-      x_order <- x$order
-
-      check_well_result <- check_wells(x_data)
-      check_untreated_result <- check_untreated(x_data)
-
-
-      # Silent failures, such as bad wells, or anything else that doesn't
-      # throw an actual error
-      if (length(check_well_result != 0)) {
-        bad_experiments <- paste(check_well_result, collapse = ", ")
-
-        list(
-          data = NULL,
-          order = NULL,
-          status = "Error",
-          type = "error",
-          message = paste0(
-            "Invalid wells (outside A1-H12) were detected in the following ",
-            "experiment(s): ",
-            bad_experiments,
-            ". "
-          ),
-          suggest = paste0(
-            "Check that each plate/replicate is separated by one or more ",
-            "empty rows, then try again."
-          )
-        )
-      } else if (is.null(check_well_result)) {
-        list(
-          data = NULL,
-          order = NULL,
-          status = "Error",
-          type = "error",
-          message = "An error occurred when trying to import your data. ",
-          suggest = paste0(
-            "Please ensure your data matches our input requirements, then try ",
-            "again."
-          )
-        )
-      } else if (!is.null(check_untreated_result)) {
-        list(
-          data = NULL,
-          order = NULL,
-          status = "Error",
-          type = "error",
-          message = paste0(
-            "No untreated samples were detected in the following experiment(s): ",
-            paste(check_untreated_result, collapse = "; "),
-            ". "
-          ),
-          suggest =
-            "Please ensure your data contains untreated samples, and try again."
-        )
-
-      } else {
-        list(
-          data = x_data,
-          order = x_order,
-          status = "Upload successful",
-          type = "message",
-          message = "Your data was successfully loaded. ",
-          suggest = "Use the button at the bottom of the sidebar to proceed."
-        )
-      }
-    },
-
-    error = function(e) {
-      list(
-        data = NULL,
-        order = NULL,
-        status = "Error",
-        type = "error",
-        message = "An error occurred when trying to import your data. ",
-        suggest = paste0(
-          "Please ensure your data matches our input requirements, then try ",
-          "again."
-        )
-      )
-    }
-  )
-}
-
-
 #' abci_analysis
 #'
 #' @param data Data frame containing the concentrations of two drugs, and the
@@ -632,9 +276,433 @@ abci_analysis_single <- function(
 }
 
 
+#' check_wells
+#'
+#' @param data_list A list of data frames (tibbles), from `plate_reader()` to
+#'   check for validity
+#'
+#' @return A list of experiments that have invalid wells (valid being A1 through
+#'   H12)
+#'
+check_wells <- function(data_list) {
+  valid_wells <- unlist(lapply(
+    seq(1, 12),
+    function(n) paste0(LETTERS[seq(1, 8)], n)
+  ))
+
+  purrr::imap(
+    data_list,
+    function(x, nm) {
+      ifelse(
+        test = !all(x$well %in% valid_wells),
+        yes = 1,
+        no = 0
+      )
+    }
+  ) %>%
+    purrr::discard(~.x == 0) %>%
+    names()
+}
+
+
+#' check_untreated
+#'
+#' @param data_list A list of data frames (tibbles), from `plate_reader()` to
+#'   check for validity
+#'
+#' @return A list of experiments that are missing untreated samples in the rows
+#'   or columns.
+#'
+check_untreated <- function(data_list) {
+  check_results <- purrr::map(
+    data_list,
+    function(x) {
+      checklist <- c()
+
+      if (!"0" %in% x$cols_conc) {
+        checklist <- append(checklist, "columns")
+      }
+      if (!"0" %in% x$rows_conc) {
+        checklist <- append(checklist, "rows")
+      }
+      return(checklist)
+    }
+  ) %>% purrr::compact()
+
+  if (length(check_results) == 0) {
+    return(NULL)
+  } else {
+    purrr::imap(check_results, function(x, nm) {
+      paste0(
+        nm,
+        " (",
+        paste(x, collapse = ", "),
+        ")"
+      )
+    })
+  }
+}
+
+
+#' enable_button
+#'
+#' @param id Input ID for the button being modified
+#' @param x Optional tooltip content to add to the button. Overrides any
+#'   existing content.
+#'
+#' @details The tooltip should have an ID based on its parent element; if the
+#'   button has ID "confirm_btn", the tooltip's ID must be "confirm_btn_tt".
+#'
+enable_button <- function(id, x = NULL) {
+  enable(id)
+  if (!is.null(x)) update_tooltip(id = paste0(id, "_tt"), x)
+}
+
+
+#' fill_card
+#'
+#' @param expt List of experiment information to summarize into a card body
+#'
+#' @return List of HTML elements containing experiment information
+#'
+fill_card <- function(expt) {
+  tagList(
+    p(strong("Treatment in the columns: "), expt$cols$name),
+    p(
+      tags$b("Detected concentrations: "),
+      paste(expt$cols$conc, collapse = ", ")
+    ),
+    hr(),
+    p(strong("Treatment in the rows: "), expt$rows$name),
+    p(
+      strong("Detected concentrations: "),
+      paste(expt$rows$conc, collapse = ", ")
+    ),
+  )
+}
+
+
+#' make_card
+#'
+#' @param title Title to go in the card header
+#' @param height Optional height of the card
+#' @param class Optional class to add to the card
+#' @param content To be placed inside the card's body
+#'
+#' @return A bslib card element
+#'
+make_card <- function(title, height = NULL, class = NULL, content) {
+  card(
+    height = height,
+    class = class,
+    card_header(class = "bg-dark", title),
+    card_body(content)
+  )
+}
+
+
+#' notify
+#'
+#' @param id Optional ID for the message
+#' @param type Type of notification to show: "default", "message", "warning", or
+#'   "error".
+#' @param status Header for the notification
+#' @param message Message content
+#' @param suggest Possible suggestion
+#'
+#' @return A shiny notification bubble
+#'
+notify <- function(id = NULL, type, status, message, suggest) {
+  showNotification(
+    id = id,
+    type = type,
+    duration = ifelse(type == "error", 20, 10),
+    ui = HTML(paste0(
+      "<h4 class='alert-heading'><b>", status, "</b></h4>",
+      "<p class='mb-0'>",
+      message,
+      suggest,
+      "</p>"
+    ))
+  )
+}
+
+
+#' plate_input
+#'
+#' @param file Path to a spreadsheet, containing one or more sheets within, each
+#'   with data in a 96 well-type format
+#' @param sheet Either the specific name(s) of one or more sheets to read data
+#'   from, or "all" to read all sheets.
+#'
+#' @return A list with the following named elements:
+#'   \item{data}{List of data frames (tibbles) containing input experiments (on
+#'   success), or NULL on failure.}
+#'   \item{status}{Character indicating "success" or "error"}
+#'   \item{message}{Character providing some basic information based on the
+#'   status and input/output}
+#'   \item{suggest}{Character providing a hint of how the user should proceed}
+#'
+plate_input <- function(file, sheet = "all") {
+
+  tryCatch(
+    {
+
+      if (!file.exists(file)) {
+        list(
+          data = NULL,
+          order = NULL,
+          status = "Error",
+          type = "error",
+          message = "The specified file was not found!",
+          suggest = "Try uploading a different file."
+        )
+      }
+
+      x <- plate_reader(file = file, sheet = sheet)
+      x_data <- x$data
+      x_order <- x$order
+
+      check_well_result <- check_wells(x_data)
+      check_untreated_result <- check_untreated(x_data)
+
+
+      # Silent failures, such as bad wells, or anything else that doesn't
+      # throw an actual error
+      if (length(check_well_result != 0)) {
+        bad_experiments <- paste(check_well_result, collapse = ", ")
+
+        list(
+          data = NULL,
+          order = NULL,
+          status = "Error",
+          type = "error",
+          message = paste0(
+            "Invalid wells (outside A1-H12) were detected in the following ",
+            "experiment(s): ",
+            bad_experiments,
+            ". "
+          ),
+          suggest = paste0(
+            "Check that each plate/replicate is separated by one or more ",
+            "empty rows, then try again."
+          )
+        )
+      } else if (is.null(check_well_result)) {
+        list(
+          data = NULL,
+          order = NULL,
+          status = "Error",
+          type = "error",
+          message = "An error occurred when trying to import your data. ",
+          suggest = paste0(
+            "Please ensure your data matches our input requirements, then try ",
+            "again."
+          )
+        )
+      } else if (!is.null(check_untreated_result)) {
+        list(
+          data = NULL,
+          order = NULL,
+          status = "Error",
+          type = "error",
+          message = paste0(
+            "No untreated samples were detected in the following experiment(s): ",
+            paste(check_untreated_result, collapse = "; "),
+            ". "
+          ),
+          suggest =
+            "Please ensure your data contains untreated samples, and try again."
+        )
+
+      } else {
+        list(
+          data = x_data,
+          order = x_order,
+          status = "Upload successful",
+          type = "message",
+          message = "Your data was successfully loaded. ",
+          suggest = "Use the button at the bottom of the sidebar to proceed."
+        )
+      }
+    },
+
+    error = function(e) {
+      list(
+        data = NULL,
+        order = NULL,
+        status = "Error",
+        type = "error",
+        message = "An error occurred when trying to import your data. ",
+        suggest = paste0(
+          "Please ensure your data matches our input requirements, then try ",
+          "again."
+        )
+      )
+    }
+  )
+}
+
+
+#' plate_reader
+#'
+#' @param file Path to a spreadsheet, containing one or more sheets within, each
+#'   with data in a 96 well-type format
+#' @param sheet Either the specific name(s) of one or more sheets to read data
+#'   from, or "all" to read all sheets.
+#'
+#' @return A list of data frames (tibbles), one for each sheet, with the
+#'   following columns:
+#'   \item{replicate}{Denotes different plates within the same sheet. Always
+#'   included, even with only one replicate.}
+#'   \item{well}{Well ID for each row in the data}
+#'   \item{cols}{The compound in the columns (1-12)}
+#'   \item{cols_conc}{Concentration of compound in a column}
+#'   \item{rows}{The compound in the rows (A-H)}
+#'   \item{rows_conc}{Concentration of compound in a row}
+#'   \item{bio}{The measured values contained within the wells, for a specific
+#'   row-column combination}
+#'
+plate_reader <- function(file, sheet = "all") {
+  options("cli.progress_show_after" = 0)
+
+  file_ext <- substr(tolower(tools::file_ext(file)), 1, 3)
+
+  if (sheet == "all") {
+    all_sheets <- switch(
+      file_ext,
+      "xls" = openxlsx::getSheetNames(file),
+      "ods" = readODS::ods_sheets(file)
+    )
+  } else {
+    all_sheets <- sheet
+  }
+
+  all_data <- lapply(
+    cli::cli_progress_along(all_sheets, "Loading plate data"),
+    function(i) {
+      plate_reader_single(file = file, sheet = all_sheets[i], ext = file_ext)
+    }
+  ) %>% purrr::set_names(all_sheets)
+
+  return(list(
+    "data" = all_data,
+    "order" = all_sheets
+  ))
+}
+
+
+#' plate_reader_single
+#'
+#' @param file Path to a spreadsheet, containing one or more sheets within, each
+#'   with data in a 96 well-type format
+#' @param sheet The name of a sheet to read data from
+#' @param ext File extension to determine how the data is read
+#'
+#' @return A data frame (tibble), one for each plate detected, with the
+#'   following columns:
+#'   \item{replicate}{Denotes different plates within the same sheet. Always
+#'   included, even with only one replicate.}
+#'   \item{well}{Well ID for each row in the data}
+#'   \item{cols}{The compound in the columns (1-12)}
+#'   \item{cols_conc}{Concentration of compound in a column}
+#'   \item{rows}{The compound in the rows (A-H)}
+#'   \item{rows_conc}{Concentration of compound in a row}
+#'   \item{bio}{The measured values contained within the wells, for a specific
+#'   row-column combination}
+#'
+plate_reader_single <- function(file, sheet, ext) {
+
+  suppressMessages(
+    d0 <- switch(
+      ext,
+      "ods" = readODS::read_ods(file, sheet, col_names = FALSE),
+      "xls" = openxlsx::read.xlsx(
+        file,
+        sheet,
+        colNames = FALSE,
+        skipEmptyRows = FALSE
+      )
+    )
+  )
+
+  d1 <- janitor::clean_names(d0)
+
+  # The "tbl_id" column defines groups of rows, each group being one plate, by
+  # finding intervals between the empty rows
+  d2 <- mutate(
+    d1,
+    tbl_id = as.factor(findInterval(seq(nrow(d1)), which(is.na(d1[, 3]))))
+  )
+
+  # Split the single data frame into multiple, one data frame per plate, and
+  # discard empty data frames (the empty rows used for splitting)
+  d3 <- split(x = d1, f = d2$tbl_id) %>%
+    purrr::discard(~nrow(.x) == 1)
+
+  # Remove rows or columns which are entirely NA
+  d4 <- lapply(d3, function(x) {
+    y <- as.data.frame(x[rowSums(is.na(x)) != ncol(x), ])
+    y[, colSums(is.na(y)) != nrow(y)]
+  })
+
+  d5 <- lapply(d4, function(x) {
+
+    # Figure out which wells contain data; these will be added as a column later
+    plate_cols <- which(!is.na(x[2, ])) - 2
+    plate_rows <- LETTERS[which(!is.na(x[, 2])) - 2]
+
+    wells <- lapply(plate_rows, function(r) {
+      lapply(plate_cols, function(c) {
+        paste0(r, c)
+      })
+    }) %>% unlist()
+
+    # Subset x to remove the row/column which identifies the compounds
+    df1 <- x[2:nrow(x), 2:ncol(x)]
+
+    # Identify which rows/columns we want to keep - those that are either assay
+    # data, or blanks, identified by removing NAs. Also keep the first
+    # row/column, which holds the concentrations.
+    df2 <- df1[c(1, which(!is.na(df1[, 1]))), c(1, which(!is.na(df1[1, ])))]
+
+    # Drop the first row (contains concentrations) from the assay data
+    df3 <- df2[-1, ]
+
+    colnames(df3) <- c("rows_conc", na.omit(as.numeric(df2[1, ])))
+
+    df4 <- df3 %>%
+      as_tibble() %>%
+      mutate(across(everything(), as.character)) %>%
+      tidyr::pivot_longer(
+        -rows_conc,
+        names_to = "cols_conc",
+        values_to = "bio"
+      ) %>%
+      mutate(rows = x[3, 1], cols = x[1, 3], .before = 1)
+
+    levels_rows <- sort(unique(as.numeric(df4$rows_conc)))
+    levels_cols <- sort(unique(as.numeric(df4$cols_conc)))
+
+    df4 %>%
+      mutate(
+        well = wells,
+        rows_conc = factor(rows_conc, levels = levels_rows),
+        cols_conc = factor(cols_conc, levels = levels_cols),
+        bio = as.numeric(bio)
+      ) %>%
+      select(well, starts_with("cols"), starts_with("rows"), bio)
+  }) %>%
+    purrr::set_names(~paste0(sheet, "_p", seq(length(.x)))) %>%
+    bind_rows(.id = "replicate")
+
+  return(d5)
+}
+
+
 # Module ------------------------------------------------------------------
 
-ui_upload <- function(id) {
+panel_upload <- function(id) {
   ns <- NS(id)
 
   nav_panel(
@@ -774,17 +842,12 @@ server_upload <- function(id) {
       input_data(initial_input$data)
       input_order(initial_input$order)
 
-      showNotification(
+      notify(
         id = ns("upload_notification"),
         type = initial_input$type,
-        duration = ifelse(initial_input$type == "error", 20, 10),
-        ui = HTML(paste0(
-          "<h4 class='alert-heading'><b>", initial_input$status, "</b></h4>",
-          "<p class='mb-0'>",
-          initial_input$message,
-          initial_input$suggest,
-          "</p>"
-        ))
+        status = initial_input$status,
+        message = initial_input$message,
+        suggest = initial_input$suggest
       )
     })
 
@@ -795,17 +858,12 @@ server_upload <- function(id) {
       input_data(initial_input$data)
       input_order(initial_input$order)
 
-      showNotification(
+      notify(
         id = ns("upload_notification"),
         type = initial_input$type,
-        duration = ifelse(initial_input$type == "error", 20, 10),
-        ui = HTML(paste0(
-          "<h4 class='alert-heading'><b>", initial_input$status, "</b></h4>",
-          "<p class='mb-0'>",
-          initial_input$message,
-          initial_input$suggest,
-          "</p>"
-        ))
+        status = initial_input$status,
+        message = initial_input$message,
+        suggest = initial_input$suggest
       )
     })
 
@@ -842,88 +900,50 @@ server_upload <- function(id) {
       })
     )
 
+    # First card with experiment dropdown
     output$upload_input_names_card <- renderUI(
-      card(
-        height = 340,
+      make_card(
+        title = "Select an uploaded experiment to preview",
+        height = 360,
         class = "mb-0",
-        card_header(
-          class = "bg-dark",
-          "Select an uploaded experiment to preview"
-        ),
-        card_body(
+        content = tagList(
           HTML(r"(
-          <p>Use the dropdown to choose an experiment to preview; the card to
-          the right displays information gathered from the selected experiment,
-          while the table below shows the corresponding data (<b>first replicate
-          only</b>). Make sure everything looks OK before proceeding by clicking
-          the button at the bottom of the sidebar.</p>
-        )"),
-        selectInput(
-          inputId = ns("upload_input_names_selector"),
-          label = NULL,
-          choices = names(input_data_preview()),
-          width = "inherit"
-        )
+            <p>Use the dropdown to choose an experiment to preview; the card to
+            the right displays information gathered from the selected
+            experiment, while the table below shows the corresponding data
+            (<b>first replicate only</b>). Make sure everything looks OK before
+            proceeding via the button at the bottom of the sidebar.</p>
+          )"),
+          selectInput(
+            inputId = ns("upload_input_names_selector"),
+            label = NULL,
+            choices = names(input_data_preview()),
+            width = "inherit"
+          )
         )
       )
     )
 
-    upload_drug_card <- reactive({
-      experiment_drugs <- drug_info()[[input$upload_input_names_selector]]
-      card(
-        height = 340,
-        class = "mb-0",
-        card_header(
-          class = "bg-dark",
-          paste0(
-            "Treatment information for experiment '",
-            input$upload_input_names_selector, "'"
-          )
-        ),
+    # Second card with names/concentrations for selected experiment
+    selected_expt <- reactive(input$upload_input_names_selector)
 
-        card_body(
-          HTML(paste0(
-            "<p><b>Treatment in the columns:</b> ",
-            experiment_drugs[["cols"]][["name"]],
-            "</p>"
-          )),
-          HTML(paste0(
-            "<p><b>Detected concentrations:</b> ",
-            paste(experiment_drugs[["cols"]][["concentrations"]], collapse = ", "),
-            "</p>"
-          )),
-          hr(),
-          HTML(paste0(
-            "<p><b>Treatment in the rows:</b> ",
-            experiment_drugs[["rows"]][["name"]],
-            "</p>"
-          )),
-          HTML(paste0(
-            "<p><b>Detected concentrations:</b> ",
-            paste(experiment_drugs[["rows"]][["concentrations"]], collapse = ", "),
-            "</p>"
-          ))
-        )
+    upload_drug_card <- reactive({
+      experiment_drugs <- drug_info()[[selected_expt()]]
+
+      make_card(
+        title =  paste0(
+          "Treatment information for experiment '",
+          selected_expt(), "'"
+        ),
+        height = 360,
+        class = "mb-0",
+        content = fill_card(expt = experiment_drugs)
       )
     })
 
     output$upload_drug_card_UI <- renderUI({
-      req(input_data_preview(), input$upload_input_names_selector)
+      req(input_data_preview(), selected_expt())
       upload_drug_card()
-    })
-
-    output$upload_input_preview <- renderUI({
-      req(input_data_preview(), input$upload_input_names_selector)
-      card(
-        card_header(
-          class = "bg-dark",
-          paste0(
-            "Data from the first replicate of experiment '",
-            input$upload_input_names_selector, "'"
-          )
-        ),
-        DT::dataTableOutput(ns("input_data_preview_DT"))
-      )
     })
 
 
@@ -949,7 +969,7 @@ server_upload <- function(id) {
     output$input_data_preview_DT <- DT::renderDataTable(
       DT::formatStyle(
         table = DT::datatable(
-          data = input_data_preview()[[input$upload_input_names_selector]],
+          data = input_data_preview()[[selected_expt()]],
           rownames = TRUE,
           selection = "none",
           class = "table-striped cell-border",
@@ -960,6 +980,19 @@ server_upload <- function(id) {
         `text-align` = "right"
       )
     )
+
+    # Third card with table of first replicate for selected experiment
+    output$upload_input_preview <- renderUI({
+      req(input_data_preview(), selected_expt())
+
+      make_card(
+        title = paste0(
+          "Data from the first replicate of experiment '",
+          selected_expt(), "'"
+        ),
+        content = DT::dataTableOutput(ns("input_data_preview_DT"))
+      )
+    })
 
 
     # Calculations modal ----------------------------------------------------
