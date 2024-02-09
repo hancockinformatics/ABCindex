@@ -12,10 +12,30 @@ abci_footer <- tags$footer(
   ))
 )
 
+panel_shortcuts <- dplyr::tibble(
+  id = c("get_started", "help", "about"),
+  class = c("primary", "secondary", "secondary"),
+  icon = c("play", "circle-question", "circle-info"),
+  label = c("Get started", "Help", "About")
+)
+
+
+# Functions ---------------------------------------------------------------
+
+special_button <- function(id, class, icon, label) {
+  actionButton(
+    inputId = id,
+    class = paste0("btn-xl px-2 me-md-2 btn-", class),
+    icon = icon(icon),
+    label = label,
+    width = "200px"
+  )
+}
+
 
 # Module ------------------------------------------------------------------
 
-ui_home <- function(id) {
+panel_home <- function(id) {
   ns <- NS(id)
 
   nav_panel(
@@ -58,27 +78,12 @@ ui_home <- function(id) {
         )"),
 
         div(
-          actionButton(
-            inputId = ns("get_started"),
-            class = "btn-xl btn-primary px-2 me-md-2",
-            icon = icon("play"),
-            label = "Get started",
-            width = "200px"
-          ),
-          actionButton(
-            inputId = ns("help_from_home"),
-            class = "btn-xl btn-secondary px-2 me-md-2 ",
-            icon = icon("circle-question"),
-            label = "Help",
-            width = "200px"
-          ),
-          actionButton(
-            inputId = ns("about"),
-            class = "btn-xl btn-secondary px-2 me-md-2",
-            icon = icon("circle-info"),
-            label = "About",
-            width = "200px"
-          )
+          purrr::pmap(panel_shortcuts, ~special_button(
+            id = ns(..1),
+            class = ..2,
+            icon = ..3,
+            label = ..4
+          ))
         )
       )
     ),
@@ -87,7 +92,7 @@ ui_home <- function(id) {
 }
 
 
-server_home <- function(id) {
+home_buttons_server <- function(id) {
   moduleServer(id, function(input, output, session) {
     ns <- NS(id)
 
@@ -95,9 +100,10 @@ server_home <- function(id) {
       input$get_started,
       nav_select(id = "navbar", selected = ns("upload"))
     )
+    # `selected` is not in ns() since the Help panel isn't a module
     observeEvent(
-      input$help_from_home,
-      nav_select(id = "navbar", selected = ns("help"))
+      input$help,
+      nav_select(id = "navbar", selected = "help")
     )
     observeEvent(
       input$about,

@@ -47,11 +47,20 @@ abci_ui <- page_navbar(
     )"))
   ),
 
-  ui_home("main"),
+  # Home page, with buttons to other panels
+  panel_home("main"),
   ui_upload("main"),
   ui_results("main"),
-  ui_help("main"),
-  ui_about("main"),
+
+  # Help panel
+  nav_panel(
+    value = "help",
+    title = "Help",
+    includeHTML("www/help/help.html"),
+    div(class = "pb-3", abci_footer)
+  ),
+
+  panel_about("main"),
 
   nav_spacer(),
 
@@ -76,8 +85,8 @@ abci_ui <- page_navbar(
 # Server ------------------------------------------------------------------
 
 abci_server <- function(input, output, session) {
-  server_home("main")
-  server_about("main")
+  home_buttons_server("main")
+  about_buttons_server("main")
 
   abci_result <- server_upload("main")
   server_results("main", data = abci_result)

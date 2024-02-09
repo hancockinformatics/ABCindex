@@ -1830,7 +1830,7 @@ server_results <- function(id, data) {
 
     observeEvent(
       input$help_from_results,
-      nav_select(id = "navbar", selected = ns("help"))
+      nav_select(id = "navbar", selected = "help")
     )
 
 

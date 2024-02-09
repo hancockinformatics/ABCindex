@@ -711,7 +711,7 @@ server_upload <- function(id) {
 
     observeEvent(
       input$help_from_upload,
-      nav_select(id = "navbar", selected = ns("help"))
+      nav_select(id = "navbar", selected = "help")
     )
 
 
