@@ -1,6 +1,6 @@
 # Data --------------------------------------------------------------------
 
-dependency_tibble <- dplyr::tibble(
+dependency_table <- dplyr::tibble(
   link = c(
     "https://rstudio.github.io/bslib/index.html",
     "https://ycphs.github.io/openxlsx/index.html",
@@ -33,7 +33,7 @@ dependency_tibble <- dplyr::tibble(
 
 # Functions ---------------------------------------------------------------
 
-#' dep_entry
+#' list_entry
 #'
 #' @param link Link to a website
 #' @param name Name for the link
@@ -41,7 +41,7 @@ dependency_tibble <- dplyr::tibble(
 #'
 #' @return HTML wrapping up a dependency entry
 #'
-dep_entry <- function(link, name, description) {
+list_entry <- function(link, name, description) {
   tagList(
     tags$dt(
       a(
@@ -56,13 +56,13 @@ dep_entry <- function(link, name, description) {
 }
 
 
-#' dep_wrapper
+#' wrap_list
 #'
 #' @param x A tibble of dependencies to wrap up into the UI
 #'
 #' @return A div which splits the dependency entries into two columns
 #'
-dep_wrapper <- function(x) {
+wrap_list <- function(x) {
   col_1 <- seq(1, ceiling(nrow(x) / 2))
   col_2 <- seq(max(col_1) + 1, nrow(x))
 
@@ -72,11 +72,11 @@ dep_wrapper <- function(x) {
       style = "font-size: 1.1em; font-weight: 300",
       div(
         class = "col",
-        tags$dl(purrr::pmap(x[col_1, ], dep_entry))
+        tags$dl(purrr::pmap(x[col_1, ], list_entry))
       ),
       div(
         class = "col",
-        tags$dl(purrr::pmap(x[col_2, ], dep_entry))
+        tags$dl(purrr::pmap(x[col_2, ], list_entry))
       )
     )
   )
@@ -85,7 +85,7 @@ dep_wrapper <- function(x) {
 
 # Module ------------------------------------------------------------------
 
-ui_about <- function(id) {
+panel_about <- function(id) {
   ns <- NS(id)
 
   nav_panel(
@@ -93,7 +93,7 @@ ui_about <- function(id) {
     title = "About",
 
     div(
-      class = "container col-xxl-6 px-4 pt-5",
+      class = "container col-xxl-6 px-4 pt-5 mb-auto",
       div(
         class = "row flex-lg-row align-items-center g-5 pt-5 pb-2",
         div(
@@ -152,21 +152,22 @@ ui_about <- function(id) {
             class = "lead",
             "ABCindex is written with R, and uses the following packages:"
           ),
-          div(class = "container", dep_wrapper(dependency_tibble))
+          div(class = "container", wrap_list(dependency_table))
         )
       )
-    )
+    ),
+    div(class = "pb-3", abci_footer)
   )
 }
 
 
-server_about <- function(id) {
+about_buttons_server <- function(id) {
   moduleServer(id, function(input, output, session) {
     ns <- NS(id)
 
     observeEvent(
       input$help_from_about,
-      nav_select(id = "navbar", selected = ns("help"))
+      nav_select(id = "navbar", selected = "help")
     )
   })
 }

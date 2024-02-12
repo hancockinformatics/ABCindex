@@ -1,4 +1,53 @@
-ui_home <- function(id) {
+# Data --------------------------------------------------------------------
+
+# This footer is used in all tabs
+abci_footer <- tags$footer(
+  class = "text-center mt-auto",
+  HTML(paste0(
+    "<div class='border-top pt-3 d-flex align-items-center justify-content-center'>",
+    "<a target='_blank' rel='noopener noreferrer' href='http://cmdr.ubc.ca/bobh/'>",
+    "<img class='pe-1' src='img/hancock_lab_logo_32.svg'></a>",
+    "<p class='mb-0'><small>2024 R.E.W Hancock Lab. The Hancock Lab at ",
+    "<a target='_blank' rel='noopener noreferrer' href='https://www.ubc.ca/'>",
+    "UBC Vancouver</a> acknowledges we are located on the traditional, ",
+    "ancestral and unceded territory of the Musqueam people.</small></p>",
+    "</div>"
+  ))
+)
+
+panel_shortcuts <- dplyr::tibble(
+  id = c("get_started", "help", "about"),
+  class = c("danger", "secondary", "secondary"),
+  icon = c("play", "circle-question", "circle-info"),
+  label = c("Get started", "Help", "About")
+)
+
+
+# Functions ---------------------------------------------------------------
+
+#' special_button
+#'
+#' @param id ID for the button
+#' @param class Class for the button, appended to "btn-"
+#' @param icon Icon for the button
+#' @param label Label for the button
+#'
+#' @return A Shiny button object
+#'
+special_button <- function(id, class, icon, label) {
+  actionButton(
+    inputId = id,
+    class = paste0("btn-xl px-2 me-md-2 btn-", class),
+    icon = icon(icon),
+    label = label,
+    width = "200px"
+  )
+}
+
+
+# Module ------------------------------------------------------------------
+
+panel_home <- function(id) {
   ns <- NS(id)
 
   nav_panel(
@@ -6,16 +55,11 @@ ui_home <- function(id) {
     title = "Home",
 
     div(
-      class = "container my-5",
+      class = "container mt-5 mb-auto",
       div(
-        class = "row p-4 pb-lg-5 pe-lg-0 pt-lg-5 rounded-3 border shadow-lg text-center",
+        class = "row p-4 pb-lg-5 pt-lg-5 rounded-3 border shadow-lg text-center",
 
-        h1(class = "display-3 fw-bold text-body-emphasis", "ABCindex"),
-
-        h1(
-          class = "display-6 mb-4",
-          "Calculation & visualization of the Anti-Biofilm Combination Index"
-        ),
+        HTML("<img src='img/ABCindex_title.svg' class='pb-4' height=230>"),
 
         HTML(r"(
           <p class='lead mb-4'>Welcome to ABCindex, a tool to quantify and
@@ -41,35 +85,21 @@ ui_home <- function(id) {
         )"),
 
         div(
-          actionButton(
-            inputId = ns("get_started"),
-            class = "btn-xl btn-primary px-2 me-md-2",
-            icon = icon("play"),
-            label = "Get started",
-            width = "200px"
-          ),
-          actionButton(
-            inputId = ns("help_from_home"),
-            class = "btn-xl btn-info px-2 me-md-2 ",
-            icon = icon("circle-question"),
-            label = "Help",
-            width = "200px"
-          ),
-          actionButton(
-            inputId = ns("about"),
-            class = "btn-xl btn-secondary px-2 me-md-2",
-            icon = icon("circle-info"),
-            label = "About",
-            width = "200px"
-          )
+          purrr::pmap(panel_shortcuts, ~special_button(
+            id = ns(..1),
+            class = ..2,
+            icon = ..3,
+            label = ..4
+          ))
         )
       )
-    )
+    ),
+    abci_footer
   )
 }
 
 
-server_home <- function(id) {
+home_buttons_server <- function(id) {
   moduleServer(id, function(input, output, session) {
     ns <- NS(id)
 
@@ -77,9 +107,10 @@ server_home <- function(id) {
       input$get_started,
       nav_select(id = "navbar", selected = ns("upload"))
     )
+    # `selected` is not wrapped with ns() since the Help panel isn't a module
     observeEvent(
-      input$help_from_home,
-      nav_select(id = "navbar", selected = ns("help"))
+      input$help,
+      nav_select(id = "navbar", selected = "help")
     )
     observeEvent(
       input$about,

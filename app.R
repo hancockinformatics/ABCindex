@@ -28,72 +28,63 @@ set_ggplot_theme()
 
 # UI ----------------------------------------------------------------------
 
-abci_ui <- page_fluid(
+abci_ui <- page_navbar(
+  id = "main-navbar",
+  window_title = "ABCindex",
   theme = app_theme,
-  useShinyjs(),
+  bg = bs_get_variables(app_theme, varnames = "secondary"),
 
-  tags$script(HTML(r"(
-    window.onbeforeunload = () => {
-      if (document.getElementById('shiny-disconnected-overlay') === null) {
-        return 'Are you sure you want to leave?';
-      }
-    };
-  )")),
-
-  tags$head(
-    tags$link(rel = "stylesheet", type = "text/css", href = "css/custom.css"),
-    tags$link(
-      rel = "icon",
-      type = "image/svg",
-      href = "img/hancock_lab_logo_32.svg",
-      sizes = "32x32"
-    ),
-    tags$link(
-      rel = "icon",
-      type = "image/svg",
-      href = "img/hancock_lab_logo_16.svg",
-      sizes = "16x16"
-    )
+  header = tags$head(
+    useShinyjs(),
+    tags$link(rel = "stylesheet", href = "css/custom.css"),
+    tags$link(rel = "icon", href = "img/hancock_lab_logo_32.svg"),
+    tags$script(HTML(r"(
+      window.onbeforeunload = () => {
+        if (document.getElementById('shiny-disconnected-overlay') === null) {
+          return 'Are you sure you want to leave?';
+        }
+      };
+    )"))
   ),
 
-  page_navbar(
-    id = "main-navbar",
-    collapsible = TRUE,
-    bg = bs_get_variables(app_theme, varnames = "primary"),
-    window_title = "ABCindex",
+  nav_item(HTML("<img src='img/ABCindex_icon.svg' height='32'>")),
 
-    ui_home("main"),
-    ui_upload("main"),
-    ui_results("main"),
-    ui_help("main"),
-    ui_about("main"),
+  panel_home("main"),
+  panel_upload("main"),
+  panel_results("main"),
+  nav_panel(
+    value = "help",
+    title = "Help",
+    includeHTML("www/help/help.html"),
+    div(class = "pb-3", abci_footer)
+  ),
+  panel_about("main"),
 
-    nav_spacer(),
+  nav_spacer(),
 
-    nav_item(a(
-      icon("github"),
-      "GitHub",
-      href = "https://github.com/hancockinformatics/ABCindex",
-      target = "_blank",
-      rel = "noopener noreferrer"
-    )),
+  nav_item(a(
+    icon("github"),
+    "GitHub",
+    href = "https://github.com/hancockinformatics/ABCindex",
+    target = "_blank",
+    rel = "noopener noreferrer"
+  )),
 
-    # Divider
-    nav_item(tagList(
-      div(class = "vr d-none d-sm-flex h-100 mx-sm-2 text-white"),
-      hr(class = "d-lg-none my-2 text-white-50")
-    )),
+  # Divider
+  nav_item(tagList(
+    div(class = "vr d-none d-sm-flex h-100 mx-sm-2 text-white"),
+    hr(class = "d-lg-none my-2 text-white-50")
+  )),
 
-    nav_item(app_version, style = "color: var(--bs-nav-link-color)")
-  )
+  nav_item(app_version, style = "color: var(--bs-nav-link-color)")
 )
 
 
 # Server ------------------------------------------------------------------
 
 abci_server <- function(input, output, session) {
-  server_home("main")
-  server_about("main")
+  home_buttons_server("main")
+  about_buttons_server("main")
 
   abci_result <- server_upload("main")
   server_results("main", data = abci_result)

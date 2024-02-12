@@ -29,21 +29,15 @@
   padding-right: 12px;
 }
 
-/* Fix padding for the navbar */
-.container-fluid {
-  padding-left: 0;
-  padding-right: 0;
-}
-.navbar, .tab-content {
-  padding-left: 0;
-  padding-right: 16px;
-}
-
 /* Give regular modal dialogs the attributes of "modal-dialog-centered" */
 .modal-dialog {
   display: flex;
   align-items: center;
   min-height: calc(100% - var(--bs-modal-margin) * 2);
+}
+
+.navbar, .tab-content {
+  padding-right: 16px;
 }
 
 /* Increase size of the progress bar when uploading files */
