@@ -763,6 +763,7 @@ panel_upload <- function(id) {
       layout_column_wrap(
         width = 1/2,
         fill = FALSE,
+        class = "pb-2",
         uiOutput(ns("upload_input_names_card")),
         uiOutput(ns("upload_drug_card_UI"))
       ),
