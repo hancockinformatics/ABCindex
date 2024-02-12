@@ -59,7 +59,7 @@ panel_home <- function(id) {
       div(
         class = "row p-4 pb-lg-5 pt-lg-5 rounded-3 border shadow-lg text-center",
 
-        img(src = "img/ABCindex_title.svg", class = "img-fluid pb-4"),
+        HTML("<img src='img/ABCindex_title.svg' class='pb-4' height=230>"),
 
         HTML(r"(
           <p class='lead mb-4'>Welcome to ABCindex, a tool to quantify and

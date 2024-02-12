@@ -156,7 +156,7 @@ panel_about <- function(id) {
         )
       )
     ),
-    abci_footer
+    div(class = "pb-3", abci_footer)
   )
 }
 

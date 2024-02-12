@@ -47,6 +47,8 @@ abci_ui <- page_navbar(
     )"))
   ),
 
+  nav_item(HTML("<img src='img/ABCindex_icon.svg' height='32'>")),
+
   panel_home("main"),
   panel_upload("main"),
   panel_results("main"),
