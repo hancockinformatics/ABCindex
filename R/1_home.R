@@ -17,7 +17,7 @@ abci_footer <- tags$footer(
 
 panel_shortcuts <- dplyr::tibble(
   id = c("get_started", "help", "about"),
-  class = c("primary", "secondary", "secondary"),
+  class = c("danger", "secondary", "secondary"),
   icon = c("play", "circle-question", "circle-info"),
   label = c("Get started", "Help", "About")
 )
@@ -57,14 +57,9 @@ panel_home <- function(id) {
     div(
       class = "container mt-5 mb-auto",
       div(
-        class = "row p-4 pb-lg-5 pe-lg-0 pt-lg-5 rounded-3 border shadow-lg text-center",
+        class = "row p-4 pb-lg-5 pt-lg-5 rounded-3 border shadow-lg text-center",
 
-        h1(class = "display-3 fw-bold text-body-emphasis", "ABCindex"),
-
-        h1(
-          class = "display-6 mb-4",
-          "Calculation & visualization of the Anti-Biofilm Combination Index"
-        ),
+        img(src = "img/ABCindex_title.svg", class = "img-fluid pb-4"),
 
         HTML(r"(
           <p class='lead mb-4'>Welcome to ABCindex, a tool to quantify and
