@@ -14,7 +14,12 @@ app_theme <- bs_theme(
   version = 5,
   bootswatch = "cosmo",
   base_font = font_google("Inter"),
-  danger = "#cc002c"
+  primary = "#cc002c",
+  secondary = "#373a3c",
+  info = "#ff7518",
+  success = "#3fb618",
+  warning = "#9954bb",
+  danger = "#2780e3"
 )
 
 app_version <- gsub(

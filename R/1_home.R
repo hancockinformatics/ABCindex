@@ -17,7 +17,7 @@ abci_footer <- tags$footer(
 
 panel_shortcuts <- dplyr::tibble(
   id = c("get_started", "help", "about"),
-  class = c("danger", "secondary", "secondary"),
+  class = c("primary", "secondary", "secondary"),
   icon = c("play", "circle-question", "circle-info"),
   label = c("Get started", "Help", "About")
 )

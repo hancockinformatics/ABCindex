@@ -1699,7 +1699,7 @@ panel_results <- function(id) {
         disabled(
           actionButton(
             inputId = ns("create_plot"),
-            class = "btn btn-info btn-tooltip",
+            class = "btn-info",
             icon = icon("chart-bar"),
             label = "Create or update the plot"
           ) %>%
@@ -1750,7 +1750,7 @@ panel_results <- function(id) {
               disabled(
                 downloadButton(
                   outputId = ns("results_handler_xlsx"),
-                  class = "btn btn-success align-items-center px-1",
+                  class = "btn-success align-items-center px-1",
                   label = "Save results spreadsheet",
                   style = "width: 100%"
                 ) %>%
@@ -1766,7 +1766,7 @@ panel_results <- function(id) {
               disabled(
                 actionButton(
                   inputId = ns("plot_download_button"),
-                  class = "btn btn-success align-items-center",
+                  class = "btn-success align-items-center",
                   icon = icon("floppy-disk"),
                   label = "Save the plot",
                   style = "width: 100%"
@@ -1786,7 +1786,7 @@ panel_results <- function(id) {
               disabled(
                 actionButton(
                   inputId = ns("restore"),
-                  class = "btn btn-secondary",
+                  class = "btn-secondary",
                   icon = icon("rotate-left"),
                   label = "Restore defaults",
                   width = "100%"
@@ -1802,7 +1802,7 @@ panel_results <- function(id) {
               disabled(
                 actionButton(
                   inputId = ns("reset"),
-                  class = "btn btn-warning",
+                  class = "btn-danger",
                   icon = icon("trash-can"),
                   label = "Analyze a new dataset",
                   width = "100%"
@@ -3285,19 +3285,19 @@ server_results <- function(id, data) {
           outputId = ns("plot_handler_png"),
           label = "PNG",
           width = "50px",
-          class = "btn btn-success px-4 me-md-2 align-items-center"
+          class = "btn-success px-4 me-md-2 align-items-center"
         ),
         downloadButton(
           outputId = ns("plot_handler_svg"),
           label = "SVG",
           width = "50px",
-          class = "btn btn-success px-4 me-md-2 align-items-center"
+          class = "btn-success px-4 me-md-2 align-items-center"
         ),
         downloadButton(
           outputId = ns("plot_handler_tiff"),
           label = "TIFF",
           width = "50px",
-          class = "btn btn-success px-4 me-md-2 align-items-center"
+          class = "btn-success px-4 me-md-2 align-items-center"
         ),
         footer = tagAppendAttributes(
           modalButton(label = "Close"),
@@ -3389,7 +3389,7 @@ server_results <- function(id, data) {
           ),
           actionButton(
             inputId = ns("confirm_reset"),
-            class = "btn btn-danger",
+            class = "btn-danger",
             label = "Refresh and start over"
           )
         )
@@ -3402,4 +3402,3 @@ server_results <- function(id, data) {
     )
   })
 }
-
