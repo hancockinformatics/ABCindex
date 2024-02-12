@@ -3,14 +3,6 @@
   margin-bottom: 0;
 }
 
-/* Extra large buttons */
-.btn-xl, .btn-group-xl > .btn {
-  --bs-btn-padding-y: 0.5rem;
-  --bs-btn-padding-x: 1rem;
-  --bs-btn-font-size: 1.5rem;
-  --bs-btn-border-radius: var(--bs-border-radius-lg);
-}
-
 /* Allow disabled buttons to have tooltips */
 .btn:disabled, .btn.disabled, fieldset:disabled .btn {
   pointer-events: auto;
