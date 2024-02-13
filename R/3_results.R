@@ -3253,6 +3253,7 @@ server_results <- function(id, data) {
         tagList(
           shinycssloaders::withSpinner(
             type = 8,
+            color = bs_get_variables(app_theme, "primary"),
             plotOutput(
               outputId = ns("abci_plot"),
               width = paste0(output_dims()[1], "px"),
