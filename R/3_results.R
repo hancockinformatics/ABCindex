@@ -3229,12 +3229,12 @@ server_results <- function(id, data) {
     output$abci_plot <- renderPlot({
       input$create_plot
       if (is.null(the_plot())) {
-        notify(
+        notify(list = list(
           type = "error",
           status = "Error",
           message = "We were unable to draw a plot with the specified parameters.",
           suggest = "Try changing the inputs in the sidebar, then update the plot."
-        )
+        ))
       } else {
         the_plot()
       }
@@ -3253,7 +3253,7 @@ server_results <- function(id, data) {
         tagList(
           shinycssloaders::withSpinner(
             type = 8,
-            color = bs_get_variables(app_theme, "primary"),
+            color = "#cc002c",
             plotOutput(
               outputId = ns("abci_plot"),
               width = paste0(output_dims()[1], "px"),
