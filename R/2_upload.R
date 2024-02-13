@@ -843,10 +843,7 @@ server_upload <- function(id) {
       input_data(initial_input$data)
       input_order(initial_input$order)
 
-      notify(
-        id = ns("upload_notification"),
-        list = initial_input
-      )
+      notify(id = ns("upload_notification"), list = initial_input)
     })
 
     # User data
@@ -856,19 +853,17 @@ server_upload <- function(id) {
       input_data(initial_input$data)
       input_order(initial_input$order)
 
-      notify(
-        id = ns("upload_notification"),
-        type = initial_input
-      )
+      notify(id = ns("upload_notification"), list = initial_input)
     })
 
-    # Enable the calculations button
-    observeEvent(input_data(), {
+    # Enable the calculations button and update the tooltip
+    observeEvent(
+      input_data(),
       enable_button(
         "perform_abci_calculations",
         "Click here to analyze the uploaded data"
       )
-    })
+    )
 
 
     # Input summary cards ---------------------------------------------------
@@ -926,7 +921,7 @@ server_upload <- function(id) {
       experiment_drugs <- drug_info()[[selected_expt()]]
 
       make_card(
-        title =  paste0(
+        title = paste0(
           "Treatment information for experiment '",
           selected_expt(), "'"
         ),
