@@ -395,7 +395,7 @@ make_card <- function(title, height = NULL, class = NULL, content) {
   card(
     height = height,
     class = class,
-    card_header(class = "bg-dark", title),
+    card_header(class = "bg-secondary", title),
     card_body(content)
   )
 }
@@ -412,16 +412,16 @@ make_card <- function(title, height = NULL, class = NULL, content) {
 #'
 #' @return A shiny notification bubble
 #'
-notify <- function(id = NULL, type, status, message, suggest) {
+notify <- function(id = NULL, list) {
   showNotification(
     id = id,
-    type = type,
-    duration = ifelse(type == "error", 20, 10),
+    type = list$type,
+    duration = ifelse(list$type == "error", 20, 10),
     ui = HTML(paste0(
-      "<h4 class='alert-heading'><b>", status, "</b></h4>",
+      "<h4 class='alert-heading'><b>", list$status, "</b></h4>",
       "<p class='mb-0'>",
-      message,
-      suggest,
+      list$message,
+      list$suggest,
       "</p>"
     ))
   )
@@ -745,7 +745,7 @@ panel_upload <- function(id) {
         disabled(
           actionButton(
             inputId = ns("perform_abci_calculations"),
-            class = "btn btn-primary btn-tooltip mt-auto",
+            class = "btn-info mt-auto",
             icon = icon("calculator"),
             label = "Perform ABCI calculations"
           ) %>%
@@ -784,7 +784,7 @@ server_upload <- function(id) {
     )
 
 
-    # Download the template -------------------------------------------------
+    # Download the template -----------------------------------------------
 
     observeEvent(input$download_template, {
       showModal(modalDialog(
@@ -801,13 +801,13 @@ server_upload <- function(id) {
           outputId = ns("template_handler_xlsx"),
           label = "XLSX",
           width = "50px",
-          class = "btn btn-success px-4 me-md-2 align-items-center"
+          class = "btn-success px-4 me-md-2 align-items-center"
         ),
         downloadButton(
           outputId = ns("template_handler_ods"),
           label = "ODS",
           width = "50px",
-          class = "btn btn-success px-4 me-md-2 align-items-center"
+          class = "btn-success px-4 me-md-2 align-items-center"
         ),
         footer = tagAppendAttributes(
           modalButton(label = "Close"),
@@ -831,7 +831,7 @@ server_upload <- function(id) {
     )
 
 
-    # Loading data ----------------------------------------------------------
+    # Loading data --------------------------------------------------------
 
     input_data <- reactiveVal()
     input_order <- reactiveVal()
@@ -843,13 +843,7 @@ server_upload <- function(id) {
       input_data(initial_input$data)
       input_order(initial_input$order)
 
-      notify(
-        id = ns("upload_notification"),
-        type = initial_input$type,
-        status = initial_input$status,
-        message = initial_input$message,
-        suggest = initial_input$suggest
-      )
+      notify(id = ns("upload_notification"), list = initial_input)
     })
 
     # User data
@@ -859,25 +853,20 @@ server_upload <- function(id) {
       input_data(initial_input$data)
       input_order(initial_input$order)
 
-      notify(
-        id = ns("upload_notification"),
-        type = initial_input$type,
-        status = initial_input$status,
-        message = initial_input$message,
-        suggest = initial_input$suggest
-      )
+      notify(id = ns("upload_notification"), list = initial_input)
     })
 
-    # Enable the calculations button
-    observeEvent(input_data(), {
+    # Enable the calculations button and update the tooltip
+    observeEvent(
+      input_data(),
       enable_button(
         "perform_abci_calculations",
         "Click here to analyze the uploaded data"
       )
-    })
+    )
 
 
-    # Input summary cards ---------------------------------------------------
+    # Input summary cards -------------------------------------------------
 
     # drug_info()[[experiment]][[cols/rows]][[name/concentrations]]
     drug_info <- reactive(
@@ -932,7 +921,7 @@ server_upload <- function(id) {
       experiment_drugs <- drug_info()[[selected_expt()]]
 
       make_card(
-        title =  paste0(
+        title = paste0(
           "Treatment information for experiment '",
           selected_expt(), "'"
         ),
@@ -948,7 +937,7 @@ server_upload <- function(id) {
     })
 
 
-    # Preview input as table ------------------------------------------------
+    # Preview input as table ----------------------------------------------
 
     input_data_preview <- reactive({
       req(input_data())
@@ -996,7 +985,7 @@ server_upload <- function(id) {
     })
 
 
-    # Calculations modal ----------------------------------------------------
+    # Calculations modal --------------------------------------------------
 
     observeEvent(input$perform_abci_calculations, {
       req(input_data())
@@ -1028,7 +1017,7 @@ server_upload <- function(id) {
           actionButton(
             inputId = ns("confirm_calc"),
             label = "Calculate ABCI values",
-            class = "btn btn-primary"
+            class = "btn-primary"
           )
         )
       ))

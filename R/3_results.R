@@ -271,46 +271,39 @@ find_mic <- function(
     "Column given by 'y.drug' must be a factor" = is.factor(data[[y.drug]])
   )
 
-  x1 <- data %>%
+  x_mic <- data %>%
     filter(.data[[y.drug]] == "0") %>%
     mutate(x.new = as.numeric(as.character(.data[[x.drug]]))) %>%
     select(x.new, all_of(c(col.data))) %>%
     arrange(desc(x.new)) %>%
-    tibble::deframe()
-
-  x_temp <- purrr::head_while(x1, ~.x < threshold) %>%
+    tibble::deframe() %>%
+    purrr::head_while(~.x < threshold) %>%
     names() %>%
     last()
 
-  x_mic <- ifelse(
-    length(x_temp) == 0,
-    first(names(x1)),
-    x_temp
+  x_lab <- ifelse(
+    test = x_mic %in% levels(droplevels(data[[x.drug]])),
+    yes = which(levels(droplevels(data[[x.drug]])) == x_mic),
+    no = NA_integer_
   )
 
-  y1 <- data %>%
+  y_mic <- data %>%
     filter(.data[[x.drug]] == "0") %>%
     mutate(y.new = as.numeric(as.character(.data[[y.drug]]))) %>%
     select(y.new, all_of(c(col.data))) %>%
     arrange(desc(y.new)) %>%
-    tibble::deframe()
-
-  y_temp <- purrr::head_while(y1, ~.x < threshold) %>%
+    tibble::deframe() %>%
+    purrr::head_while(~.x < threshold) %>%
     names() %>%
     last()
 
-  y_mic <- ifelse(
-    length(y_temp) == 0,
-    first(names(y1)),
-    y_temp
+  y_lab <- ifelse(
+    test = y_mic %in% levels(droplevels(data[[y.drug]])),
+    yes = which(levels(droplevels(data[[y.drug]])) == y_mic),
+    no = NA_integer_
   )
 
-  mic_table <- tibble(
-    XMIC = x_mic,
-    YMIC = y_mic,
-    XLAB = which(levels(droplevels(data[["cols_conc"]])) == x_mic),
-    YLAB = which(levels(droplevels(data[["rows_conc"]])) == y_mic)
-  )
+  mic_table <- tibble(XMIC = x_mic, YMIC = y_mic, XLAB = x_lab, YLAB = y_lab)
 
   if (!zero) {
     mic_table <- mic_table %>%
@@ -1699,7 +1692,7 @@ panel_results <- function(id) {
         disabled(
           actionButton(
             inputId = ns("create_plot"),
-            class = "btn btn-info btn-tooltip",
+            class = "btn-info",
             icon = icon("chart-bar"),
             label = "Create or update the plot"
           ) %>%
@@ -1750,7 +1743,7 @@ panel_results <- function(id) {
               disabled(
                 downloadButton(
                   outputId = ns("results_handler_xlsx"),
-                  class = "btn btn-success align-items-center px-1",
+                  class = "btn-success align-items-center px-1",
                   label = "Save results spreadsheet",
                   style = "width: 100%"
                 ) %>%
@@ -1766,7 +1759,7 @@ panel_results <- function(id) {
               disabled(
                 actionButton(
                   inputId = ns("plot_download_button"),
-                  class = "btn btn-success align-items-center",
+                  class = "btn-success align-items-center",
                   icon = icon("floppy-disk"),
                   label = "Save the plot",
                   style = "width: 100%"
@@ -1786,7 +1779,7 @@ panel_results <- function(id) {
               disabled(
                 actionButton(
                   inputId = ns("restore"),
-                  class = "btn btn-secondary",
+                  class = "btn-secondary",
                   icon = icon("rotate-left"),
                   label = "Restore defaults",
                   width = "100%"
@@ -1802,7 +1795,7 @@ panel_results <- function(id) {
               disabled(
                 actionButton(
                   inputId = ns("reset"),
-                  class = "btn btn-warning",
+                  class = "btn-danger",
                   icon = icon("trash-can"),
                   label = "Analyze a new dataset",
                   width = "100%"
@@ -1834,7 +1827,7 @@ server_results <- function(id, data) {
     )
 
 
-    # Download results ------------------------------------------------------
+    # Download results ----------------------------------------------------
 
     output$results_handler_xlsx <- downloadHandler(
       filename = function() {
@@ -1891,7 +1884,7 @@ server_results <- function(id, data) {
     })
 
 
-    # Preview colours -------------------------------------------------------
+    # Preview colours -----------------------------------------------------
 
     modal_colours <- lapply(
       list(
@@ -1927,9 +1920,9 @@ server_results <- function(id, data) {
     observeEvent(input$line_preview_colours, showModal(modal_colours$lines))
 
 
-    # Plot inputs UI --------------------------------------------------------
+    # Plot inputs UI ------------------------------------------------------
 
-    # |- Dot ----------------------------------------------------------------
+    # |- Dot --------------------------------------------------------------
 
     output$plot_inputs_dot <- renderUI(
       div(
@@ -2146,7 +2139,7 @@ server_results <- function(id, data) {
     })
 
 
-    # |- Split dot ----------------------------------------------------------
+    # |- Split dot --------------------------------------------------------
 
     output$plot_inputs_dot_split <- renderUI(
       div(
@@ -2380,7 +2373,7 @@ server_results <- function(id, data) {
     })
 
 
-    # |- Tile ---------------------------------------------------------------
+    # |- Tile -------------------------------------------------------------
 
     output$plot_inputs_tile <- renderUI(
       div(
@@ -2599,7 +2592,7 @@ server_results <- function(id, data) {
     })
 
 
-    # |- Split tile ---------------------------------------------------------
+    # |- Split tile -------------------------------------------------------
 
     output$plot_inputs_tile_split <- renderUI(
       div(
@@ -2835,7 +2828,7 @@ server_results <- function(id, data) {
     })
 
 
-    # |- Line ---------------------------------------------------------------
+    # |- Line -------------------------------------------------------------
 
     output$plot_inputs_line <- renderUI(
       div(
@@ -3044,7 +3037,7 @@ server_results <- function(id, data) {
     })
 
 
-    # Line include and swap options -----------------------------------------
+    # Line include and swap options ---------------------------------------
 
     line_columns <- reactive({
       if (!is.null(input$plot_line_swap)) {
@@ -3071,7 +3064,7 @@ server_results <- function(id, data) {
     })
 
 
-    # Create the_plot() -----------------------------------------------------
+    # Create the_plot() ---------------------------------------------------
 
     the_plot <- eventReactive(input$create_plot, {
       req(data())
@@ -3224,17 +3217,17 @@ server_results <- function(id, data) {
     })
 
 
-    # Render and output the_plot() ------------------------------------------
+    # Render and output the_plot() ----------------------------------------
 
     output$abci_plot <- renderPlot({
       input$create_plot
       if (is.null(the_plot())) {
-        notify(
+        notify(list = list(
           type = "error",
           status = "Error",
           message = "We were unable to draw a plot with the specified parameters.",
           suggest = "Try changing the inputs in the sidebar, then update the plot."
-        )
+        ))
       } else {
         the_plot()
       }
@@ -3253,6 +3246,7 @@ server_results <- function(id, data) {
         tagList(
           shinycssloaders::withSpinner(
             type = 8,
+            color = "#cc002c",
             plotOutput(
               outputId = ns("abci_plot"),
               width = paste0(output_dims()[1], "px"),
@@ -3271,33 +3265,33 @@ server_results <- function(id, data) {
     })
 
 
-    # Download plot button --------------------------------------------------
+    # Download plot button ------------------------------------------------
 
     observeEvent(input$plot_download_button, {
       showModal(modalDialog(
         title = "Download the plot",
         size = "m",
         p(
-          "Use the buttons below to download the current plot as a PNG, SVG, or ",
-          "TIFF image."
+          "Use the buttons below to download the current plot as a PNG, SVG, ",
+          "or TIFF image."
         ),
         downloadButton(
           outputId = ns("plot_handler_png"),
           label = "PNG",
           width = "50px",
-          class = "btn btn-success px-4 me-md-2 align-items-center"
+          class = "btn-success px-4 me-md-2 align-items-center"
         ),
         downloadButton(
           outputId = ns("plot_handler_svg"),
           label = "SVG",
           width = "50px",
-          class = "btn btn-success px-4 me-md-2 align-items-center"
+          class = "btn-success px-4 me-md-2 align-items-center"
         ),
         downloadButton(
           outputId = ns("plot_handler_tiff"),
           label = "TIFF",
           width = "50px",
-          class = "btn btn-success px-4 me-md-2 align-items-center"
+          class = "btn-success px-4 me-md-2 align-items-center"
         ),
         footer = tagAppendAttributes(
           modalButton(label = "Close"),
@@ -3367,12 +3361,12 @@ server_results <- function(id, data) {
     )
 
 
-    # Restore button --------------------------------------------------------
+    # Restore button ------------------------------------------------------
 
     observeEvent(input$restore, shinyjs::reset(id = "results_sidebar"))
 
 
-    # Refresh button --------------------------------------------------------
+    # Refresh button ------------------------------------------------------
 
     observeEvent(input$reset, {
       showModal(modalDialog(
@@ -3389,7 +3383,7 @@ server_results <- function(id, data) {
           ),
           actionButton(
             inputId = ns("confirm_reset"),
-            class = "btn btn-danger",
+            class = "btn-danger",
             label = "Refresh and start over"
           )
         )
@@ -3402,4 +3396,3 @@ server_results <- function(id, data) {
     )
   })
 }
-
