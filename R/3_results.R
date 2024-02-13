@@ -271,46 +271,39 @@ find_mic <- function(
     "Column given by 'y.drug' must be a factor" = is.factor(data[[y.drug]])
   )
 
-  x1 <- data %>%
+  x_mic <- data %>%
     filter(.data[[y.drug]] == "0") %>%
     mutate(x.new = as.numeric(as.character(.data[[x.drug]]))) %>%
     select(x.new, all_of(c(col.data))) %>%
     arrange(desc(x.new)) %>%
-    tibble::deframe()
-
-  x_temp <- purrr::head_while(x1, ~.x < threshold) %>%
+    tibble::deframe() %>%
+    purrr::head_while(~.x < threshold) %>%
     names() %>%
     last()
 
-  x_mic <- ifelse(
-    length(x_temp) == 0,
-    first(names(x1)),
-    x_temp
+  x_lab <- ifelse(
+    test = x_mic %in% levels(droplevels(data[[x.drug]])),
+    yes = which(levels(droplevels(data[[x.drug]])) == x_mic),
+    no = NA_integer_
   )
 
-  y1 <- data %>%
+  y_mic <- data %>%
     filter(.data[[x.drug]] == "0") %>%
     mutate(y.new = as.numeric(as.character(.data[[y.drug]]))) %>%
     select(y.new, all_of(c(col.data))) %>%
     arrange(desc(y.new)) %>%
-    tibble::deframe()
-
-  y_temp <- purrr::head_while(y1, ~.x < threshold) %>%
+    tibble::deframe() %>%
+    purrr::head_while(~.x < threshold) %>%
     names() %>%
     last()
 
-  y_mic <- ifelse(
-    length(y_temp) == 0,
-    first(names(y1)),
-    y_temp
+  y_lab <- ifelse(
+    test = y_mic %in% levels(droplevels(data[[y.drug]])),
+    yes = which(levels(droplevels(data[[y.drug]])) == y_mic),
+    no = NA_integer_
   )
 
-  mic_table <- tibble(
-    XMIC = x_mic,
-    YMIC = y_mic,
-    XLAB = which(levels(droplevels(data[["cols_conc"]])) == x_mic),
-    YLAB = which(levels(droplevels(data[["rows_conc"]])) == y_mic)
-  )
+  mic_table <- tibble(XMIC = x_mic, YMIC = y_mic, XLAB = x_lab, YLAB = y_lab)
 
   if (!zero) {
     mic_table <- mic_table %>%
