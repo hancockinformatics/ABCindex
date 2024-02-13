@@ -1834,7 +1834,7 @@ server_results <- function(id, data) {
     )
 
 
-    # Download results ------------------------------------------------------
+    # Download results ----------------------------------------------------
 
     output$results_handler_xlsx <- downloadHandler(
       filename = function() {
@@ -1891,7 +1891,7 @@ server_results <- function(id, data) {
     })
 
 
-    # Preview colours -------------------------------------------------------
+    # Preview colours -----------------------------------------------------
 
     modal_colours <- lapply(
       list(
@@ -1927,9 +1927,9 @@ server_results <- function(id, data) {
     observeEvent(input$line_preview_colours, showModal(modal_colours$lines))
 
 
-    # Plot inputs UI --------------------------------------------------------
+    # Plot inputs UI ------------------------------------------------------
 
-    # |- Dot ----------------------------------------------------------------
+    # |- Dot --------------------------------------------------------------
 
     output$plot_inputs_dot <- renderUI(
       div(
@@ -2146,7 +2146,7 @@ server_results <- function(id, data) {
     })
 
 
-    # |- Split dot ----------------------------------------------------------
+    # |- Split dot --------------------------------------------------------
 
     output$plot_inputs_dot_split <- renderUI(
       div(
@@ -2380,7 +2380,7 @@ server_results <- function(id, data) {
     })
 
 
-    # |- Tile ---------------------------------------------------------------
+    # |- Tile -------------------------------------------------------------
 
     output$plot_inputs_tile <- renderUI(
       div(
@@ -2599,7 +2599,7 @@ server_results <- function(id, data) {
     })
 
 
-    # |- Split tile ---------------------------------------------------------
+    # |- Split tile -------------------------------------------------------
 
     output$plot_inputs_tile_split <- renderUI(
       div(
@@ -2835,7 +2835,7 @@ server_results <- function(id, data) {
     })
 
 
-    # |- Line ---------------------------------------------------------------
+    # |- Line -------------------------------------------------------------
 
     output$plot_inputs_line <- renderUI(
       div(
@@ -3044,7 +3044,7 @@ server_results <- function(id, data) {
     })
 
 
-    # Line include and swap options -----------------------------------------
+    # Line include and swap options ---------------------------------------
 
     line_columns <- reactive({
       if (!is.null(input$plot_line_swap)) {
@@ -3071,7 +3071,7 @@ server_results <- function(id, data) {
     })
 
 
-    # Create the_plot() -----------------------------------------------------
+    # Create the_plot() ---------------------------------------------------
 
     the_plot <- eventReactive(input$create_plot, {
       req(data())
@@ -3224,7 +3224,7 @@ server_results <- function(id, data) {
     })
 
 
-    # Render and output the_plot() ------------------------------------------
+    # Render and output the_plot() ----------------------------------------
 
     output$abci_plot <- renderPlot({
       input$create_plot
@@ -3271,15 +3271,15 @@ server_results <- function(id, data) {
     })
 
 
-    # Download plot button --------------------------------------------------
+    # Download plot button ------------------------------------------------
 
     observeEvent(input$plot_download_button, {
       showModal(modalDialog(
         title = "Download the plot",
         size = "m",
         p(
-          "Use the buttons below to download the current plot as a PNG, SVG, or ",
-          "TIFF image."
+          "Use the buttons below to download the current plot as a PNG, SVG, ",
+          "or TIFF image."
         ),
         downloadButton(
           outputId = ns("plot_handler_png"),
@@ -3367,12 +3367,12 @@ server_results <- function(id, data) {
     )
 
 
-    # Restore button --------------------------------------------------------
+    # Restore button ------------------------------------------------------
 
     observeEvent(input$restore, shinyjs::reset(id = "results_sidebar"))
 
 
-    # Refresh button --------------------------------------------------------
+    # Refresh button ------------------------------------------------------
 
     observeEvent(input$reset, {
       showModal(modalDialog(

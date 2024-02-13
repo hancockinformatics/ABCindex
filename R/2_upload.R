@@ -784,7 +784,7 @@ server_upload <- function(id) {
     )
 
 
-    # Download the template -------------------------------------------------
+    # Download the template -----------------------------------------------
 
     observeEvent(input$download_template, {
       showModal(modalDialog(
@@ -831,7 +831,7 @@ server_upload <- function(id) {
     )
 
 
-    # Loading data ----------------------------------------------------------
+    # Loading data --------------------------------------------------------
 
     input_data <- reactiveVal()
     input_order <- reactiveVal()
@@ -866,7 +866,7 @@ server_upload <- function(id) {
     )
 
 
-    # Input summary cards ---------------------------------------------------
+    # Input summary cards -------------------------------------------------
 
     # drug_info()[[experiment]][[cols/rows]][[name/concentrations]]
     drug_info <- reactive(
@@ -937,7 +937,7 @@ server_upload <- function(id) {
     })
 
 
-    # Preview input as table ------------------------------------------------
+    # Preview input as table ----------------------------------------------
 
     input_data_preview <- reactive({
       req(input_data())
@@ -985,7 +985,7 @@ server_upload <- function(id) {
     })
 
 
-    # Calculations modal ----------------------------------------------------
+    # Calculations modal --------------------------------------------------
 
     observeEvent(input$perform_abci_calculations, {
       req(input_data())
