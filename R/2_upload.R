@@ -898,11 +898,11 @@ server_upload <- function(id) {
         class = "mb-0",
         content = tagList(
           HTML(r"(
-            <p>Use the dropdown to choose an experiment to preview; the card to
-            the right displays information gathered from the selected
-            experiment, while the table below shows the corresponding data
-            (<b>first replicate only</b>). Make sure everything looks OK before
-            proceeding via the button at the bottom of the sidebar.</p>
+            <p>Use the dropdown to choose an experiment to preview. The card to
+            the right displays information for the selected experiment, while
+            the table below shows the data (<b>first replicate only</b>). Make
+            sure everything looks OK before proceeding via the button at the
+            bottom of the sidebar.</p>
           )"),
           selectInput(
             inputId = ns("upload_input_names_selector"),
