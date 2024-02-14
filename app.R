@@ -42,7 +42,7 @@ abci_ui <- page_navbar(
   header = tags$head(
     useShinyjs(),
     tags$link(rel = "stylesheet", href = "css/custom.css"),
-    tags$link(rel = "icon", href = "img/hancock_lab_logo_32.svg"),
+    tags$link(rel = "icon", href = "img/ABCindex_icon.svg"),
     tags$script(HTML(r"(
       window.onbeforeunload = () => {
         if (document.getElementById('shiny-disconnected-overlay') === null) {
