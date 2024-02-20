@@ -277,7 +277,7 @@ find_mic <- function(
 
   data_split <- split(x = data, f = data[col.rep])
 
-  mic_values_x <- lapply(data_split, function(r) {
+  x_mic_per_rep <- lapply(data_split, function(r) {
     r %>%
       filter(.data[[y.drug]] == "0") %>%
       mutate(x.new = as.numeric(as.character(.data[[x.drug]]))) %>%
@@ -289,7 +289,26 @@ find_mic <- function(
       last()
   }) %>% as.character()
 
-  mic_values_y <- lapply(data_split, function(r) {
+  x_mic_unique <- unique(x_mic_per_rep)
+
+  x_mic <-
+    if (length(x_mic_unique) == 1) {
+      x_mic_unique
+    } else if (n_reps == 2) {
+      min(x_mic_unique)
+    } else if (length(x_mic_unique) >= 4) {
+      NA_character_
+    } else {
+      find_mode(x_mic_per_rep)
+    }
+
+  x_lab <- ifelse(
+    test = x_mic %in% levels(droplevels(data[[x.drug]])),
+    yes = which(levels(droplevels(data[[x.drug]])) == x_mic),
+    no = NA_integer_
+  )
+
+  y_mic_per_rep <- lapply(data_split, function(r) {
     r %>%
       filter(.data[[x.drug]] == "0") %>%
       mutate(y.new = as.numeric(as.character(.data[[y.drug]]))) %>%
@@ -301,40 +320,17 @@ find_mic <- function(
       last()
   }) %>% as.character()
 
-  x_mic <-
-    if (length(unique(mic_values_x)) == 1) {
-      unique(mic_values_x)
-    } else {
-      if (n_reps == 2) {
-        min(mic_values_x)
-      } else if (n_reps >= 3) {
-        if (length(unique(mic_values_x)) >= 4) {
-          NA_character_
-        } else {
-          get_mode(mic_values_x)
-        }
-      }
-    }
-
-  x_lab <- ifelse(
-    test = x_mic %in% levels(droplevels(data[[x.drug]])),
-    yes = which(levels(droplevels(data[[x.drug]])) == x_mic),
-    no = NA_integer_
-  )
+  y_mic_unique <- unique(y_mic_per_rep)
 
   y_mic <-
-    if (length(unique(mic_values_y)) == 1) {
-      unique(mic_values_y)
+    if (length(y_mic_unique) == 1) {
+      y_mic_unique
+    } else if (n_reps == 2) {
+      min(y_mic_unique)
+    } else if (length(y_mic_unique) >= 4) {
+      NA_character_
     } else {
-      if (n_reps == 2) {
-        min(mic_values_y)
-      } else if (n_reps >= 3) {
-        if (length(unique(mic_values_y)) >= 4) {
-          NA_character_
-        } else {
-          get_mode(mic_values_y)
-        }
-      }
+      find_mode(y_mic_per_rep)
     }
 
   y_lab <- ifelse(
@@ -352,6 +348,26 @@ find_mic <- function(
   }
 
   return(mic_table)
+}
+
+
+#' find_mode
+#'
+#' @param x Vector of input values
+#' @param na.rm Should NA values be discarded? Defaults TRUE.
+#'
+#' @return The mode of input `x`
+#'
+find_mode <- function(x, na.rm = TRUE) {
+  # Using `sort()` and `table()` means it only returns a single mode when there
+  # are multiple, choosing the minimum; e.g. `find_mode(c(1, 1, 2, 2))` will
+  # return 1.
+  names(
+    sort(
+      table(x, useNA = ifelse(na.rm, "no", "ifany")),
+      decreasing = TRUE
+    )
+  )[1]
 }
 
 
@@ -3147,7 +3163,7 @@ server_results <- function(id, data) {
               large.effect = input$plot_dot_large_toggle,
               large.effect.val = input$plot_dot_large_value,
               abci.val = input$plot_dot_large_abci,
-              col.mic = "effect_avg",
+              col.mic = "effect",
               colour.palette = input$plot_dot_colour_palette
             ) +
               {if (abci_plot_dims()[[2]] == 1) {
@@ -3179,7 +3195,7 @@ server_results <- function(id, data) {
               large.effect = input$plot_dot_split_large_toggle,
               large.effect.val = input$plot_dot_split_large_value,
               abci.val = input$plot_dot_split_large_abci,
-              col.mic = "effect_avg",
+              col.mic = "effect",
               colour.palette = input$plot_dot_split_colour_palette
             ) +
               {if (abci_plot_dims()[[2]] == 1) {
@@ -3203,7 +3219,7 @@ server_results <- function(id, data) {
               x.mic.line = ("X" %in% input$plot_tile_mic_lines),
               y.mic.line = ("Y" %in% input$plot_tile_mic_lines),
               mic.threshold = input$plot_tile_mic_threshold,
-              col.mic = "effect_avg",
+              col.mic = "effect",
               low.effect = input$plot_tile_low_toggle,
               low.effect.val = input$plot_tile_low_value,
               large.effect = input$plot_tile_large_toggle,
@@ -3230,7 +3246,7 @@ server_results <- function(id, data) {
               x.mic.line = ("X" %in% input$plot_tile_split_mic_lines),
               y.mic.line = ("Y" %in% input$plot_tile_split_mic_lines),
               mic.threshold = input$plot_tile_split_mic_threshold,
-              col.mic = "effect_avg",
+              col.mic = "effect",
               low.effect = input$plot_tile_split_low_toggle,
               low.effect.val = input$plot_tile_split_low_value,
               large.effect = input$plot_tile_split_large_toggle,
@@ -3257,7 +3273,7 @@ server_results <- function(id, data) {
               x.text = input$plot_line_x_text,
               y.text = input$plot_line_y_text,
               line.text = input$plot_line_line_text,
-              col.mic = "effect_avg",
+              col.mic = "effect",
               x.mic.line = ("X" %in% input$plot_line_mic_lines),
               mic.threshold = input$plot_line_mic_threshold,
               jitter.x = input$plot_line_jitter_x,
