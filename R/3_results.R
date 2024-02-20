@@ -241,6 +241,7 @@ plot_legends <- list(
 #' @param x.drug Character; Column name of concentrations of the first drug
 #' @param y.drug Character; Column name of concentrations of the second drug
 #' @param col.data Character; Column name which contains the measured value
+#' @param col.rep Character; Column name containing replicates
 #' @param threshold Numeric; cutoff for determining MIC. Defaults to 0.5.
 #' @param zero If `TRUE` (default), the index/position is returned as-is. When
 #'   `FALSE`, subtract one from the value, used when making plots without zero
@@ -257,6 +258,7 @@ find_mic <- function(
     x.drug,
     y.drug,
     col.data,
+    col.rep,
     threshold = 0.5,
     zero = TRUE
 ) {
@@ -271,15 +273,48 @@ find_mic <- function(
     "Column given by 'y.drug' must be a factor" = is.factor(data[[y.drug]])
   )
 
-  x_mic <- data %>%
-    filter(.data[[y.drug]] == "0") %>%
-    mutate(x.new = as.numeric(as.character(.data[[x.drug]]))) %>%
-    select(x.new, all_of(c(col.data))) %>%
-    arrange(desc(x.new)) %>%
-    tibble::deframe() %>%
-    purrr::head_while(~.x > threshold) %>%
-    names() %>%
-    last()
+  n_reps <- length(unique(data[[col.rep]]))
+
+  data_split <- split(x = data, f = data[col.rep])
+
+  mic_values_x <- lapply(data_split, function(r) {
+    r %>%
+      filter(.data[[y.drug]] == "0") %>%
+      mutate(x.new = as.numeric(as.character(.data[[x.drug]]))) %>%
+      select(x.new, all_of(c(col.data))) %>%
+      arrange(desc(x.new)) %>%
+      tibble::deframe() %>%
+      purrr::head_while(~.x > threshold) %>%
+      names() %>%
+      last()
+  }) %>% as.character()
+
+  mic_values_y <- lapply(data_split, function(r) {
+    r %>%
+      filter(.data[[x.drug]] == "0") %>%
+      mutate(y.new = as.numeric(as.character(.data[[y.drug]]))) %>%
+      select(y.new, all_of(c(col.data))) %>%
+      arrange(desc(y.new)) %>%
+      tibble::deframe() %>%
+      purrr::head_while(~.x > threshold) %>%
+      names() %>%
+      last()
+  }) %>% as.character()
+
+  x_mic <-
+    if (length(unique(mic_values_x)) == 1) {
+      unique(mic_values_x)
+    } else {
+      if (n_reps == 2) {
+        min(mic_values_x)
+      } else if (n_reps >= 3) {
+        if (length(unique(mic_values_x)) >= 4) {
+          NA_character_
+        } else {
+          get_mode(mic_values_x)
+        }
+      }
+    }
 
   x_lab <- ifelse(
     test = x_mic %in% levels(droplevels(data[[x.drug]])),
@@ -287,15 +322,20 @@ find_mic <- function(
     no = NA_integer_
   )
 
-  y_mic <- data %>%
-    filter(.data[[x.drug]] == "0") %>%
-    mutate(y.new = as.numeric(as.character(.data[[y.drug]]))) %>%
-    select(y.new, all_of(c(col.data))) %>%
-    arrange(desc(y.new)) %>%
-    tibble::deframe() %>%
-    purrr::head_while(~.x > threshold) %>%
-    names() %>%
-    last()
+  y_mic <-
+    if (length(unique(mic_values_y)) == 1) {
+      unique(mic_values_y)
+    } else {
+      if (n_reps == 2) {
+        min(mic_values_y)
+      } else if (n_reps >= 3) {
+        if (length(unique(mic_values_y)) >= 4) {
+          NA_character_
+        } else {
+          get_mode(mic_values_y)
+        }
+      }
+    }
 
   y_lab <- ifelse(
     test = y_mic %in% levels(droplevels(data[[y.drug]])),
@@ -462,6 +502,7 @@ plot_dot <- function(
         x.drug = x.drug,
         y.drug = y.drug,
         col.data = col.mic,
+        col.rep = "replicate",
         threshold = mic.threshold,
         zero = TRUE
       )
@@ -476,6 +517,7 @@ plot_dot <- function(
           x.drug = x.drug,
           y.drug = y.drug,
           col.data = col.mic,
+          col.rep = "replicate",
           threshold = mic.threshold,
           zero = TRUE
         )
@@ -701,6 +743,7 @@ plot_dot_split <- function(
         x.drug = x.drug,
         y.drug = y.drug,
         col.data = col.mic,
+        col.rep = "replicate",
         threshold = mic.threshold,
         zero = TRUE
       )
@@ -715,6 +758,7 @@ plot_dot_split <- function(
           x.drug = x.drug,
           y.drug = y.drug,
           col.data = col.mic,
+          col.rep = "replicate",
           threshold = mic.threshold,
           zero = TRUE
         )
@@ -998,6 +1042,7 @@ plot_line <- function(
         x.drug = x.drug,
         y.drug = line.drug,
         col.data = col.mic,
+        col.rep = "replicate",
         threshold = mic.threshold,
         zero = TRUE
       )
@@ -1012,6 +1057,7 @@ plot_line <- function(
           x.drug = x.drug,
           y.drug = line.drug,
           col.data = col.mic,
+          col.rep = col.rep,
           threshold = mic.threshold,
           zero = TRUE
         )
@@ -1213,6 +1259,7 @@ plot_tile <- function(
         x.drug = x.drug,
         y.drug = y.drug,
         col.data = col.mic,
+        col.rep = "replicate",
         threshold = mic.threshold,
         zero = FALSE
       )
@@ -1227,6 +1274,7 @@ plot_tile <- function(
           x.drug = x.drug,
           y.drug = y.drug,
           col.data = col.mic,
+          col.rep = "replicate",
           threshold = mic.threshold,
           zero = FALSE
         )
@@ -1379,6 +1427,7 @@ plot_tile_split <- function(
         x.drug = x.drug,
         y.drug = y.drug,
         col.data = col.mic,
+        col.rep = "replicate",
         threshold = mic.threshold,
         zero = FALSE
       )
@@ -1393,6 +1442,7 @@ plot_tile_split <- function(
           x.drug = x.drug,
           y.drug = y.drug,
           col.data = col.mic,
+          col.rep = "replicate",
           threshold = mic.threshold,
           zero = FALSE
         )
