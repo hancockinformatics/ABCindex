@@ -277,7 +277,7 @@ find_mic <- function(
     select(x.new, all_of(c(col.data))) %>%
     arrange(desc(x.new)) %>%
     tibble::deframe() %>%
-    purrr::head_while(~.x < threshold) %>%
+    purrr::head_while(~.x > threshold) %>%
     names() %>%
     last()
 
@@ -293,7 +293,7 @@ find_mic <- function(
     select(y.new, all_of(c(col.data))) %>%
     arrange(desc(y.new)) %>%
     tibble::deframe() %>%
-    purrr::head_while(~.x < threshold) %>%
+    purrr::head_while(~.x > threshold) %>%
     names() %>%
     last()
 
@@ -894,6 +894,7 @@ plot_dot_split <- function(
 #' @param plot.type Type of graph, either "replicates", "mean", or "mean_sd"
 #' @param jitter.x Logical; Should points have jitter along the x axis? Defaults
 #'   to TRUE.
+#' @param col.mic Character; Column name to use for calculating MIC
 #' @param x.mic.line Logical; should a line be drawn to indicate MIC of the
 #'   compound on the x-axis? Defaults to FALSE.
 #' @param mic.threshold Threshold for determining MIC; defaults to 0.5
@@ -921,6 +922,7 @@ plot_line <- function(
     line.include = "all",
     plot.type = "mean_sd",
     jitter.x = TRUE,
+    col.mic = NULL,
     x.mic.line = FALSE,
     mic.threshold = 0.5,
     colour.palette = "Accent",
@@ -995,7 +997,7 @@ plot_line <- function(
         data = data,
         x.drug = x.drug,
         y.drug = line.drug,
-        col.data = col.data,
+        col.data = col.mic,
         threshold = mic.threshold,
         zero = TRUE
       )
@@ -1009,7 +1011,7 @@ plot_line <- function(
           data = d,
           x.drug = x.drug,
           y.drug = line.drug,
-          col.data = col.data,
+          col.data = col.mic,
           threshold = mic.threshold,
           zero = TRUE
         )
@@ -3095,7 +3097,7 @@ server_results <- function(id, data) {
               large.effect = input$plot_dot_large_toggle,
               large.effect.val = input$plot_dot_large_value,
               abci.val = input$plot_dot_large_abci,
-              col.mic = "bio_normal",
+              col.mic = "effect_avg",
               colour.palette = input$plot_dot_colour_palette
             ) +
               {if (abci_plot_dims()[[2]] == 1) {
@@ -3127,7 +3129,7 @@ server_results <- function(id, data) {
               large.effect = input$plot_dot_split_large_toggle,
               large.effect.val = input$plot_dot_split_large_value,
               abci.val = input$plot_dot_split_large_abci,
-              col.mic = "bio_normal",
+              col.mic = "effect_avg",
               colour.palette = input$plot_dot_split_colour_palette
             ) +
               {if (abci_plot_dims()[[2]] == 1) {
@@ -3151,7 +3153,7 @@ server_results <- function(id, data) {
               x.mic.line = ("X" %in% input$plot_tile_mic_lines),
               y.mic.line = ("Y" %in% input$plot_tile_mic_lines),
               mic.threshold = input$plot_tile_mic_threshold,
-              col.mic = "bio_normal",
+              col.mic = "effect_avg",
               low.effect = input$plot_tile_low_toggle,
               low.effect.val = input$plot_tile_low_value,
               large.effect = input$plot_tile_large_toggle,
@@ -3178,7 +3180,7 @@ server_results <- function(id, data) {
               x.mic.line = ("X" %in% input$plot_tile_split_mic_lines),
               y.mic.line = ("Y" %in% input$plot_tile_split_mic_lines),
               mic.threshold = input$plot_tile_split_mic_threshold,
-              col.mic = "bio_normal",
+              col.mic = "effect_avg",
               low.effect = input$plot_tile_split_low_toggle,
               low.effect.val = input$plot_tile_split_low_value,
               large.effect = input$plot_tile_split_large_toggle,
@@ -3205,6 +3207,7 @@ server_results <- function(id, data) {
               x.text = input$plot_line_x_text,
               y.text = input$plot_line_y_text,
               line.text = input$plot_line_line_text,
+              col.mic = "effect_avg",
               x.mic.line = ("X" %in% input$plot_line_mic_lines),
               mic.threshold = input$plot_line_mic_threshold,
               jitter.x = input$plot_line_jitter_x,
