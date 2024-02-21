@@ -3515,7 +3515,9 @@ server_results <- function(id, data) {
                 the_plot()[["info"]][["bad_exps"]],
                 ". "
               ),
-              suggest = "You may wish to inspect your data for irregularities."
+              suggest = "You may wish to inspect your data for ",
+              "irregularities, or you may refer to the Help pages for more ",
+              "information about activity threholds in ABCindex."
             ))
           }
         }
