@@ -72,9 +72,9 @@
   border-color: var(--bs-success-border-subtle);
 }
 .shiny-notification-warning {
-  color: var(--bs-primary-text-emphasis);
-  background: var(--bs-primary-bg-subtle);
-  border-color: var(--bs-primary-border-subtle);
+  color: var(--bs-warning-text-emphasis);
+  background: var(--bs-warning-bg-subtle);
+  border-color: var(--bs-warning-border-subtle);
 }
 .shiny-notification-error {
   color: var(--bs-danger-text-emphasis);
