@@ -241,6 +241,7 @@ plot_legends <- list(
 #' @param x.drug Character; Column name of concentrations of the first drug
 #' @param y.drug Character; Column name of concentrations of the second drug
 #' @param col.data Character; Column name which contains the measured value
+#' @param col.rep Character; Column name containing replicates
 #' @param threshold Numeric; cutoff for determining MIC. Defaults to 0.5.
 #' @param zero If `TRUE` (default), the index/position is returned as-is. When
 #'   `FALSE`, subtract one from the value, used when making plots without zero
@@ -257,6 +258,7 @@ find_mic <- function(
     x.drug,
     y.drug,
     col.data,
+    col.rep,
     threshold = 0.5,
     zero = TRUE
 ) {
@@ -271,39 +273,82 @@ find_mic <- function(
     "Column given by 'y.drug' must be a factor" = is.factor(data[[y.drug]])
   )
 
-  x_mic <- data %>%
-    filter(.data[[y.drug]] == "0") %>%
-    mutate(x.new = as.numeric(as.character(.data[[x.drug]]))) %>%
-    select(x.new, all_of(c(col.data))) %>%
-    arrange(desc(x.new)) %>%
-    tibble::deframe() %>%
-    purrr::head_while(~.x < threshold) %>%
-    names() %>%
-    last()
+  n_reps <- length(unique(data[[col.rep]]))
 
-  x_lab <- ifelse(
-    test = x_mic %in% levels(droplevels(data[[x.drug]])),
-    yes = which(levels(droplevels(data[[x.drug]])) == x_mic),
-    no = NA_integer_
+  data_split <- split(x = data, f = data[col.rep])
+
+  x_mic_per_rep <- lapply(data_split, function(r) {
+    filter(r, .data[[y.drug]] == "0") %>%
+      mutate(x.new = as.numeric(as.character(.data[[x.drug]]))) %>%
+      select(x.new, all_of(c(col.data))) %>%
+      arrange(desc(x.new)) %>%
+      tibble::deframe() %>%
+      purrr::head_while(~.x > threshold) %>%
+      names() %>%
+      last()
+  }) %>% as.character()
+
+  x_mic_unique <- unique(x_mic_per_rep)
+
+  x_mic <-
+    if (length(x_mic_unique) == 1) {
+      x_mic_unique
+    } else if (n_reps == 2) {
+      min(x_mic_unique)
+    } else if (length(x_mic_unique) >= 4) {
+      NA_character_
+    } else {
+      find_mode(x_mic_per_rep)
+    }
+
+  x_mic_clean <-
+    if (is.na(x_mic)) {
+      as.character(max(as.numeric(levels(data[[x.drug]]))))
+    } else {
+      x_mic
+    }
+
+  x_lab <- which(levels(droplevels(data[[x.drug]])) == x_mic_clean)
+
+  y_mic_per_rep <- lapply(data_split, function(r) {
+    filter(r, .data[[x.drug]] == "0") %>%
+      mutate(y.new = as.numeric(as.character(.data[[y.drug]]))) %>%
+      select(y.new, all_of(c(col.data))) %>%
+      arrange(desc(y.new)) %>%
+      tibble::deframe() %>%
+      purrr::head_while(~.x > threshold) %>%
+      names() %>%
+      last()
+  }) %>% as.character()
+
+  y_mic_unique <- unique(y_mic_per_rep)
+
+  y_mic <-
+    if (length(y_mic_unique) == 1) {
+      y_mic_unique
+    } else if (n_reps == 2) {
+      min(y_mic_unique)
+    } else if (length(y_mic_unique) >= 4) {
+      NA_character_
+    } else {
+      find_mode(y_mic_per_rep)
+    }
+
+  y_mic_clean <-
+    if (is.na(y_mic)) {
+      as.character(max(as.numeric(levels(data[[y.drug]]))))
+    } else {
+      y_mic
+    }
+
+  y_lab <- which(levels(droplevels(data[[y.drug]])) == y_mic_clean)
+
+  mic_table <- tibble(
+    XMIC = x_mic_clean,
+    YMIC = y_mic_clean,
+    XLAB = x_lab,
+    YLAB = y_lab
   )
-
-  y_mic <- data %>%
-    filter(.data[[x.drug]] == "0") %>%
-    mutate(y.new = as.numeric(as.character(.data[[y.drug]]))) %>%
-    select(y.new, all_of(c(col.data))) %>%
-    arrange(desc(y.new)) %>%
-    tibble::deframe() %>%
-    purrr::head_while(~.x < threshold) %>%
-    names() %>%
-    last()
-
-  y_lab <- ifelse(
-    test = y_mic %in% levels(droplevels(data[[y.drug]])),
-    yes = which(levels(droplevels(data[[y.drug]])) == y_mic),
-    no = NA_integer_
-  )
-
-  mic_table <- tibble(XMIC = x_mic, YMIC = y_mic, XLAB = x_lab, YLAB = y_lab)
 
   if (!zero) {
     mic_table <- mic_table %>%
@@ -312,6 +357,26 @@ find_mic <- function(
   }
 
   return(mic_table)
+}
+
+
+#' find_mode
+#'
+#' @param x Vector of input values
+#' @param na.rm Should NA values be discarded? Defaults TRUE.
+#'
+#' @return The mode of input `x`
+#'
+find_mode <- function(x, na.rm = FALSE) {
+  # Using `sort()` and `table()` means it only returns a single mode when there
+  # are multiple, choosing the minimum; e.g. `find_mode(c(1, 1, 2, 2))` will
+  # return 1.
+  names(
+    sort(
+      table(x, useNA = ifelse(na.rm, "no", "ifany")),
+      decreasing = TRUE
+    )
+  )[1]
 }
 
 
@@ -462,6 +527,7 @@ plot_dot <- function(
         x.drug = x.drug,
         y.drug = y.drug,
         col.data = col.mic,
+        col.rep = "replicate",
         threshold = mic.threshold,
         zero = TRUE
       )
@@ -476,6 +542,7 @@ plot_dot <- function(
           x.drug = x.drug,
           y.drug = y.drug,
           col.data = col.mic,
+          col.rep = "replicate",
           threshold = mic.threshold,
           zero = TRUE
         )
@@ -701,6 +768,7 @@ plot_dot_split <- function(
         x.drug = x.drug,
         y.drug = y.drug,
         col.data = col.mic,
+        col.rep = "replicate",
         threshold = mic.threshold,
         zero = TRUE
       )
@@ -715,6 +783,7 @@ plot_dot_split <- function(
           x.drug = x.drug,
           y.drug = y.drug,
           col.data = col.mic,
+          col.rep = "replicate",
           threshold = mic.threshold,
           zero = TRUE
         )
@@ -894,6 +963,7 @@ plot_dot_split <- function(
 #' @param plot.type Type of graph, either "replicates", "mean", or "mean_sd"
 #' @param jitter.x Logical; Should points have jitter along the x axis? Defaults
 #'   to TRUE.
+#' @param col.mic Character; Column name to use for calculating MIC
 #' @param x.mic.line Logical; should a line be drawn to indicate MIC of the
 #'   compound on the x-axis? Defaults to FALSE.
 #' @param mic.threshold Threshold for determining MIC; defaults to 0.5
@@ -921,6 +991,7 @@ plot_line <- function(
     line.include = "all",
     plot.type = "mean_sd",
     jitter.x = TRUE,
+    col.mic = NULL,
     x.mic.line = FALSE,
     mic.threshold = 0.5,
     colour.palette = "Accent",
@@ -995,7 +1066,8 @@ plot_line <- function(
         data = data,
         x.drug = x.drug,
         y.drug = line.drug,
-        col.data = col.data,
+        col.data = col.mic,
+        col.rep = "replicate",
         threshold = mic.threshold,
         zero = TRUE
       )
@@ -1009,7 +1081,8 @@ plot_line <- function(
           data = d,
           x.drug = x.drug,
           y.drug = line.drug,
-          col.data = col.data,
+          col.data = col.mic,
+          col.rep = col.rep,
           threshold = mic.threshold,
           zero = TRUE
         )
@@ -1211,6 +1284,7 @@ plot_tile <- function(
         x.drug = x.drug,
         y.drug = y.drug,
         col.data = col.mic,
+        col.rep = "replicate",
         threshold = mic.threshold,
         zero = FALSE
       )
@@ -1225,6 +1299,7 @@ plot_tile <- function(
           x.drug = x.drug,
           y.drug = y.drug,
           col.data = col.mic,
+          col.rep = "replicate",
           threshold = mic.threshold,
           zero = FALSE
         )
@@ -1377,6 +1452,7 @@ plot_tile_split <- function(
         x.drug = x.drug,
         y.drug = y.drug,
         col.data = col.mic,
+        col.rep = "replicate",
         threshold = mic.threshold,
         zero = FALSE
       )
@@ -1391,6 +1467,7 @@ plot_tile_split <- function(
           x.drug = x.drug,
           y.drug = y.drug,
           col.data = col.mic,
+          col.rep = "replicate",
           threshold = mic.threshold,
           zero = FALSE
         )
@@ -3095,7 +3172,7 @@ server_results <- function(id, data) {
               large.effect = input$plot_dot_large_toggle,
               large.effect.val = input$plot_dot_large_value,
               abci.val = input$plot_dot_large_abci,
-              col.mic = "bio_normal",
+              col.mic = "effect",
               colour.palette = input$plot_dot_colour_palette
             ) +
               {if (abci_plot_dims()[[2]] == 1) {
@@ -3127,7 +3204,7 @@ server_results <- function(id, data) {
               large.effect = input$plot_dot_split_large_toggle,
               large.effect.val = input$plot_dot_split_large_value,
               abci.val = input$plot_dot_split_large_abci,
-              col.mic = "bio_normal",
+              col.mic = "effect",
               colour.palette = input$plot_dot_split_colour_palette
             ) +
               {if (abci_plot_dims()[[2]] == 1) {
@@ -3151,7 +3228,7 @@ server_results <- function(id, data) {
               x.mic.line = ("X" %in% input$plot_tile_mic_lines),
               y.mic.line = ("Y" %in% input$plot_tile_mic_lines),
               mic.threshold = input$plot_tile_mic_threshold,
-              col.mic = "bio_normal",
+              col.mic = "effect",
               low.effect = input$plot_tile_low_toggle,
               low.effect.val = input$plot_tile_low_value,
               large.effect = input$plot_tile_large_toggle,
@@ -3178,7 +3255,7 @@ server_results <- function(id, data) {
               x.mic.line = ("X" %in% input$plot_tile_split_mic_lines),
               y.mic.line = ("Y" %in% input$plot_tile_split_mic_lines),
               mic.threshold = input$plot_tile_split_mic_threshold,
-              col.mic = "bio_normal",
+              col.mic = "effect",
               low.effect = input$plot_tile_split_low_toggle,
               low.effect.val = input$plot_tile_split_low_value,
               large.effect = input$plot_tile_split_large_toggle,
@@ -3205,6 +3282,7 @@ server_results <- function(id, data) {
               x.text = input$plot_line_x_text,
               y.text = input$plot_line_y_text,
               line.text = input$plot_line_line_text,
+              col.mic = "effect",
               x.mic.line = ("X" %in% input$plot_line_mic_lines),
               mic.threshold = input$plot_line_mic_threshold,
               jitter.x = input$plot_line_jitter_x,

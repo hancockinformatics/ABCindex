@@ -16,14 +16,15 @@ challenges when evaluating antibiofilm activity.
 
 ## Availability
 
-It is currently available at: 
+ABCindex is under active development, and is currently available at: 
 https://travis-m-blimkie.shinyapps.io/ABCindex/
 
 
 ## Contributors
 
-ABCindex was developed by Travis Blimkie and Lucas Pedraz at the Hancock Lab. A 
-big thanks to all the testers, including Evan Haney and Noushin Akhoundsadegh.
+ABCindex was developed by Travis Blimkie and Lucas Pedraz at the 
+[CMDR Hancock Lab](http://cmdr.ubc.ca/bobh/). A big thanks to all the testers, 
+especially Noushin Akhoundsadegh and Evan Haney.
 
 
 ## Dependencies

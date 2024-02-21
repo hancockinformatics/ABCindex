@@ -6,7 +6,7 @@ abci_footer <- tags$footer(
   HTML(paste0(
     "<div class='border-top pt-3 d-flex align-items-center justify-content-center'>",
     "<a target='_blank' rel='noopener noreferrer' href='http://cmdr.ubc.ca/bobh/'>",
-    "<img class='pe-1' src='img/hancock_lab_logo_32.svg'></a>",
+    "<img class='pe-1' src='img/hancock_lab_logo.svg'></a>",
     "<p class='mb-0'><small>2024 R.E.W Hancock Lab. The Hancock Lab at ",
     "<a target='_blank' rel='noopener noreferrer' href='https://www.ubc.ca/'>",
     "UBC Vancouver</a> acknowledges we are located on the traditional, ",
