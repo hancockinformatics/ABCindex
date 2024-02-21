@@ -278,8 +278,7 @@ find_mic <- function(
   data_split <- split(x = data, f = data[col.rep])
 
   x_mic_per_rep <- lapply(data_split, function(r) {
-    r %>%
-      filter(.data[[y.drug]] == "0") %>%
+    filter(r, .data[[y.drug]] == "0") %>%
       mutate(x.new = as.numeric(as.character(.data[[x.drug]]))) %>%
       select(x.new, all_of(c(col.data))) %>%
       arrange(desc(x.new)) %>%
@@ -302,15 +301,17 @@ find_mic <- function(
       find_mode(x_mic_per_rep)
     }
 
-  x_lab <- ifelse(
-    test = x_mic %in% levels(droplevels(data[[x.drug]])),
-    yes = which(levels(droplevels(data[[x.drug]])) == x_mic),
-    no = NA_integer_
-  )
+  x_mic_clean <-
+    if (is.na(x_mic)) {
+      as.character(max(as.numeric(levels(data[[x.drug]]))))
+    } else {
+      x_mic
+    }
+
+  x_lab <- which(levels(droplevels(data[[x.drug]])) == x_mic_clean)
 
   y_mic_per_rep <- lapply(data_split, function(r) {
-    r %>%
-      filter(.data[[x.drug]] == "0") %>%
+    filter(r, .data[[x.drug]] == "0") %>%
       mutate(y.new = as.numeric(as.character(.data[[y.drug]]))) %>%
       select(y.new, all_of(c(col.data))) %>%
       arrange(desc(y.new)) %>%
@@ -333,13 +334,21 @@ find_mic <- function(
       find_mode(y_mic_per_rep)
     }
 
-  y_lab <- ifelse(
-    test = y_mic %in% levels(droplevels(data[[y.drug]])),
-    yes = which(levels(droplevels(data[[y.drug]])) == y_mic),
-    no = NA_integer_
-  )
+  y_mic_clean <-
+    if (is.na(y_mic)) {
+      as.character(max(as.numeric(levels(data[[y.drug]]))))
+    } else {
+      y_mic
+    }
 
-  mic_table <- tibble(XMIC = x_mic, YMIC = y_mic, XLAB = x_lab, YLAB = y_lab)
+  y_lab <- which(levels(droplevels(data[[y.drug]])) == y_mic_clean)
+
+  mic_table <- tibble(
+    XMIC = x_mic_clean,
+    YMIC = y_mic_clean,
+    XLAB = x_lab,
+    YLAB = y_lab
+  )
 
   if (!zero) {
     mic_table <- mic_table %>%
@@ -358,7 +367,7 @@ find_mic <- function(
 #'
 #' @return The mode of input `x`
 #'
-find_mode <- function(x, na.rm = TRUE) {
+find_mode <- function(x, na.rm = FALSE) {
   # Using `sort()` and `table()` means it only returns a single mode when there
   # are multiple, choosing the minimum; e.g. `find_mode(c(1, 1, 2, 2))` will
   # return 1.
