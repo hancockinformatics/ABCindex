@@ -431,6 +431,15 @@ get_dims <- function(type, n_cols, n_rows) {
       "tile_split" = c(650, 800),
       "line" = c(700, 400)
     )
+  } else if (n_cols == 2 & n_rows == 1) {
+    switch(
+      type,
+      "dot" = c(1300, 150 + 300 * n_rows),
+      "dot_split" = c(1350, 150 + 700 * n_rows),
+      "tile" = c(1100, 100 + 300 * n_rows),
+      "tile_split" = c(1100, 100 + 700 * n_rows),
+      "line" = c(1150, 100 + 300 * n_rows)
+    )
   } else {
     switch(
       type,
@@ -708,7 +717,9 @@ plot_dot <- function(
 
     {if (x.decimal > 1) {
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
-    }}
+    }} +
+
+  theme(legend.box = ifelse(n.rows == 1, "horizontal", "vertical"))
 
   return(list(
     "plot" = out_plot,
@@ -1037,7 +1048,10 @@ plot_dot_split <- function(
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
       }} +
 
-      theme(legend.key.height = unit(7, "mm"), legend.box = "vertical")
+      theme(
+        legend.key.height = unit(7, "mm"),
+        legend.box = ifelse(n.rows == 1, "horizontal", "vertical")
+      )
   })
 
   out_plot <- patchwork::wrap_plots(dot_plots, ncol = 1)
@@ -3376,7 +3390,7 @@ server_results <- function(id, data) {
       tryCatch(
         {
           if (input$plot_tabs == ns("dot")) {
-            x1 <- plot_dot(
+            plot_dot(
               data = data(),
               x.drug = ifelse(input$plot_dot_swap, "rows_conc", "cols_conc"),
               y.drug = ifelse(input$plot_dot_swap, "cols_conc", "rows_conc"),
@@ -3403,13 +3417,8 @@ server_results <- function(id, data) {
               colour.palette = input$plot_dot_colour_palette
             )
 
-            if (abci_plot_dims()[[2]] == 1) {
-              x1[["plot"]] <- x1[["plot"]] + theme(legend.box = "horizontal")
-            }
-            x1
-
           } else if (input$plot_tabs == ns("dot_split")) {
-            x1 <- plot_dot_split(
+            plot_dot_split(
               data = data(),
               x.drug = ifelse(input$plot_dot_split_swap, "rows_conc", "cols_conc"),
               y.drug = ifelse(input$plot_dot_split_swap, "cols_conc", "rows_conc"),
@@ -3436,11 +3445,6 @@ server_results <- function(id, data) {
               col.mic = "effect",
               colour.palette = input$plot_dot_split_colour_palette
             )
-
-            if (abci_plot_dims()[[2]] == 1) {
-              x1[["plot"]] <- x1[["plot"]] + theme(legend.box = "horizontal")
-            }
-            x1
 
           } else if (input$plot_tabs == ns("tile")) {
             plot_tile(
