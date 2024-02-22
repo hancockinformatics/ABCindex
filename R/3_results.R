@@ -3516,8 +3516,8 @@ server_results <- function(id, data) {
         notify(list = list(
           type = "error",
           status = "Error",
-          message = "We were unable to draw a plot with the specified parameters.",
-          suggest = "Try changing the inputs in the sidebar, then update the plot."
+          message = "We were unable to draw a plot with these parameters.",
+          suggest = "Try changing the inputs, then update the plot again."
         ))
       } else {
 
@@ -3533,9 +3533,9 @@ server_results <- function(id, data) {
                 ". "
               ),
               suggest = paste0(
-                "You may wish to inspect your data for irregularities, or you ",
-                "may refer to the Help pages for more information about ",
-                "activity threholds."
+                "You may wish to inspect your data for irregularities. The ",
+                "Help pages also provide information on what this warning may ",
+                "indicate."
               )
             ))
           }
