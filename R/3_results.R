@@ -277,6 +277,7 @@ find_mic <- function(
 
   data_split <- split(x = data, f = data[col.rep])
 
+  # Find the MIC for `x.drug`, within each replicate
   x_mic_per_rep <- lapply(data_split, function(r) {
     filter(r, .data[[y.drug]] == "0") %>%
       mutate(x.new = as.numeric(as.character(.data[[x.drug]]))) %>%
@@ -288,22 +289,32 @@ find_mic <- function(
       last()
   }) %>% as.character()
 
+  # Get the vector of unique MIC values
   x_mic_unique <- unique(x_mic_per_rep)
 
+  # Check a number of cases for possible "outcomes" for MIC
+  # Best case: all replicates give the same answer (could be NA)
   if (length(x_mic_unique) == 1) {
     x_mic <- x_mic_unique
     status_x <- "success"
+
+    # If we have two reps that disagree, return the lower value
   } else if (n_reps == 2) {
     x_mic <- min(x_mic_unique)
     status_x <- "warning"
+
+    # If we have lots of disagreeing reps, return NA
   } else if (length(x_mic_unique) >= 4) {
     x_mic <- NA_character_
     status_x <- "warning"
+
+    # In all other cases, find the (single) mode
   } else {
     x_mic <- find_mode(x_mic_per_rep)
     status_x <- "warning"
   }
 
+  # If we got NA from above, instead use the highest tested concentration
   if (is.na(x_mic)) {
     x_mic_clean <- as.character(max(as.numeric(levels(data[[x.drug]]))))
     status_x <- "warning"
@@ -311,8 +322,10 @@ find_mic <- function(
     x_mic_clean <- x_mic
   }
 
+  # Get the label (position in the order of concentrations)
   x_lab <- which(levels(droplevels(data[[x.drug]])) == x_mic_clean)
 
+  # Repeat all of the above for `y.drug`
   y_mic_per_rep <- lapply(data_split, function(r) {
     filter(r, .data[[x.drug]] == "0") %>%
       mutate(y.new = as.numeric(as.character(.data[[y.drug]]))) %>%
@@ -362,9 +375,17 @@ find_mic <- function(
       as.data.frame()
   }
 
+  # Overall status for MIC calculation is "warning" if either `x.drug` or
+  # `y.drug` gave a warning (we don't distinguish)
+  final_status <- ifelse(
+    test = any(c(status_x, status_y) == "warning"),
+    yes = "warning",
+    no = "success"
+  )
+
   return(list(
     "data" = mic_table,
-    "status" = ifelse(any(c(status_x, status_y) == "warning"), "warning", "success")
+    "status" = final_status
   ))
 }
 
