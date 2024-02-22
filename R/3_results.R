@@ -1018,8 +1018,8 @@ plot_dot_split <- function(
         linewidth = 1
       )} +
 
-      geom_vline(xintercept = 1.5, linewidth = 0.5) +
-      geom_hline(yintercept = 1.5, linewidth = 0.5) +
+      geom_vline(xintercept = 1.5, linewidth = 0.5, linetype = "longdash") +
+      geom_hline(yintercept = 1.5, linewidth = 0.5, linetype = "longdash") +
 
       scale_fill_gradientn(
         colours = preset_palettes_split[["values"]][[nm]][[colour.palette]],
