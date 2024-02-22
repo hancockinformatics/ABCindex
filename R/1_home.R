@@ -5,9 +5,11 @@ abci_footer <- tags$footer(
   class = "text-center mt-auto",
   HTML(paste0(
     "<div class='border-top pt-3 d-flex align-items-center justify-content-center'>",
+    "<img class='pe-1' src='img/hancock_lab_logo.svg'>",
+    "<p class='mb-0'><small>",
     "<a target='_blank' rel='noopener noreferrer' href='http://cmdr.ubc.ca/bobh/'>",
-    "<img class='pe-1' src='img/hancock_lab_logo.svg'></a>",
-    "<p class='mb-0'><small>2024 R.E.W Hancock Lab. The Hancock Lab at ",
+    "R.E.W Hancock Lab</a>",
+    ", 2024. The Hancock Lab at ",
     "<a target='_blank' rel='noopener noreferrer' href='https://www.ubc.ca/'>",
     "UBC Vancouver</a> acknowledges we are located on the traditional, ",
     "ancestral and unceded territory of the Musqueam people.</small></p>",

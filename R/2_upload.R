@@ -416,7 +416,7 @@ notify <- function(id = NULL, list) {
   showNotification(
     id = id,
     type = list$type,
-    duration = ifelse(list$type == "error", 20, 10),
+    duration = ifelse(list$type == "success", 10, 20),
     ui = HTML(paste0(
       "<h4 class='alert-heading'><b>", list$status, "</b></h4>",
       "<p class='mb-0'>",

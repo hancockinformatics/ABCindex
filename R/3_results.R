@@ -277,6 +277,7 @@ find_mic <- function(
 
   data_split <- split(x = data, f = data[col.rep])
 
+  # Find the MIC for `x.drug`, within each replicate
   x_mic_per_rep <- lapply(data_split, function(r) {
     filter(r, .data[[y.drug]] == "0") %>%
       mutate(x.new = as.numeric(as.character(.data[[x.drug]]))) %>%
@@ -288,28 +289,43 @@ find_mic <- function(
       last()
   }) %>% as.character()
 
+  # Get the vector of unique MIC values
   x_mic_unique <- unique(x_mic_per_rep)
 
-  x_mic <-
-    if (length(x_mic_unique) == 1) {
-      x_mic_unique
-    } else if (n_reps == 2) {
-      min(x_mic_unique)
-    } else if (length(x_mic_unique) >= 4) {
-      NA_character_
-    } else {
-      find_mode(x_mic_per_rep)
-    }
+  # Check a number of cases for possible "outcomes" for MIC
+  # Best case: all replicates give the same answer (could be NA)
+  if (length(x_mic_unique) == 1) {
+    x_mic <- x_mic_unique
+    status_x <- "success"
 
-  x_mic_clean <-
-    if (is.na(x_mic)) {
-      as.character(max(as.numeric(levels(data[[x.drug]]))))
-    } else {
-      x_mic
-    }
+    # If we have two reps that disagree, return the lower value
+  } else if (n_reps == 2) {
+    x_mic <- min(x_mic_unique)
+    status_x <- "warning"
 
+    # If we have lots of disagreeing reps, return NA
+  } else if (length(x_mic_unique) >= 4) {
+    x_mic <- NA_character_
+    status_x <- "warning"
+
+    # In all other cases, find the (single) mode
+  } else {
+    x_mic <- find_mode(x_mic_per_rep)
+    status_x <- "warning"
+  }
+
+  # If we got NA from above, instead use the highest tested concentration
+  if (is.na(x_mic)) {
+    x_mic_clean <- as.character(max(as.numeric(levels(data[[x.drug]]))))
+    status_x <- "warning"
+  } else {
+    x_mic_clean <- x_mic
+  }
+
+  # Get the label (position in the order of concentrations)
   x_lab <- which(levels(droplevels(data[[x.drug]])) == x_mic_clean)
 
+  # Repeat all of the above for `y.drug`
   y_mic_per_rep <- lapply(data_split, function(r) {
     filter(r, .data[[x.drug]] == "0") %>%
       mutate(y.new = as.numeric(as.character(.data[[y.drug]]))) %>%
@@ -323,23 +339,26 @@ find_mic <- function(
 
   y_mic_unique <- unique(y_mic_per_rep)
 
-  y_mic <-
-    if (length(y_mic_unique) == 1) {
-      y_mic_unique
-    } else if (n_reps == 2) {
-      min(y_mic_unique)
-    } else if (length(y_mic_unique) >= 4) {
-      NA_character_
-    } else {
-      find_mode(y_mic_per_rep)
-    }
+  if (length(y_mic_unique) == 1) {
+    y_mic <- y_mic_unique
+    status_y <- "success"
+  } else if (n_reps == 2) {
+    y_mic <- min(y_mic_unique)
+    status_y <- "warning"
+  } else if (length(y_mic_unique) >= 4) {
+    y_mic <- NA_character_
+    status_y <- "warning"
+  } else {
+    y_mic <- find_mode(y_mic_per_rep)
+    status_y <- "warning"
+  }
 
-  y_mic_clean <-
-    if (is.na(y_mic)) {
-      as.character(max(as.numeric(levels(data[[y.drug]]))))
-    } else {
-      y_mic
-    }
+  if (is.na(y_mic)) {
+    y_mic_clean <-as.character(max(as.numeric(levels(data[[y.drug]]))))
+    status_y <- "warning"
+  } else {
+    y_mic_clean <-y_mic
+  }
 
   y_lab <- which(levels(droplevels(data[[y.drug]])) == y_mic_clean)
 
@@ -356,7 +375,18 @@ find_mic <- function(
       as.data.frame()
   }
 
-  return(mic_table)
+  # Overall status for MIC calculation is "warning" if either `x.drug` or
+  # `y.drug` gave a warning (we don't distinguish)
+  final_status <- ifelse(
+    test = any(c(status_x, status_y) == "warning"),
+    yes = "warning",
+    no = "success"
+  )
+
+  return(list(
+    "data" = mic_table,
+    "status" = final_status
+  ))
 }
 
 
@@ -400,6 +430,15 @@ get_dims <- function(type, n_cols, n_rows) {
       "tile" = c(650, 400),
       "tile_split" = c(650, 800),
       "line" = c(700, 400)
+    )
+  } else if (n_cols == 2 & n_rows == 1) {
+    switch(
+      type,
+      "dot" = c(1300, 150 + 300 * n_rows),
+      "dot_split" = c(1350, 150 + 700 * n_rows),
+      "tile" = c(1100, 100 + 300 * n_rows),
+      "tile_split" = c(1100, 100 + 700 * n_rows),
+      "line" = c(1150, 100 + 300 * n_rows)
     )
   } else {
     switch(
@@ -522,7 +561,7 @@ plot_dot <- function(
   if (any(x.mic.line, y.mic.line)) {
 
     if (is.null(col.analysis)) {
-      mic.table <- find_mic(
+      mic.result <- find_mic(
         data = data,
         x.drug = x.drug,
         y.drug = y.drug,
@@ -532,11 +571,18 @@ plot_dot <- function(
         zero = TRUE
       )
 
+      mic.table <- mic.result[["data"]]
+
+      mic.info <- list(
+        "status" = mic.result[["status"]],
+        "bad_exps" = NULL
+      )
+
     } else {
       analysis_levels <- levels(data[[col.analysis]])
       data.split <- split(x = data, f = data[col.analysis])
 
-      mic.table.split <- lapply(data.split, function(d) {
+      mic.result.split <- lapply(data.split, function(d) {
         find_mic(
           data = d,
           x.drug = x.drug,
@@ -548,13 +594,35 @@ plot_dot <- function(
         )
       })
 
+      mic.table.split <- purrr::map(mic.result.split, ~purrr::pluck(.x, "data"))
       mic.table <- do.call(rbind, mic.table.split)
       mic.table[, col.analysis] <- factor(
         rownames(mic.table),
         levels = analysis_levels
       )
       rownames(mic.table) <- NULL
+
+      mic.status.split <- purrr::map(mic.result.split, ~purrr::pluck(.x, "status"))
+
+      if (any(mic.status.split == "warning")) {
+        mic.info <- list(
+          status = "warning",
+          bad_exps = sentence_paste(
+            names(purrr::keep(mic.status.split, ~.x == "warning"))
+          )
+        )
+      } else {
+        mic.info <- list(
+          status = "success",
+          bad_exps = NULL
+        )
+      }
     }
+  } else {
+    mic.info <- list(
+      "status" = NULL,
+      "bad_exps" = NULL
+    )
   }
 
   # Set the foundation for the plot, based on the type of size scaling
@@ -600,7 +668,7 @@ plot_dot <- function(
   }
 
   # Draw the whole plot
-  main_geoms +
+  out_plot <- main_geoms +
     {if (!is.null(col.analysis)) {
       facet_wrap(
         ~.data[[col.analysis]],
@@ -649,7 +717,14 @@ plot_dot <- function(
 
     {if (x.decimal > 1) {
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
-    }}
+    }} +
+
+  theme(legend.box = ifelse(n.rows == 1, "horizontal", "vertical"))
+
+  return(list(
+    "plot" = out_plot,
+    "info" = mic.info
+  ))
 }
 
 
@@ -763,7 +838,7 @@ plot_dot_split <- function(
   if (any(x.mic.line, y.mic.line)) {
 
     if (is.null(col.analysis)) {
-      mic.table <- find_mic(
+      mic.result <- find_mic(
         data = data,
         x.drug = x.drug,
         y.drug = y.drug,
@@ -773,11 +848,18 @@ plot_dot_split <- function(
         zero = TRUE
       )
 
+      mic.table <- mic.result[["data"]]
+
+      mic.info <- list(
+        "status" = mic.result[["status"]],
+        "bad_exps" = NULL
+      )
+
     } else {
       analysis_levels <- levels(data[[col.analysis]])
       data.split <- split(x = data, f = data[col.analysis])
 
-      mic.table.split <- lapply(data.split, function(d) {
+      mic.result.split <- lapply(data.split, function(d) {
         find_mic(
           data = d,
           x.drug = x.drug,
@@ -789,14 +871,37 @@ plot_dot_split <- function(
         )
       })
 
+      mic.table.split <- purrr::map(mic.result.split, ~purrr::pluck(.x, "data"))
       mic.table <- do.call(rbind, mic.table.split)
       mic.table[, col.analysis] <- factor(
         rownames(mic.table),
         levels = analysis_levels
       )
       rownames(mic.table) <- NULL
+
+      mic.status.split <- purrr::map(mic.result.split, ~purrr::pluck(.x, "status"))
+
+      if (any(mic.status.split == "warning")) {
+        mic.info <- list(
+          status = "warning",
+          bad_exps = sentence_paste(
+            names(purrr::keep(mic.status.split, ~.x == "warning"))
+          )
+        )
+      } else {
+        mic.info <- list(
+          status = "success",
+          bad_exps = NULL
+        )
+      }
     }
+  } else {
+    mic.info <- list(
+      "status" = NULL,
+      "bad_exps" = NULL
+    )
   }
+
 
   data_split <- if (strict) {
     list(
@@ -905,16 +1010,16 @@ plot_dot_split <- function(
       {if (x.mic.line) geom_vline(
         data = mic.table,
         aes(xintercept = XLAB),
-        linewidth = 2
+        linewidth = 1
       )} +
       {if (y.mic.line) geom_hline(
         data = mic.table,
         aes(yintercept = YLAB),
-        linewidth = 2
+        linewidth = 1
       )} +
 
-      geom_vline(xintercept = 1.5, linewidth = 0.5) +
-      geom_hline(yintercept = 1.5, linewidth = 0.5) +
+      geom_vline(xintercept = 1.5, linewidth = 0.5, linetype = "longdash") +
+      geom_hline(yintercept = 1.5, linewidth = 0.5, linetype = "longdash") +
 
       scale_fill_gradientn(
         colours = preset_palettes_split[["values"]][[nm]][[colour.palette]],
@@ -943,10 +1048,18 @@ plot_dot_split <- function(
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
       }} +
 
-      theme(legend.key.height = unit(7, "mm"), legend.box = "vertical")
+      theme(
+        legend.key.height = unit(7, "mm"),
+        legend.box = ifelse(n.rows == 1, "horizontal", "vertical")
+      )
   })
 
-  patchwork::wrap_plots(dot_plots, ncol = 1)
+  out_plot <- patchwork::wrap_plots(dot_plots, ncol = 1)
+
+  return(list(
+    "plot" = out_plot,
+    "info" = mic.info
+  ))
 }
 
 
@@ -1062,7 +1175,7 @@ plot_line <- function(
   if (x.mic.line) {
 
     if (is.null(col.analysis)) {
-      mic.table <- find_mic(
+      mic.result <- find_mic(
         data = data,
         x.drug = x.drug,
         y.drug = line.drug,
@@ -1072,29 +1185,58 @@ plot_line <- function(
         zero = TRUE
       )
 
+      mic.table <- mic.result[["data"]]
+
+      mic.info <- list(
+        "status" = mic.result[["status"]],
+        "bad_exps" = NULL
+      )
+
     } else {
       analysis_levels <- levels(data[[col.analysis]])
       data.split <- split(x = data, f = data[col.analysis])
 
-      mic.table.split <- lapply(data.split, function(d) {
+      mic.result.split <- lapply(data.split, function(d) {
         find_mic(
           data = d,
           x.drug = x.drug,
           y.drug = line.drug,
           col.data = col.mic,
-          col.rep = col.rep,
+          col.rep = "replicate",
           threshold = mic.threshold,
           zero = TRUE
         )
       })
 
+      mic.table.split <- purrr::map(mic.result.split, ~purrr::pluck(.x, "data"))
       mic.table <- do.call(rbind, mic.table.split)
       mic.table[, col.analysis] <- factor(
         rownames(mic.table),
         levels = analysis_levels
       )
       rownames(mic.table) <- NULL
+
+      mic.status.split <- purrr::map(mic.result.split, ~purrr::pluck(.x, "status"))
+
+      if (any(mic.status.split == "warning")) {
+        mic.info <- list(
+          status = "warning",
+          bad_exps = sentence_paste(
+            names(purrr::keep(mic.status.split, ~.x == "warning"))
+          )
+        )
+      } else {
+        mic.info <- list(
+          status = "success",
+          bad_exps = NULL
+        )
+      }
     }
+  } else {
+    mic.info <- list(
+      "status" = NULL,
+      "bad_exps" = NULL
+    )
   }
 
   main_geoms <-
@@ -1157,7 +1299,7 @@ plot_line <- function(
         )
     }
 
-  main_geoms +
+  out_plot <- main_geoms +
     {if (!is.null(col.analysis)) {
       facet_wrap(
         ~.data[[col.analysis]],
@@ -1191,6 +1333,11 @@ plot_line <- function(
     {if (x.decimal > 1) {
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
     }}
+
+  return(list(
+    "plot" = out_plot,
+    "info" = mic.info
+  ))
 }
 
 
@@ -1279,7 +1426,7 @@ plot_tile <- function(
   if (any(x.mic.line, y.mic.line)) {
 
     if (is.null(col.analysis)) {
-      mic.table <- find_mic(
+      mic.result <- find_mic(
         data = data,
         x.drug = x.drug,
         y.drug = y.drug,
@@ -1289,11 +1436,18 @@ plot_tile <- function(
         zero = FALSE
       )
 
+      mic.table <- mic.result[["data"]]
+
+      mic.info <- list(
+        "status" = mic.result[["status"]],
+        "bad_exps" = NULL
+      )
+
     } else {
       analysis_levels <- levels(data[[col.analysis]])
       data.split <- split(x = data, f = data[col.analysis])
 
-      mic.table.split <- lapply(data.split, function(d) {
+      mic.result.split <- lapply(data.split, function(d) {
         find_mic(
           data = d,
           x.drug = x.drug,
@@ -1305,13 +1459,35 @@ plot_tile <- function(
         )
       })
 
+      mic.table.split <- purrr::map(mic.result.split, ~purrr::pluck(.x, "data"))
       mic.table <- do.call(rbind, mic.table.split)
       mic.table[, col.analysis] <- factor(
         rownames(mic.table),
         levels = analysis_levels
       )
       rownames(mic.table) <- NULL
+
+      mic.status.split <- purrr::map(mic.result.split, ~purrr::pluck(.x, "status"))
+
+      if (any(mic.status.split == "warning")) {
+        mic.info <- list(
+          status = "warning",
+          bad_exps = sentence_paste(
+            names(purrr::keep(mic.status.split, ~.x == "warning"))
+          )
+        )
+      } else {
+        mic.info <- list(
+          status = "success",
+          bad_exps = NULL
+        )
+      }
     }
+  } else {
+    mic.info <- list(
+      "status" = NULL,
+      "bad_exps" = NULL
+    )
   }
 
   # Zero concentrations are removed before plotting
@@ -1319,7 +1495,7 @@ plot_tile <- function(
   data_nozero <- data_nozero[!data_nozero[, y.drug] == 0, ]
 
 
-  ggplot(data_nozero, aes(.data[[x.drug]], .data[[y.drug]])) +
+  out_plot <- ggplot(data_nozero, aes(.data[[x.drug]], .data[[y.drug]])) +
 
     {if (!is.null(col.analysis)) {
       facet_wrap(
@@ -1358,6 +1534,11 @@ plot_tile <- function(
     {if (x.decimal > 1) {
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
     }}
+
+  return(list(
+    "plot" = out_plot,
+    "info" = mic.info
+  ))
 }
 
 
@@ -1447,7 +1628,7 @@ plot_tile_split <- function(
   if (any(x.mic.line, y.mic.line)) {
 
     if (is.null(col.analysis)) {
-      mic.table <- find_mic(
+      mic.result <- find_mic(
         data = data,
         x.drug = x.drug,
         y.drug = y.drug,
@@ -1457,11 +1638,18 @@ plot_tile_split <- function(
         zero = FALSE
       )
 
+      mic.table <- mic.result[["data"]]
+
+      mic.info <- list(
+        "status" = mic.result[["status"]],
+        "bad_exps" = NULL
+      )
+
     } else {
       analysis_levels <- levels(data[[col.analysis]])
       data.split <- split(x = data, f = data[col.analysis])
 
-      mic.table.split <- lapply(data.split, function(d) {
+      mic.result.split <- lapply(data.split, function(d) {
         find_mic(
           data = d,
           x.drug = x.drug,
@@ -1473,13 +1661,35 @@ plot_tile_split <- function(
         )
       })
 
+      mic.table.split <- purrr::map(mic.result.split, ~purrr::pluck(.x, "data"))
       mic.table <- do.call(rbind, mic.table.split)
       mic.table[, col.analysis] <- factor(
         rownames(mic.table),
         levels = analysis_levels
       )
       rownames(mic.table) <- NULL
+
+      mic.status.split <- purrr::map(mic.result.split, ~purrr::pluck(.x, "status"))
+
+      if (any(mic.status.split == "warning")) {
+        mic.info <- list(
+          status = "warning",
+          bad_exps = sentence_paste(
+            names(purrr::keep(mic.status.split, ~.x == "warning"))
+          )
+        )
+      } else {
+        mic.info <- list(
+          status = "success",
+          bad_exps = NULL
+        )
+      }
     }
+  } else {
+    mic.info <- list(
+      "status" = NULL,
+      "bad_exps" = NULL
+    )
   }
 
   # Zero concentrations are removed before plotting
@@ -1613,7 +1823,38 @@ plot_tile_split <- function(
       theme(legend.key.height = unit(7, "mm"))
   })
 
-  patchwork::wrap_plots(tile_plots, ncol = 1)
+  out_plot <- patchwork::wrap_plots(tile_plots, ncol = 1)
+
+  return(list(
+    "plot" = out_plot,
+    "info" = mic.info
+  ))
+}
+
+
+#' sentence_paste
+#'
+#' @param x Input vector to be pasted together
+#'
+#' @return
+#'
+sentence_paste <- function(x) {
+  x <- paste0("'", x, "'")
+
+  if (length(x) == 1) {
+    x
+  } else if (length(x) == 2) {
+    paste(x, collapse = " and ")
+  } else {
+    x_last <- tail(x, 1)
+    x_rest <- head(x, -1)
+
+    paste0(
+      paste(x_rest, collapse = ", "),
+      ", and ",
+      x_last
+    )
+  }
 }
 
 
@@ -3174,10 +3415,7 @@ server_results <- function(id, data) {
               abci.val = input$plot_dot_large_abci,
               col.mic = "effect",
               colour.palette = input$plot_dot_colour_palette
-            ) +
-              {if (abci_plot_dims()[[2]] == 1) {
-                theme(legend.box = "horizontal")
-              }}
+            )
 
           } else if (input$plot_tabs == ns("dot_split")) {
             plot_dot_split(
@@ -3206,10 +3444,7 @@ server_results <- function(id, data) {
               abci.val = input$plot_dot_split_large_abci,
               col.mic = "effect",
               colour.palette = input$plot_dot_split_colour_palette
-            ) +
-              {if (abci_plot_dims()[[2]] == 1) {
-                theme(legend.box = "horizontal")
-              }}
+            )
 
           } else if (input$plot_tabs == ns("tile")) {
             plot_tile(
@@ -3290,7 +3525,10 @@ server_results <- function(id, data) {
             )
           }
         },
-        error = function(e) NULL
+        error = function(e) {
+          message(e)
+          return(NULL)
+        }
       )
     })
 
@@ -3299,15 +3537,35 @@ server_results <- function(id, data) {
 
     output$abci_plot <- renderPlot({
       input$create_plot
-      if (is.null(the_plot())) {
+      if ( is.null(the_plot()) ) {
         notify(list = list(
           type = "error",
           status = "Error",
-          message = "We were unable to draw a plot with the specified parameters.",
-          suggest = "Try changing the inputs in the sidebar, then update the plot."
+          message = "We were unable to draw a plot with these parameters.",
+          suggest = "Try changing the inputs, then update the plot again."
         ))
       } else {
-        the_plot()
+
+        if (!is.null(the_plot()[["info"]][["status"]])) {
+          if (the_plot()[["info"]][["status"]] == "warning") {
+            notify(list = list(
+              type = "warning",
+              status = "Warning",
+              message = paste0(
+                "We had some trouble calculating the activity thresholds for ",
+                "the following experiment(s): ",
+                the_plot()[["info"]][["bad_exps"]],
+                ". "
+              ),
+              suggest = paste0(
+                "You may wish to inspect your data for irregularities. The ",
+                "Help pages also provide information on what this warning may ",
+                "indicate."
+              )
+            ))
+          }
+        }
+        the_plot()[["plot"]]
       }
     })
 
@@ -3388,7 +3646,7 @@ server_results <- function(id, data) {
       },
       content = function(file) {
         ggsave(
-          plot = the_plot(),
+          plot = the_plot()[["plot"]],
           filename = file,
           scale = 4,
           width = output_dims()[1],
@@ -3408,7 +3666,7 @@ server_results <- function(id, data) {
       },
       content = function(file) {
         ggsave(
-          plot = the_plot(),
+          plot = the_plot()[["plot"]],
           filename = file,
           scale = 4,
           width = output_dims()[1],
@@ -3428,7 +3686,7 @@ server_results <- function(id, data) {
       },
       content = function(file) {
         ggsave(
-          plot = the_plot(),
+          plot = the_plot()[["plot"]],
           filename = file,
           scale = 4,
           width = output_dims()[1],
