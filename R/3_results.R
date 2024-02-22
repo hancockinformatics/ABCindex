@@ -577,13 +577,8 @@ plot_dot <- function(
       if (any(mic.status.split == "warning")) {
         mic.info <- list(
           status = "warning",
-          bad_exps = paste(
-            paste0(
-              "'",
-              names(purrr::keep(mic.status.split, ~.x == "warning")),
-              "'"
-            ),
-            collapse = ", "
+          bad_exps = sentence_paste(
+            names(purrr::keep(mic.status.split, ~.x == "warning"))
           )
         )
       } else {
@@ -857,9 +852,8 @@ plot_dot_split <- function(
       if (any(mic.status.split == "warning")) {
         mic.info <- list(
           status = "warning",
-          bad_exps = paste(
-            names(purrr::keep(mic.status.split, ~.x == "warning")),
-            collapse = ", "
+          bad_exps = sentence_paste(
+            names(purrr::keep(mic.status.split, ~.x == "warning"))
           )
         )
       } else {
@@ -1192,9 +1186,8 @@ plot_line <- function(
       if (any(mic.status.split == "warning")) {
         mic.info <- list(
           status = "warning",
-          bad_exps = paste(
-            names(purrr::keep(mic.status.split, ~.x == "warning")),
-            collapse = ", "
+          bad_exps = sentence_paste(
+            names(purrr::keep(mic.status.split, ~.x == "warning"))
           )
         )
       } else {
@@ -1444,9 +1437,8 @@ plot_tile <- function(
       if (any(mic.status.split == "warning")) {
         mic.info <- list(
           status = "warning",
-          bad_exps = paste(
-            names(purrr::keep(mic.status.split, ~.x == "warning")),
-            collapse = ", "
+          bad_exps = sentence_paste(
+            names(purrr::keep(mic.status.split, ~.x == "warning"))
           )
         )
       } else {
@@ -1647,9 +1639,8 @@ plot_tile_split <- function(
       if (any(mic.status.split == "warning")) {
         mic.info <- list(
           status = "warning",
-          bad_exps = paste(
-            names(purrr::keep(mic.status.split, ~.x == "warning")),
-            collapse = ", "
+          bad_exps = sentence_paste(
+            names(purrr::keep(mic.status.split, ~.x == "warning"))
           )
         )
       } else {
@@ -1803,6 +1794,32 @@ plot_tile_split <- function(
     "plot" = out_plot,
     "info" = mic.info
   ))
+}
+
+
+#' sentence_paste
+#'
+#' @param x Input vector to be pasted together
+#'
+#' @return
+#'
+sentence_paste <- function(x) {
+  x <- paste0("'", x, "'")
+
+  if (length(x) == 1) {
+    x
+  } else if (length(x) == 2) {
+    paste(x, collapse = " and ")
+  } else {
+    x_last <- tail(x, 1)
+    x_rest <- head(x, -1)
+
+    paste0(
+      paste(x_rest, collapse = ", "),
+      ", and ",
+      x_last
+    )
+  }
 }
 
 
@@ -3515,9 +3532,11 @@ server_results <- function(id, data) {
                 the_plot()[["info"]][["bad_exps"]],
                 ". "
               ),
-              suggest = "You may wish to inspect your data for ",
-              "irregularities, or you may refer to the Help pages for more ",
-              "information about activity threholds in ABCindex."
+              suggest = paste0(
+                "You may wish to inspect your data for irregularities, or you ",
+                "may refer to the Help pages for more information about ",
+                "activity threholds."
+              )
             ))
           }
         }
