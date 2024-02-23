@@ -3,7 +3,7 @@
 <div class="container col-xxl-6 px-4 pt-1 mb-auto">
   <div class="row flex-lg-row align-items-center pt-5 pb-2">
 
-    <h1 class="display-3 fw-bold text-body-emphasis lh-1 mb-3">ABCindex help</h1>
+    <h1 class="display-3 fw-bold text-body-emphasis lh-1 mb-3">Help for ABCindex</h1>
     <p class="lead">
       The first section covers the use of the app. Click
       <a href="#anchor-calc">here</a> to jump to the next section, which details
@@ -44,7 +44,7 @@
       the input any wells that are not intended to be plotted in the final
       graph (e.g. blank wells or external controls).
     </p>
-    <img src="help/input_template.png" alt="Input template" style="width: 882px; height: 713px" class="center">
+    <img src="help/input_template.png" alt="Input template" class="center img-fluid" style="width:75%">
 
     <h3 class="mt-4">2. Upload and analyze your data</h3>
     <p>
@@ -57,8 +57,8 @@
       mistake in the input file; try downloading the template and copying and
       pasting your data onto it.
     </p>
-    <img src="help/input_preview.png" alt="Input preview" style="width: 880px; height: 460px" class="center">
-    <p>
+    <img src="help/input_preview.png" alt="Input preview" class="center img-fluid">
+    <p class="mt-4">
       After clicking "Perform ABCI calculations", a dialogue window will appear
       with two options for data normalization. By default, ABCindex will assume
       your data is direct observations (e.g., absorbance units or relative
@@ -104,7 +104,7 @@
       separate the positive and negative ABCI values into two different plots
       for visual simplicity.
     </p>
-    <img src="help/plot_examples.png" alt="Plot examples" style="width: 880px; height: 702px" class="center">
+    <img src="help/plot_examples.png" alt="Plot examples" class="center img-fluid" style="width:75%">
     <p>
       Choose the type of plot you want and click <b>"Create or update the
       plot"</b>. You can use the options below to modify the plot and click
@@ -156,7 +156,7 @@
               designed, to the best of our knowledge, to be accessible for
               people with protanopia, deuteranopia, or tritanopia.
             </p>
-            <img src="img/colours_abci.svg" alt="ABCI palettes" style="width: 359px; height: 400px" class="center">
+            <img src="img/colours_abci.svg" alt="ABCI palettes" class="center img-fluid" style="width:50%">
           </div>
         </div>
       </div>
@@ -198,13 +198,39 @@
               As a visual aid to interpret drug interaction data, you can plot
               lines indicating thresholds of antimicrobial activity for the
               individual drugs (e.g., MIC, MBIC, MBEC). To activate this option,
-              toggle on <b>"Draw activity threshold"</b>. The target killing
-              percentage can be modified in the advanced options box; the
-              default value is 0.5 (50% killing, e.g. MIC<sub>50</sub>).
+              check one or both of the boxes for <b>"Draw activity threshold"</b>.
+              The target killing percentage can be modified in the advanced
+              options box; the default value is 0.5 (50% killing, e.g.
+              MIC<sub>50</sub>).
             </p>
             <p>
               Antimicrobial activity thresholds are provided exclusively as
-              visual indicators and are not used for calculations.
+              visual indicators and are not used for calculations. When enabling
+              them, a warning may appear describing a potential issue with the
+              activity threshold calculation. This can indicate one of a few
+              things:
+            </p>
+            <ul>
+              <li>
+                There was disagreement among replicates about the theshold
+                concentraion. In the case of two replicates disagreeing, the
+                lower concentration is used. For three or more, a single mode is
+                utiliized.
+              </li>
+              <li>
+                No tested concentrations reached the specified threshold for one
+                or more replicates.
+              </li>
+              <li>
+                A threshold could not be determined, either because no
+                concentrations reached the specified value, or there was no
+                agreement between any replicates (e.g. each of three replicates
+                returned a different result).
+              </li>
+            </ul>
+            <p>
+              Any of these scenarios will result in the same warning, which will
+              name the problematic experiments.
             </p>
           </div>
         </div>
@@ -249,7 +275,55 @@
 
     <h3>Rationale behind ABCindex</h3>
     <p>
-      Placeholder text.
+      ABCindex aims to overcome the main challenges presented when evaluating
+      antibiofilm combination therapies and, in more general terms, provide a
+      way to quantify the impact of combining antimicrobials, focused on
+      therapeutic decisions rather than mechanistic concerns. While the analysis
+      methodology and scoring system ABCindex uses can be applied to any kind of
+      multidose drug combination assay, the Anti-Biofilm Combination Index
+      (ABCI) is principally designed to deal with biofilm inhibition and
+      biofilm eradication experiments.
+    </p>
+    <p>
+      In checkerboard assays, the impact of drug combinations is traditionally
+      described using fractional inhibitory concentrations (FIC). FICs are
+      determined by calculating the minimum inhibitory concentration (MIC) for
+      individual drugs and their combinations at a given killing threshold and
+      then determining the relative change in MIC the combinations represent. An
+      overall 4-fold reduction or higher results in an FIC of 0.5 or lower, and
+      is described as “synergy”. A 4-fold increase results in an FIC of 4.0 or
+      higher and is described as “antagonism”.
+    </p>
+    <p>
+      While FICs have been successfully used for half a century to summarize the
+      effects of combining traditional antibiotics, any metric that relies on
+      activity thresholds becomes inaccurate when the dose-response curve of the
+      drugs studied differs significantly from the typical growth/no growth
+      curve observed when killing planktonic cells with traditional antibiotics.
+      Antibiofilm drugs often present unusual dose-response curves, featuring
+      gradual biofilm reduction across a wide range of concentrations,
+      incomplete biofilm elimination even at the highest dose assayed, and
+      subinhibitory biofilm stimulation peaks. As an example, the experiment
+      below (Haney et al., <a href='https://doi.org/10.3390/biom8020029'
+      target='_blank' rel='noreferrer noopener'>
+        https://doi.org/10.3390/biom8020029</a>) illustrates
+      these phenomena in the dose-response curves of commonly used antibiotics
+      against <i>Pseudomonas aeruginosa</i> PAO1 in both biofilm inhibition
+      (top) and biofilm eradication assays (bottom).
+    </p>
+    <img src="help/haney_figure.png" alt="Haney et al." class="center img-fluid" style="width:75%">
+    <p>
+      ABCI is a simple metric designed to accurately describe the effects of
+      drug combinations even when they present unusual dose-response curves.
+      Additionally, ABCI values are intended to accurately represent the most
+      fundamental decision behind combination therapies: how much can be gained
+      by combining two drugs compared to using the best individual drug on its
+      own. Finally, as checkerboard assays produce results that depend on two
+      variables, resulting in hard-to-visualize information that is often
+      published as lengthy tables or 3D graphs, the ABCindex app not only
+      calculates ABCI values but also summarizes all of the information obtained
+      in simple and visually appealing graphs designed to quickly identify
+      promising interactions and favourable drug ratios.
     </p>
 
     <h3 class="mt-4">Anti-Biofilm Combination Index</h3>
@@ -267,7 +341,7 @@
       the individual drugs, divided by the combined effects of the two
       individual drugs. It can be calculated as follows:
     </p>
-    <img src="help/abci_formula.png" alt="ABCI formula" style="width: 600px; height: 163px" class="center">
+    <img src="help/abci_formula.png" alt="ABCI formula" class="center img-fluid" style="width:75%">
     <p>The resulting ABCI value can then be interpreted as follows:</p>
     <ul>
       <li>
@@ -352,7 +426,33 @@
 
     <h3 class="mt-4">Data processing in ABCindex</h3>
     <p>
-      Placeholder text.
+      Checkerboard data uploaded to ABCindex goes through the following steps:
+    </p>
+    <ul>
+      <li>
+        If the data is being normalized, calculate the baseline value, where the
+        concentration of both drugs is 0, and divide every other value by that
+        number. Then for each well, calculate the effect by subtracting it from
+        1. Negative values are set always to 0.
+      </li>
+      <li>
+        If normalization is not specified, calculate the effect by subtracting
+        each well from the previously defined baseline value, again not allowing
+        for negative results.
+      </li>
+      <li>
+        Then, find the "reference" value for each drug concentration, defined as
+        the average effect when the other drug is at 0.
+      </li>
+      <li>
+        All the above information is then entered into the ABCI formula to
+        calculate a result.
+      </li>
+    </ul>
+    <p>
+      The effect (i.e. percentage of biomass reduction) and ABCI values are
+      averaged across replicates; this is what's shown in the plots, and
+      downloaded in the results spreadsheets.
     </p>
 
     <h3 class="mt-4">Learn more</h3>
@@ -367,9 +467,12 @@
         <div id="a2_c1" class="accordion-collapse collapse" data-bs-parent="#accordion2">
           <div class="accordion-body">
             <p>
-              Placeholder text.
+              While ShinyABCi is designed to analyze checkerboard data and thus
+              can only support combinations of two treatments, the Anti-Biofilm
+              Combination Index can be generalized to the combination of
+              <i>n</i> drugs as follows:
             </p>
-            <img src="help/abci_formula_general.png" alt="Generalized ABCI formula" style="width: 600px; height: 166px" class="center">
+            <img src="help/abci_formula_general.png" alt="Generalized ABCI formula" class="center img-fluid" style="width:75%">
           </div>
         </div>
       </div>
@@ -401,7 +504,7 @@
               Below, you can see the exact relationship between the percentage
               of biofilm killed and the default dot size used by ABCindex.
             </p>
-            <img src="help/dot_size_scaling.png" alt="Dot size scaling" style="width: 450px; height: 337px" class="center">
+            <img src="help/dot_size_scaling.png" alt="Dot size scaling" class="center img-fluid" style="width:50%">
           </div>
         </div>
       </div>

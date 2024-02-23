@@ -42,7 +42,7 @@ special_button <- function(id, class, icon, label) {
     class = paste0("btn-lg px-2 me-md-2 btn-", class),
     icon = icon(icon),
     label = label,
-    width = "200px"
+    width = "160px"
   )
 }
 
@@ -59,9 +59,13 @@ panel_home <- function(id) {
     div(
       class = "container mt-5 mb-auto",
       div(
-        class = "row p-4 pb-lg-5 pt-lg-5 rounded-3 border shadow-lg text-center",
+        class = "row p-4 pb-lg-5 pt-lg-5 text-center rounded-3 border shadow-lg",
 
-        HTML("<img src='img/ABCindex_title.svg' class='pb-4' height=230>"),
+        img(
+          src = "img/ABCindex_title.svg",
+          class = "pb-4 img-fluid center",
+          style = "width:70%"
+        ),
 
         HTML(r"(
           <p class='lead mb-4'>Welcome to ABCindex, a tool to quantify and

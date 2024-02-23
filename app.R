@@ -14,6 +14,7 @@ app_theme <- bs_theme(
   version = 5,
   bootswatch = "cosmo",
   base_font = font_google("Inter"),
+  font_scale = 0.9,
   primary = "#cc002c",
   secondary = "#373a3c",
   info = "#ff7518",
