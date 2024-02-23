@@ -198,13 +198,39 @@
               As a visual aid to interpret drug interaction data, you can plot
               lines indicating thresholds of antimicrobial activity for the
               individual drugs (e.g., MIC, MBIC, MBEC). To activate this option,
-              toggle on <b>"Draw activity threshold"</b>. The target killing
-              percentage can be modified in the advanced options box; the
-              default value is 0.5 (50% killing, e.g. MIC<sub>50</sub>).
+              check one or both of the boxes for <b>"Draw activity threshold"</b>.
+              The target killing percentage can be modified in the advanced
+              options box; the default value is 0.5 (50% killing, e.g.
+              MIC<sub>50</sub>).
             </p>
             <p>
               Antimicrobial activity thresholds are provided exclusively as
-              visual indicators and are not used for calculations.
+              visual indicators and are not used for calculations. When enabling
+              them, a warning may appear describing a potential issue with the
+              activity threshold calculation. This can indicate one of a few
+              things:
+            </p>
+            <ul>
+              <li>
+                There was disagreement among replicates about the theshold
+                concentraion. In the case of two replicates disagreeing, the
+                lower concentration is used. For three or more, a single mode is
+                utiliized.
+              </li>
+              <li>
+                No tested concentrations reached the specified threshold for one
+                or more replicates.
+              </li>
+              <li>
+                A threshold could not be determined, either because no
+                concentrations reached the specified value, or there was no
+                agreement between any replicates (e.g. each of three replicates
+                returned a different result).
+              </li>
+            </ul>
+            <p>
+              Any of these scenarios will result in the same warning, which will
+              name the problematic experiments.
             </p>
           </div>
         </div>
@@ -400,7 +426,33 @@
 
     <h3 class="mt-4">Data processing in ABCindex</h3>
     <p>
-      Placeholder text.
+      Checkerboard data uploaded to ABCindex goes through the following steps:
+    </p>
+    <ul>
+      <li>
+        If the data is being normalized, calculate the baseline value, where the
+        concentration of both drugs is 0, and divide every other value by that
+        number. Then for each well, calculate the effect by subtracting it from
+        1. Negative values are set always to 0.
+      </li>
+      <li>
+        If normalization is not specified, calculate the effect by subtracting
+        each well from the previously defined baseline value, again not allowing
+        for negative results.
+      </li>
+      <li>
+        Then, find the "reference" value for each drug concentration, defined as
+        the average effect when the other drug is at 0.
+      </li>
+      <li>
+        All the above information is then entered into the ABCI formula to
+        calculate a result.
+      </li>
+    </ul>
+    <p>
+      The effect (i.e. percentage of biomass reduction) and ABCI values are
+      averaged across replicates; this is what's shown in the plots, and
+      downloaded in the results spreadsheets.
     </p>
 
     <h3 class="mt-4">Learn more</h3>
