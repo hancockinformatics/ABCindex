@@ -681,17 +681,19 @@ plot_dot <- function(
     {if (x.mic.line) geom_vline(
       data = mic.table,
       aes(xintercept = XLAB),
+      linetype = "longdash",
       linewidth = 0.5
     )} +
     {if (y.mic.line) geom_hline(
       data = mic.table,
       aes(yintercept = YLAB),
+      linetype = "longdash",
       linewidth = 0.5
     )} +
 
     # Draw lines to separate 0-concentration values
-    geom_vline(xintercept = 1.5, linewidth = 0.5, linetype = "longdash") +
-    geom_hline(yintercept = 1.5, linewidth = 0.5, linetype = "longdash") +
+    geom_vline(xintercept = 1.5, linewidth = 1, linetype = "longdash") +
+    geom_hline(yintercept = 1.5, linewidth = 1, linetype = "longdash") +
 
     scale_fill_gradientn(
       colours = preset_palettes$values[[colour.palette]],
@@ -1010,16 +1012,19 @@ plot_dot_split <- function(
       {if (x.mic.line) geom_vline(
         data = mic.table,
         aes(xintercept = XLAB),
+        linetype = "longdash",
         linewidth = 0.5
       )} +
       {if (y.mic.line) geom_hline(
         data = mic.table,
         aes(yintercept = YLAB),
+        linetype = "longdash",
         linewidth = 0.5
       )} +
 
-      geom_vline(xintercept = 1.5, linewidth = 0.5, linetype = "longdash") +
-      geom_hline(yintercept = 1.5, linewidth = 0.5, linetype = "longdash") +
+      # Draw lines to separate 0-concentration values
+      geom_vline(xintercept = 1.5, linewidth = 1, linetype = "longdash") +
+      geom_hline(yintercept = 1.5, linewidth = 1, linetype = "longdash") +
 
       scale_fill_gradientn(
         colours = preset_palettes_split[["values"]][[nm]][[colour.palette]],
@@ -1309,9 +1314,12 @@ plot_line <- function(
       )
     }} +
 
-    {if (x.mic.line) {
-      geom_vline(data = mic.table, aes(xintercept = XLAB), linewidth = 0.5)
-    }} +
+    {if (x.mic.line) geom_vline(
+      data = mic.table,
+      aes(xintercept = XLAB),
+      linetype = "longdash",
+      linewidth = 0.5
+    )} +
 
     scale_colour_brewer(
       palette = colour.palette,
@@ -1514,10 +1522,20 @@ plot_tile <- function(
     {if (large.effect) geom_text(aes(label = large_chr), size = 5)} +
 
     {if (x.mic.line) {
-      geom_vline(data = mic.table, aes(xintercept = XLAB), linewidth = 0.5)
+      geom_vline(
+        data = mic.table,
+        aes(xintercept = XLAB),
+        linetype = "longdash",
+        linewidth = 0.5
+      )
     }} +
     {if (y.mic.line) {
-      geom_hline(data = mic.table, aes(yintercept = YLAB), linewidth = 0.5)
+      geom_hline(
+        data = mic.table,
+        aes(yintercept = YLAB),
+        linetype = "longdash",
+        linewidth = 0.5
+      )
     }} +
 
     scale_fill_gradientn(
@@ -1803,10 +1821,20 @@ plot_tile_split <- function(
       {if (large.effect) geom_text(aes(label = lagre_sym), size = 6)} +
 
       {if (x.mic.line) {
-        geom_vline(data = mic.table, aes(xintercept = XLAB), linewidth = 0.5)
+        geom_vline(
+          data = mic.table,
+          aes(xintercept = XLAB),
+          linetype = "longdash",
+          linewidth = 0.5
+        )
       }} +
       {if (y.mic.line) {
-        geom_hline(data = mic.table, aes(yintercept = YLAB), linewidth = 0.5)
+        geom_hline(
+          data = mic.table,
+          aes(yintercept = YLAB),
+          linetype = "longdash",
+          linewidth = 0.5
+        )
       }} +
 
       scale_fill_gradientn(

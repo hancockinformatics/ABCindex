@@ -59,7 +59,7 @@ panel_home <- function(id) {
     div(
       class = "container mt-5 mb-auto",
       div(
-        class = "row p-4 pb-lg-5 pt-lg-5 rounded-3 border shadow-lg text-center",
+        class = "row p-4 pb-lg-5 pt-lg-5 text-center rounded-3 border shadow-lg",
 
         HTML("<img src='img/ABCindex_title.svg' class='pb-4' height=230>"),
 
