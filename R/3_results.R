@@ -692,8 +692,8 @@ plot_dot <- function(
     )} +
 
     # Draw lines to separate 0-concentration values
-    geom_vline(xintercept = 1.5, linewidth = 1, linetype = "longdash") +
-    geom_hline(yintercept = 1.5, linewidth = 1, linetype = "longdash") +
+    geom_vline(xintercept = 1.5, linewidth = 1, linetype = "solid") +
+    geom_hline(yintercept = 1.5, linewidth = 1, linetype = "solid") +
 
     scale_fill_gradientn(
       colours = preset_palettes$values[[colour.palette]],
@@ -1023,8 +1023,8 @@ plot_dot_split <- function(
       )} +
 
       # Draw lines to separate 0-concentration values
-      geom_vline(xintercept = 1.5, linewidth = 1, linetype = "longdash") +
-      geom_hline(yintercept = 1.5, linewidth = 1, linetype = "longdash") +
+      geom_vline(xintercept = 1.5, linewidth = 1, linetype = "solid") +
+      geom_hline(yintercept = 1.5, linewidth = 1, linetype = "solid") +
 
       scale_fill_gradientn(
         colours = preset_palettes_split[["values"]][[nm]][[colour.palette]],
