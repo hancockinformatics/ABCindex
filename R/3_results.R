@@ -3652,10 +3652,10 @@ server_results <- function(id, data) {
                 the_plot()[["info"]][["bad_exps"]],
                 ". "
               ),
-              suggest = paste0(
+              suggest = p(
                 "You may wish to inspect your data for irregularities. The ",
-                "Help pages also provide information on what this warning may ",
-                "indicate."
+                actionLink(ns("activity_help"), "Help pages"),
+                " also provide information on what this warning may indicate."
               )
             ))
           }
@@ -3663,6 +3663,8 @@ server_results <- function(id, data) {
         the_plot()[["plot"]]
       }
     })
+
+    observeEvent(input$activity_help, nav_select(id = "navbar", selected =  "help"))
 
     output_dims <- eventReactive(input$create_plot, {
       get_dims(
