@@ -319,15 +319,19 @@ find_mic <- function(
   }
 
   # If we got NA from above, instead use the highest tested concentration
+  x_mic_clean <- x_mic
   if (is.na(x_mic)) {
-    x_mic_clean <- as.character(max(as.numeric(levels(data[[x.drug]]))))
     status_x <- "warning"
-  } else {
-    x_mic_clean <- x_mic
   }
 
   # Get the label (position in the order of concentrations)
-  x_lab <- which(levels(droplevels(data[[x.drug]])) == x_mic_clean)
+  x_lab <-
+    if (!is.na(x_mic_clean)) {
+      which(levels(droplevels(data[[x.drug]])) == x_mic_clean)
+    } else {
+      NA_integer_
+    }
+
 
   # Repeat all of the above for `y.drug`
   y_mic_per_rep <- lapply(data_split, function(r) {
@@ -357,14 +361,18 @@ find_mic <- function(
     status_y <- "warning"
   }
 
+  y_mic_clean <-y_mic
   if (is.na(y_mic)) {
-    y_mic_clean <-as.character(max(as.numeric(levels(data[[y.drug]]))))
     status_y <- "warning"
-  } else {
-    y_mic_clean <-y_mic
   }
 
-  y_lab <- which(levels(droplevels(data[[y.drug]])) == y_mic_clean)
+  y_lab <-
+    if (!is.na(y_mic_clean)) {
+      which(levels(droplevels(data[[y.drug]])) == y_mic_clean)
+    } else {
+      NA_integer_
+    }
+
 
   mic_table <- tibble(
     XMIC = x_mic_clean,
@@ -3652,7 +3660,7 @@ server_results <- function(id, data) {
                 the_plot()[["info"]][["bad_exps"]],
                 ". "
               ),
-              suggest = p(
+              suggest = paste0(
                 "You may wish to inspect your data for irregularities. The ",
                 actionLink(ns("activity_help"), "Help pages"),
                 " also provide information on what this warning may indicate."
