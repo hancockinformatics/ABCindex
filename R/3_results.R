@@ -89,7 +89,11 @@ tooltips <- list(
     "Choose whether to include ABCI values close to 0 (Loose) or hide them ",
     "(Strict)"
   ),
-  linear = "Toggle to enable linear/continuous scaling for dot sizes"
+  linear = "Toggle to enable linear/continuous scaling for dot sizes",
+  zero_lines = paste0(
+    "Draw lines inside the plot to distinguish wells without the presence of ",
+    "one compound"
+  )
 )
 
 
@@ -315,15 +319,19 @@ find_mic <- function(
   }
 
   # If we got NA from above, instead use the highest tested concentration
+  x_mic_clean <- x_mic
   if (is.na(x_mic)) {
-    x_mic_clean <- as.character(max(as.numeric(levels(data[[x.drug]]))))
     status_x <- "warning"
-  } else {
-    x_mic_clean <- x_mic
   }
 
   # Get the label (position in the order of concentrations)
-  x_lab <- which(levels(droplevels(data[[x.drug]])) == x_mic_clean)
+  x_lab <-
+    if (!is.na(x_mic_clean)) {
+      which(levels(droplevels(data[[x.drug]])) == x_mic_clean)
+    } else {
+      NA_integer_
+    }
+
 
   # Repeat all of the above for `y.drug`
   y_mic_per_rep <- lapply(data_split, function(r) {
@@ -353,14 +361,18 @@ find_mic <- function(
     status_y <- "warning"
   }
 
+  y_mic_clean <-y_mic
   if (is.na(y_mic)) {
-    y_mic_clean <-as.character(max(as.numeric(levels(data[[y.drug]]))))
     status_y <- "warning"
-  } else {
-    y_mic_clean <-y_mic
   }
 
-  y_lab <- which(levels(droplevels(data[[y.drug]])) == y_mic_clean)
+  y_lab <-
+    if (!is.na(y_mic_clean)) {
+      which(levels(droplevels(data[[y.drug]])) == y_mic_clean)
+    } else {
+      NA_integer_
+    }
+
 
   mic_table <- tibble(
     XMIC = x_mic_clean,
@@ -488,6 +500,8 @@ get_dims <- function(type, n_cols, n_rows) {
 #' @param colour.palette One of the pre-made palettes for ABCI colour
 #' @param size_mapping Data frame of values to use for size scaling. Currently
 #'   only supports the one object, "size_mapping_N1S2".
+#' @param zero_lines Should lines be drawn to help distinguish zero
+#'   concentrations? Defaults to TRUE.
 #'
 #' @return A ggplot2 object
 #'
@@ -516,7 +530,8 @@ plot_dot <- function(
     large.effect.val = 0.9,
     abci.val = 0.1,
     colour.palette = "A_RYB",
-    size_mapping = size_mapping_N1S2
+    size_mapping = size_mapping_N1S2,
+    zero_lines = TRUE
 ) {
 
   if (any(c("spec_tbl_df", "tbl_df", "tbl") %in% class(data))) {
@@ -692,8 +707,12 @@ plot_dot <- function(
     )} +
 
     # Draw lines to separate 0-concentration values
-    geom_vline(xintercept = 1.5, linewidth = 1, linetype = "longdash") +
-    geom_hline(yintercept = 1.5, linewidth = 1, linetype = "longdash") +
+    {if (zero_lines) {
+      geom_vline(xintercept = 1.5, linewidth = 1, linetype = "solid")
+    }} +
+    {if (zero_lines) {
+      geom_hline(yintercept = 1.5, linewidth = 1, linetype = "solid")
+    }} +
 
     scale_fill_gradientn(
       colours = preset_palettes$values[[colour.palette]],
@@ -766,6 +785,8 @@ plot_dot <- function(
 #' @param colour.palette One of the pre-made palettes for ABCI colour
 #' @param size_mapping Data frame of values to use for size scaling. Currently
 #'   only supports the one object `size_mapping_N1S2`.
+#' @param zero_lines Should lines be drawn to help distinguish zero
+#'   concentrations? Defaults to TRUE.
 #'
 #' @return A ggplot2 object
 #'
@@ -795,7 +816,8 @@ plot_dot_split <- function(
     large.effect.val = 0.9,
     abci.val = 0.1,
     colour.palette = "A_RYB",
-    size_mapping = size_mapping_N1S2
+    size_mapping = size_mapping_N1S2,
+    zero_lines = TRUE
 ) {
 
   if (any(c("spec_tbl_df", "tbl_df", "tbl") %in% class(data))) {
@@ -1023,8 +1045,12 @@ plot_dot_split <- function(
       )} +
 
       # Draw lines to separate 0-concentration values
-      geom_vline(xintercept = 1.5, linewidth = 1, linetype = "longdash") +
-      geom_hline(yintercept = 1.5, linewidth = 1, linetype = "longdash") +
+      {if (zero_lines) {
+        geom_vline(xintercept = 1.5, linewidth = 1, linetype = "solid")
+      }} +
+      {if (zero_lines) {
+        geom_hline(yintercept = 1.5, linewidth = 1, linetype = "solid")
+      }} +
 
       scale_fill_gradientn(
         colours = preset_palettes_split[["values"]][[nm]][[colour.palette]],
@@ -2373,6 +2399,16 @@ server_results <- function(id, data) {
             title = "Advanced plot options",
 
             wrap_selector(
+              label = "Draw zero lines",
+              label_title = tooltips$zero_lines,
+              input_switch(
+                id = ns("plot_dot_zero_lines"),
+                label = "On",
+                value = TRUE
+              )
+            ),
+
+            wrap_selector(
               label = "Swap X and Y",
               label_title = tooltips$swap_x_y,
               input_switch(
@@ -2453,6 +2489,14 @@ server_results <- function(id, data) {
         )
       )
     )
+
+    observeEvent(input$plot_dot_zero_lines, {
+      if (input$plot_dot_zero_lines) {
+        update_switch("plot_dot_zero_lines", label = "On")
+      } else {
+        update_switch("plot_dot_zero_lines", label = "Off")
+      }
+    })
 
     observeEvent(input$plot_dot_swap, {
       if (input$plot_dot_swap) {
@@ -2588,6 +2632,16 @@ server_results <- function(id, data) {
             title = "Advanced plot options",
 
             wrap_selector(
+              label = "Draw zero lines",
+              label_title = tooltips$zero_lines,
+              input_switch(
+                id = ns("plot_dot_split_zero_lines"),
+                label = "On",
+                value = TRUE
+              )
+            ),
+
+            wrap_selector(
               label = "Swap X and Y",
               label_title = tooltips$swap_x_y,
               input_switch(
@@ -2678,6 +2732,15 @@ server_results <- function(id, data) {
         )
       )
     )
+
+    observeEvent(input$plot_dot_split_zero_lines, {
+      if (input$plot_dot_split_zero_lines) {
+        update_switch("plot_dot_split_zero_lines", label = "On")
+      } else {
+        update_switch("plot_dot_split_zero_lines", label = "Off")
+      }
+    })
+
 
     observeEvent(input$plot_dot_split_swap, {
       if (input$plot_dot_split_swap) {
@@ -3452,7 +3515,8 @@ server_results <- function(id, data) {
               large.effect.val = input$plot_dot_large_value,
               abci.val = input$plot_dot_large_abci,
               col.mic = "effect",
-              colour.palette = input$plot_dot_colour_palette
+              colour.palette = input$plot_dot_colour_palette,
+              zero_lines = input$plot_dot_zero_lines
             )
 
           } else if (input$plot_tabs == ns("dot_split")) {
@@ -3481,7 +3545,8 @@ server_results <- function(id, data) {
               large.effect.val = input$plot_dot_split_large_value,
               abci.val = input$plot_dot_split_large_abci,
               col.mic = "effect",
-              colour.palette = input$plot_dot_split_colour_palette
+              colour.palette = input$plot_dot_split_colour_palette,
+              zero_lines = input$plot_dot_split_zero_lines
             )
 
           } else if (input$plot_tabs == ns("tile")) {
@@ -3597,8 +3662,8 @@ server_results <- function(id, data) {
               ),
               suggest = paste0(
                 "You may wish to inspect your data for irregularities. The ",
-                "Help pages also provide information on what this warning may ",
-                "indicate."
+                actionLink(ns("activity_help"), "Help pages"),
+                " also provide information on what this warning may indicate."
               )
             ))
           }
@@ -3606,6 +3671,8 @@ server_results <- function(id, data) {
         the_plot()[["plot"]]
       }
     })
+
+    observeEvent(input$activity_help, nav_select(id = "navbar", selected =  "help"))
 
     output_dims <- eventReactive(input$create_plot, {
       get_dims(
