@@ -14,10 +14,10 @@ dependency_table <- dplyr::tibble(
     "bslib",
     "openxlsx",
     "readODS",
-    "Shiny",
+    "shiny",
     "shinycssloaders",
     "shinyjs",
-    "tiyverse"
+    "tidyverse"
   ),
   description = c(
     "A modern Bootstrap UI toolkit for Shiny",
@@ -122,8 +122,8 @@ panel_about <- function(id) {
           ),
           p(
             class = "lead",
-            "Detailed information, covering the usage of the app, and ",
-            "interpretation and calculation of ABCI values, can be found ",
+            "Information on the usage of the app and calculation and  ",
+            "interpretation of ABCI values can be found ",
             actionLink(ns("help_from_about"), "here", .noWS = "after"), "."
           ),
 
@@ -133,8 +133,8 @@ panel_about <- function(id) {
           ),
           p(
             class = "lead",
-            "If you encounter any bugs or experience any issues, you can ",
-            "let us know by submitting an issue at our ",
+            "If you encounter any bugs or other issues, please submit an ",
+            "issue at our ",
             a(
               href = "https://github.com/hancockinformatics/ABCindex",
               target = "_blank",
