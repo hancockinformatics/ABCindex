@@ -1,7 +1,7 @@
 # ABCindex
 
 <!-- badges: start -->
-![Deployed version](https://img.shields.io/github/r-package/v/hancockinformatics/ABCindex/main?label=ABCindex%40main)
+![Deployed version](https://img.shields.io/github/r-package/v/hancockinformatics/ABCindex/main?label=Deployed)
 ![shinyapps.io](https://github.com/hancockinformatics/ABCindex/actions/workflows/shiny-deploy.yaml/badge.svg)
 <!-- badges: end -->
 
