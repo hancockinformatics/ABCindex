@@ -45,7 +45,7 @@ line_y <- ggplot2::annotate(
 tooltips <- list(
   abci_colours = paste0(
     "Colour palette for the ABCI values, designed to highlight the most ",
-    "relevant differences. Click to see the available options."
+    "relevant differences. Click to see the options."
   ),
   x_axis_title = "Title for the X axis; applies to the entire plot",
   x_axis_digits =
@@ -53,7 +53,7 @@ tooltips <- list(
   y_axis_title = "Title for the Y axis; applies to the entire plot",
   y_axis_digits =
     "Number of decimal places to show for concentrations on the Y axis",
-  size_legend = "Title of the dot size legend",
+  size_legend = "Title of the size legend in dot plots",
   draw_activity = paste0(
     "Include line(s) to indicate activity thresholds for individual ",
     "treatments (e.g., MIC, MBIC, MBEC). Defaults to ≥50% killing."
@@ -62,22 +62,20 @@ tooltips <- list(
     "Cutoff value for activity threshold lines (0.5 = 50% killing). Applies ",
     "to both X and Y axes."
   ),
-  swap_x_y = "Turn on to swap the drugs plotted on the X and Y axis",
-  axis_labels = paste0(
-    "Should the X and Y axis labels be drawn on every panel? Turn on when all ",
-    "experiments have the same concentrations."
-  ),
+  swap_x_y = "Turn on to swap the values plotted on the X and Y axis",
+  axis_labels =
+    "Across plot panels, should the X and Y axis labels vary or be the same?",
   low_effect = paste0(
-    "Draw a symbol on tiles with low effect (<50% killing) when treatments ",
-    "are combined"
+    "Draw a symbol on tiles with low effect when treatments are combined. ",
+    "Defaults to <50% killing."
   ),
   low_effect_val = paste0(
-    "Threshold for drawing a symbol on tiles with low effect when treatments ",
-    "are combined (0.5 = 50% killing)"
+    "Draw a symbol on combined treatment cells that kill less than the ",
+    "indicated percentage (0.5 = 50% killing)."
   ),
   large_effect = paste0(
     "Outline dots, or draw a symbol on tiles, to highlight combinations with ",
-    "high killing (>90% killing)"
+    "high killing"
   ),
   large_effect_val = paste0(
     "Threshold value used for highlighting combinations with a large effect ",
@@ -85,7 +83,7 @@ tooltips <- list(
   ),
   abci_val = paste0(
     "When highlighting combinations with a large effect, only those with an ",
-    "ABCI value above this threshold will be included"
+    "ABCI value above this number will be included."
   ),
   filter = paste0(
     "Choose whether to include ABCI values close to 0 (Loose) or hide them ",
@@ -94,7 +92,7 @@ tooltips <- list(
   linear = "Toggle to enable linear/continuous scaling for dot sizes",
   zero_lines = paste0(
     "Draw lines inside the plot to distinguish wells without the presence of ",
-    "one treatment"
+    "one compound"
   )
 )
 
@@ -111,13 +109,13 @@ plot_legends <- list(
   dot = div(
     p(
       "This graph combines ABCI (drug interaction) and activity (% killed). ",
-      "The colour of the dots indicates ABCI: Positive values indicate that ",
-      "the combination is more effective than either individual drug; ",
-      "negative values indicate that the combination is less effective than ",
-      "the most active individual drug. The size of the dots indicates the ",
-      "percentage of biomass killed. Vertical and horizontal lines can be ",
-      "added to illustrate the activity thresholds for the individual drugs ",
-      "(e.g. MIC)."
+      "The colour of the dots indicates ABCI: Positive ABCI values indicate ",
+      "that the combination is more effective than any individual drug on its ",
+      "own; negative values indicate that the combination is less effective ",
+      "than at least the most active individual drug. The size of the dots ",
+      "indicates the percentage of biomass killed. Vertical and horizontal ",
+      "lines can be added to illustrate the activity thresholds of the ",
+      "individual drugs (e.g. MIC)."
     ),
     link_paragraph,
     p(
@@ -126,26 +124,26 @@ plot_legends <- list(
       "using the Anti-Biofilm Combination Index (ABCI, colour scale) and ",
       "percentage of [biofilm inhibition], relative to the average of the ",
       "untreated control. Results are the average of [X] replicates. Positive ",
-      "ABCI values indicate a combination more effective than the individual ",
-      "drugs, while negative values indicate a combination less effective ",
-      "than the most active individual drug; see materials and methods for ",
-      "ABCI calculation. Vertical and horizontal lines indicate the [MBIC50] ",
-      "of individual drugs. Created with ABCindex [Citation]."
+      "ABCI values indicate a combination more effective than each individual ",
+      "drug, while negative values indicate a combination less effective than ",
+      "at least the most active individual drug; see materials and methods ",
+      "for ABCI calculation. Vertical and horizontal lines indicate the ",
+      "[MBIC50] of individual drugs. Created with ABCindex [Citation]."
     )
   ),
 
   dot_split = div(
     p(
       "This graph combines ABCI (drug interaction) and activity (% killed). ",
-      "The colour of the dots indicates ABCI: Positive values (top) indicate ",
-      "that the combination is more effective than either individual drug; ",
-      "negative values (bottom) indicate that the combination is less ",
-      "effective than the most active individual drug. They have been split ",
-      "into two different plots for visually simplified illustrations of only ",
-      "positive or negative interactions. The size of the dots indicates the ",
-      "percentage of biomass killed. Vertical and horizontal lines can be ",
-      "added to illustrate the activity thresholds of the individual drugs ",
-      "(e.g. MIC)."
+      "The colour of the dots indicates ABCI: Positive ABCI values (top) ",
+      "indicate that the combination is more effective than any individual ",
+      "drug on its own; negative values (bottom) indicate that the ",
+      "combination is less effective than at least the most active individual ",
+      "drug. They have been split into two different plots for visually ",
+      "simplified illustrations of only positive or negative interactions. ",
+      "The size of the dots indicates the percentage of biomass killed. ",
+      "Vertical and horizontal lines can be added to illustrate the activity ",
+      "thresholds of the individual drugs (e.g. MIC)."
     ),
     link_paragraph,
     p(
@@ -156,45 +154,46 @@ plot_legends <- list(
       "untreated controls. Results are the average of [X] replicates. ",
       "Positive ABCI values (top) indicate a combination more effective than ",
       "each individual drug, while negative values (bottom) indicate a ",
-      "combination less effective than the most active individual drug; see ",
-      "materials and methods for ABCI calculation. Vertical and horizontal ",
-      "lines indicate the [MBIC50] of individual drugs. Created with ABCindex ",
-      "[Citation]."
+      "combination less effective than at least the most active individual ",
+      "drug; see materials and methods for ABCI calculation. Vertical and ",
+      "horizontal lines indicate the [MBIC50] of individual drugs. Created ",
+      "with ABCindex [Citation]."
     )
   ),
 
   tile = div(
     p(
-      "The colour of the tiles indicates ABCI: Positive values indicate that ",
-      "the combination is more effective than either individual drug on its ",
+      "The colour of the tiles indicates ABCI: Positive ABCI values indicate ",
+      "that the combination is more effective than any individual drug on its ",
       "own; negative values indicate that the combination is less effective ",
-      "than at most active individual drug. Vertical and horizontal lines can ",
-      "be added to illustrate the activity thresholds of the individual drugs ",
-      "(e.g. MIC). Activity (% killing) is not depicted; combining this with ",
-      "a line plot for concentrations of interest is recommendded."
+      "than at least the most active individual drug. Vertical and horizontal ",
+      "lines can be added to illustrate the activity thresholds of the ",
+      "individual drugs (e.g. MIC). Activity (% killing) is not depicted; ",
+      "combining this with a line plot for concentrations of interest is ",
+      "recommendded."
     ),
     link_paragraph,
     p(
       style = "font-size:0.75em",
       "Anti-Biofilm Combination Index (ABCI) [Citation] for combinations of ",
       "[Drug A] and [Drug B]. Results are the average of [X] replicates. ",
-      "Positive ABCI values indicate a combination more effective than either ",
+      "Positive ABCI values indicate a combination more effective than each ",
       "individual drug, while negative values indicate a combination less ",
-      "effective than the most active individual drug; see materials and ",
-      "methods for ABCI calculation. Vertical and horizontal lines indicate ",
-      "the [MBIC50] of individual drugs. Tiles labelled '<' indicate less ",
-      "than [50% biofilm inhibition]. Created with ABCindex [Citation]."
+      "effective than at least the most active individual drug; see materials ",
+      "and methods for ABCI calculation. Vertical and horizontal lines ",
+      "indicate the [MBIC50] of individual drugs. Tiles labelled ‘<’ indicate ",
+      "less than [50% biofilm inhibition]. Created with ABCindex [Citation]."
     )
   ),
 
   tile_split = div(
     p(
       "The colour of the tiles indicates ABCI: Positive ABCI values (top) ",
-      "indicate that the combination is more effective than either individual ",
+      "indicate that the combination is more effective than any individual ",
       "drug on its own; negative values (bottom) indicate that the ",
-      "combination is less effective than the most active individual drug. ",
-      "They have been split into two different plots for a visually ",
-      "simplified illustration of only positive or negative interactions. ",
+      "combination is less effective than at least the most active individual ",
+      "drug. They have been split into two different plots for visually ",
+      "simplified illustrations of only positive or negative interactions. ",
       "Vertical and horizontal lines can be added to illustrate the activity ",
       "thresholds of the individual drugs (e.g. MIC). Activity (% killing) is ",
       "not depicted; combining this with a line plot for concentrations of ",
@@ -206,32 +205,32 @@ plot_legends <- list(
       "Anti-Biofilm Combination Index (ABCI) [Citation] for combinations of ",
       "[Drug A] and [Drug B]. Results are the average of [X] replicates. ",
       "Positive ABCI values (top) indicate a combination more effective than ",
-      "either individual drug, while negative values (bottom) indicate a ",
-      "combination less effective than the most active individual drug; see ",
-      "materials and methods for ABCI calculation. Vertical and horizontal ",
-      "lines indicate the [MBIC50] of individual drugs. Tiles labelled '<' ",
-      "indicate less than [50% biofilm inhibition]. Created with ABCindex ",
-      "[Citation]."
+      "each individual drug, while negative values (bottom) indicate a ",
+      "combination less effective than at least the most active individual ",
+      "drug; see materials and methods for ABCI calculation. Vertical and ",
+      "horizontal lines indicate the [MBIC50] of individual drugs. Tiles ",
+      "labelled ‘<’ indicate less than [50% biofilm inhibition]. Created with ",
+      "ABCindex [Citation]."
     )
   ),
 
   line = div(
     p(
       "This is a simple representation of the percentage of biomass killed ",
-      "by the drug combinations in the assay. We recommend using the ABCI ",
+      "by the drug combinations in your assay. We recommend using the ABCI ",
       "plots to identify which concentrations are the most relevant or ",
-      "representative, and choosing a maximum of six for the treatment ",
+      "representative and choosing a maximum of six for the treatment ",
       "represented as lines. A vertical line can be added to illustrate the ",
       "activity threshold (e.g. MIC) of the drug represented on the X axis."
     ),
     link_paragraph,
     p(
       style = "font-size:0.75em",
-      "Percentage of [biofilm inhibition] of different combinations of ",
-      "[Drug A] and [Drug B], relative to the average of the untreated ",
-      "controls. Results are representative of X replicates; [error bars ",
-      "represent standard deviation]. Vertical lines indicate the [MBIC50] of ",
-      "[Drug A]. Created with ABCindex [Citation]."
+      "Percentage of [biofilm inhibition] of different combinations of [Drug ",
+      "A] and [Drug B], relative to the average of the untreated controls. ",
+      "Results are representative of X replicates; [error bars represent ",
+      "standard deviation]. Vertical lines indicate the [MBIC50] of [Drug A]. ",
+      "Created with ABCindex [Citation]."
     )
   )
 )
@@ -1939,7 +1938,7 @@ set_ggplot_theme <- function() {
         strip.text = element_text(face = "bold", size = 24),
         legend.title = element_text(face = "bold"),
         legend.key.height = unit(15, "mm"),
-        legend.text = element_text(hjust = 1)
+        legend.text.align = 1
       )
   )
 }
@@ -2056,22 +2055,21 @@ panel_results <- function(id) {
         open = NA,
 
         p(
-          "An ABCI value is calculated for every combination of ",
-          "concentrations in each of your experiments. Positive ABCI values ",
-          "indicate that the combination is more effective than either ",
-          "individual drug, while negative values correspond to combinations ",
-          "which perform worse than the best drug alone. Please refer to the ",
+          "ABCI is calculated for every combination of concentrations in ",
+          "each of your experiments. Positive ABCI values indicate that the ",
+          "combination is more effective than either individual drug. ",
+          "Please refer to the ",
           actionLink(ns("help_from_results"), "Help pages"),
           "to learn more about ABCI."
         ),
 
         HTML(r"(
-          <p>Visualize your ABCI results using <b>Dot</b> or <b>Tile</b>
-          plots. The <b>Split</b> versions separate positive and
-          negative ABCI values into two plots, for visual simplicity.
-          Alternatively, the <b>Line</b> plot displays antimicrobial
-          activity for all or a subset of concentrations.</p>
-        )"),
+            <p>Visualize your ABCI results using <b>Dot</b> or <b>Tile</b>
+            plots. The <b>Split</b> versions separate positive and
+            negative ABCI values into two plots, for visual simplicity.
+            Alternatively, the <b>Line</b> plot displays antimicrobial
+            activity for all or a subset of concentrations.</p>
+          )"),
 
         disabled(
           actionButton(
@@ -3712,7 +3710,7 @@ server_results <- function(id, data) {
 
     observeEvent(input$plot_download_button, {
       showModal(modalDialog(
-        title = "Save the plot",
+        title = "Download the plot",
         size = "m",
         p(
           "Use the buttons below to download the current plot as a PNG, SVG, ",

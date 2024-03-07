@@ -77,16 +77,16 @@ panel_home <- function(id) {
         )"),
 
         HTML(r"(
-          <p class='lead mb-4'>Here you can calculate ABCI values for your
-          checkerboard data, and visualize the results in different plots
+          <p class='lead mb-4'>Here you can calculate ABCIs for your
+          checkerboard data and visualize the results in different plots
           designed to quickly identify promising interactions and favourable
           drug ratios.</p>
         )"),
 
         HTML(r"(
           <p class='lead mb-4'>Click the Get Started button to upload your
-          data. To see how to use ABCindex, or to learn more about how ABCI is
-          calculated, check the Help pages below. For more information,
+          data. To learn more about how ABCI is calculated, or how to use
+          ABCindex, check the Help pages below. For more information,
           including how to cite ABCindex, please refer to the About page.</p>
         )"),
 

@@ -723,16 +723,16 @@ panel_upload <- function(id) {
           "separate panels in the final plots, while replicates within an ",
           "experiment will be averaged. You can use the link to ",
           actionLink(ns("download_template"), "download a template"),
-          "of the input format you can paste your data into. If required, ",
-          "subtract any 'blank' wells before uploading your data."
+          "of the input format. If required, subtract any 'blank' wells ",
+          "before uploading your data."
         ),
 
         p(
           "Use the link to ",
           actionLink(ns("load_example_data"), "try our example data"),
-          ", or check out the ",
+          " or check out the ",
           actionLink(ns("help_from_upload"), "Help pages"),
-          "to learn more about the data we support."
+          "to learn more about the data types we support."
         ),
 
         fileInput(
@@ -792,8 +792,8 @@ server_upload <- function(id) {
         size = "m",
         easyClose = TRUE,
         p(
-          "The input template can be downloaded as either an '.xlsx' or ",
-          "'.ods' file using the buttons below."
+          "The template data can be downloaded as either a '.xlsx' or '.ods' ",
+          "file using the buttons below."
         ),
         HTML("<img src='help/input_template.png' class='center'>"),
         br(),
@@ -992,7 +992,7 @@ server_upload <- function(id) {
       removeNotification(ns("upload_notification"))
 
       showModal(modalDialog(
-        title = "Data normalization for ABCI calculations",
+        title = "Perform ABCI calculations: Data normalization",
         size = "l",
         p(r"(
           By default, ABCindex will normalize all input data to percentages. If
