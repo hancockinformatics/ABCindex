@@ -1,10 +1,5 @@
 # ABCindex
 
-<!-- badges: start -->
-![shinyapps.io](https://github.com/hancockinformatics/ABCindex/actions/workflows/shiny-deploy.yaml/badge.svg)
-<!-- badges: end -->
-
-
 ## About
 
 ABCindex is a tool to quantify and visualize the *in vitro* effects of drug 
