@@ -1938,7 +1938,7 @@ set_ggplot_theme <- function() {
         strip.text = element_text(face = "bold", size = 24),
         legend.title = element_text(face = "bold"),
         legend.key.height = unit(15, "mm"),
-        legend.text.align = 1
+        legend.text = element_text(hjust = 1)
       )
   )
 }
