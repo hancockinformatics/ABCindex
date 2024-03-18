@@ -1,4 +1,6 @@
-# ABCindex
+![](www/img/ABCindex_title.svg)
+
+***
 
 [![shiny-deploy](https://github.com/hancockinformatics/ABCindex/actions/workflows/shiny-deploy.yaml/badge.svg)](https://github.com/hancockinformatics/ABCindex/actions/workflows/shiny-deploy.yaml)
 
@@ -13,8 +15,16 @@ challenges when evaluating antibiofilm activity.
 
 ## Availability
 
-ABCindex is under active development, and is currently available at: 
-https://travis-m-blimkie.shinyapps.io/ABCindex/
+ABCindex is available at: https://travis-m-blimkie.shinyapps.io/ABCindex/. Note
+that it is still under development; features and functionality are subject to 
+change.
+
+
+## Help
+
+For information about how to use ABCindex, and details on the calculation of 
+ABCI values, see the Help pages on the website. If you encounter a bug or 
+other issue, please submit an issue here on GitHub. 
 
 
 ## Contributors
