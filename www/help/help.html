@@ -3,19 +3,40 @@
 <div class="container col-xxl-6 px-4 pt-1 mb-auto">
   <div class="row flex-lg-row align-items-center pt-5 pb-2">
 
-    <h1 class="display-3 fw-bold text-body-emphasis lh-1 mb-3">Help for ABCindex</h1>
+    <h1 id="anchor-top" class="display-3 fw-bold text-body-emphasis lh-1 mb-3">Help for ABCindex</h1>
     <p class="lead">
-      The first section covers the use of the app. Click
-      <a href="#anchor-calc">here</a> to jump to the next section, which details
-      the calculation of the ABCI values.
+      The first section covers how to use the app, while the second section
+      details the calculation of ABCI values.
     </p>
 
-    <h1 id="anchor-howto">How to use ABCindex</h1>
+
+    <h1 class="mt-4">Table of contents</h1>
+
+    <ul class="toc lead px-4" role="list">
+      <li><a href="#anchor-howto">How to use ABCindex</a></li>
+      <ul>
+        <li><a href="#anchor-prep">1. Prepare your data</a></li>
+        <li><a href="#anchor-upload">2. Upload and analyze your data</a></li>
+        <li><a href="#anchor-plot">3. Create plots from your results</a></li>
+        <li><a href="#anchor-learn1">Learn more</a></li>
+      </ul>
+
+      <li><a href="#anchor-calc">ABCI calculations</a></li>
+      <ul>
+        <li><a href="#anchor-rationale">Rationale behind ABCindex</a></li>
+        <li><a href="#anchor-abci">Anti-Biofilm Combination Index</a></li>
+        <li><a href="#anchor-processing">Data processing in ABCindex</a></li>
+        <li><a href="#anchor-learn2">Learn more</a></li>
+      </ul>
+    </ul>
+
+
+    <h1 class="mt-4" id="anchor-howto">How to use ABCindex</h1>
     <p class="lead">
       Interpretation and visualization of checkerboard assays.
     </p>
 
-    <h3>1. Prepare your data</h3>
+    <h3 id="anchor-prep">1. Prepare your data</h3>
     <p>
       ABCindex takes any form of checkerboard assay data (e.g. crystal
       violet or TTC) in the same format produced by microplate readers. Data can
@@ -46,7 +67,7 @@
     </p>
     <img src="help/input_template.png" alt="Input template" class="center img-fluid" style="width:75%">
 
-    <h3 class="mt-4">2. Upload and analyze your data</h3>
+    <h3 class="mt-4" id="anchor-upload">2. Upload and analyze your data</h3>
     <p>
       Click <b>"Upload plate data"</b> and select an .xlsx or .ods file
       formatted as detailed above. An input preview will appear to the right of
@@ -75,7 +96,7 @@
       tab.
     </p>
 
-    <h3 class="mt-4">3. Create plots from your results</h3>
+    <h3 class="mt-4" id="anchor-plot">3. Create plots from your results</h3>
     <p>ABCindex lets you visualize two types of information:</p>
     <ul>
       <li>
@@ -123,7 +144,7 @@
       be lost, so be sure to save anything you want to keep first!
     </p>
 
-    <h3 class="mt-4">Learn more</h3>
+    <h3 class="mt-4" id="anchor-learn1">Learn more</h3>
     <div class="accordion" id="accordion1" style="margin-bottom:3rem">
       <div class="accordion-item">
         <h2 class="accordion-header">
@@ -261,6 +282,8 @@
       </div>
     </div>
 
+    <p class="mb-5 lead"><a href="#anchor-top">Return to top</a></p>
+
 
     <br>
     <hr>
@@ -272,7 +295,7 @@
       calculates and plots the data.
     </p>
 
-    <h3>Rationale behind ABCindex</h3>
+    <h3 id="anchor-rationale">Rationale behind ABCindex</h3>
     <p>
       ABCindex aims to overcome the main challenges presented when evaluating
       antibiofilm combination therapies and, in more general terms, provide a
@@ -325,7 +348,7 @@
       promising interactions and favourable drug ratios.
     </p>
 
-    <h3 class="mt-4">Anti-Biofilm Combination Index</h3>
+    <h3 class="mt-4" id="anchor-abci">Anti-Biofilm Combination Index</h3>
     <p>
       The Anti-Biofilm Combination Index (ABCI) is calculated for each specific
       combination of drug concentrations (i.e., each well on a 96-well plate).
@@ -423,7 +446,7 @@
       </tr>
     </table>
 
-    <h3 class="mt-4">Data processing in ABCindex</h3>
+    <h3 class="mt-4" id="anchor-processing">Data processing in ABCindex</h3>
     <p>
       Checkerboard data uploaded to ABCindex goes through the following steps:
     </p>
@@ -454,7 +477,7 @@
       downloaded in the results spreadsheets.
     </p>
 
-    <h3 class="mt-4">Learn more</h3>
+    <h3 class="mt-4" id="anchor-learn2">Learn more</h3>
 
     <div class="accordion" id="accordion2">
       <div class="accordion-item">
@@ -508,6 +531,8 @@
         </div>
       </div>
     </div>
+
+    <p class="lead mb-4 mt-5"><a href="#anchor-top">Return to top</a></p>
 
   </div>
 </div>
