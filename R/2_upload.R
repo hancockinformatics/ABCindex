@@ -413,6 +413,8 @@ make_card <- function(title, height = NULL, class = NULL, content) {
 #' @return A shiny notification bubble
 #'
 notify <- function(id = NULL, list) {
+  stopifnot(all(c("type", "status", "message", "suggest") %in% names(list)))
+
   showNotification(
     id = id,
     type = list$type,
