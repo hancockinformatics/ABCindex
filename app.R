@@ -13,7 +13,11 @@ suppressPackageStartupMessages({
 app_theme <- bs_theme(
   version = 5,
   bootswatch = "cosmo",
-  base_font = font_collection(font_google("Inter", local = FALSE), "Roboto", "sans-serif"),
+  base_font = font_collection(
+    font_google("Inter", local = FALSE),
+    "Roboto",
+    "sans-serif"
+  ),
   font_scale = 0.9,
   primary = "#cc002c",
   secondary = "#373a3c",

@@ -370,13 +370,13 @@ fill_card <- function(expt) {
     p(strong("Treatment in the columns: "), expt$cols$name),
     p(
       tags$b("Detected concentrations: "),
-      paste(expt$cols$conc, collapse = ", ")
+      paste(sort(expt$cols$conc, decreasing = TRUE), collapse = ", ")
     ),
     hr(),
     p(strong("Treatment in the rows: "), expt$rows$name),
     p(
       strong("Detected concentrations: "),
-      paste(expt$rows$conc, collapse = ", ")
+      paste(sort(expt$rows$conc, decreasing = TRUE), collapse = ", ")
     ),
   )
 }
