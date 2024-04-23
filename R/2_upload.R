@@ -370,13 +370,13 @@ fill_card <- function(expt) {
     p(strong("Treatment in the columns: "), expt$cols$name),
     p(
       tags$b("Detected concentrations: "),
-      paste(sort(expt$cols$conc, decreasing = TRUE), collapse = ", ")
+      paste(sort(expt$cols$conc, decreasing = FALSE), collapse = ", ")
     ),
     hr(),
     p(strong("Treatment in the rows: "), expt$rows$name),
     p(
       strong("Detected concentrations: "),
-      paste(sort(expt$rows$conc, decreasing = TRUE), collapse = ", ")
+      paste(sort(expt$rows$conc, decreasing = FALSE), collapse = ", ")
     ),
   )
 }
@@ -418,7 +418,7 @@ notify <- function(id = NULL, list) {
   showNotification(
     id = id,
     type = list$type,
-    duration = ifelse(list$type == "success", 10, 20),
+    duration = ifelse(list$type == "message", 5, 20),
     ui = HTML(paste0(
       "<h4 class='alert-heading'><b>", list$status, "</b></h4>",
       "<p class='mb-0'>",
@@ -878,15 +878,13 @@ server_upload <- function(id) {
             "name" = unique(experiment$cols),
             "concentrations" = levels(experiment$cols_conc) %>%
               as.character() %>%
-              as.numeric() %>%
-              sort()
+              as.numeric()
           ),
           "rows" = list(
             "name" = unique(experiment$rows),
             "concentrations" = levels(experiment$rows_conc) %>%
               as.character() %>%
-              as.numeric() %>%
-              sort()
+              as.numeric()
           )
         )
       })
