@@ -544,12 +544,14 @@ plot_dot <- function(
 
   # Fix up the variable being mapped to size. Define labels and breaks.
   data <- data %>%
-    group_by(.data[[col.analysis]]) %>%
     mutate(
       across(all_of(c(x.drug, y.drug)), forcats::fct_inseq),
-      reference = ceiling(scales::rescale(.data[[col.size]], to = c(0, 100)))
+      reference = ifelse(
+        test = ceiling(.data[[col.size]] * 100) <= 100,
+        yes = ceiling(.data[[col.size]] * 100),
+        no = 100
+      )
     ) %>%
-    ungroup() %>%
     left_join(size_mapping, by = "reference")
 
   proper_labels <- seq(0, 100, 20)
@@ -830,12 +832,14 @@ plot_dot_split <- function(
 
   # Fix up the variable being mapped to size. Define labels and breaks.
   data <- data %>%
-    group_by(.data[[col.analysis]]) %>%
     mutate(
       across(all_of(c(x.drug, y.drug)), forcats::fct_inseq),
-      reference = ceiling(scales::rescale(.data[[col.size]], to = c(0, 100)))
+      reference = ifelse(
+        test = ceiling(.data[[col.size]] * 100) <= 100,
+        yes = ceiling(.data[[col.size]] * 100),
+        no = 100
+      )
     ) %>%
-    ungroup() %>%
     left_join(size_mapping, by = "reference")
 
   proper_labels <- seq(0, 100, 20)
@@ -849,13 +853,11 @@ plot_dot_split <- function(
   if (!large.effect) {
     data <- mutate(data, large_chr = rep(0))
   } else {
-    data <- data %>%
-      mutate(
-        large_chr = ifelse(
-          (effect_avg > large.effect.val & data[[col.fill]] > abci.val),
-          yes = 1,
-          no = 0)
-      )
+    data <- mutate(data, large_chr = ifelse(
+      test = (effect_avg > large.effect.val & data[[col.fill]] > abci.val),
+      yes = 1,
+      no = 0
+    ))
   }
 
   # MICs are calculated by `get_mic()` and converted to positions on the axes
@@ -976,9 +978,9 @@ plot_dot_split <- function(
       x,
       col_size = scales::rescale(N1S2, to = size.range),
       col_size = ifelse(
-        !is.na(col_fill),
-        col_size,
-        0
+        test = !is.na(col_fill),
+        yes = col_size,
+        no = 0
       )
     )
   })

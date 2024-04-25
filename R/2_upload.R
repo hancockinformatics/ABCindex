@@ -133,7 +133,7 @@ abci_analysis_single <- function(
     )
 
   if (!normalize) {
-    if (max(data_clean[[col.data]]) >= 50) {
+    if (max(data_clean[[col.data]]) - min(data_clean[[col.data]]) > 10) {
       data_clean[[col.data]] <- data_clean[[col.data]] / 100
     }
   }
