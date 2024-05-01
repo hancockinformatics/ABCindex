@@ -2006,10 +2006,12 @@ writer_xlsx <- function(x, filename) {
     df_clean <- df %>%
       select(cols_conc, rows_conc, abci_avg) %>%
       distinct(cols_conc, rows_conc, .keep_all = TRUE) %>%
-      tidyr::pivot_wider(
-        names_from = "cols_conc",
-        values_from = "abci_avg"
+      mutate(
+        cols_conc = as.numeric(as.character(cols_conc)),
+        rows_conc = as.numeric(as.character(rows_conc))
       ) %>%
+      arrange(cols_conc, rows_conc) %>%
+      tidyr::pivot_wider(names_from = "cols_conc", values_from = "abci_avg") %>%
       tibble::column_to_rownames("rows_conc")
 
     addWorksheet(wb, nm)

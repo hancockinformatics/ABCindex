@@ -683,20 +683,16 @@ plate_reader_single <- function(file, sheet, ext) {
       ) %>%
       mutate(rows = x[3, 1], cols = x[1, 3], .before = 1)
 
-    levels_rows <- sort(unique(as.numeric(df4$rows_conc)))
-    levels_cols <- sort(unique(as.numeric(df4$cols_conc)))
-
     df4 %>%
-      mutate(
-        well = wells,
-        rows_conc = factor(rows_conc, levels = levels_rows),
-        cols_conc = factor(cols_conc, levels = levels_cols),
-        bio = as.numeric(bio)
-      ) %>%
+      mutate(well = wells, bio = as.numeric(bio)) %>%
       select(well, starts_with("cols"), starts_with("rows"), bio)
   }) %>%
     purrr::set_names(~paste0(sheet, "_p", seq(length(.x)))) %>%
-    bind_rows(.id = "replicate")
+    bind_rows(.id = "replicate") %>%
+    mutate(
+      cols_conc = forcats::fct_inseq(cols_conc),
+      rows_conc = forcats::fct_inseq(rows_conc)
+    )
 
   return(d5)
 }
