@@ -1,3 +1,11 @@
+# ABCindex v0.99.805
+
+## Changes
+
+* Edited screenshot images in help pages
+* Concentrations now show in proper numeric order, when replicates don't share all concentrations
+
+
 # ABCindex v0.99.802
 
 ## Changes
