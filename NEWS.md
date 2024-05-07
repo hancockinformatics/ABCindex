@@ -1,3 +1,10 @@
+# ABCindex v0.99.806
+
+## Changes
+
+* Updated renv, R version and some packages in preparation for deployment (b7e127c)
+
+
 # ABCindex v0.99.805
 
 ## Changes
