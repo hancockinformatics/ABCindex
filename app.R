@@ -45,7 +45,6 @@ abci_ui <- page_navbar(
   bg = bs_get_variables(app_theme, varnames = "secondary"),
 
   header = tags$head(
-    includeHTML("www/google_analytics.html"),
     useShinyjs(),
     tags$link(rel = "stylesheet", href = "css/custom.css"),
     tags$link(rel = "icon", href = "img/ABCindex_icon.svg"),
