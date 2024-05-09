@@ -1,6 +1,6 @@
 Package: ABCindex
 Title: A Shiny app to calculate ABCI for checkerboard assays
-Version: 0.99.806
+Version: 0.99.807
 Authors@R:
   person(given = "Travis",
          family = "Blimkie",
@@ -17,5 +17,5 @@ Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
-URL: https://travis-m-blimkie.shinyapps.io/ABCindex
+URL: https://abcindex.ca/
 BugReports: https://github.com/hancockinformatics/ABCindex/issues

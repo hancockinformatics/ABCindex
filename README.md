@@ -15,9 +15,8 @@ challenges when evaluating antibiofilm activity.
 
 ## Availability
 
-ABCindex is available at: https://travis-m-blimkie.shinyapps.io/ABCindex/. Note
-that it is still under development; features and functionality are subject to 
-change.
+ABCindex is available at: https://abcindex.ca/. Note that it is still under
+development; features and functionality are subject to change.
 
 
 ## Help
