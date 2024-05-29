@@ -109,7 +109,7 @@ panel_about <- function(id) {
             "created by Lucas Pedraz, and the app was developed by Travis ",
             "Blimkie, all at the ",
             a(
-              href = "http://cmdr.ubc.ca/bobh/",
+              href = "https://cmdr.ubc.ca/bobh/",
               target = "_blank",
               rel = "noopener noreferrer",
               "REW Hancock Laboratory"

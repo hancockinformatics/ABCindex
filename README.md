@@ -18,7 +18,7 @@ other issue, please submit an issue here on GitHub.
 
 ## Contributors
 ABCindex was developed by Travis Blimkie and Lucas Pedraz at the 
-[CMDR Hancock Lab](http://cmdr.ubc.ca/bobh/). A big thanks to all the testers, 
+[CMDR Hancock Lab](https://cmdr.ubc.ca/bobh/). A big thanks to all the testers, 
 especially Noushin Akhoundsadegh and Evan Haney.
 
 ## Dependencies
