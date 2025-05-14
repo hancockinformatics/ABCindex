@@ -8,6 +8,7 @@ dependency_table <- dplyr::tibble(
     "https://shiny.posit.co/",
     "https://github.com/daattali/shinycssloaders",
     "https://deanattali.com/shinyjs/",
+    "https://svglite.r-lib.org/",
     "https://www.tidyverse.org/"
   ),
   name = c(
@@ -17,6 +18,7 @@ dependency_table <- dplyr::tibble(
     "shiny",
     "shinycssloaders",
     "shinyjs",
+    "svglite",
     "tidyverse"
   ),
   description = c(
@@ -26,6 +28,7 @@ dependency_table <- dplyr::tibble(
     "Easily create and deploy web apps from R",
     "Add loading animations to Shiny outputs",
     "Extend Shiny functionality with Javascript",
+    "An R graphics device that produces SVGs",
     "Packages for data manipulation and visualization"
   )
 )
