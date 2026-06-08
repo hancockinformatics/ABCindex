@@ -9,7 +9,7 @@ abci_footer <- tags$footer(
     "<p class='mb-0'><small>",
     "<a target='_blank' rel='noopener noreferrer' href='https://sfu-lee-lab.github.io/Lee_Lab_Webpage/'>",
     "Lee Lab</a>",
-    ", 2025. The Lee Lab at ",
+    ", 2026. The Lee Lab at ",
     "<a target='_blank' rel='noopener noreferrer' href='https://www.sfu.ca/'>",
     "Simon Fraser University</a> respectfully acknowledges the Musqueam, ",
     "Squamish, Tsleil-Waututh, Katzie, Kwikwetlem, Qayqayt, Kwantlen, ",
