@@ -28,4 +28,5 @@ especially Noushin Akhoundsadegh and Evan Haney.
 - [shiny](https://www.rstudio.com/products/shiny/)
 - [shinycssloaders](https://github.com/daattali/shinycssloaders)
 - [shinyjs](https://deanattali.com/shinyjs/)
+- [svglite](https://svglite.r-lib.org/)
 - [tidyverse](https://www.tidyverse.org/)

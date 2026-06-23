@@ -5,14 +5,16 @@ abci_footer <- tags$footer(
   class = "text-center mt-auto",
   HTML(paste0(
     "<div class='border-top pt-3 d-flex align-items-center justify-content-center'>",
-    "<img class='pe-1' src='img/hancock_lab_logo.svg'>",
+    "<img class='pe-1' src='img/lee_lab_logo_v3_browser_favicon.png'>",
     "<p class='mb-0'><small>",
-    "<a target='_blank' rel='noopener noreferrer' href='https://cmdr.ubc.ca/bobh/'>",
-    "R.E.W Hancock Lab</a>",
-    ", 2024. The Hancock Lab at ",
-    "<a target='_blank' rel='noopener noreferrer' href='https://www.ubc.ca/'>",
-    "UBC Vancouver</a> acknowledges we are located on the traditional, ",
-    "ancestral and unceded territory of the Musqueam people.</small></p>",
+    "<a target='_blank' rel='noopener noreferrer' href='https://sfu-lee-lab.github.io/Lee_Lab_Webpage/'>",
+    "Lee Lab</a>",
+    ", 2026. The Lee Lab at ",
+    "<a target='_blank' rel='noopener noreferrer' href='https://www.sfu.ca/'>",
+    "Simon Fraser University</a> respectfully acknowledges the Musqueam, ",
+    "Squamish, Tsleil-Waututh, Katzie, Kwikwetlem, Qayqayt, Kwantlen, ",
+    "Semiahmoo and Tsawwassen peoples on whose unceded traditional ",
+    "territories our three campuses reside.</small></p>",
     "</div>"
   ))
 )

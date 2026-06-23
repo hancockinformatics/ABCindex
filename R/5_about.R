@@ -8,6 +8,7 @@ dependency_table <- dplyr::tibble(
     "https://shiny.posit.co/",
     "https://github.com/daattali/shinycssloaders",
     "https://deanattali.com/shinyjs/",
+    "https://svglite.r-lib.org/",
     "https://www.tidyverse.org/"
   ),
   name = c(
@@ -17,6 +18,7 @@ dependency_table <- dplyr::tibble(
     "shiny",
     "shinycssloaders",
     "shinyjs",
+    "svglite",
     "tidyverse"
   ),
   description = c(
@@ -26,6 +28,7 @@ dependency_table <- dplyr::tibble(
     "Easily create and deploy web apps from R",
     "Add loading animations to Shiny outputs",
     "Extend Shiny functionality with Javascript",
+    "An R graphics device that produces SVGs",
     "Packages for data manipulation and visualization"
   )
 )
@@ -105,16 +108,23 @@ panel_about <- function(id) {
           p(
             class = "lead",
             "ABCindex is an R Shiny app that facilitates the calculation ",
-            "of the Anti-Biofilm Combination Index (ABCI). The metric was ",
-            "created by Lucas Pedraz, and the app was developed by Travis ",
-            "Blimkie, all at the ",
+            "of the Anti-Biofilm Combination Index (ABCI), a metric created ",
+            "by Lucas Pedraz while at the ",
             a(
               href = "https://cmdr.ubc.ca/bobh/",
               target = "_blank",
               rel = "noopener noreferrer",
               "REW Hancock Laboratory"
             ),
-            "at the University of British Columbia."
+            "at the University of British Columbia. The application was ",
+            "developed by Travis Blimkie, now at the ",
+            a(
+              href = "https://sfu-lee-lab.github.io/Lee_Lab_Webpage/",
+              target = "_blank",
+              rel = "noopener noreferrer",
+              "Lee Lab"
+            ),
+            " at Simon Fraser University."
           ),
           h1(
             class = "display-6 fw-bold text-body-emphasis lh-1 mb-3",
